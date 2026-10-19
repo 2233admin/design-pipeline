@@ -153,9 +153,9 @@ function reference(study, context = {}) {
     id: "reference",
     finished: referenceObserved,
     action: (state, root) => {
-      let observation;
+      let observation, ref;
       if (root && exists(root, "reference-evidence.json")) {
-        const ref = require("../contract-utils.cjs").readJson(path.join(root, "reference-evidence.json"), "reference evidence");
+        ref = require("../contract-utils.cjs").readJson(path.join(root, "reference-evidence.json"), "reference evidence");
         if (ref.videoAnalysis) observation = require("../reference-video-core.cjs").checkVideoAnalysis(root, ref.videoAnalysis, ref.source, { requireProduction: true }).nextActions[0];
       }
       const guides = [...new Set([observation ? "references/reference-spec.md#video-content-and-project-analysis" : "references/reference-spec.md", ...(context.guides || [])])];
@@ -164,7 +164,7 @@ function reference(study, context = {}) {
         ? observation.kind === "observe-window"
           ? `Inspect ${observation.windowId} (${observation.startSec}–${observation.endSec}s) in ${observation.viewerPath || observation.reportPath}, using frames ${observation.frameIds.join(", ")}. ${observation.instruction} Update observations in ${observation.reportPath}, refresh videoAnalysis.sha256 in reference-evidence.json, and record actual findings in reference.md. Use the attached resample arguments if needed.`
           : `${observation.instruction}${observation.resample ? " Use the attached resample arguments." : ""} Current report: ${observation.reportPath}.`
-        : context.exclusive ? `${context.work} Then run ${cliCommand()} reference check --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}.` : `${context.work ? `${context.work} ` : ""}For a local video first run ${cliCommand()} reference analyze-video --root ${shellPath(path.resolve(root))} --path <contained-video> --output <new-evidence-dir>; inspect the ordered timed windows, confirm shot bounds and applicable target properties, and fill observations in its report, then bind videoAnalysis.path/sha256 in reference-evidence.json. Resample uncertain intervals with --start <sec> --end <sec> --fps 24 into a new directory. In an existing project run ${cliCommand()} project inspect --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --write --output .design-pipeline/project-analysis-v1.json and read the relevant source lines before proposing changes.`;
+        : context.exclusive && ref?.source?.kind !== "video" ? `${context.work} Then run ${cliCommand()} reference check --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))}.` : `${context.work ? `${context.work} ` : ""}For a local video first run ${cliCommand()} reference analyze-video --root ${shellPath(path.resolve(root))} --path <contained-video> --output <new-evidence-dir>; inspect the ordered timed windows, confirm shot bounds and applicable target properties, and fill observations in its report, then bind videoAnalysis.path/sha256 in reference-evidence.json. Resample uncertain intervals with --start <sec> --end <sec> --fps 24 into a new directory. In an existing project run ${cliCommand()} project inspect --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --write --output .design-pipeline/project-analysis-v1.json and read the relevant source lines before proposing changes.`;
       return {
         type: "run",
         study, images, guides,
