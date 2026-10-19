@@ -184,22 +184,25 @@ const boundReferenceFiles = (state, root) => (state.mode === "replicate" ? ["ref
 
 // --- website-clone fidelity, consulted at probe and delivery ----------------------------------------
 
-// The website-cloning.json of the project, at its root or in a change directory beside it.
-function findManifest(root) {
+// Every website-cloning.json of the project, at its root or in a change directory beside it.
+function findManifests(root) {
   const project = path.resolve(root);
   const dirs = [project];
   for (const parts of CLONE_ROOTS) {
     const base = path.join(project, ...parts);
     if (fs.existsSync(base) && fs.statSync(base).isDirectory()) dirs.push(...fs.readdirSync(base).filter(name => name !== "archive").map(name => path.join(base, name)));
   }
-  return dirs.find(dir => fs.existsSync(path.join(dir, MANIFEST))) ?? null;
+  return dirs.filter(dir => fs.existsSync(path.join(dir, MANIFEST)));
 }
 
 // null when the project has no clone manifest; else the evaluator's last verdict as the manifest records it.
 function cloneFidelity(state, root) {
   if (state.deliverable !== "web" || state.mode !== "replicate") return null;
-  const dir = findManifest(root);
-  if (!dir) return null;
+  const dirs = findManifests(root);
+  if (!dirs.length) return null;
+  // Two live clone changes: never judge this page by whichever directory is listed first.
+  if (dirs.length > 1) return { ambiguous: true, dirs, complete: false };
+  const [dir] = dirs;
   const read = attempt(() => readJson(path.join(dir, MANIFEST), "website-cloning manifest"));
   const manifest = read.result ?? {};
   return {
@@ -216,6 +219,15 @@ const cloneComplete = (state, root) => cloneFidelity(state, root)?.complete ?? t
 
 function cloneAction(state, root) {
   const clone = cloneFidelity(state, root);
+  const rel = dir => path.relative(path.resolve(root), dir).split(path.sep).join("/") || ".";
+  if (clone.ambiguous) {
+    return {
+      type: "blocked",
+      blocker: `More than one website-clone manifest: ${clone.dirs.map(rel).join(", ")}.`,
+      instruction: "Keep only the clone change for this page (archive the others under their changes directory's archive/), then run next again.",
+      why: "The fidelity verdict must come from this page's own clone change.",
+    };
+  }
   const where = path.relative(path.resolve(root), clone.dir).split(path.sep).join("/") || ".";
   return {
     type: "run",

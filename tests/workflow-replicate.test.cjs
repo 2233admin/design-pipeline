@@ -226,6 +226,12 @@ test("a website-cloning manifest that is not complete keeps the probe open and n
   assert.match(probe.instruction, /brand marks/);
   fs.writeFileSync(path.join(change, "website-cloning.json"), JSON.stringify({ ...manifest, status: "complete", verification: { status: "passed", reasons: [] } }));
   assert.equal(nextAction(dir).stage, "review");
+  const other = path.join(dir, "design", "changes", "clone-older");
+  fs.mkdirSync(other, { recursive: true });
+  fs.writeFileSync(path.join(other, "website-cloning.json"), JSON.stringify(manifest));
+  const ambiguous = nextAction(dir);
+  assert.deepEqual([ambiguous.stage, ambiguous.type], ["probe", "blocked"], "two clone manifests never pick one silently");
+  assert.match(ambiguous.blocker, /clone-example.*clone-older|clone-older.*clone-example/);
 });
 
 test("natural reference phrasings route to the clone and reconstruction jobs", () => {
