@@ -1,107 +1,26 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://design-pipeline.local/schemas/component-first-gate.schema.json",
-  "title": "Component-First Aggregate Gate V1",
+  "title": "Component-First Gate Artifact",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "status", "reasonCodes", "findings", "evidenceRefs", "target", "policy", "readiness", "stages", "stack", "components", "playground", "pageUsage", "evidence"],
+  "required": ["schema", "target", "policy", "receipts", "visualAcceptance", "selection", "promotions"],
   "properties": {
-    "schema": { "const": "component-first-gate.v1" },
-    "status": { "enum": ["passed", "blocked", "invalid"] },
-    "reasonCodes": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/reasonCode" } },
-    "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
-    "evidenceRefs": { "type": "array", "items": { "$ref": "#/$defs/evidenceRef" } },
+    "schema": { "const": "component-first-gate.v2" },
     "target": { "$ref": "#/$defs/target" },
     "policy": { "$ref": "#/$defs/policy" },
-    "readiness": {
-      "oneOf": [
-        { "type": "null" },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["level", "scope"],
-          "properties": {
-            "level": { "const": "page-ready" },
-            "scope": { "enum": ["prototype", "production"] }
-          }
-        }
-      ]
-    },
-    "stages": {
-      "type": "array",
-      "minItems": 5,
-      "maxItems": 5,
-      "items": { "$ref": "#/$defs/stage" }
-    },
-    "stack": { "type": "object" },
-    "components": { "type": "object" },
-    "playground": { "type": "object" },
-    "pageUsage": { "type": "object" },
-    "evidence": { "type": "object" }
+    "receipts": { "type": "object", "additionalProperties": { "$ref": "#/$defs/receipt" }, "required": ["stack", "components", "playground", "page", "evidence"] },
+    "visualAcceptance": { "type": "object", "required": ["schema", "status"], "properties": { "schema": { "const": "component-first-visual-acceptance.v1" }, "status": { "enum": ["passed", "waived", "not-evaluated"] }, "reason": { "type": "string" } }, "additionalProperties": false },
+    "selection": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/selection" }] },
+    "promotions": { "type": "array", "items": { "$ref": "#/$defs/promotion" } }
   },
   "$defs": {
     "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-    "reasonCode": { "type": "string", "pattern": "^CF_[A-Z0-9_]+$" },
-    "finding": {
-      "type": "object",
-      "required": ["code", "message", "details"],
-      "properties": {
-        "stage": { "type": "string" },
-        "code": { "$ref": "#/$defs/reasonCode" },
-        "message": { "type": "string", "minLength": 1 },
-        "details": { "type": "object" }
-      }
-    },
-    "evidenceRef": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "kind", "path", "sha256"],
-      "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "kind": { "type": "string", "minLength": 1 },
-        "path": { "type": ["string", "null"] },
-        "sha256": { "oneOf": [{ "$ref": "#/$defs/hash" }, { "type": "null" }] },
-        "metadata": {}
-      }
-    },
-    "target": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "root", "kind", "entrypoints", "routes", "snapshotDigest"],
-      "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "root": { "type": "string", "minLength": 1 },
-        "kind": { "enum": ["production", "prototype", "sandbox"] },
-        "entrypoints": { "type": "array", "items": { "type": "string" } },
-        "routes": { "type": "array", "items": { "type": "string" } },
-        "snapshotDigest": { "oneOf": [{ "type": "null" }, { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }] }
-      }
-    },
-    "policy": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "version", "additionalComponentRoles", "pageRequirements", "digest"],
-      "properties": {
-        "id": { "const": "component-first-default" },
-        "version": { "const": 1 },
-        "additionalComponentRoles": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-        "pageRequirements": { "type": "object", "additionalProperties": { "type": "array", "uniqueItems": true, "items": { "type": "string" } } },
-        "digest": { "$ref": "#/$defs/hash" }
-      }
-    },
-    "stage": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["stage", "status", "reasonCodes", "findings", "evidenceRefs", "inputDigest", "policyDigest"],
-      "properties": {
-        "stage": { "enum": ["stack", "components", "playground", "page", "evidence"] },
-        "status": { "enum": ["passed", "blocked", "invalid", "not_evaluated", "not_applicable"] },
-        "reasonCodes": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/reasonCode" } },
-        "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
-        "evidenceRefs": { "type": "array", "items": { "$ref": "#/$defs/evidenceRef" } },
-        "inputDigest": { "$ref": "#/$defs/hash" },
-        "policyDigest": { "$ref": "#/$defs/hash" }
-      }
-    }
+    "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "target": { "type": "object", "additionalProperties": false, "required": ["id", "root", "kind", "entrypoints", "routes", "snapshotDigest", "targetIdentityDigest"], "properties": { "id": { "type": "string", "minLength": 1 }, "root": { "type": "string", "minLength": 1 }, "kind": { "enum": ["production", "prototype", "sandbox"] }, "entrypoints": { "type": "array", "items": { "type": "string" } }, "routes": { "type": "array", "items": { "type": "string" } }, "snapshotDigest": { "$ref": "#/$defs/digest" }, "targetIdentityDigest": { "$ref": "#/$defs/hash" } } },
+    "policy": { "type": "object", "additionalProperties": false, "required": ["id", "version", "digest"], "properties": { "id": { "type": "string", "minLength": 1 }, "version": { "type": "integer", "minimum": 1 }, "additionalComponentRoles": { "type": "array", "items": { "type": "string" } }, "pageRequirements": { "type": "object" }, "digest": { "$ref": "#/$defs/hash" } } },
+    "receipt": { "type": "object", "additionalProperties": false, "required": ["schema", "stage", "status", "targetIdentityDigest", "snapshotDigest", "policyDigest", "inputDigest", "parentReceiptHashes", "evidenceRefs", "receiptHash"], "properties": { "schema": { "const": "component-first-stage-receipt.v2" }, "stage": { "enum": ["stack", "components", "playground", "page", "evidence"] }, "status": { "enum": ["passed", "blocked", "invalid", "not_evaluated", "not_applicable", "stale"] }, "targetIdentityDigest": { "$ref": "#/$defs/hash" }, "snapshotDigest": { "$ref": "#/$defs/digest" }, "policyDigest": { "$ref": "#/$defs/hash" }, "inputDigest": { "$ref": "#/$defs/hash" }, "parentReceiptHashes": { "type": "array", "items": { "oneOf": [{ "$ref": "#/$defs/hash" }, { "type": "null" }] } }, "expiresAt": { "type": "string", "format": "date-time" }, "evidenceRefs": { "type": "array" }, "receiptHash": { "$ref": "#/$defs/hash" } } },
+    "selection": { "type": "object", "additionalProperties": false, "required": ["schema", "status", "prototypeSetHash", "selectedPrototypeId", "targetIdentityDigest", "snapshotDigest", "policyDigest", "approvedBy", "receiptHash"], "properties": { "schema": { "const": "component-first-selection-receipt.v1" }, "status": { "const": "selected" }, "prototypeSetHash": { "$ref": "#/$defs/hash" }, "selectedPrototypeId": { "type": "string", "minLength": 1 }, "targetIdentityDigest": { "$ref": "#/$defs/hash" }, "snapshotDigest": { "$ref": "#/$defs/digest" }, "policyDigest": { "$ref": "#/$defs/hash" }, "approvedBy": { "type": "string", "minLength": 1 }, "prototypeSetSnapshot": { "type": "object" }, "receiptHash": { "$ref": "#/$defs/hash" } } },
+    "promotion": { "type": "object", "additionalProperties": false, "required": ["schema", "status", "selectionReceiptHash", "targetIdentityDigest", "snapshotDigest", "policyDigest", "sourceKind", "targetKind", "componentConformanceStatus", "visualAcceptanceStatus", "approvedBy", "receiptHash"], "properties": { "schema": { "const": "component-first-promotion-receipt.v1" }, "status": { "const": "approved" }, "selectionReceiptHash": { "$ref": "#/$defs/hash" }, "targetIdentityDigest": { "$ref": "#/$defs/hash" }, "snapshotDigest": { "$ref": "#/$defs/digest" }, "policyDigest": { "$ref": "#/$defs/hash" }, "sourceKind": { "const": "prototype" }, "targetKind": { "const": "production" }, "componentConformanceStatus": { "const": "passed" }, "visualAcceptanceStatus": { "enum": ["passed", "waived", "not-evaluated"] }, "approvedBy": { "type": "string", "minLength": 1 }, "receiptHash": { "$ref": "#/$defs/hash" } } }
   }
 }

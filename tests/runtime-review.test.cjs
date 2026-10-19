@@ -8,7 +8,7 @@ const test = require("node:test");
 const { spawnSync } = require("node:child_process");
 const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs");
 const { selectionStateSha256, surfaceContractSha256, VERIFICATION_CHECKS } = require("../skill/scripts/playground-core.cjs");
-const { createV2Artifact, STAGES } = require("../skill/scripts/component-first-v2-core.cjs");
+const { createComponentFirstArtifact, STAGES } = require("../skill/scripts/component-first-core.cjs");
 const { ARTIFACT_KEYS } = require("../skill/scripts/evidence-core.cjs");
 const { rgbaPng } = require("./fixtures/component-first-fixture.cjs");
 
@@ -82,7 +82,7 @@ function fixture(t, options = {}) {
   const sourceRef = write(targetRoot, "button.js", 'export const label = "合成按钮";\n// </script><img src=x onerror=alert(1)>\n');
   const codeMap = { schema: "design-pipeline.design-code-map.v1", uiIrSha256: irRef.sha256, tokenSha256: tokenRef.sha256, mappings: [{ renderedId: "cta", sourcePath: "button.js", line: 1, column: 1, componentId: "button", tokenRefs: ["color.accent"], evidence: ["仅 mapping 文本，不作为 evidence 文件读取"] }] };
   const mapRef = json(root, "code-map.json", codeMap);
-  const componentFirst = createV2Artifact({ schema: "component-first-gate.v1", target: { id: "synthetic-target", root: "target", kind: "prototype", entrypoints: ["button.js"], routes: ["/synthetic"] }, policy: { id: "synthetic-policy", version: 1 }, stages: STAGES.map((stage) => ({ stage, status: "passed", inputDigest: sha256(stage), evidenceRefs: [] })) }, { snapshotDigest: "sha256:" + sha256("original-snapshot") });
+  const componentFirst = createComponentFirstArtifact({ target: { id: "synthetic-target", root: "target", kind: "prototype", entrypoints: ["button.js"], routes: ["/synthetic"], snapshotDigest: "sha256:" + sha256("original-snapshot") }, policy: { id: "synthetic-policy", version: 1 }, stages: STAGES.map((stage) => ({ stage, status: "passed", inputDigest: sha256(stage), evidenceRefs: [] })) });
   componentFirst.visualAcceptance = { schema: "component-first-visual-acceptance.v1", status: "passed", reason: "合成历史值，不能外推为当前验收" };
   const cfRef = json(root, "component-first.json", componentFirst);
   const artifacts = Object.fromEntries(ARTIFACT_KEYS.map((key) => [key, null]));
@@ -392,7 +392,7 @@ test("历史 stale/blocked feedback 仅 recorded，重复不覆盖，不写 targ
 test("stale/expired lineage 拒绝新 build，blocked conformance 与 partial receipt 不被升级", (t) => {
   const expired = fixture(t);
   expired.componentFirst.receipts.stack.expiresAt = "2000-01-01T00:00:00Z";
-  const { receiptHash } = require("../skill/scripts/component-first-v2-core.cjs");
+  const { receiptHash } = require("../skill/scripts/component-first-core.cjs");
   expired.componentFirst.receipts.stack.receiptHash = receiptHash(expired.componentFirst.receipts.stack);
   expired.manifest.componentFirst = json(expired.root, "component-first.json", expired.componentFirst); expired.saveManifest();
   assert.notEqual(action(expired, "build", ["--manifest", "manifest.json"]).status, 0); noProduct(expired);
@@ -586,7 +586,7 @@ test("当前 Ref 匹配的非法 UI IR 优先 invalid，合法 IR 缺 catalog �
 });
 
 test("Component blocked 与 Visual passed/waived 独立投影，源码漂移不互相升级", (t) => {
-  const { receiptHash } = require("../skill/scripts/component-first-v2-core.cjs");
+  const { receiptHash } = require("../skill/scripts/component-first-core.cjs");
   for (const visual of ["passed", "waived"]) {
     const f = fixture(t);
     const parents = { stack: [], components: ["stack"], playground: ["stack"], page: ["stack", "components", "playground"], evidence: ["page"] };

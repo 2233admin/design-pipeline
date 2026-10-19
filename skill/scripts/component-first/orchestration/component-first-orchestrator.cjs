@@ -46,7 +46,7 @@ function failureOutcome(input, stage, code, message, policy) {
     ? invalidResult(name, code, message, input, policy)
     : notEvaluated(STAGES[name].gateId, policy.digest, sha256(canonicalJson(input))));
   const unresolvedTarget = { id: "unresolved-target", root: ".", kind: "prototype", entrypoints: [], routes: [], snapshotDigest: null };
-  return { input: isObject(input) ? input : {}, context: createEvaluationContext({ target: unresolvedTarget, policy }), policy, results, aggregate: aggregateResults(results), requestedStage: stage || null };
+  return { input: isObject(input) ? input : {}, context: createEvaluationContext({ target: unresolvedTarget, policy }), policy, results, aggregate: aggregateResults(results), requestedStage: stage || null, failure: { code, message } };
 }
 
 function resolveAdapters(options) {
@@ -64,7 +64,8 @@ function runComponentFirst(input, options = {}) {
   const requestedStage = options.stage || null;
   if (requestedStage && !PUBLIC_STAGES.includes(requestedStage)) throw new Error(`unknown component-first stage ${requestedStage}`);
   let fallbackPolicy = loadComponentFirstPolicy({});
-  if (!isObject(input) || input.schema !== "component-first-gate.v1") return failureOutcome(input, requestedStage, "CF_INPUT_INVALID", "component-first input must use component-first-gate.v1", fallbackPolicy);
+  if (!isObject(input)) return failureOutcome(input, requestedStage, "CF_INPUT_INVALID", "component-first request must be an object", fallbackPolicy);
+  if (input.schema !== undefined) return failureOutcome(input, requestedStage, "CF_INPUT_INVALID", "component-first request must not carry a schema id; pass receipt-chain artifacts to component-first verify", fallbackPolicy);
   let policy;
   try { policy = loadComponentFirstPolicy(input.policy || {}); }
   catch (error) { return failureOutcome(input, requestedStage, "CF_POLICY_INVALID", error.message, fallbackPolicy); }

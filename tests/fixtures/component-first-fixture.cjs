@@ -17,6 +17,7 @@ const {
 const repoRoot = path.resolve(__dirname, "../..");
 const references = path.join(repoRoot, "skill", "references");
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
+const snapshotDigest = `sha256:${sha256("component-first-snapshot")}`;
 
 function crc32(buffer) {
   let crc = 0xffffffff;
@@ -220,8 +221,7 @@ function createComponentFirstFixture(t, overrides = {}) {
     evidenceIds: ["dashboard-shot"],
   }));
   const input = {
-    schema: "component-first-gate.v1",
-    target: { id: "admin-web", root: ".", kind: overrides.targetKind || "production", entrypoints: ["src/app.tsx"], routes: ["/dashboard"], snapshotDigest: null },
+    target: { id: "admin-web", root: ".", kind: overrides.targetKind || "production", entrypoints: ["src/app.tsx"], routes: ["/dashboard"], snapshotDigest: overrides.snapshotDigest === undefined ? snapshotDigest : overrides.snapshotDigest },
     policy: { id: "component-first-default", version: 1, additionalComponentRoles: [], pageRequirements: { "/dashboard": ["action", "form-control", "selection", "overlay", "feedback"] } },
     stack: { request: { schema: "design-pipeline.frontend-stack-request.v1", framework: "react", brief: "Build a production component-first dashboard", requested: { styling: "none", uiLibrary: overrides.uiLibrary || "react-aria" } } },
     components: { request: componentRequest, verificationReceipt, declarations },

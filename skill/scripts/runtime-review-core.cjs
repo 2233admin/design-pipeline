@@ -6,7 +6,7 @@ const crypto = require("node:crypto");
 const { TextDecoder } = require("node:util");
 const { canonicalJson, fail, pathInside, pngDimensions, resolveInside, sha256, sortValue } = require("./contract-utils.cjs");
 const { checkPlayground, selectionStateSha256, surfaceContractSha256 } = require("./playground-core.cjs");
-const { checkV2Artifact, targetDigest, policyDigest } = require("./component-first-v2-core.cjs");
+const { verifyComponentFirstArtifact, targetDigest, policyDigest } = require("./component-first-core.cjs");
 const { ARTIFACT_KEYS, validateReceipt } = require("./evidence-core.cjs");
 const { validateDesignCodeMap, validateTokens, validateUiIr, validateUiIrStructure } = require("./interoperability-core.cjs");
 const SCHEMA = require("../references/runtime-review.schema.json");
@@ -289,7 +289,7 @@ function collect(session, manifest, baseline = null) {
   if (unchanged("runtimeObservation")) { shape(observation, "Observation"); unique(observation.objects, "renderedId", "observation.objects"); }
   if (files.evidenceReceipt && files.evidenceReceipt.sha256 === observation?.evidenceReceipt?.sha256) validateReceipt(receipt);
   if (unchanged("componentFirst")) {
-    gate = checkV2Artifact(parsed.componentFirst, { now: session.now });
+    gate = verifyComponentFirstArtifact(parsed.componentFirst, { now: session.now });
     if (gate.status === "invalid") fail(SCOPE, "componentFirst 既有结构/lineage 无效");
     if (gate.findings.length) finding(session, "RR_LINEAGE_STALE", manifest.componentFirst.path, "componentFirst lineage stale/expired；不能绑定新 review");
   }
@@ -372,7 +372,7 @@ function projection(bundle, session, observed, gate) {
   let original;
   try { original = JSON.parse(bundle.componentFirstBytes); }
   catch { fail(SCOPE, "componentFirstBytes 不是合法 JSON"); }
-  const old = gate || checkV2Artifact(original, { now: session.now });
+  const old = gate || verifyComponentFirstArtifact(original, { now: session.now });
   const acceptance = (status) => ({ status, scope: "captured-lineage", reason: "仅既有 receipt 记载结果；review 未重新验收当前实现" });
   const component = acceptance(old.status === "passed" ? "passed" : old.status === "invalid" ? "invalid" : "blocked");
   const visual = acceptance(original.visualAcceptance.status);
@@ -452,7 +452,7 @@ function validateBundle(session, bundle) {
   const cf = parseStoredJson(bundle.componentFirstBytes, "componentFirstBytes");
   const receipt = parseStoredJson(bundle.evidenceReceiptBytes, "evidenceReceiptBytes");
   safe(session.projectRoot, cf.target?.root, "componentFirst.target.root");
-  const gate = checkV2Artifact(cf, { now: bundle.builtAt });
+  const gate = verifyComponentFirstArtifact(cf, { now: bundle.builtAt });
   if (gate.status === "invalid" || gate.findings.length) fail(SCOPE, "bundle 原 componentFirst lineage 无效");
   validateReceipt(receipt);
   if (sha256(bundle.componentFirstBytes) !== bundle.inputs.componentFirst.sha256 || sha256(bundle.evidenceReceiptBytes) !== bundle.observation.evidenceReceipt.sha256) fail(SCOPE, "bundle receipt bytes/ref 不匹配");
@@ -729,7 +729,7 @@ function renderHtml(review) {
   const style = "*{box-sizing:border-box}body{margin:0;background:#f5f5f2;color:#172323;font:16px/1.55 system-ui,sans-serif}header,main{max-width:1280px;margin:auto;padding:24px}header{border-bottom:1px solid #c7d0cd}h1{font-size:30px;margin:0 0 8px}h2{font-size:21px}h3{font-size:16px}p{margin:8px 0}.notice{background:#fff1cf;border-left:4px solid #996b05;padding:14px}main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,1fr);gap:24px}article,aside{min-width:0}section.panel{background:white;border:1px solid #c7d0cd;border-radius:10px;padding:20px;margin-bottom:20px}label{display:block;font-weight:600;margin:14px 0 6px}input,select,textarea,button{font:inherit}select,textarea,input[type=file]{width:100%}select,textarea{border:1px solid #788e86;border-radius:5px;padding:10px;background:#fff;color:#172323}textarea{min-height:100px}#prompt{min-height:330px;font:13px/1.5 ui-monospace,monospace}button{border:1px solid #284a3e;border-radius:5px;padding:10px 16px;background:#245443;color:white;cursor:pointer;margin:10px 8px 0 0}button:disabled{opacity:.5;cursor:not-allowed}:focus-visible{outline:3px solid #a25d00;outline-offset:3px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f1f4f2;padding:12px;border-radius:6px;font:13px/1.5 ui-monospace,monospace;max-height:440px;overflow:auto}img{max-width:100%;height:auto;border:1px solid #c7d0cd}small{display:block;color:#40594f}details{margin:12px 0}#message,#report-message{min-height:1.5em}@media(max-width:800px){main{display:block}header,main{padding:16px}}";
   const definitions = Object.fromEntries(["Ref", "Identity", "Feedback", "Finding", "Projection", "ComponentAcceptance", "VisualAcceptance"].map((name) => [name, SCHEMA.$defs[name]]));
   const cf = parseStoredJson(review.componentFirstBytes, "componentFirstBytes");
-  const historical = checkV2Artifact(cf, { now: review.builtAt });
+  const historical = verifyComponentFirstArtifact(cf, { now: review.builtAt });
   const script = "\"use strict\";\n" + validateShape.toString() + "\nconst review=" + encodedJson(review) + ";\n(" + browserReview.toString() + ")(review," + encodedJson(definitions) + "," + encodedJson(historical) + ");\n";
   const hash = (value) => crypto.createHash("sha256").update(value).digest("base64");
   const policy = "default-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; img-src data:; font-src 'none'; media-src 'none'; worker-src 'none'; manifest-src 'none'; script-src 'sha256-" + hash(script) + "'; style-src 'sha256-" + hash(style) + "'";

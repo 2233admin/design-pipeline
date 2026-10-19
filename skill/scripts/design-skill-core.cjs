@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalJson, isObject, nonEmpty, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 const { checkDirectionPreview } = require("./direction-preview-core.cjs");
-const { promotionReceipt, selectionReceipt, checkV2Artifact, policyDigest, targetDigest } = require("./component-first-v2-core.cjs");
+const { promotionReceipt, selectionReceipt, verifyComponentFirstArtifact, policyDigest, targetDigest } = require("./component-first-core.cjs");
 
 const MANIFEST_SCHEMA = "design-pipeline.design-skill-manifest.v1";
 const PROTOTYPE_SCHEMA = "prototype-set.v1";
@@ -284,8 +284,8 @@ function versionApplicable(range, version) {
   return range.startsWith("^") ? aMajor === major && (aMinor > minor || (aMinor === minor && aPatch >= patch)) : aMajor === major && aMinor === minor && aPatch === patch;
 }
 
-function promotePrototype(v2Artifact, selection, input) {
-  const conformance = checkV2Artifact(v2Artifact, input?.options || {});
+function promotePrototype(cfArtifact, selection, input) {
+  const conformance = verifyComponentFirstArtifact(cfArtifact, input?.options || {});
   if (conformance.status !== "passed") fail("component conformance must pass before promotion", "CONFORMANCE_REQUIRED");
   const selectionReceiptValue = selection?.selectionReceipt || selection;
   if (!selectionReceiptValue || selectionReceiptValue.receiptHash !== input.selectionReceiptHash) fail("promotion selection does not match the selection receipt", "SELECTION_REQUIRED");
@@ -293,8 +293,8 @@ function promotePrototype(v2Artifact, selection, input) {
   if (!checkedSelection.prototypeSetSnapshot) fail("promotion requires a filesystem-backed prototype set provenance", "SELECTION_PROVENANCE_REQUIRED");
   const verifiedSelection = selectPrototype(checkedSelection.prototypeSetSnapshot, checkedSelection, { projectRoot: input?.options?.projectRoot || process.cwd() });
   if (verifiedSelection.receiptHash !== checkedSelection.receiptHash || verifiedSelection.selectedPrototypeId !== checkedSelection.selectedPrototypeId) fail("promotion prototype provenance is stale", "SELECTION_PROVENANCE_STALE");
-  if (checkedSelection.targetIdentityDigest !== v2Artifact.target.targetIdentityDigest || checkedSelection.snapshotDigest !== v2Artifact.target.snapshotDigest || checkedSelection.policyDigest !== v2Artifact.policy.digest) fail("promotion selection is stale for this artifact", "SELECTION_STALE");
-  const promotion = promotionReceipt({ ...input, targetIdentityDigest: v2Artifact.target.targetIdentityDigest, snapshotDigest: v2Artifact.target.snapshotDigest, policyDigest: v2Artifact.policy.digest, componentConformanceStatus: conformance.conformance, visualAcceptanceStatus: v2Artifact.visualAcceptance?.status || "not-evaluated" });
+  if (checkedSelection.targetIdentityDigest !== cfArtifact.target.targetIdentityDigest || checkedSelection.snapshotDigest !== cfArtifact.target.snapshotDigest || checkedSelection.policyDigest !== cfArtifact.policy.digest) fail("promotion selection is stale for this artifact", "SELECTION_STALE");
+  const promotion = promotionReceipt({ ...input, targetIdentityDigest: cfArtifact.target.targetIdentityDigest, snapshotDigest: cfArtifact.target.snapshotDigest, policyDigest: cfArtifact.policy.digest, componentConformanceStatus: conformance.conformance, visualAcceptanceStatus: cfArtifact.visualAcceptance?.status || "not-evaluated" });
   return { schema: HANDOFF_SCHEMA, status: "ready-for-explicit-target-write", targetWrite: "blocked-until-explicit-executor", selectionReceiptHash: selectionReceiptValue.receiptHash, promotionReceipt: promotion };
 }
 

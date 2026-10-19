@@ -33,9 +33,7 @@ doctor|status
 plan|run|resume|explain-block|package|route
 change init|resume|advance|migrate|repair
 foundation check|direction check|playground check|reference check|resolve|reconstruction check|scene check
-component-first check|stack|components|playground|page
-high-fidelity check
-component-first-v2 check|migrate|select|promote
+component-first check|stack|components|playground|page|verify|select|promote
 design-skill route|manifest|run|select|promote
 reconciliation check
 feedback record|prepare|reconcile
@@ -54,11 +52,14 @@ film templates [--query <terms> | --template <id>] [--all]
 adapter audit|intake|receipt-check|style-signals check
 adaptation check|resolve|record|propose|evaluate|promote|reject|rollback|forget
 
-`component-first` consumes one contained v1 aggregate artifact and returns either
-`component-first-gate.v1` or `component-first-stage-result.v1` inside the normal CLI envelope.
-Stage commands are read-only. `high-fidelity check` delegates to the v1 component conformance
-aggregate for compatibility; it does not claim that typography, layout, motion, or visual fidelity
-passed. Browser evidence is produced externally, then path/hash/PNG-decoded by adapters before pure
+`component-first check` consumes one contained request (target with `snapshotDigest`, stack,
+components, Playground, page usage, evidence) and returns the `component-first-gate.v2`
+receipt-chain artifact plus aggregate `status`, `reasonCodes` and `findings` inside the normal CLI
+envelope; `--write --output` stores the artifact. `stack|components|playground|page` return that
+stage's `component-first-stage-receipt.v2` and findings and are read-only. `verify` checks an
+artifact's receipt chain, staleness and expiry; `select` and `promote` record the hash-bound
+selection and approved promotion. None of them claims that typography, layout, motion, or visual
+fidelity passed. Browser evidence is produced externally, then path/hash/PNG-decoded by adapters before pure
 gates evaluate it. Hash binding prevents mismatch and stale reuse but is not producer attestation.
 `component lock` creates a hash-bound `direction-lock.v1` from an approved direction selection.
 `component fit` evaluates every requested capability against project components, the governed provider

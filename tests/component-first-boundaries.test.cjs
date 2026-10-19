@@ -22,9 +22,8 @@ test("gate modules have no filesystem, browser, process, existing-core, or cross
   }
 });
 
-test("facade stays thin and delegates without domain constants", () => {
+test("facade delegates without domain constants or filesystem access", () => {
   const source = fs.readFileSync(path.join(repoRoot, "skill", "scripts", "component-first-core.cjs"), "utf8");
-  assert.ok(source.split(/\r?\n/).length < 30);
   assert.doesNotMatch(source, /baselineComponentRoles|node:fs|playground-core|frontend-stack-core|component-capability-core/);
 });
 
