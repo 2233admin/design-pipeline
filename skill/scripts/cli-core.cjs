@@ -1851,7 +1851,7 @@ function componentFirstCommand(parsed, root, action) {
   const input = readJson(artifact(parsed, root, "--artifact"), "component-first artifact");
   if (action === "verify") {
     const result = verifyComponentFirstArtifact(input, { projectRoot: root });
-    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+    return { result, exitCode: componentFirstExitCode(result.status) };
   }
   if (action === "select") {
     const selection = selectionReceipt(readJson(artifact(parsed, root, "--selection"), "component-first selection"));

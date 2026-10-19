@@ -72,6 +72,8 @@ test("published schema freezes the artifact top-level fields", (t) => {
   assert.equal(schema.properties.schema.const, ARTIFACT_SCHEMA);
   assert.deepEqual(Object.keys(artifact).sort(), [...schema.required].sort());
   assert.equal(schema.$defs.receipt.properties.schema.const, STAGE_SCHEMA);
+  const selected = selectionReceipt({ prototypeSetHash: sha256("set"), selectedPrototypeId: "a", targetIdentityDigest: artifact.target.targetIdentityDigest, snapshotDigest: artifact.target.snapshotDigest, policyDigest: artifact.policy.digest, approvedBy: "owner", prototypeSetSnapshot: {} });
+  assert.deepEqual(Object.keys(selected).filter((key) => !Object.hasOwn(schema.$defs.selection.properties, key)), [], "the schema declares every field a selection receipt persists");
 });
 
 test("requests without a snapshot digest, with a schema id, or with an unresolved target are contract errors", (t) => {
@@ -135,6 +137,12 @@ test("CLI freezes check, stage, write, verify, JSON envelope, and exit codes", (
   assert.equal(invalid.exitCode, 1);
   assert.equal(invalid.output.ok, true);
   assert.equal(invalid.output.status, "invalid");
+  const invalidWrite = execute(["component-first", "check", ...base, "--write", "--output", "out/invalid-gate.json"]);
+  assert.equal(invalidWrite.exitCode, 1);
+  const verifiedInvalid = execute(["component-first", "verify", "--root", fixture.projectRoot, "--artifact", "out/invalid-gate.json", "--json"]);
+  assert.equal(verifiedInvalid.exitCode, 1, "an invalid stage receipt stays invalid on verify");
+  assert.equal(verifiedInvalid.output.status, "invalid");
+  assert.ok(verifiedInvalid.output.reasonCodes.includes("CF_STAGE_INVALID"));
 
   delete fixture.input.target.snapshotDigest;
   fs.writeFileSync(path.join(fixture.projectRoot, fixture.artifact), `${JSON.stringify(fixture.input, null, 2)}\n`);

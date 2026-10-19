@@ -213,7 +213,8 @@ function verifyComponentFirstArtifact(input, options = {}) {
       seenPromotions.add(promotion.selectionReceiptHash);
       if (!input.selection || input.selection.receiptHash !== promotion.selectionReceiptHash) findings.push({ code: "CF_SELECTION_MISSING", message: "promotion does not reference the selected prototype" });
     }
-    const status = findings.length ? "blocked" : Object.values(statuses).some((value) => ["blocked", "invalid", "not_evaluated", "not_applicable", "expired"].includes(value)) ? "blocked" : "passed";
+    for (const [stage, value] of Object.entries(statuses)) if (value === "invalid") findings.push({ code: "CF_STAGE_INVALID", message: `${stage} receipt records an invalid input; rerun component-first check for its findings`, stage });
+    const status = Object.values(statuses).includes("invalid") ? "invalid" : findings.length ? "blocked" : Object.values(statuses).some((value) => ["blocked", "not_evaluated", "not_applicable", "expired"].includes(value)) ? "blocked" : "passed";
     return { schema: ARTIFACT_SCHEMA, status, reasonCodes: [...new Set(findings.map((item) => item.code))], findings, receipts: statuses, conformance: status, visualAcceptance: input.visualAcceptance?.status || "not-evaluated", promotion: input.promotions?.at(-1)?.status || null };
   } catch (error) {
     return { schema: ARTIFACT_SCHEMA, status: "invalid", reasonCodes: [error.code || "CONTRACT_INVALID"], findings: [{ code: error.code || "CONTRACT_INVALID", message: error.message, details: error.details || {} }] };
