@@ -269,7 +269,11 @@ function checkDirectionPreview(changeRoot, options = {}) {
   assertHash(receipt.comparison.contentFixtureSha256, "comparison.contentFixtureSha256");
   assertStringList(receipt.comparison.stateCoverage, "comparison.stateCoverage");
 
+  // The three-sources method (ui and web brief flow) carries medium, cards and thumbs and has exactly
+  // three versions; any other required preview keeps its two to four comparable candidates.
+  const threeSources = ["medium", "cards", "thumbs"].some((key) => receipt[key] !== undefined);
   if (!Array.isArray(receipt.directions)) fail("direction preview", "directions must be the array of full versions");
+  if (!threeSources && (receipt.directions.length < 2 || receipt.directions.length > 4)) fail("direction preview", "directions must contain two to four comparable candidates");
   receipt.directions.forEach(assertDirection);
   if (receipt.context !== undefined) assertNullableString(receipt.context, "context");
   const directionIds = receipt.directions.map((direction) => direction.id);
@@ -283,7 +287,10 @@ function checkDirectionPreview(changeRoot, options = {}) {
   // reopened by what other projects deliver later. This project's own entry never counts against it.
   const own = root ? projectId(root) : null;
   const ledgerEntries = stage === "preview" ? (options.recentEntries || recentEntries()).filter((entry) => entry.project !== own) : [];
-  const findings = root ? [...divergenceFindings(receipt.directions), ...directionFindings(root, receipt, { recentEntries: ledgerEntries, libraryRoot: options.libraryRoot })] : [];
+  const findings = [
+    ...divergenceFindings(receipt.directions),
+    ...(root && threeSources ? directionFindings(root, receipt, { recentEntries: ledgerEntries, libraryRoot: options.libraryRoot }) : []),
+  ];
   for (const finding of findings) {
     reasons.push(finding.code);
     blockers.push(`${finding.message} Fix: ${finding.fix}`);

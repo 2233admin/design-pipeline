@@ -395,3 +395,31 @@ test("package resources list the new modules", () => {
   for (const file of ["scripts/directions-core.cjs", "scripts/appearance-ledger-core.cjs", "scripts/workflows/directions.cjs"]) assert.ok(resources.required.includes(file), file);
   assert.equal(hash("x").length, 64);
 });
+
+test("a preview outside the three-sources flow keeps two to four candidates; the ui flow still asks for cards", () => {
+  reset();
+  const root = project();
+  const plain = writeDirectionSet(root);
+  for (const key of ["medium", "context", "cards", "thumbs"]) delete plain[key];
+  saveReceipt(root, plain);
+  assert.equal(findings(root).status, "ready", "an OpenSpec or Stage 2 preview needs no cards");
+  saveReceipt(root, { ...plain, directions: plain.directions.slice(0, 1) });
+  assert.throws(() => findings(root), /two to four/);
+  saveReceipt(root, plain);
+  toDirections(root);
+  const action = nextAction(root);
+  assert.equal(action.type, "run");
+  assert.ok(action.findings.some((item) => item.code === "cards-count"));
+});
+
+test("a card id with regex characters is a finding, not a crash", () => {
+  reset();
+  const root = project();
+  const receipt = writeDirectionSet(root);
+  receipt.cards[0].id = "designer(1";
+  receipt.directions[0].card = "designer(1";
+  saveReceipt(root, receipt);
+  const result = findings(root);
+  assert.ok(result.findings.some((item) => item.code === "card-id-invalid"));
+  assert.ok(result.findings.some((item) => item.code === "thumbs-cells-missing"));
+});

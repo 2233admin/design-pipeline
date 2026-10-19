@@ -231,7 +231,7 @@ function thumbsFindings(root, receipt, cards, add) {
   if (png) add("thumbs-capture-missing", `${png}.`, "Capture thumbs.html with `composition capture --composition direction-previews/thumbs.html --output direction-previews/thumbs --width 1500 --height 700` and record direction-previews/thumbs/screenshot.png.");
   if (!html) {
     const markup = fs.readFileSync(resolveInside(root, thumbs.html.path, "thumbs.html", { scope: SCOPE }), "utf8");
-    const missing = cards.map((card) => card?.id).filter((id) => text(id) && !new RegExp(`data-card-id\\s*=\\s*["']${id}["']`).test(markup));
+    const missing = cards.map((card) => card?.id).filter((id) => text(id) && !new RegExp(`data-card-id\\s*=\\s*["']${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`).test(markup));
     if (missing.length) add("thumbs-cells-missing", `thumbs.html has no cell for ${missing.join(", ")}.`, `Give every card one cell marked data-card-id="<card id>" in thumbs.html, with its real type, colour, skeleton and headline.`);
   }
 }
