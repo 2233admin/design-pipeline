@@ -2,7 +2,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { directionFindings } = require("./directions-core.cjs");
+const { MEDIA, directionFindings } = require("./directions-core.cjs");
 const { projectId, recentEntries } = require("./appearance-ledger-core.cjs");
 const {
   assertEnum,
@@ -275,9 +275,10 @@ function checkDirectionPreview(changeRoot, options = {}) {
   // check, so its missing parts are contract errors.
   if (!Array.isArray(receipt.directions)) fail("direction preview", "directions must be the array of full versions");
   if (!root) {
-    for (const key of ["medium", "cards", "thumbs"]) {
-      if (receipt[key] === undefined) fail("direction preview", `a required preview carries ${key}: make the directions from the three sources (references/direction-preview.md), or waive when the direction is clear`);
-    }
+    const fix = "make the directions from the three sources (references/direction-preview.md), or waive when the direction is clear";
+    if (!MEDIA.includes(receipt.medium)) fail("direction preview", `a required preview names its medium (${MEDIA.join(", ")}): ${fix}`);
+    if (!Array.isArray(receipt.cards) || receipt.cards.length !== 6) fail("direction preview", `a required preview carries six cards: ${fix}`);
+    if (!receipt.thumbs || typeof receipt.thumbs !== "object" || Array.isArray(receipt.thumbs)) fail("direction preview", `a required preview carries the thumbnail board: ${fix}`);
     if (receipt.directions.length !== 3) fail("direction preview", "directions must be exactly three full versions");
   }
   receipt.directions.forEach(assertDirection);

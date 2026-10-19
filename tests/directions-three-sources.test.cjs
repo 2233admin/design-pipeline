@@ -407,10 +407,13 @@ test("a plain two-to-four candidate receipt is rejected everywhere; a waiver pas
   assert.equal(result.status, "blocked");
   for (const code of ["medium-missing", "cards-count", "thumbs-missing"]) assert.ok(result.findings.some((item) => item.code === code), code);
   // A receipt alone has no files to check: missing parts and a wrong version count are contract errors.
-  assert.throws(() => checkDirectionPreview(null, { receipt: plain }), /carries medium/);
+  assert.throws(() => checkDirectionPreview(null, { receipt: plain }), /names its medium/);
   const full = writeDirectionSet(project());
-  assert.throws(() => checkDirectionPreview(null, { receipt: { ...full, cards: undefined } }), /carries cards/);
-  assert.throws(() => checkDirectionPreview(null, { receipt: { ...full, thumbs: undefined } }), /carries thumbs/);
+  assert.throws(() => checkDirectionPreview(null, { receipt: { ...full, cards: undefined } }), /six cards/);
+  assert.throws(() => checkDirectionPreview(null, { receipt: { ...full, medium: null, cards: [], thumbs: null } }), /names its medium/);
+  assert.throws(() => checkDirectionPreview(null, { receipt: { ...full, cards: [] } }), /six cards/);
+  assert.throws(() => checkDirectionPreview(null, { receipt: { ...full, thumbs: undefined } }), /thumbnail board/);
+  assert.throws(() => checkDirectionPreview(null, { receipt: { ...full, thumbs: null } }), /thumbnail board/);
   assert.throws(() => checkDirectionPreview(null, { receipt: { ...full, directions: full.directions.slice(0, 2) } }), /exactly three/);
   assert.equal(checkDirectionPreview(null, { receipt: full }).status, "ready");
   // The ui flow shows the same findings as a run action.
