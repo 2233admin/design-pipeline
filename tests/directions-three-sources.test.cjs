@@ -60,6 +60,7 @@ test("ui standard plays the reply back before any direction and never asks for a
   for (const word of ["need", "audience", "scene", "tone", "did not say"]) assert.match(ask.instruction, new RegExp(word));
   assert.match(ask.instruction, /I'll make several real directions for you to see/);
   assert.match(ask.instruction, /Do not ask the owner to name or pick a style/);
+  assert.match(ask.instruction, /Real brands:/);
   assert.throws(() => decide(root, { by: "owner", stage: "intake", verdict: "accept", answer: "Sounds good to me, go ahead" }), /need, audience, scene, tone/);
   decide(root, { by: "owner", stage: "intake", verdict: "reject", answer: "It is not for traders but for analysts" });
   assert.equal(nextAction(root).first.includes("analysts"), true);

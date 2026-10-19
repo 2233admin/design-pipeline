@@ -17,7 +17,12 @@ Brand facts: openspec/changes/<change-id>/brand-facts.md
 
 or `Real brands: none` when the project's brand is its own invention. No declaration, or `none`,
 means nothing is checked; a made-up brand is never blocked. Declare the brands while the brief is
-taken, before design starts: the check cannot tell that a brief names a brand you left out. Names
+taken, before design starts: the check cannot tell that a brief names a brand you left out.
+The ui and web playback card therefore carries one line for it (`Real brands: Stripe, Meta (my
+guess)` or `none`) whenever the conversation or brief names a real brand or product, and you copy
+the confirmed line into Product Context when DESIGN.md is written. The ui playback validator does
+not require this line (the card still needs its five lines), so existing playbacks stay valid; it is
+instruction, not a gate. Names
 are compared exactly (case-insensitive equality, never a substring): `Meta` is not `Meta Quest 3`,
 so declare and record each one under its own name.
 

@@ -115,6 +115,9 @@ the page you want reproduced?"). Send it as its own message, as it is. Then:
 - When you can describe the page, play it back as a short card, one line each:
   - three intent lines: what the page expresses, who it connects with and how, what makes it
     unlike other pages;
+  - one line naming the real brands or products the conversation or brief mentions (`Real brands:
+    Stripe, Meta (my guess)`, or `Real brands: none`); once DESIGN.md is written, record the confirmed
+    brands in its Product Context as `Real brands: <names>` (`brand-facts.md`);
   - the uncertainties still open;
   - one line on what you will decide and what stays theirs (the delegation line).
 

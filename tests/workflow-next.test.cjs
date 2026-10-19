@@ -2167,6 +2167,7 @@ test("stated decisions need six words and every no two, through the CLI", t => {
 });
 
 test("anti-goals named with the confirmed playback or a skip become project rules through the CLI", t => {
+  assert.match(nextAction(webProject(t, { tier: "standard" })).instruction, /Real brands:[^]*Product Context/, "the web playback asks for the brands line and its record");
   for (const tier of ["standard", "quick"]) assert.match(nextAction(webProject(t, { tier })).instruction, /--anti-goal/, `${tier}: the intake instruction offers the flag`);
   const goals = (...texts) => texts.flatMap(text => ["--anti-goal", text]);
   const root = webProject(t);
