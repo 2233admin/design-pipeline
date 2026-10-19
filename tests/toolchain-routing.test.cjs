@@ -153,8 +153,62 @@ test("request preparation preserves the real job plan and rejects conflicting or
   assert.throws(() => buildToolchainRequest({ ...jobPlan, query: `${jobPlan.query} changed` }, choices, "job-plan.json"), /hash does not match/);
   assert.throws(() => buildToolchainRequest(jobPlan, { ...choices, unused: true }, "job-plan.json"), /unsupported properties/);
   assert.throws(() => buildToolchainRequest(jobPlan, { ...choices, graphics: { adapter: "threejs", unused: true } }, "job-plan.json"), /unsupported properties/);
-  for (const unsafe of ["../job-plan.json", "a/../../job-plan.json", "..\\job-plan.json", "/tmp/job-plan.json", "C:\\temp\\job-plan.json", "C:job-plan.json", "."]) {
-    assert.throws(() => buildToolchainRequest(jobPlan, choices, unsafe), /contained relative/);
+  for (const [unsafe, message] of [
+    ["../job-plan.json", /contained relative path: '\.\.' segments/],
+    ["a/../../job-plan.json", /contained relative path: '\.\.' segments/],
+    ["a/../job-plan.json", /contained relative path: '\.\.' segments/],
+    ["..\\job-plan.json", /contained relative path: '\.\.' segments/],
+    ["/tmp/job-plan.json", /contained relative path: absolute paths/],
+    ["C:\\temp\\job-plan.json", /contained relative path: drive letters/],
+    ["C:job-plan.json", /contained relative path: drive letters/],
+    [".", /contained relative path: it must name a file/],
+  ]) {
+    assert.throws(() => buildToolchainRequest(jobPlan, choices, unsafe), message, unsafe);
+  }
+  assert.equal(buildToolchainRequest(jobPlan, choices, "state\\job-plan.json").jobPlanPath, "state/job-plan.json");
+});
+
+test("targetRoot names the target package directory, is canonical, and is bound by the plan hash", () => {
+  const jobPlan = buildJobPlan(routeJob({ query: request().brief }));
+  const hash = (value) => sha256(canonicalJson(value));
+  const omitted = resolveToolchain(request(), sources, { jobPlan });
+  assert.equal(omitted.targetRoot, ".", "an omitted targetRoot resolves to the --root directory");
+  assert.equal(hash(resolveToolchain(request({ targetRoot: "." }), sources, { jobPlan })), hash(omitted));
+  const nested = resolveToolchain(request({ targetRoot: "app" }), sources, { jobPlan });
+  assert.equal(nested.targetRoot, "app");
+  assert.notEqual(hash(nested), hash(omitted), "changing targetRoot changes the plan hash");
+  assert.notEqual(hash(resolveToolchain(request({ targetRoot: "apps/web" }), sources, { jobPlan })), hash(nested));
+  for (const spelling of ["app/", "./app", "app\\", "./app/", "app/./"]) {
+    assert.equal(canonicalJson(resolveToolchain(request({ targetRoot: spelling }), sources, { jobPlan })), canonicalJson(nested), spelling);
+  }
+  for (const spelling of ["./", ".\\"]) assert.equal(resolveToolchain(request({ targetRoot: spelling }), sources, { jobPlan }).targetRoot, ".", spelling);
+  assert.equal(resolveToolchain(request({ targetRoot: "apps\\web\\" }), sources, { jobPlan }).targetRoot, "apps/web");
+
+  const graphicsPlan = buildJobPlan(routeJob({ query: "Build an interactive Three.js scene with a custom GLSL shader" }));
+  const choices = { framework: "agnostic", graphics: { adapter: "threejs" }, requested: { styling: "none", uiLibrary: "none" } };
+  const withoutTarget = buildToolchainRequest(graphicsPlan, choices, "job-plan.json");
+  assert.equal(Object.hasOwn(withoutTarget, "targetRoot"), false, "an omitted targetRoot keeps the request bytes unchanged");
+  const prepared = buildToolchainRequest(graphicsPlan, { ...choices, targetRoot: "app" }, "job-plan.json");
+  assert.deepEqual(prepared, { ...withoutTarget, targetRoot: "app" });
+  for (const spelling of ["app/", "./app", "app\\"]) {
+    assert.equal(canonicalJson(buildToolchainRequest(graphicsPlan, { ...choices, targetRoot: spelling }, "job-plan.json")), canonicalJson(prepared), spelling);
+  }
+
+  for (const [unsafe, message] of [
+    ["../outside", /targetRoot must be a contained relative path: '\.\.' segments are not allowed/],
+    ["app/../..", /targetRoot must be a contained relative path: '\.\.' segments are not allowed/],
+    ["app/../other", /targetRoot must be a contained relative path: '\.\.' segments are not allowed/],
+    ["/srv/app", /targetRoot must be a contained relative path: absolute paths are not allowed/],
+    ["\\\\server\\share", /targetRoot must be a contained relative path: absolute paths are not allowed/],
+    ["C:/x", /targetRoot must be a contained relative path: drive letters and ':' are not allowed/],
+    ["C:\\x", /targetRoot must be a contained relative path: drive letters and ':' are not allowed/],
+    ["app:web", /targetRoot must be a contained relative path: drive letters and ':' are not allowed/],
+    ["", /targetRoot must be a non-empty string/],
+    ["  ", /targetRoot must be a non-empty string/],
+    [7, /targetRoot must be a non-empty string/],
+  ]) {
+    assert.throws(() => resolveToolchain(request({ targetRoot: unsafe }), sources, { jobPlan }), message, `resolve ${unsafe}`);
+    assert.throws(() => buildToolchainRequest(graphicsPlan, { ...choices, targetRoot: unsafe }, "job-plan.json"), message, `request ${unsafe}`);
   }
 });
 
@@ -184,17 +238,17 @@ test("toolchain resolve rejects a drifted job plan", () => {
   );
 });
 
-test("failed probes block with one actionable root-cause line", () => {
-  const plan = resolveToolchain(request(), sources, { jobPlan: buildJobPlan(routeJob({ query: request().brief })) });
-  const result = probeToolchain(plan, {
-    projectRoot: path.resolve(__dirname, ".."),
-    runner() {
-      return { status: 1, stdout: "", stderr: "Traceback (most recent call last):\ninternal frame\nPackageNotFoundError: xy\n" };
-    },
-  });
+test("failed probes block with one actionable root-cause line naming the probe directory", () => {
+  const jobPlan = buildJobPlan(routeJob({ query: request().brief }));
+  const runner = () => ({ status: 1, stdout: "", stderr: "Traceback (most recent call last):\ninternal frame\nPackageNotFoundError: xy\n" });
+  const result = probeToolchain(resolveToolchain(request(), sources, { jobPlan }), { projectRoot: path.resolve(__dirname, ".."), runner });
   assert.equal(result.status, "blocked");
-  assert.equal(result.results.find(({ toolId }) => toolId === "reflex-xy").message, "PackageNotFoundError: xy");
-  assert.deepEqual(result.blockers, ["reflex-xy: PackageNotFoundError: xy"]);
+  assert.equal(result.results.find(({ toolId }) => toolId === "reflex-xy").message, "PackageNotFoundError: xy (probed in .)");
+  assert.deepEqual(result.blockers, ["reflex-xy: PackageNotFoundError: xy (probed in .)"]);
+  const nested = probeToolchain(resolveToolchain(request({ targetRoot: "app" }), sources, { jobPlan }), { projectRoot: path.resolve(__dirname, ".."), runner });
+  assert.deepEqual(nested.blockers, ["reflex-xy: PackageNotFoundError: xy (probed in app)"]);
+  const missing = probeToolchain(resolveToolchain(request(), sources, { jobPlan }), { projectRoot: path.resolve(__dirname, ".."), runner: () => ({ error: new Error("spawn python ENOENT") }) });
+  assert.deepEqual(missing.blockers, ["reflex-xy: spawn python ENOENT (probed in .)"]);
 });
 
 test("Vite DevTools routes its project-local probe and evidence contract", () => {

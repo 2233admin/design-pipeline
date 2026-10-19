@@ -44,14 +44,24 @@ component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decid
 design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide
 mengto search|verify|shadcnio search|verify|prism search|route|verify|holosticker inspect|verify
 designmd sync|search|inspect|verify|iart search|route|verify
-toolchain resolve|receipt-check
-toolchain probe --artifact <toolchain-request.json> [--project-root <package dir inside --root>]
+toolchain request --plan <job-plan.json> --artifact <stack-input.json> [--write --output <toolchain-request.json>]
+toolchain resolve|probe --artifact <toolchain-request.json> [--write --output <file>]
+toolchain receipt-check
 execution route|prepare|finalize
 benchmark brief|evaluate
 film methods --project-root <existing-film-dir> --input <method-plan.json> [--write] [--replace]
 film templates [--query <terms> | --template <id>] [--all]
 adapter audit|intake|receipt-check|style-signals check
 adaptation check|resolve|record|propose|evaluate|promote|reject|rollback|forget
+
+The stack input for `toolchain request` may set `targetRoot`, the target package directory
+relative to `--root` (default `.`). The request and the plan carry it in canonical form (`/`
+separators, no `./` or trailing `/`); `..` segments, absolute paths and `:` are rejected.
+`toolchain resolve` and `toolchain probe` require it to resolve to an existing directory inside
+`--root`, and `toolchain probe` runs its command probes there, so a pipeline root can keep the job
+plan, request and `--write` output above a nested package. The plan hash covers `targetRoot`, so
+the probe result and every receipt bound by `planSha256` are bound to that directory. Neither
+command accepts `--project-root`.
 
 `component-first check` consumes one contained request (target with `snapshotDigest`, stack,
 components, Playground, page usage, evidence) and returns the `component-first-gate.v2`

@@ -13,7 +13,8 @@ With the lifecycle in place, the same workbench still could not be probed: its p
 (`webui`, holding `.design-pipeline/` and `openspec/`) is not its package directory (`webui/app`,
 holding `package.json` and `node_modules`). `toolchain probe` runs probes in `--root`, so it read
 the absent `webui/package.json` and stayed blocked, and `--root` cannot move to `webui/app`
-because the request and job plan must stay contained under it.
+because the request and job plan must stay contained under it. The plan, which every probe result
+and receipt binds by `planSha256`, did not say where target-project commands run at all.
 
 ## Scope
 
@@ -25,24 +26,30 @@ because the request and job plan must stay contained under it.
 - Invoke `npm run dev`, owned by the target project. Verify lists the adapter's declared DOM,
   screenshot and accessibility evidence for `design-pipeline.toolchain-receipt.v1`.
 - Document the lifecycle in `graphics-runtime-routing.md`.
-- Add `--project-root <dir>` to `toolchain probe`: the probe runs in that directory, which must
-  resolve to an existing directory inside `--root`; artifacts and `--write` output stay under
-  `--root`. Without the option the probe runs in `--root` as before.
+- Add `targetRoot`, the target package directory relative to `--root`, to the toolchain contract:
+  optional in the request (set from the stack input), required in the plan (`.` when omitted).
+  One path normaliser in `toolchain-core.cjs` canonicalises it and the existing `jobPlanPath`
+  (`\` to `/`, POSIX-normalised, no trailing `/`) and rejects empty values, absolute paths, `:`
+  and `..` segments. `toolchain resolve` and `toolchain probe` require it to resolve to an
+  existing directory inside `--root`; `toolchain probe` runs its command probes there. A failed
+  command probe names that directory. Both commands reject `--project-root` and name `targetRoot`.
 - Out of scope: lifecycles for other native adapters without one, automatic detection of a nested
-  `package.json`, `--project-root` for `toolchain resolve` (which runs no probe),
-  package-manager detection, new receipt schemas or dependencies.
+  `package.json`, per-entry working directories on probes, invocations or verification entries,
+  a `cwd` field in receipts and receipt cross-checks of the tool and command against the plan,
+  per-command option allow-lists, execution-route root handling, package-manager detection, new
+  receipt schemas, schema version bumps or dependencies.
 
 ## Reuse
 
 - The existing lifecycle shape, validator and probe runner (`adapter-core.cjs`,
   `toolchain-core.cjs`), and the Three.js project lifecycle as the pattern.
-- The `--project-root` option and `contained()` containment check other commands in `cli-core.cjs`
-  already use.
+- The `contained()` realpath containment check in `cli-core.cjs`, the existing `jobPlanPath`
+  check (now the shared normaliser) and the existing per-command option rejection in `dispatch`.
 
 ## Affected Capabilities
 
-`toolchain-routing`: SVG/D3 has a project-owned executable lifecycle, and `toolchain probe` can
-run in a project root nested inside `--root`.
+`toolchain-routing`: SVG/D3 has a project-owned executable lifecycle, and the toolchain plan names
+the contained target package directory where `toolchain probe` runs.
 
 ## Success Criteria
 
@@ -52,7 +59,13 @@ run in a project root nested inside `--root`.
 - The probe reports `d3=<version>` for a pinned installation and stays blocked with the concrete
   cause for a missing `package.json`, missing package, version range, mismatch, missing dev script,
   wrong package, missing `select` export or import failure.
-- `toolchain probe --project-root app` on a pipeline root without `package.json` reports
-  `d3=<version>` from `app`, and `..`, outside absolute, escaping junction, missing and file
-  project roots are rejected; the CLI regression in `tests/designer-pipeline-cli.test.cjs` fails
-  before the option and passes after.
+- A request built from a stack input with `targetRoot: "app"` yields a plan with
+  `targetRoot: "app"`, and `toolchain probe` without any directory option reports `d3=<version>`
+  from `app` on a pipeline root without `package.json`; an omitted `targetRoot` yields `.` and
+  probes `--root` as before. `app/`, `./app` and `app\` give the same request and plan bytes as
+  `app`, and changing `targetRoot` changes the plan hash.
+- `..`, absolute, drive-letter or `:` and empty values fail request validation; a missing
+  directory, a file and a junction resolving outside `--root` fail `toolchain resolve` and
+  `toolchain probe` without writing output; `--project-root` on either command fails with
+  `UNKNOWN_OPTION` naming `targetRoot`. The regressions in `tests/toolchain-routing.test.cjs` and
+  `tests/designer-pipeline-cli.test.cjs` fail before the change and pass after.

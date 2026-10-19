@@ -4,7 +4,7 @@
   "title": "Unified Frontend Toolchain Plan",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "status", "framework", "brief", "deliverableForm", "jobId", "jobPlanSha256", "styling", "uiLibrary", "graphics", "primaryRouteId", "tools", "probes", "invocations", "verification", "recommendedSkills", "blockers", "reviews", "evidence", "sourceHashes"],
+  "required": ["schema", "status", "framework", "brief", "deliverableForm", "jobId", "jobPlanSha256", "targetRoot", "styling", "uiLibrary", "graphics", "primaryRouteId", "tools", "probes", "invocations", "verification", "recommendedSkills", "blockers", "reviews", "evidence", "sourceHashes"],
   "properties": {
     "schema": { "const": "design-pipeline.toolchain-plan.v1" },
     "status": { "enum": ["ready", "blocked"] },
@@ -13,6 +13,11 @@
     "deliverableForm": { "enum": ["product-launch-video", "motion-graphics-video", "scrollytelling-page", "interactive-page", "ui-motion"] },
     "jobId": { "type": "string", "minLength": 1 },
     "jobPlanSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "targetRoot": {
+      "description": "Canonical target package directory relative to the CLI --root (\".\" for --root itself). Covered by planSha256; toolchain probe runs command probes there.",
+      "type": "string",
+      "pattern": "^(\\.|(?!\\.\\.?(/|$))[^/:\\\\]+(/(?!\\.\\.?(/|$))[^/:\\\\]+)*)$"
+    },
     "styling": { "type": "object" },
     "uiLibrary": { "type": "object" },
     "graphics": { "type": ["object", "null"] },

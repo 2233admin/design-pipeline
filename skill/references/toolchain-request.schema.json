@@ -12,6 +12,12 @@
     "jobId": { "type": "string", "minLength": 1 },
     "jobPlanSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
     "jobPlanPath": { "type": "string", "minLength": 1 },
+    "targetRoot": {
+      "description": "Target package directory relative to the CLI --root, where toolchain resolve checks the directory and toolchain probe runs. Defaults to \".\" when omitted. Backslashes, \"./\" and a trailing \"/\" are canonicalised; absolute paths, ':' and '..' segments are rejected.",
+      "type": "string",
+      "minLength": 1,
+      "not": { "pattern": "(^[\\\\/])|:|(^|[\\\\/])\\.\\.([\\\\/]|$)" }
+    },
     "deliverableForm": { "enum": ["product-launch-video", "motion-graphics-video", "scrollytelling-page", "interactive-page", "ui-motion"] },
     "existing": { "type": "object" },
     "requested": { "type": "object" },
