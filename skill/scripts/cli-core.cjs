@@ -442,8 +442,9 @@ function publicHelp() {
     "  designmd sync|search|inspect|verify",
     "  iart search|route|verify",
     "  toolchain request --plan <job-plan.json> --artifact <stack-input.json> [--write --output <toolchain-request.json>]",
+    "    stack input targetRoot: target package directory relative to --root (default .); resolve and probe run there",
     "  toolchain resolve --artifact <toolchain-request.json> [--write --output <toolchain-plan.json>]",
-    "  toolchain probe --artifact <toolchain-request.json> [--project-root <package dir inside --root>] [--write --output <file>]",
+    "  toolchain probe --artifact <toolchain-request.json> [--write --output <file>]",
     "  toolchain receipt-check --receipt <receipt.json> [--artifact <toolchain-plan.json>] [--evidence-root <dir>] [--require-files]",
     "  execution route|prepare|finalize",
     "  benchmark brief --manifest <file> | benchmark evaluate --manifest <file> --measurements <file> [--record-feedback]",
@@ -1154,12 +1155,13 @@ function toolchainSources() {
   };
 }
 
-// Probes run in the target package directory: --root by default, or a --project-root directory
-// that must stay inside --root, so a pipeline root can keep its artifacts above a nested package.
-function probeProjectRoot(parsed, root) {
-  const projectRoot = contained(root, option(parsed, "--project-root", root), "--project-root");
-  if (!fs.statSync(projectRoot).isDirectory()) fail("cli", `--project-root must be a directory: ${projectRoot}`);
-  return projectRoot;
+// The plan's targetRoot names the target package directory relative to --root. It must be an
+// existing directory whose real path stays inside --root, so a plan is only emitted for, and
+// probes only run in, a contained package directory.
+function toolchainTargetDir(root, targetRoot) {
+  const directory = contained(root, targetRoot, "targetRoot");
+  if (!fs.statSync(directory).isDirectory()) fail("cli", `targetRoot must be a directory: ${targetRoot}`);
+  return directory;
 }
 
 function toolchainCommand(parsed, root, action) {
@@ -1184,7 +1186,8 @@ function toolchainCommand(parsed, root, action) {
       ? readJson(contained(root, request.jobPlanPath, "job plan"), "job plan")
       : null;
     const plan = resolveToolchain(request, toolchainSources(), { jobPlan });
-    const result = action === "probe" ? probeToolchain(plan, { projectRoot: probeProjectRoot(parsed, root) }) : plan;
+    const targetDir = toolchainTargetDir(root, plan.targetRoot);
+    const result = action === "probe" ? probeToolchain(plan, { projectRoot: targetDir }) : plan;
     const output = writeResult(parsed, root, result);
     return { result: { status: result.status, [action === "probe" ? "probe" : "plan"]: result, ...(output ? { output } : {}) }, exitCode: result.status === "blocked" ? 2 : 0 };
   }
@@ -2443,6 +2446,11 @@ function dispatch(argv) {
   const [command, action] = parsed.positionals;
   if (action && ["doctor", "status", "route", "plan", "run", "resume", "explain-block", "package"].includes(command)) {
     fail("cli", `${command} does not accept an action`, { code: "UNKNOWN_ARGUMENT" });
+  }
+  // --project-root is a known option for other commands; toolchain resolve/probe take the target
+  // package directory from the plan's targetRoot instead.
+  if (command === "toolchain" && ["resolve", "probe"].includes(action) && parsed.options.has("--project-root")) {
+    fail("cli", `toolchain ${action} does not accept --project-root; set targetRoot (the package directory relative to --root) in the stack input and rerun toolchain request`, { code: "UNKNOWN_OPTION" });
   }
   const root = rootFrom(parsed);
   const entry = resolveCommand(command, action);

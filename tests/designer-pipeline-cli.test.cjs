@@ -258,8 +258,9 @@ test("bundled design-system knowledge is agent-discoverable without installing A
   assert.equal(decision.output.decision.projectAuthority.id, "project-design");
 });
 
-test("toolchain probe runs in a nested --project-root inside --root and rejects escapes", (t) => {
-  const parent = fs.mkdtempSync(path.join(os.tmpdir(), "toolchain-probe-root-"));
+test("toolchain plan targetRoot runs probes in a nested package inside --root and rejects escapes", (t) => {
+  const { canonicalJson } = require("../skill/scripts/contract-utils.cjs");
+  const parent = fs.mkdtempSync(path.join(os.tmpdir(), "toolchain-target-root-"));
   t.after(() => fs.rmSync(parent, { recursive: true, force: true }));
   const root = path.join(parent, "pipeline");
   const outside = path.join(parent, "outside");
@@ -274,38 +275,103 @@ test("toolchain probe runs in a nested --project-root inside --root and rejects 
   writePackage(outside);
   const route = run(["route", "--root", root, "--query", "Build a React analytics dashboard with D3 SVG charts", "--write", "--output", "job-plan.json"]);
   assert.equal(route.status, 0, route.stderr || route.stdout);
-  const jobPlan = JSON.parse(fs.readFileSync(path.join(root, "job-plan.json"), "utf8"));
-  writeJson(path.join(root, "toolchain-request.json"), { schema: "design-pipeline.toolchain-request.v1", framework: "react", brief: jobPlan.query, jobId: jobPlan.jobId, jobPlanSha256: jobPlan.planSha256, jobPlanPath: "job-plan.json", deliverableForm: jobPlan.deliverableForm, requested: { styling: "none", uiLibrary: "none" }, graphics: { adapter: "svg-d3" } });
-  const probe = (...extra) => run(["toolchain", "probe", "--root", root, "--artifact", "toolchain-request.json", ...extra]);
+  assert.equal(fs.existsSync(path.join(root, "package.json")), false, "the pipeline root has no package.json");
+  const choices = { framework: "react", requested: { styling: "none", uiLibrary: "none" }, graphics: { adapter: "svg-d3" } };
+  let staged = 0;
+  // Stack input -> toolchain request -> written request file, the way Stage 2 prepares it.
+  const prepare = (targetRoot) => {
+    staged += 1;
+    writeJson(path.join(root, `inputs/stack-input-${staged}.json`), targetRoot === undefined ? choices : { ...choices, targetRoot });
+    return run(["toolchain", "request", "--root", root, "--plan", "job-plan.json", "--artifact", `inputs/stack-input-${staged}.json`, "--write", "--output", `requests/toolchain-request-${staged}.json`]);
+  };
+  const requestFile = (targetRoot) => {
+    const prepared = prepare(targetRoot);
+    assert.equal(prepared.status, 0, prepared.stderr || prepared.stdout);
+    return `requests/toolchain-request-${staged}.json`;
+  };
+  const toolchain = (action, artifact, ...extra) => run(["toolchain", action, "--root", root, "--artifact", artifact, ...extra]);
   const d3 = (result) => result.output.probe.results.find(({ toolId }) => toolId === "svg-d3");
+  const planHash = (plan) => crypto.createHash("sha256").update(canonicalJson(plan)).digest("hex");
 
-  const atRoot = probe();
-  assert.equal(atRoot.status, 2, atRoot.stderr || atRoot.stdout);
-  assert.equal(atRoot.output.probe.status, "blocked");
-  assert.match(d3(atRoot).message, /Cannot read the target project package\.json/);
-
+  const nestedRequest = requestFile("app");
+  assert.equal(JSON.parse(fs.readFileSync(path.join(root, nestedRequest), "utf8")).targetRoot, "app");
+  const resolved = toolchain("resolve", nestedRequest, "--write", "--output", "toolchain-plan.json");
+  assert.equal(resolved.status, 0, resolved.stderr || resolved.stdout);
+  const plan = JSON.parse(fs.readFileSync(path.join(root, "toolchain-plan.json"), "utf8"));
+  assert.equal(plan.targetRoot, "app");
+  assert.deepEqual(resolved.output.plan, plan);
   const appPackage = fs.readFileSync(path.join(root, "app/package.json"), "utf8");
-  for (const projectRoot of ["app", path.join(root, "app")]) {
-    const nested = probe("--project-root", projectRoot);
-    assert.equal(nested.status, 0, nested.stderr || nested.stdout);
-    assert.equal(nested.output.probe.status, "ready");
-    assert.deepEqual(nested.output.probe.blockers, []);
-    assert.equal(d3(nested).version, "d3=7.9.0");
-  }
-  const written = probe("--project-root", "app", "--write", "--output", "toolchain-probe.json");
-  assert.equal(written.status, 0, written.stderr || written.stdout);
+  const nested = toolchain("probe", nestedRequest, "--write", "--output", "toolchain-probe.json");
+  assert.equal(nested.status, 0, nested.stderr || nested.stdout);
+  assert.equal(nested.output.probe.status, "ready");
+  assert.deepEqual(nested.output.probe.blockers, []);
+  assert.equal(d3(nested).version, "d3=7.9.0");
+  assert.equal(nested.output.probe.planSha256, planHash(plan), "the probe result is bound to the plan that carries targetRoot");
   assert.equal(JSON.parse(fs.readFileSync(path.join(root, "toolchain-probe.json"), "utf8")).status, "ready");
   assert.equal(fs.readFileSync(path.join(root, "app/package.json"), "utf8"), appPackage);
   assert.deepEqual(fs.readdirSync(path.join(root, "app")).sort(), ["node_modules", "package.json"]);
 
+  for (const spelling of ["app/", "./app", "app\\"]) {
+    const file = requestFile(spelling);
+    assert.equal(fs.readFileSync(path.join(root, file), "utf8"), fs.readFileSync(path.join(root, nestedRequest), "utf8"), spelling);
+    const equivalent = toolchain("resolve", file);
+    assert.equal(equivalent.status, 0, equivalent.stderr || equivalent.stdout);
+    assert.equal(canonicalJson(equivalent.output.plan), canonicalJson(plan), spelling);
+    assert.equal(toolchain("probe", file).output.probe.planSha256, planHash(plan), spelling);
+  }
+
+  const rootRequest = requestFile(undefined);
+  assert.equal(Object.hasOwn(JSON.parse(fs.readFileSync(path.join(root, rootRequest), "utf8")), "targetRoot"), false);
+  const atRootPlan = toolchain("resolve", rootRequest);
+  assert.equal(atRootPlan.status, 0, atRootPlan.stderr || atRootPlan.stdout);
+  assert.equal(atRootPlan.output.plan.targetRoot, ".");
+  assert.notEqual(planHash(atRootPlan.output.plan), planHash(plan), "changing targetRoot changes the plan hash");
+  const atRoot = toolchain("probe", rootRequest);
+  assert.equal(atRoot.status, 2, atRoot.stderr || atRoot.stdout);
+  assert.equal(atRoot.output.probe.status, "blocked");
+  assert.match(d3(atRoot).message, /Cannot read the target project package\.json.* \(probed in \.\)$/);
+  assert.equal(toolchain("resolve", requestFile(".")).output.plan.targetRoot, ".");
+
+  for (const [unsafe, message] of [
+    ["../outside", /targetRoot must be a contained relative path: '\.\.' segments are not allowed/],
+    ["/outside", /targetRoot must be a contained relative path: absolute paths are not allowed/],
+    ["C:/x", /targetRoot must be a contained relative path: drive letters and ':' are not allowed/],
+    ["", /targetRoot must be a non-empty string/],
+  ]) {
+    const rejected = prepare(unsafe);
+    assert.equal(rejected.status, 1, `${unsafe}: ${rejected.stdout}`);
+    assert.match(rejected.output.error.message, message, unsafe);
+    assert.equal(fs.existsSync(path.join(root, `requests/toolchain-request-${staged}.json`)), false, unsafe);
+  }
+
+  // Hand-edited requests reach resolve and probe without the builder.
+  const bound = JSON.parse(fs.readFileSync(path.join(root, rootRequest), "utf8"));
   fs.symlinkSync(outside, path.join(root, "link"), process.platform === "win32" ? "junction" : "dir");
-  for (const [projectRoot, message] of [["../outside", /stay inside/], [outside, /stay inside/], ["link", /resolves outside/], ["missing", /does not exist/], ["app/package.json", /must be a directory/]]) {
-    const escaped = probe("--project-root", projectRoot);
-    assert.equal(escaped.status, 1, `${projectRoot}: ${escaped.stdout}`);
-    assert.equal(escaped.output.ok, false);
-    assert.match(escaped.output.error.message, message, projectRoot);
+  for (const [targetRoot, message] of [
+    ["../outside", /targetRoot must be a contained relative path: '\.\.' segments are not allowed/],
+    ["missing", /targetRoot does not exist/],
+    ["app/package.json", /targetRoot must be a directory/],
+    ["link", /targetRoot resolves outside/],
+  ]) {
+    writeJson(path.join(root, "edited-request.json"), { ...bound, targetRoot });
+    for (const action of ["resolve", "probe"]) {
+      const rejected = toolchain(action, "edited-request.json", "--write", "--output", `edited-${action}.json`);
+      assert.equal(rejected.status, 1, `${action} ${targetRoot}: ${rejected.stdout}`);
+      assert.equal(rejected.output.ok, false);
+      assert.match(rejected.output.error.message, message, `${action} ${targetRoot}`);
+      assert.equal(fs.existsSync(path.join(root, `edited-${action}.json`)), false, `${action} ${targetRoot} wrote no output`);
+    }
   }
   assert.deepEqual(fs.readdirSync(outside).sort(), ["node_modules", "package.json"]);
+
+  for (const action of ["resolve", "probe"]) {
+    for (const value of ["app", outside]) {
+      const stale = toolchain(action, nestedRequest, "--project-root", value);
+      assert.equal(stale.status, 1, `${action}: ${stale.stdout}`);
+      assert.equal(stale.output.error.code, "UNKNOWN_OPTION");
+      assert.match(stale.output.error.message, new RegExp(`toolchain ${action} does not accept --project-root; set targetRoot`));
+    }
+  }
 });
 
 test("component route selects platform-specific sources without copying remote code", () => {

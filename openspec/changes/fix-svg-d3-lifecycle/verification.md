@@ -2,7 +2,8 @@
 
 Recorded on 2026-10-19 on a Windows host with Node v26.3.1, on branch `fix/svg-d3-lifecycle` in a
 separate local clone, based on `6e3b695`. The lifecycle rows were verified at `4d21d2b`; the
-nested project root rows were verified on the tree committed with the `--project-root` follow-up.
+target package directory rows were verified on the tree committed with the `targetRoot` change,
+which replaced the short-lived CLI-only probe directory option of `bff5cb8`.
 
 ## Regressions
 
@@ -16,32 +17,40 @@ nested project root rows were verified on the tree committed with the `--project
 `node --test tests/adapter-registry.test.cjs tests/toolchain-routing.test.cjs` before the registry
 change: 18 tests, 16 pass, 2 fail (the two new cases). After: 18 pass, 0 fail.
 
-| Case | Before (`4d21d2b` CLI) | After |
+| Case | Before (`bff5cb8` tree) | After |
 | --- | --- | --- |
-| Pipeline root with request and job plan but no `package.json`; pinned `d3` 7.9.0 in `app`; `toolchain probe --project-root app` (relative and absolute) | `--project-root` ignored: `blocked`, exit 2, `Cannot read the target project package.json` | `ready`, exit 0, `d3=7.9.0`; `--write` output lands under `--root`; `app` unchanged |
-| Same root without `--project-root` | `blocked`, exit 2 | Unchanged: `blocked`, exit 2 |
-| `--project-root` `../outside`, an absolute path outside `--root`, a junction inside `--root` to a valid outside package, a missing path, `app/package.json` | Ignored; probe ran in `--root` | Exit 1: `must stay inside`, `resolves outside`, `does not exist`, `must be a directory`; outside package unchanged |
+| Request from a stack input with `targetRoot: "app"` | `toolchain request` fails: `request has unsupported properties: targetRoot` | Request and plan carry `targetRoot: "app"` |
+| Pipeline root with job plan but no `package.json`; pinned `d3` 7.9.0 in `app`; `toolchain probe` with no directory option | Not reachable (request rejected) | `ready`, exit 0, `d3=7.9.0`; `planSha256` equals the hash of the written plan; `--write` output under `--root`; `app` unchanged |
+| Stack input without `targetRoot` | Plan has no `targetRoot` | Request bytes unchanged; plan `targetRoot: "."`; probe `blocked`, exit 2, `Cannot read the target project package.json (probed in .)` |
+| `app/`, `./app`, `app\`, `./app/`, `app/./`; `.`, `./`, `.\` | Rejected as unsupported | Same request bytes, plan bytes and plan hash as `app`; the root spellings give `.`; `apps/web` gives a different hash |
+| `targetRoot` `../outside`, `app/../other`, `/srv/app`, `\\server\share`, `C:/x`, `C:\x`, `app:web`, empty, blank, a number | Rejected as unsupported | Request validation fails with `'..' segments are not allowed`, `absolute paths are not allowed`, `drive letters and ':' are not allowed` or `must be a non-empty string`, in `toolchain request` and in `resolveToolchain` for hand-edited requests |
+| Hand-edited request with `targetRoot` `missing`, `app/package.json`, or a junction inside `--root` to a valid outside package | Rejected as unsupported | `toolchain resolve` and `toolchain probe` exit 1 with `targetRoot does not exist`, `targetRoot must be a directory`, `targetRoot resolves outside`; no `--write` output; outside package unchanged |
+| `--project-root` on `toolchain resolve` or `toolchain probe` | `probe`: used as the probe directory; `resolve`: silently ignored | Exit 1, `UNKNOWN_OPTION`: `toolchain <action> does not accept --project-root; set targetRoot ... in the stack input` |
+| Failed command probe | Message is the last stderr line only | Message ends with `(probed in <targetRoot>)` |
+| `jobPlanPath` `a/../job-plan.json` | Normalised to `job-plan.json` and accepted | Rejected: `'..' segments are not allowed` (shared normaliser) |
 
-`node --test --test-name-pattern="nested --project-root" tests/designer-pipeline-cli.test.cjs`
-before `--project-root` was read: 1 test, 0 pass, 1 fail (`2 !== 0` for `--project-root app`).
-After: 1 pass, 0 fail.
+`node --test --test-name-pattern="targetRoot|failed probes|request preparation"
+tests/toolchain-routing.test.cjs tests/designer-pipeline-cli.test.cjs` before the implementation:
+4 tests, 0 pass, 4 fail (`request has unsupported properties: targetRoot`; `undefined !== '.'`;
+the old `jobPlanPath must be a contained relative file path` message for `../job-plan.json`; a
+probe message without `(probed in .)`). After: 4 pass, 0 fail.
 
 ## Checks
 
 | Check | Result |
 | --- | --- |
-| `node --test tests/adapter-registry.test.cjs tests/toolchain-routing.test.cjs tests/graphics-runtime-catalog.test.cjs tests/designer-pipeline-cli.test.cjs` | At `4d21d2b`: 34 pass, 0 fail. With `--project-root`: 35 pass, 0 fail. |
+| `node --test tests/adapter-registry.test.cjs tests/toolchain-routing.test.cjs tests/graphics-runtime-catalog.test.cjs tests/designer-pipeline-cli.test.cjs` | At `4d21d2b`: 34 pass, 0 fail. With `targetRoot`: 36 pass, 0 fail. |
 | Probe through `probeToolchain` on a real pnpm project (`d3` 7.9.0 pinned, `node_modules/d3` linked into `.pnpm`, `scripts.dev` `vite`) | `ready`, `svg-d3` reports `d3=7.9.0`. |
 | `toolchain resolve` CLI on that project's `award-redesign` request | `ready`, no blockers; one review, `wevm/frog is review`, from the frontend stack. |
-| `toolchain probe --root <workbench>/webui --artifact openspec/changes/award-redesign/toolchain-request.json --project-root app --json` on the same real project (pipeline root `webui`, package `webui/app`), no `--write` | `4d21d2b` CLI: `blocked`, exit 2, `svg-d3: Cannot read the target project package.json`. With `--project-root`: `ready`, exit 0, no blockers, `svg-d3` `d3=7.9.0`. `--project-root ../outside`: exit 1, `--project-root must stay inside`. |
-| `node scripts/qa.cjs` with `TEMP` and `TMP` on `E:\tmp\dp-qa-svg-d3` (the system drive had 0.25 GB free), at `4d21d2b` | Repository tests: 1481, 1408 pass, 10 fail, 63 skipped, 136 files. The hermetic package build, reproducibility, the installed-package CLI smoke (12/12) pass, and QA leaves repository status byte-identical. Not rerun for the `--project-root` follow-up. |
-| The 10 failing tests' files on an unmodified `6e3b695` worktree, same `TEMP` | The same 10 tests fail: `puppeteer-core` and `gsap` are not installed in a fresh clone, and Git's GNU `tar` reads the `E:` archive path as a remote host. None touch the toolchain or registry. |
-| `openspec validate --all --strict` | 28 passed, 0 failed, including this change, before and after the `--project-root` follow-up. |
+| `toolchain request` → `toolchain resolve --write` → `toolchain probe` through the clone CLI on a temporary pipeline root (`E:\tmp\dp-target-root\e2e\pipeline`) with a routed job plan, a stack input with `"targetRoot": "app"`, and `app/package.json` pinning `d3` 7.9.0 with `app/node_modules/d3` | Request and plan `targetRoot: "app"`; plan `ready`; probe `ready`, exit 0, `svg-d3` `d3=7.9.0`, `planSha256` equal to the SHA-256 of the written `toolchain-plan.json`. `toolchain probe ... --project-root app`: exit 1, `UNKNOWN_OPTION`. |
+| `node scripts/qa.cjs` with `TEMP` and `TMP` on `E:\tmp\dp-target-root`, with `targetRoot` | Repository tests: 1483, 1410 pass, 10 fail, 63 skipped, 136 files. The hermetic package build, reproducibility, the installed-package CLI smoke (13/13) pass, and QA leaves repository status byte-identical. The 10 failures are the known set below. |
+| The 10 failing tests' files on an unmodified `6e3b695` worktree, `TEMP` on `E:\tmp\dp-qa-svg-d3` (recorded with the `4d21d2b` run) | The same 10 tests fail: `puppeteer-core` and `gsap` are not installed in a fresh clone, and Git's GNU `tar` reads the `E:` archive path as a remote host. None touch the toolchain or registry. |
+| `openspec validate --all --strict` | 28 passed, 0 failed, including this change, with `targetRoot`. |
 
 ## Not Verified
 
 - `npm run test:browser` was not run; the fresh clone has no workspace dependencies installed.
-- The full `node scripts/qa.cjs` suite was not rerun after the `--project-root` follow-up; only
-  the four test files above and `openspec validate --all --strict` were.
+- The real nested workbench was not reprobed with `targetRoot`; the temporary pipeline root above
+  reproduces its layout (pipeline root without `package.json`, package in `app`).
 - No chart was rendered and no DOM, screenshot or accessibility evidence was collected. The probe
   proves only that the pinned package is installed and importable.

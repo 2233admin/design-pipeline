@@ -95,11 +95,15 @@ update/removal policy, and score provenance. A registry change requires determin
 `svg-d3` uses the target project's installed D3. Declare an exact version in
 `dependencies.d3` or `devDependencies.d3` and provide a nonempty `package.json#scripts.dev` for
 that project's development server. The toolchain probe runs in the directory that holds this
-`package.json`: `--root` by default, or `--project-root <dir>` when the package sits below the
-pipeline root, as in `toolchain probe --root <pipeline root> --artifact <request> --project-root
-app`. `--project-root` must resolve to an existing directory inside `--root`; a `..` path, an
-absolute path outside it, or a symlink or junction that resolves outside it is rejected. This
-containment is deliberate: the request, job plan and any `--write` output stay under `--root`.
+`package.json`, named by the plan's `targetRoot`: `.` (that is, `--root`) by default. When the
+package sits below the pipeline root, set `"targetRoot": "app"` in the stack input before
+`toolchain request`; `toolchain resolve` and `toolchain probe` then use `<--root>/app`.
+`targetRoot` must be relative without `..` segments or `:`, and must resolve to an existing
+directory inside `--root`; a missing directory, a file, or a symlink or junction that resolves
+outside `--root` is rejected. This containment is deliberate: the request, job plan and any
+`--write` output stay under `--root`, and the plan hash, which every probe result and receipt
+binds, covers the directory. A failed probe names the directory it ran in, such as
+`(probed in .)`, so a forgotten `targetRoot` is visible.
 The probe reads `node_modules/d3/package.json`, checks that the package is `d3` and that the
 declared and installed versions match, resolves the package entry from the project root, requires
 it to stay inside that `node_modules/d3`, imports it and requires its `select` export. It never

@@ -91,20 +91,26 @@ workflow (`next --deliverable film --job-plan`), which has no stack choices to m
   `references/reference-spec.md#video-content-and-project-analysis`.
 - Write explicit project stack choices to `stack-input.json`, including `framework`; for a graphics
   primary, include `graphics.family` or `graphics.adapter` (or the existing project's `existing.graphics`).
+  When the target package sits below the pipeline root, also set `targetRoot` to that directory
+  relative to `--root`, for example `{ "framework": "react", "graphics": { "adapter": "svg-d3" },
+  "targetRoot": "app" }`; omit it when the package is `--root` itself.
   Follow route's `handoff` (a non-film plan's `toolchain request`), or run `designer-pipeline toolchain request --plan job-plan.json
   --artifact stack-input.json --write --output toolchain-request.json`. This binds the plan's
-  original query and four Stage 0 fields without guessing a framework or library; conflicting
-  bindings fail. See `pipeline-reference.md#public-cli-surfaces` for the example. Then run
+  original query and four Stage 0 fields without guessing a framework or library, and carries
+  `targetRoot` in canonical form; conflicting bindings and `targetRoot` values with `..`, an
+  absolute path or `:` fail. See `pipeline-reference.md#public-cli-surfaces` for the example. Then run
   `designer-pipeline toolchain resolve --artifact
   toolchain-request.json --write --output toolchain-plan.json`. This is mandatory for every
   frontend change, including a project-owned `none` UI-library choice. The request records the
-  framework, current and requested stack, brief, capabilities, and any graphics family or adapter.
-  The plan owns the joined frontend/tool/graphics selection plus `probe`, `invoke`, and `verify`
-  descriptors. Do not infer a library from taste alone. A blocked plan stops the run. The older
+  framework, current and requested stack, brief, capabilities, any graphics family or adapter, and
+  the target package directory. The plan owns the joined frontend/tool/graphics selection plus
+  `probe`, `invoke`, and `verify` descriptors, and always records `targetRoot` (`.` by default);
+  `toolchain resolve` fails when that directory is missing, is a file, or resolves outside `--root`.
+  Do not infer a library from taste alone. A blocked plan stops the run. The older
   `design-system resolve-stack` command remains a narrower compatibility surface.
 - Run `designer-pipeline toolchain probe --artifact toolchain-request.json` before invoking a
-  selected external runtime. Probes run in `--root`; when the target package sits in a nested
-  directory, pass `--project-root <dir>`, which must stay inside `--root`. Probes are read-only
+  selected external runtime. Probes run in the plan's `targetRoot` under `--root`; a failed probe
+  names that directory, as in `(probed in .)`. Probes are read-only
   and registry-owned; they never install or update a package. Record every invocation as
   `design-pipeline.toolchain-receipt.v1`, binding the plan hash, actual tool version, command,
   exit code, artifacts, hashes, and linked evidence receipts.
