@@ -31,8 +31,10 @@ and receipt binds by `planSha256`, did not say where target-project commands run
   One path normaliser in `toolchain-core.cjs` canonicalises it and the existing `jobPlanPath`
   (`\` to `/`, POSIX-normalised, no trailing `/`) and rejects empty values, absolute paths, `:`
   and `..` segments. `toolchain resolve` and `toolchain probe` require it to resolve to an
-  existing directory inside `--root`; `toolchain probe` runs its command probes there. A failed
-  command probe names that directory. Both commands reject `--project-root` and name `targetRoot`.
+  existing directory inside `--root`; `toolchain probe` runs its command probes there.
+  `probeToolchain` derives that directory itself from `--root` and the plan and accepts no
+  caller-supplied directory. A failed command probe names the directory it ran in. Both commands
+  reject `--project-root` and name `targetRoot`.
 - Out of scope: lifecycles for other native adapters without one, automatic detection of a nested
   `package.json`, per-entry working directories on probes, invocations or verification entries,
   a `cwd` field in receipts and receipt cross-checks of the tool and command against the plan,
@@ -43,8 +45,9 @@ and receipt binds by `planSha256`, did not say where target-project commands run
 
 - The existing lifecycle shape, validator and probe runner (`adapter-core.cjs`,
   `toolchain-core.cjs`), and the Three.js project lifecycle as the pattern.
-- The `contained()` realpath containment check in `cli-core.cjs`, the existing `jobPlanPath`
-  check (now the shared normaliser) and the existing per-command option rejection in `dispatch`.
+- The `resolveInside()` realpath containment check in `contract-utils.cjs` (the check behind the
+  CLI's `contained()`), the existing `jobPlanPath` check (now the shared normaliser) and the
+  existing per-command option rejection in `dispatch`.
 
 ## Affected Capabilities
 
@@ -69,3 +72,7 @@ the contained target package directory where `toolchain probe` runs.
   `toolchain probe` without writing output; `--project-root` on either command fails with
   `UNKNOWN_OPTION` naming `targetRoot`. The regressions in `tests/toolchain-routing.test.cjs` and
   `tests/designer-pipeline-cli.test.cjs` fail before the change and pass after.
+- `probeToolchain(plan, { root, runner })` runs command probes only in `root` plus the plan's
+  `targetRoot` and names that directory in failures; `projectRoot` or a missing `root` fails. The
+  regression fails on the `27d2a27` core, where the probe ran in the caller's directory while
+  naming the plan's, and passes after.
