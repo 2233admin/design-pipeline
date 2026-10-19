@@ -6,6 +6,8 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- The model-made candidate preview is removed (change `drop-candidate-previews`, #174). A required `direction-preview.json` is the three-sources form everywhere (medium, six cards, thumbnail board, exactly three versions), in OpenSpec changes and Stage 2 as in the ui and web brief flow; when the direction is clear, record a waiver (`single-user-direction`, `established-surface`, `narrow-change`, ...). **Breaking:** a plain two-to-four candidate receipt is rejected; there is no compatibility path or migration.
+
 - Real brands are named at intake (change `intake-real-brands`, #177). The ui and web playback card lists the real brands or products the conversation or brief names (`Real brands: ...` or `none`, marked as a guess when it is one), and the agent records it in DESIGN.md Product Context, so the brand-facts check no longer depends on remembering the declaration. Instruction text only: no new stage, gate or flag, and the ui playback validator does not require the line.
 
 - A structured critique, on request only (change `critique-structure`, #157). `web-direction.md` gains "Critique on request": six scored dimensions (concept first, with a veto that caps the overall score at 6.0 when the concept is 5 or lower), mapped to the W1 to W7 review rules, and a fixed output of scores, Keep, Fix (fatal, important, polish, each with a numeric fix) and Quick Wins. Guidance only: no gate, receipt or command; a critique score is never Visual Acceptance and the owner's choice outranks it.

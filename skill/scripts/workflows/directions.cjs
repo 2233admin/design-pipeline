@@ -67,11 +67,6 @@ function directionAction(state, root, cfg) {
     };
   }
   const preview = checkDirectionPreview(path.resolve(root), { stage: "preview" });
-  // This flow takes only the three-sources method; a plain two-to-four candidate set is not enough.
-  const written = readJson(receiptPath(root), "direction preview");
-  if (preview.status === "ready" && preview.applicable && !Array.isArray(written.cards)) {
-    return { type: "run", instruction: `${RECEIPT} has no direction cards. ${MAKE(root, cfg.waiver)}`, findings: [{ code: "cards-count", message: "0 direction cards, expected six: two per logic.", fix: "Write six cards in direction-preview.json `cards`: two designer, two reference, two roulette (see references/direction-preview.md)." }], guide: GUIDE, why: "The owner picks from real directions drawn from three sources, not from the model's own taste." };
-  }
   if (preview.status !== "ready") {
     return { type: "run", instruction: `Fix ${RECEIPT}, then run ${checkCommand(root)}.`, findings: preview.findings?.length ? preview.findings : undefined, blockers: preview.blockers, guide: GUIDE, why: "Only directions that pass the check can be shown to the owner." };
   }

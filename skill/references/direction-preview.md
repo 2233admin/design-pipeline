@@ -12,7 +12,7 @@ one only after recording the same preview evidence and an explicit rationale.
 
 ## Applicability
 
-Write `direction-preview.json` for every change before Stage 2 selects a direction. The sets of two to four candidates below apply outside the `ui` and `web` brief flow described next.
+Write `direction-preview.json` for every change before Stage 2 selects a direction. When the direction is clear, waive it; when it is open, make the directions from the three sources below, in every flow. There is no model-made candidate set.
 
 - `required`: an open whole-surface request, a material visual redesign, or an explicit request to
   compare styles.
@@ -22,28 +22,25 @@ Write `direction-preview.json` for every change before Stage 2 selects a directi
 A waiver is an explicit artifact with a supported reason and rationale. Missing preview evidence is
 not an implicit waiver.
 
-## Candidate Set
+## Versions
 
 When the brief needs external references, use [Design sources](../tools/design-sources.md)
 to find specific works and observable mechanisms. Carry selected references into the existing
-reference notes; a gallery entry does not substitute for a rendered candidate or select its style.
+reference notes; a gallery entry does not substitute for a rendered version or select its style.
 
-For a required preview, render three candidates by default. Two are allowed when product or
-reference constraints leave only two honest directions; use four only when the brief or user asks
-for broader exploration.
-
-Candidates must be different systems, not recolors:
+A required preview renders exactly three full versions, chosen from six cards (below). Versions must be
+different systems, not recolors:
 
 - record luminance, type-family, color, layout, density, era, and material axes;
 - every pair differs on at least four axes, including luminance or era;
-- each candidate names its visual thesis and one product-specific signature;
-- use the same real content fixture, state coverage, and viewport for every candidate;
-- use scoped styles so one candidate cannot leak into another.
+- each version names its visual thesis and one product-specific signature;
+- use the same real content fixture, state coverage, and viewport for every version;
+- use scoped styles so one version cannot leak into another.
 
 ## Directions From Three Sources
 
-For `ui` and `web` at the `standard` and `full` tiers in brief mode, the candidate set is not the
-model's own idea of two to four styles. It is made from three sources, two cards each, using the
+An open direction, in any flow (`ui`, `web`, an OpenSpec change, Stage 2), is not the model's own idea
+of a few styles. It is made from three sources, two cards each, using the
 library described in [design-direction-library.md](design-direction-library.md):
 
 1. **Best designer**: the designers who would do this best for this need, with what each is known for.
@@ -157,7 +154,7 @@ selection. Do not begin production implementation from an unverified preview.
 - `changeId`;
 - `applicability.status` and `applicability.reason`;
 - `comparison.brief`, `comparison.index`, viewport, content-fixture hash, and shared state coverage;
-- two to four candidate records with axes and hash-bound screenshots; in the three-sources flow exactly three versions, plus `medium`, `context`, six `cards` and `thumbs`;
+- `medium`, `context` (optional), six `cards` and `thumbs`, and exactly three version records with axes and hash-bound screenshots; a waiver carries none of them;
 - `decision.status`, `selectedDirectionId`, rationale, and for a selection `by` (`owner|agent`);
   an agent selection adds `agent` and `delegation` (`workflow-state` with `stateSha256`, verified
   with `direction check --project-root`, or `owner-instruction` with a quote of at least six words).

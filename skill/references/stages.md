@@ -442,15 +442,14 @@ scope, limits, exclusions, uncertainty, unchanged state, and recovery actions in
 ## Stage 2: Design Directions
 
 Read `references/direction-preview.md` and write `direction-preview.json` before selecting a
-direction. For `ui` and `web` at `standard` and `full` in brief mode, make six direction cards from
-three sources (best designers, same-medium real work, style roulette from
-`references/design-direction-library.md`), a six-cell thumbnail board and three full versions, and
-let `direction check` gate them; the model's own two to four candidates are replaced. Read and write
-the appearance ledger at this stage and at delivery. Otherwise, for an open whole-surface request,
-produce three candidates by default in one comparable
-`direction-previews/index.html`; two candidates require a real product/reference constraint, and
-four are for an explicit broader exploration. Use the same real content fixture, state coverage,
-and viewport, then capture and hash one screenshot per candidate.
+direction. When the direction is clear (the owner named it, an established surface, a narrow change),
+write a waiver with its reason. When it is open, in every flow, make six direction cards from three
+sources (best designers, same-medium real work, style roulette from
+`references/design-direction-library.md`), a six-cell thumbnail board and three full versions in one
+comparable `direction-previews/index.html`, and let `direction check` gate them. There are no
+model-made candidates. Read and write the appearance ledger at this stage and at delivery. Use the
+same real content fixture, state coverage, and viewport, then capture and hash one screenshot per
+version.
 
 Run `designer-pipeline direction check --stage preview --change-root <change-root> --json` while
 the decision is pending. Only after it reports `ready` may the user or an autonomous run select a

@@ -213,7 +213,7 @@ extraction asks for them again. Final acceptance stays with the owner.
 ## concepts
 
 At `standard` and `full` in brief mode the concepts stage makes real directions from three sources
-and shows the owner three of them; it replaces writing two to four candidates yourself. Follow
+and shows the owner three of them; it replaces writing candidates yourself. Follow
 [direction-preview.md](direction-preview.md) and the library guide
 [design-direction-library.md](design-direction-library.md). The playback that precedes this stage
 ends with "I'll make several real directions for you to see"; do not ask the owner to name a style.

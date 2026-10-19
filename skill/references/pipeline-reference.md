@@ -237,7 +237,7 @@ Complete-deliverable stage map:
 ```text
 0 Repo Read      route, dependencies, foundations, stack, references
 1 Guided Design Intake  ordinary-language input → DesignBrief confirmation → directions
-2 Directions     comparable candidates, signature, preview evidence, selection, direction lock
+2 Directions     waiver, or three sources (six cards, board, three versions), signature, preview evidence, selection, direction lock
 3 Design Spec    design.md, motion.md, scene/3d contracts when applicable
 4 Tasks          independently verifiable implementation surfaces
 5 Implementation existing patterns, approved artifacts, bounded runtime work
