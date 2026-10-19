@@ -396,20 +396,33 @@ test("package resources list the new modules", () => {
   assert.equal(hash("x").length, 64);
 });
 
-test("a preview outside the three-sources flow keeps two to four candidates; the ui flow still asks for cards", () => {
+test("a plain two-to-four candidate receipt is rejected everywhere; a waiver passes", () => {
   reset();
   const root = project();
   const plain = writeDirectionSet(root);
   for (const key of ["medium", "context", "cards", "thumbs"]) delete plain[key];
+  // With a change root the gaps are findings, each with its fix.
   saveReceipt(root, plain);
-  assert.equal(findings(root).status, "ready", "an OpenSpec or Stage 2 preview needs no cards");
-  saveReceipt(root, { ...plain, directions: plain.directions.slice(0, 1) });
-  assert.throws(() => findings(root), /two to four/);
-  saveReceipt(root, plain);
+  const result = findings(root);
+  assert.equal(result.status, "blocked");
+  for (const code of ["medium-missing", "cards-count", "thumbs-missing"]) assert.ok(result.findings.some((item) => item.code === code), code);
+  // A receipt alone has no files to check: missing parts and a wrong version count are contract errors.
+  assert.throws(() => checkDirectionPreview(null, { receipt: plain }), /carries medium/);
+  const full = writeDirectionSet(project());
+  assert.throws(() => checkDirectionPreview(null, { receipt: { ...full, cards: undefined } }), /carries cards/);
+  assert.throws(() => checkDirectionPreview(null, { receipt: { ...full, thumbs: undefined } }), /carries thumbs/);
+  assert.throws(() => checkDirectionPreview(null, { receipt: { ...full, directions: full.directions.slice(0, 2) } }), /exactly three/);
+  assert.equal(checkDirectionPreview(null, { receipt: full }).status, "ready");
+  // The ui flow shows the same findings as a run action.
   toDirections(root);
   const action = nextAction(root);
   assert.equal(action.type, "run");
   assert.ok(action.findings.some((item) => item.code === "cards-count"));
+  // A clear direction is waived.
+  saveReceipt(root, { schema: plain.schema, changeId: plain.changeId, applicability: { status: "waived", reason: "single-user-direction" }, comparison: null, directions: [], decision: { status: "waived", selectedDirectionId: null, rationale: "The owner named the direction." } });
+  const waived = findings(root);
+  assert.equal(waived.status, "ready");
+  assert.equal(waived.applicable, false);
 });
 
 test("a card id with regex characters is a finding, not a crash", () => {

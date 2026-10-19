@@ -269,11 +269,17 @@ function checkDirectionPreview(changeRoot, options = {}) {
   assertHash(receipt.comparison.contentFixtureSha256, "comparison.contentFixtureSha256");
   assertStringList(receipt.comparison.stateCoverage, "comparison.stateCoverage");
 
-  // The three-sources method (ui and web brief flow) carries medium, cards and thumbs and has exactly
-  // three versions; any other required preview keeps its two to four comparable candidates.
-  const threeSources = ["medium", "cards", "thumbs"].some((key) => receipt[key] !== undefined);
+  // A required preview is the three-sources method everywhere: medium, six cards, the thumbnail board
+  // and exactly three full versions. A clear direction is waived, never previewed with its own candidates.
+  // With a change root, directionFindings reports each gap with its fix; a receipt alone has no files to
+  // check, so its missing parts are contract errors.
   if (!Array.isArray(receipt.directions)) fail("direction preview", "directions must be the array of full versions");
-  if (!threeSources && (receipt.directions.length < 2 || receipt.directions.length > 4)) fail("direction preview", "directions must contain two to four comparable candidates");
+  if (!root) {
+    for (const key of ["medium", "cards", "thumbs"]) {
+      if (receipt[key] === undefined) fail("direction preview", `a required preview carries ${key}: make the directions from the three sources (references/direction-preview.md), or waive when the direction is clear`);
+    }
+    if (receipt.directions.length !== 3) fail("direction preview", "directions must be exactly three full versions");
+  }
   receipt.directions.forEach(assertDirection);
   if (receipt.context !== undefined) assertNullableString(receipt.context, "context");
   const directionIds = receipt.directions.map((direction) => direction.id);
@@ -289,7 +295,7 @@ function checkDirectionPreview(changeRoot, options = {}) {
   const ledgerEntries = stage === "preview" ? (options.recentEntries || recentEntries()).filter((entry) => entry.project !== own) : [];
   const findings = [
     ...divergenceFindings(receipt.directions),
-    ...(root && threeSources ? directionFindings(root, receipt, { recentEntries: ledgerEntries, libraryRoot: options.libraryRoot }) : []),
+    ...(root ? directionFindings(root, receipt, { recentEntries: ledgerEntries, libraryRoot: options.libraryRoot }) : []),
   ];
   for (const finding of findings) {
     reasons.push(finding.code);
