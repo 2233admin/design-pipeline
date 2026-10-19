@@ -32,27 +32,21 @@ function write(root, rel, content) {
   return { path: rel, sha256: hash(content) };
 }
 
-// Two rendered candidates that differ on every axis.
+const { isolate, readReceipt, writeDirectionSet } = require("./helpers/direction-fixture.cjs");
+const directionEnv = isolate();
+test.after(directionEnv.restore);
+
+const CARD = ["Need: a console for desk traders.", "Audience: traders on large desktop screens.", "Scene: open all day beside a market feed.", "Tone: calm and exact (my guess).", "Unstated: dense but never noisy (my guess).", "I'll make several real directions for you to see."].join("\n");
+
+// The reply to the intake questions, then the confirmed playback: what comes before any direction.
+function toDirections(root) {
+  decide(root, { by: "owner", stage: "intake", answer: "default" });
+  decide(root, { by: "owner", stage: "intake", verdict: "accept", answer: CARD });
+}
+
+// Three rendered versions from three sources.
 function writePreview(root) {
-  const shot = (id) => write(root, `direction-previews/${id}.png`, Buffer.concat([pngBytes({ width: 1440, height: 900 }), Buffer.from(id)]));
-  const receipt = {
-    schema: "design-pipeline.direction-preview.v1",
-    changeId: path.basename(root),
-    applicability: { status: "required", reason: "open-surface" },
-    comparison: {
-      brief: write(root, "brief.md", "# Console\n"),
-      index: write(root, "direction-previews/index.html", '<main data-direction-preview><section data-direction-id="notebook"></section><section data-direction-id="desk"></section></main>'),
-      viewport: { width: 1440, height: 900 },
-      contentFixtureSha256: hash("fixture"),
-      stateCoverage: ["default", "empty"],
-    },
-    directions: [
-      { id: "notebook", name: "Notebook", thesis: "A research notebook", signature: "Margin entries", axes: { luminance: "light", typeFamily: "serif", color: "warm", layout: "column", density: "low", era: "classic", material: "paper" }, screenshot: shot("notebook") },
-      { id: "desk", name: "Desk", thesis: "A trading desk", signature: "Status bar", axes: { luminance: "dark", typeFamily: "mono", color: "signal", layout: "panes", density: "high", era: "terminal", material: "screen" }, screenshot: shot("desk") },
-    ],
-    decision: { status: "pending", selectedDirectionId: null, rationale: null },
-  };
-  fs.writeFileSync(path.join(root, "direction-preview.json"), JSON.stringify(receipt, null, 2));
+  writeDirectionSet(root, { ids: ["notebook", "desk", "atlas"] });
 }
 
 test("ui intake asks interface questions, not a film's duration", () => {
@@ -62,24 +56,25 @@ test("ui intake asks interface questions, not a film's duration", () => {
 
 test("ui standard runs Stage 0 and a direction preview before the work", () => {
   const root = project();
-  decide(root, { by: "owner", stage: "intake", answer: "default" });
+  toDirections(root);
   const first = nextAction(root);
   assert.equal(first.stage, "concepts");
   assert.match(first.instruction, /Stage 0[\s\S]*direction-preview\.json/);
   writePreview(root);
   const ask = nextAction(root);
   assert.equal(ask.type, "ask");
-  assert.match(ask.question, /notebook \(Notebook\), desk \(Desk\)/);
-  assert.equal(ask.show.length, 3);
+  assert.deepEqual(ask.directions.map((d) => d.id), ["notebook", "desk", "atlas"]);
+  assert.equal(ask.alternates.length, 3);
+  assert.equal(ask.show.length, 4);
 });
 
 test("the owner's pick is written into the receipt; agents, unknown ids and bare answers are refused", () => {
   const root = project();
-  decide(root, { by: "owner", stage: "intake", answer: "default" });
+  toDirections(root);
   writePreview(root);
   assert.throws(() => decide(root, { by: "agent", stage: "concept", choice: "notebook", answer: "Reads like a lab notebook" }), /owner's pick|owner/);
   assert.throws(() => decide(root, { by: "owner", stage: "concept", choice: "ledger", answer: "Reads like a lab notebook" }), /name a candidate direction/);
-  assert.throws(() => decide(root, { by: "owner", stage: "concept", choice: "notebook", answer: "ok" }), /owner's words/);
+  assert.throws(() => decide(root, { by: "owner", stage: "concept", choice: "notebook", answer: "ok" }), /owner's exact words/);
   assert.equal(JSON.parse(fs.readFileSync(path.join(root, "direction-preview.json"), "utf8")).decision.status, "pending");
   decide(root, { by: "owner", stage: "concept", choice: "notebook", answer: "Reads like a lab notebook" });
   const receipt = JSON.parse(fs.readFileSync(path.join(root, "direction-preview.json"), "utf8"));
@@ -111,7 +106,7 @@ test("under --director the art director records the pick, bound to the saved sta
   const root = path.join(parent, "console");
   fs.mkdirSync(root);
   initState(root, { deliverable: "ui", tier: "standard", director: "claude-opus-5-5" });
-  decide(root, { by: "owner", stage: "intake", answer: "default" });
+  toDirections(root);
   writePreview(root);
   const ask = nextAction(root);
   assert.match(ask.record, /--by agent/);
@@ -125,11 +120,11 @@ test("under --director the art director records the pick, bound to the saved sta
 
 test("a recorded direction reopens when its receipt drifts or disappears", () => {
   const root = project();
-  decide(root, { by: "owner", stage: "intake", answer: "default" });
+  toDirections(root);
   writePreview(root);
   decide(root, { by: "owner", stage: "concept", choice: "notebook", answer: "Reads like a lab notebook" });
   assert.equal(nextAction(root).stage, "work");
-  fs.appendFileSync(path.join(root, "direction-previews", "desk.png"), "changed");
+  fs.appendFileSync(path.join(root, "direction-previews", "dir-2", "screenshot.png"), "changed");
   assert.equal(nextAction(root).stage, "concepts");
   fs.rmSync(path.join(root, "direction-preview.json"));
   assert.match(nextAction(root).instruction, /Stage 0/);

@@ -2,6 +2,8 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { directionFindings } = require("./directions-core.cjs");
+const { projectId, recentEntries } = require("./appearance-ledger-core.cjs");
 const {
   assertEnum,
   assertKeys,
@@ -98,7 +100,7 @@ function assertDirection(value, index) {
   assertKeys(
     value,
     ["id", "name", "thesis", "signature", "axes", "screenshot"],
-    ["id", "name", "thesis", "signature", "axes", "screenshot"],
+    ["id", "name", "thesis", "signature", "axes", "screenshot", "html", "card", "overdone", "reasons"],
     label,
     "direction preview",
   );
@@ -109,18 +111,23 @@ function assertDirection(value, index) {
   assertArtifact(value.screenshot, `${label}.screenshot`, ".png");
 }
 
-function assertDivergence(directions) {
+// Two versions that differ on fewer than four axes (or on neither luminance nor era) are one skeleton
+// in two colours: the fix is another card or another skeleton, never another colour.
+function divergenceFindings(directions) {
+  const findings = [];
   for (let left = 0; left < directions.length; left += 1) {
     for (let right = left + 1; right < directions.length; right += 1) {
       const changed = AXES.filter((axis) => directions[left].axes[axis] !== directions[right].axes[axis]);
       if (changed.length < 4 || (!changed.includes("luminance") && !changed.includes("era"))) {
-        fail(
-          "direction preview",
-          `directions ${directions[left].id} and ${directions[right].id} must differ on at least four axes, including luminance or era`,
-        );
+        findings.push({
+          code: "versions-collide",
+          message: `Versions ${directions[left].id} and ${directions[right].id} differ on ${changed.length} axes (${changed.join(", ") || "none"}); they need four, including luminance or era.`,
+          fix: "Replace one of them with an alternate card, or change its skeleton, type and era; changing only the colour does not make it a different direction.",
+        });
       }
     }
   }
+  return findings;
 }
 
 // Who selected: the owner, or the agent under a delegation the artifact itself evidences, because
@@ -152,7 +159,7 @@ function assertDecision(value, directionIds, applicability) {
   assertKeys(
     value,
     ["status", "selectedDirectionId", "rationale"],
-    ["status", "selectedDirectionId", "rationale", "by", "agent", "delegation"],
+    ["status", "selectedDirectionId", "rationale", "by", "agent", "delegation", "selectedDirectionIds", "mix"],
     "decision",
     "direction preview",
   );
@@ -160,13 +167,20 @@ function assertDecision(value, directionIds, applicability) {
   assertNullableString(value.rationale, "decision.rationale");
   const statuses = applicability === "waived" ? ["waived"] : ["pending", "selected"];
   assertEnum(value.status, statuses, "decision.status", "direction preview");
-  if (value.status === "pending" && (value.selectedDirectionId !== null || value.rationale !== null || value.by !== undefined)) {
+  if (value.status === "pending" && (value.selectedDirectionId !== null || value.rationale !== null || value.by !== undefined || value.selectedDirectionIds !== undefined || value.mix !== undefined)) {
     fail("direction preview", "a pending decision cannot carry a selected direction, rationale or selector");
   }
   if (value.status === "selected") {
     if (!directionIds.includes(value.selectedDirectionId)) fail("direction preview", "selectedDirectionId must name a candidate direction");
     assertString(value.rationale, "decision.rationale", "direction preview");
     assertSelector(value);
+    if (value.selectedDirectionIds !== undefined) {
+      assertStringList(value.selectedDirectionIds, "decision.selectedDirectionIds");
+      if (value.selectedDirectionIds[0] !== value.selectedDirectionId || value.selectedDirectionIds.some((id) => !directionIds.includes(id))) fail("direction preview", "decision.selectedDirectionIds must start with selectedDirectionId and name candidate directions");
+    }
+    if (value.mix !== undefined) {
+      if (value.mix === null || typeof value.mix !== "object" || Array.isArray(value.mix) || !Object.keys(value.mix).length || Object.entries(value.mix).some(([part, id]) => !part.trim() || !directionIds.includes(id))) fail("direction preview", "decision.mix maps each mixed part to a candidate direction id");
+    }
   }
   if (value.status === "waived" && (value.selectedDirectionId !== null || value.rationale === null)) {
     fail("direction preview", "a waived decision records no selected direction and a non-empty rationale");
@@ -202,7 +216,7 @@ function checkDirectionPreview(changeRoot, options = {}) {
   assertKeys(
     receipt,
     ["schema", "changeId", "applicability", "comparison", "directions", "decision"],
-    ["schema", "changeId", "applicability", "comparison", "directions", "decision"],
+    ["schema", "changeId", "applicability", "medium", "context", "comparison", "cards", "thumbs", "directions", "decision"],
     "receipt",
     "direction preview",
   );
@@ -220,6 +234,7 @@ function checkDirectionPreview(changeRoot, options = {}) {
 
   if (receipt.applicability.status === "waived") {
     assertEnum(receipt.applicability.reason, WAIVER_REASONS, "applicability.reason", "direction preview");
+    if (["medium", "context", "cards", "thumbs"].some((key) => receipt[key] !== undefined)) fail("direction preview", "a waived preview has no direction cards, thumbnails or medium");
     if (receipt.comparison !== null || !Array.isArray(receipt.directions) || receipt.directions.length !== 0) {
       fail("direction preview", "a waived preview has null comparison and no candidate directions");
     }
@@ -254,17 +269,25 @@ function checkDirectionPreview(changeRoot, options = {}) {
   assertHash(receipt.comparison.contentFixtureSha256, "comparison.contentFixtureSha256");
   assertStringList(receipt.comparison.stateCoverage, "comparison.stateCoverage");
 
-  if (!Array.isArray(receipt.directions) || receipt.directions.length < 2 || receipt.directions.length > 4) {
-    fail("direction preview", "directions must contain two to four comparable candidates");
-  }
+  if (!Array.isArray(receipt.directions)) fail("direction preview", "directions must be the array of full versions");
   receipt.directions.forEach(assertDirection);
+  if (receipt.context !== undefined) assertNullableString(receipt.context, "context");
   const directionIds = receipt.directions.map((direction) => direction.id);
   if (new Set(directionIds).size !== directionIds.length) fail("direction preview", "direction IDs must be unique");
-  assertDivergence(receipt.directions);
   assertDecision(receipt.decision, directionIds, "required");
 
   const blockers = [];
   const reasons = [];
+  // The directions method: cards, thumbnails and the three full versions, each finding with its fix.
+  // The ledger is read at the preview, where the direction is still open; a recorded selection is not
+  // reopened by what other projects deliver later. This project's own entry never counts against it.
+  const own = root ? projectId(root) : null;
+  const ledgerEntries = stage === "preview" ? (options.recentEntries || recentEntries()).filter((entry) => entry.project !== own) : [];
+  const findings = root ? [...divergenceFindings(receipt.directions), ...directionFindings(root, receipt, { recentEntries: ledgerEntries, libraryRoot: options.libraryRoot })] : [];
+  for (const finding of findings) {
+    reasons.push(finding.code);
+    blockers.push(`${finding.message} Fix: ${finding.fix}`);
+  }
   const indexArtifact = root
     ? (() => {
       readBoundArtifact(root, receipt.comparison.brief, "comparison brief", blockers, reasons);
@@ -314,6 +337,7 @@ function checkDirectionPreview(changeRoot, options = {}) {
     reason: uniqueReasons[0] || null,
     reasons: uniqueReasons,
     blockers,
+    findings,
     stage,
     applicable: true,
     directionCount: receipt.directions.length,

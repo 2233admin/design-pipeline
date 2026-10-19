@@ -61,12 +61,13 @@ function extract() {
     const box = { x: rect.x, y: rect.y, w: rect.width, h: rect.height };
     if (text) {
       const color = parse(style.color);
-      items.push({ kind: "text", id, text: text.slice(0, 80), box, fontSize: parseFloat(style.fontSize), fontWeight: Number(style.fontWeight) || 400, color: color ? color.slice(0, 3) : null, background: effectiveBackground(element) });
+      items.push({ kind: "text", id, text: text.slice(0, 80), box, fontSize: parseFloat(style.fontSize), fontWeight: Number(style.fontWeight) || 400, fontFamily: style.fontFamily, color: color ? color.slice(0, 3) : null, background: effectiveBackground(element) });
     } else if (element.children.length === 0 || (parse(style.backgroundColor) || [0, 0, 0, 0])[3] > 0.5 || style.borderStyle !== "none") {
-      items.push({ kind: "block", id, box });
+      const fill = parse(style.backgroundColor);
+      items.push({ kind: "block", id, box, ...(fill && fill[3] >= 0.99 ? { fill: fill.slice(0, 3) } : {}) });
     }
   }
-  return { viewport: { width: innerWidth, height: innerHeight }, items };
+  return { viewport: { width: innerWidth, height: innerHeight }, background: effectiveBackground(document.body), items };
 }
 
 (async () => {

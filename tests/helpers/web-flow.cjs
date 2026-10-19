@@ -18,15 +18,13 @@ const PLAYBACK = [
 ].join("\n");
 const STATED = "I will build a one-screen pricing card for the existing site, in its current type and colours, from the project's own components.";
 const SECTIONS = ["first-screen"];
-const SWITCHER_SCRIPT = path.resolve(__dirname, "../../skill/tools/variant-switcher/variant-switcher.js");
+const { isolate, writeDirectionSet } = require("./direction-fixture.cjs");
+
+// Every web flow reads a private design direction library and appearance ledger, never the user's own.
+const directionEnv = isolate();
+process.on("exit", directionEnv.restore);
 
 const write = (root, rel, text) => fs.writeFileSync(path.join(root, rel), text);
-
-// A variants page the concepts stage accepts: three marked first screens and the inlined switcher.
-function variantsPage(keys = ["A", "B", "C"]) {
-  const screens = keys.map(key => `<section data-variant="${key}" data-variant-name="Layout ${key}"><h1>Variant ${key}</h1></section>`).join("\n");
-  return `<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><title>Variants</title></head><body>\n${screens}\n<script>\n${fs.readFileSync(SWITCHER_SCRIPT, "utf8")}\n</script>\n</body></html>\n`;
-}
 
 // `keep` keeps checkpoints with the owner, as the owner's reply to the playback's delegation line.
 function confirmPlayback(root, answer = PLAYBACK, keep = []) {
@@ -38,8 +36,7 @@ function statedSkip(root, answer = STATED) {
 }
 
 function writeVariants(root) {
-  write(root, "concepts.md", "# Concepts\n\n## A\nSkeleton: split, product focal, type left, image right.\n\n## B\nSkeleton: stacked, headline focal, type centre, no image.\n\n## C\nSkeleton: grid, proof focal, type top, image as background.\n");
-  write(root, "concepts.html", variantsPage());
+  writeDirectionSet(root, { ids: ["a", "b", "c"] });
 }
 
 function pickVariant(root, choice = "A", answer) {
@@ -97,4 +94,4 @@ function acceptSections(root) {
   return nextAction(root);
 }
 
-module.exports = { PLAYBACK, SECTIONS, STATED, acceptSections, approveDescription, confirmPlayback, pickVariant, statedSkip, toBuild, toComponents, variantsPage, writeDescription, writeReference, writeVariants };
+module.exports = { PLAYBACK, SECTIONS, STATED, acceptSections, approveDescription, confirmPlayback, pickVariant, statedSkip, toBuild, toComponents, writeDescription, writeReference, writeVariants };

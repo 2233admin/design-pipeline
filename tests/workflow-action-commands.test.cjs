@@ -68,14 +68,16 @@ function walk(deliverable, tier, mode) {
   const exists = rel => fs.existsSync(path.join(dir, rel));
   const fix = {
     // Web: the quick stated skip, or the playback the owner confirmed; the others answer the questions.
-    intake: action => (deliverable !== "web" ? decide(dir, { by: "owner", stage: "intake", answer: "default" }) : action.type === "run" ? statedSkip(dir) : confirmPlayback(dir)),
+    intake: action => (deliverable === "web" ? (action.type === "run" ? statedSkip(dir) : confirmPlayback(dir))
+      : readState(dir).decisions.intake ? decide(dir, { by: "owner", stage: "intake", verdict: "accept", answer: "Need: a page.\nAudience: owners.\nScene: desktop.\nTone: calm.\nUnstated: nothing risky.\nI'll make several real directions for you to see." })
+        : decide(dir, { by: "owner", stage: "intake", answer: "default" })),
     reference: () => (mode === "replicate" ? touch(dir, "reference.md", "Observed enamel at three angles.") : decide(dir, { by: "owner", stage: "reference", answer: "none" })),
     extract: action => {
       const flow = require("./helpers/replicate-flow.cjs");
       if (action.type === "run") { flow.writeEvidence(dir); flow.writeFoundations(dir); } else flow.confirmExtraction(dir);
     },
     concepts: () => {
-      if (deliverable === "web") return exists("concepts.html") ? pickVariant(dir) : writeVariants(dir);
+      if (deliverable === "web") return exists("direction-preview.json") ? pickVariant(dir) : writeVariants(dir);
       if (deliverable === "ui") return exists("direction-preview.json") ? decide(dir, { by: "owner", stage: "concept", choice: "waived", answer: "Keep the existing look" }) : touch(dir, "direction-preview.json", JSON.stringify({ schema: "design-pipeline.direction-preview.v1", changeId: path.basename(dir), applicability: { status: "waived", reason: "established-surface" }, comparison: null, directions: [], decision: { status: "waived", selectedDirectionId: null, rationale: "The surface already has its direction." } }));
       return exists("concepts.md") ? decide(dir, { by: "owner", stage: "concept", choice: "1" }) : touch(dir, "concepts.md");
     },
@@ -246,7 +248,9 @@ for (const deliverable of ["film", "edit", "ui"]) {
     decide(dir, { by: "owner", stage: "intake", answer: "corrected answer" });
     assert.equal(fs.readFileSync(path.join(dir, "brief.md"), "utf8"), "# Brief\n\ncorrected answer\n");
     fs.unlinkSync(path.join(dir, "brief.md"));
-    assert.notEqual(nextAction(dir).stage, "intake", "state, not file presence, completes intake");
+    const after = nextAction(dir);
+    if (deliverable === "ui") assert.equal(after.questions, undefined, "state, not file presence, completes the intake questions; the playback follows");
+    else assert.notEqual(after.stage, "intake", "state, not file presence, completes intake");
     decide(dir, { by: "owner", stage: "intake", answer: "restored answer" });
     touch(dir, "brief.md", "User edited this file");
     const before = fs.readFileSync(path.join(dir, ".design-pipeline/state.json"));
@@ -311,7 +315,7 @@ test("a legacy intake record completes ui intake but sends web through the playb
     touch(dir, "brief.md", "# Brief\n\ndefault\n");
     const before = fs.readFileSync(path.join(dir, ".design-pipeline/state.json"));
     if (deliverable === "web") assert.equal(nextAction(dir).stage, "intake", "web: a legacy intake record still goes through the playback");
-    else assert.notEqual(nextAction(dir).stage, "intake", "ui: a legacy intake record completes intake");
+    else assert.equal(nextAction(dir).type, "ask", "ui: a legacy intake record still goes through the playback");
     // The shared intake refuses the collision; web refuses a bare reply before looking at any brief.
     assert.throws(() => decide(dir, { by: "owner", stage: "intake", answer: "replacement" }), deliverable === "web" ? /--verdict accept/ : { code: "OUTPUT_COLLISION" });
     assert.equal(fs.readFileSync(path.join(dir, "brief.md"), "utf8"), "# Brief\n\ndefault\n");

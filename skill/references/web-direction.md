@@ -7,23 +7,18 @@ or schema; every field below lands in a file the web workflow already writes. Th
 
 ## Concept pre-screen
 
-Before the owner picks, compare the three variants, A, B and C, by first-screen structure. Each card
-in `concepts.md` declares its layout skeleton, focal element, type position and image role (or no
-image) in one `Skeleton:` line. Compare those choices together: the structures must genuinely
-diverge. Different copy, colour or styling on the same spatial skeleton does not count.
-
-Render the first screens at the same viewport size and put them on one contact sheet. The agent
-pre-screens the comparison for structural divergence, a product-specific focal point and readable
-hierarchy. Redo same-skeleton, common-template and collapsed-hierarchy variants, then rerender and
-compare. Only then is the owner shown the variants page, `concepts.html`, where the three surviving
-first screens are real markup flipped with the variant switcher
-([workflow-web.md#concepts](workflow-web.md#concepts)). Do not ask the owner to screen failed
-variants. This is preparation for the variant pick, not Visual Acceptance, a gate or an additional W
-rule; only the owner's reply selects the direction.
+Before the owner picks, `direction check` compares the three full versions, `a`, `b` and `c`, by
+first-screen structure: layout skeleton, focal element, type position and image role. They must
+genuinely diverge; different copy, colour or styling on the same spatial skeleton does not count.
+The six cards, the thumbnail board and the readability of each capture are checked in the same
+run, and every finding carries its fix ([workflow-web.md#concepts](workflow-web.md#concepts),
+[direction-preview.md](direction-preview.md)). Do not ask the owner to screen failed versions. This
+is preparation for the pick, not Visual Acceptance, a gate or an additional W rule; only the owner's
+reply selects the direction.
 
 ## Treatment
 
-The treatment is a `## Treatment` section under the chosen card of `concepts.md`; when the owner
+The treatment is a `## Treatment` section in `concepts.md`, written from the chosen version's card; when the owner
 combined variants, it goes under the first card named and says what it takes from the others. Write
 it in the first build step, after the owner approves the description and before the first section
 is built. It is the one place the page's intent is stated; sections, tokens and motion refer back

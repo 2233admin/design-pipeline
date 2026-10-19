@@ -37,6 +37,8 @@ const rules = require("./workflows/rules.cjs");
 const away = require("./workflows/away.cjs");
 const ui = require("./workflows/ui.cjs");
 const replicate = require("./workflows/replicate.cjs");
+const directions = require("./workflows/directions.cjs");
+const { recordDelivery } = require("./appearance-ledger-core.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 
 function codeStages(state) {
@@ -61,6 +63,22 @@ function codeStages(state) {
   const intake = state.deliverable === "ui" ? ui.UI_INTAKE : INTAKE;
   const direction = state.deliverable === "ui" && tier !== "quick" && mode !== "replicate" ? [ui.DIRECTION] : [];
   return [...(tier === "quick" ? [] : [intake]), ...(mode === "replicate" ? [replicate.REFERENCE, replicate.EXTRACT] : []), ...direction, work, REVIEW];
+}
+
+// The appearance ledger (OpenSpec change directions-from-three-sources): a ui or web delivery, and a ui
+// acceptance, record what the page at the project root looks like and which sources its direction used,
+// at the user level and without any project text. A project with no measurable page records nothing and
+// says why; the ledger never blocks a delivery.
+function writeLedger(state, root) {
+  const concept = String(state.decisions?.concept ?? "");
+  const ids = concept && concept !== "waived" ? concept.split(",").map((id) => id.trim().toLowerCase()) : [];
+  const at = new Date().toISOString();
+  try {
+    const result = recordDelivery(root, directions.selectedSources(root, ids));
+    state.decisions.ledger = result.status === "recorded" ? { status: "recorded", at } : { status: "skipped", reason: result.reason, at };
+  } catch (error) {
+    state.decisions.ledger = { status: "skipped", reason: String(error.message).slice(0, 200), at };
+  }
 }
 
 function stagesFor(state) {
@@ -353,7 +371,9 @@ function decide(root, options = {}) {
     if (role.by !== "owner") fail("workflow", "--tradeoff records the owner's answer to a trade-off you asked them about, so it goes only with --by owner. Fix: ask the owner, then record their answer with --by owner --tradeoff \"<what you asked>\"");
     options = { ...options, tradeoff: statement(options.tradeoff, "say what you asked the owner: what is new, your recommendation and its cost", "--tradeoff") };
   }
-  const scope = rules.checkScope(options.scope, options.verdict);
+  const taste = [].concat(options.taste ?? []);
+  if (taste.length && !(stage === "concept" && ["ui", "web"].includes(state.deliverable) && role.by === "owner")) fail("workflow", "--taste records the owner's explicit taste statement about the directions they were shown, so it goes only with the direction pick recorded --by owner. Fix: ask the owner, then record their words with --stage concept --by owner");
+  const scope = rules.checkScope(options.scope, options.verdict, taste.length > 0);
   // Only these records can hold the owner's "no"; refuse a scope elsewhere before any file is written.
   if (scope && (["reference", "deliver"].includes(stage) || (stage === "intake" && state.deliverable !== "web"))) fail("workflow", `--scope goes with a record that holds the owner's "no", and a ${stage} record holds none. Fix: drop --scope`);
   const promoted = rules.checkPromote(state, options.promote, stage, role.by);
@@ -373,6 +393,8 @@ function decide(root, options = {}) {
   if ([].concat(options.antiGoals ?? []).length && !(webRecord && stage === "intake")) fail("workflow", "--anti-goal applies only to a web intake playback or skip. Fix: follow next.");
   if (webRecord) {
     webRecord(state, root, options, () => nextAction(root, ANSWERING));
+  } else if (stage === "intake" && state.deliverable === "ui" && options.verdict) {
+    ui.recordPlayback(state, options);
   } else if (stage === "intake") {
     if (!options.answer) fail("workflow", "--answer is required: the user's reply to the intake questions");
     const collisions = fs.readdirSync(root).filter(name => name.toLowerCase() === "brief.md");
@@ -392,6 +414,8 @@ function decide(root, options = {}) {
       fs.rmSync(temporary, { force: true });
     }
     state.decisions.intake = { answer: options.answer, briefSha256: "sha256:" + sha256(brief) };
+    // A new reply is played back again before any direction is made.
+    if (state.deliverable === "ui") { delete state.decisions.playbacks; delete state.decisions.playback; }
   } else if (stage === "reference") {
     const answer = options.answer || "none";
     if (answer === "none" && state.mode === "replicate") fail("workflow", "replicate mode cannot skip the reference. Fix: write reference.md from the reference you are reproducing");
@@ -442,6 +466,7 @@ function decide(root, options = {}) {
     // The final review is the owner's: a web verdict keeps the numbered screenshots they judged.
     const captures = state.deliverable === "web" && role.by === "owner" ? SUB_WORKFLOWS.web.reviewedCaptures(root) : null;
     state.decisions.drafts = [...(state.decisions.drafts || []), { verdict: options.verdict, reason: options.answer || null, at: new Date().toISOString(), inputHashes: structuredClone(reviewInputHashes(state)), ...(componentDecision ? { componentDecision } : {}), ...(captures ? { captures } : {}) }];
+    if (state.deliverable === "ui" && options.verdict === "accept") writeLedger(state, root);
     if (options.verdict === "reject") {
       rules.addRule(state, options.answer, `draft ${state.decisions.drafts.length}`, cited.length ? { ...rules.RESULT, refs: cited } : rules.RESULT);
       // A rejected draft must be rebuilt and rechecked.
@@ -461,7 +486,10 @@ function decide(root, options = {}) {
     state.decisions.delivered = options.answer || true;
     if (state.deliverable === "ui" && state.mode === "replicate") state.decisions.deliveredExtraction = extractionDigest(state);
     if (state.deliverable !== "ui") state.decisions.deliveryInputHashes = structuredClone(reviewInputHashes(state));
+    if (["ui", "web"].includes(state.deliverable)) writeLedger(state, root);
   }
+  // An explicit taste statement about the directions is a rule, scoped as the owner said it.
+  for (const text of taste) rules.addRule(state, reason(text, "state the owner's taste in their own words, at least two words", "--taste"), "direction taste");
   // A skipped standard conversation hands intake to the agent: the owner chose not to be asked.
   if (stage === "intake" && state.decisions.intake?.skipped && state.delegation?.intake && state.tier !== "quick") state.delegation.intake = { ...state.delegation.intake, to: "agent", set: "owner" };
   // "From now on" makes this call's "no" a project rule; --scope on a record that made none is refused.

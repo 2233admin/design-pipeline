@@ -12,6 +12,9 @@ const { createComponentFirstFixture, sha256 } = require("./fixtures/component-fi
 const { pngBytes } = require("./helpers/reference-fixtures.cjs");
 const { canonicalJson } = require("../skill/scripts/contract-utils.cjs");
 const { enforceEffects, manifests, promotePrototype, routeDesignSkill, runDesignSkill, selectPrototype } = require("../skill/scripts/design-skill-core.cjs");
+const { isolate, writeDirectionSet } = require("./helpers/direction-fixture.cjs");
+const directionEnv = isolate();
+test.after(directionEnv.restore);
 function prototypeBinding() {
   const target = { id: "prototype-preview", root: ".", kind: "prototype", entrypoints: [], routes: [], snapshotDigest: `sha256:${"1".repeat(64)}` };
   const policy = { id: "component-first-default", version: 1 };
@@ -22,30 +25,7 @@ function writePreviewFixture(t) {
   const root = path.join(parent, "compare-settings");
   fs.mkdirSync(root);
   t.after(() => fs.rmSync(parent, { recursive: true, force: true }));
-  const hashBytes = (value) => crypto.createHash("sha256").update(value).digest("hex");
-  const write = (relative, value) => {
-    const file = path.join(root, relative);
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, value);
-    return { path: relative, sha256: hashBytes(value) };
-  };
-  const brief = write("brief.md", "# Settings redesign\n");
-  const html = Buffer.from('<main data-direction-preview><section data-direction-id="quiet"></section><section data-direction-id="signal"></section><section data-direction-id="editorial"></section></main>');
-  const index = write("direction-previews/index.html", html);
-  const screenshot = (id) => write(`direction-previews/${id}.png`, Buffer.concat([pngBytes({ width: 1440, height: 900 }), Buffer.from(id)]));
-  const directions = [
-    { id: "quiet", name: "Quiet Grid", thesis: "Quiet visual thesis", signature: "Settings remain calm", axes: { luminance: "light", typeFamily: "serif", color: "monochrome", layout: "editorial", density: "airy", era: "classic", material: "paper" }, screenshot: screenshot("quiet") },
-    { id: "signal", name: "Signal Console", thesis: "Signal visual thesis", signature: "Errors become visible", axes: { luminance: "dark", typeFamily: "sans", color: "duotone", layout: "grid", density: "dense", era: "futurist", material: "glass" }, screenshot: screenshot("signal") },
-    { id: "editorial", name: "Field Notes", thesis: "Editorial visual thesis", signature: "Settings read like notes", axes: { luminance: "light", typeFamily: "monospace", color: "multicolor", layout: "asymmetric", density: "balanced", era: "industrial", material: "flat" }, screenshot: screenshot("editorial") },
-  ];
-  fs.writeFileSync(path.join(root, "direction-preview.json"), JSON.stringify({
-    schema: "design-pipeline.direction-preview.v1",
-    changeId: "compare-settings",
-    applicability: { status: "required", reason: "visual-redesign" },
-    comparison: { brief, index, viewport: { width: 1440, height: 900 }, contentFixtureSha256: hashBytes("settings-real-copy-v1"), stateCoverage: ["default", "validation-error"] },
-    directions,
-    decision: { status: "pending", selectedDirectionId: null, rationale: null },
-  }, null, 2));
+  writeDirectionSet(root, { ids: ["quiet", "signal", "editorial"], names: { quiet: "Quiet Grid", signal: "Signal Console", editorial: "Field Notes" } });
   return root;
 }
 
