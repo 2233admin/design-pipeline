@@ -123,7 +123,8 @@ changes none of them. It applies to any visual output (page, deck, infographic, 
 ### Dimensions
 
 Score each dimension 0 to 10 with one sentence of evidence. Concept comes first because execution
-only amplifies it: polishing an empty concept makes a brighter template.
+only amplifies it: polishing an empty concept makes a brighter template. Score strictly: there is
+no default 7, competent but generic work sits at 5 or 6, and an 8 needs evidence a peer would accept.
 
 | Dimension | Reads | W rules it reads |
 | --- | --- | --- |
@@ -151,7 +152,8 @@ Anchors for the others: Hierarchy, heading at least 2.5 times body size, three o
 levels, and the squint test (blur the screenshot; the order must survive). Craft, one spacing scale,
 at most four colours plus greys, at most two type families, one alignment axis.
 
-Emphasis by output (Concept is first for all of them and is never traded away):
+Emphasis by output decides which Fix items rank first and where to look hardest; it does not weight
+the mean. Concept is first for all of them and is never traded away:
 
 | Output | Weigh most | Relax |
 | --- | --- | --- |
