@@ -6,12 +6,12 @@
 - [Prompt Motion 模板库维护](prompt-motion-template-maintenance.md)：案例索引、配方整理、候选更新和重复/下架处理。
 - [术语表](GLOSSARY.md)：项目术语及其含义。
 - [Matt 技能适配](agents/matt-skills.md)：上游版本、项目配置与工程方法的组合方式。
-- [OpenSpec 配置](../openspec/config.yaml)、[贡献流程](../CONTRIBUTING.md)：项目上下文、行为规范和变更验收。
+- [OpenSpec 配置](../openspec/config.yaml)、[贡献流程](../.github/CONTRIBUTING.md)：项目上下文、行为规范和变更验收。
 - [历史文档](archive/README.md)：保留旧稿，仅供追溯。
 
 维护中的指南、研究和合同放在 `docs/` 对应子目录；每次变更的文档放在
 `openspec/changes/<change-id>/`；本机截图、渲染输出、日志和临时验证文件放在已忽略的
-`.design-pipeline/`。根目录只保留项目入口、DESIGN/MOTION、开源治理与发布文件。
+`.design-pipeline/`。根目录只保留项目入口、DESIGN/MOTION、许可与发布文件；贡献、安全与行为准则放在 `.github/`。
 
 BMAD 安装及输出、本机 agent skills、工具状态和根目录 `skills-lock.json` 只留本地。
 根目录隐藏路径默认不入库；公开例外为 `.github/`、`.gitignore` 和 `.gitattributes`。
@@ -28,7 +28,7 @@ BMAD 安装及输出、本机 agent skills、工具状态和根目录 `skills-lo
 | 根目录 `scripts/`、`tools/` | 维护仓库、打包和开发验证用的工具，不随 skill 安装 |
 | 根目录 `package.json`、`package-lock.json` | Node.js 22+ private npm workspace 与维护工具锁文件；不随 skill 或下游项目安装 |
 | `tests/`、`evals/` | 程序回归，以及作品/模型比较；分别报告技术结果和创作评价 |
-| `experiments/` | 已入库的实验案例；新的临时截图和运行输出进入 `.design-pipeline/` |
+| `examples/` | 已入库的作品与实验案例；新的临时截图和运行输出进入 `.design-pipeline/` |
 | `openspec/specs/`、`openspec/changes/` | 当前行为规范与逐次变更；勾完任务不等于已审阅或已归档 |
 
 装到其他项目的是 `skill/`。维护者通过根目录 `npm ci` 安装仓库 workspace，再用 `npm test` 跑仓库 QA 与浏览器工具自测；这些维护依赖不进入 skill 或目标项目。维护者的 OpenSpec、仓库工具和本地 agent 配置不是使用单个工具的前置条件。

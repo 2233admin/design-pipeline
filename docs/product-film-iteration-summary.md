@@ -33,10 +33,10 @@
 
 ## 可运行的交付
 
-推荐观看 [Field Notes](../experiments/seed-film-reference/README.md)：
+推荐观看 [Field Notes](../examples/seed-film-reference/README.md)：
 
 ```sh
-node experiments/seed-film-reference/server.cjs
+node examples/seed-film-reference/server.cjs
 ```
 
 打开 <http://127.0.0.1:4176/>，点击 **播放影片 · 开启声音**。

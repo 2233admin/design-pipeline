@@ -2,7 +2,7 @@
 
 // Composition gate layout checks in `film check`: visible text sampled between beat midpoints.
 // The fixtures under fixtures/film-layout are layout-probe captures of the two dogfooding films
-// (experiments/project-motion, f41da71): the accepted finals and rebuilt earlier rounds whose
+// (examples/project-motion, f41da71): the accepted finals and rebuilt earlier rounds whose
 // defects the owner found only in frame review (onboarding: terminal at 14% / 5% opacity under
 // the stage bar 23.5-26.5 s, closing line ~35 px from the edge, transient overlap at 23.13 s;
 // clone: viewport labels crossing the SSIM row at ~11.3 s). Rounds are rebuilt from the round's

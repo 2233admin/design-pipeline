@@ -5,7 +5,7 @@ Design and film workflow (UI, motion web, product films, PV/MAD edits) shipped a
 ## Policy
 
 - Change behavior only through an OpenSpec change under `openspec/changes/<change-id>/`; read `openspec/config.yaml` and that change first.
-- Extend existing v1 gates, contracts and receipt schemas; never add a parallel gate, receipt schema, target resolver or policy digest.
+- Extend existing gates, contracts and receipt schemas; never add a parallel gate, receipt schema, target resolver or policy digest. Delete superseded paths instead of keeping compatibility aliases or migrations.
 - Keep target, snapshot, policy digest and receipt lineage intact; when an upstream receipt changes, recompute or invalidate downstream evidence.
 - Report Component Conformance and Visual Acceptance separately; gate results never claim creative or visual acceptance.
 - Preserve unrelated working-tree changes; inspect `git status` before editing and never reset or discard work you did not make.
@@ -13,7 +13,7 @@ Design and film workflow (UI, motion web, product films, PV/MAD edits) shipped a
 ## Where things are
 
 - CLI: `node skill/scripts/designer-pipeline.cjs <command>`; `next` reads `.design-pipeline/state.json` and returns one action, `decide` records user decisions; commands are the `COMMANDS` table in `skill/scripts/cli-core.cjs`.
-- Release and versioning rules: `CONTRIBUTING.md`.
+- Release and versioning rules: `.github/CONTRIBUTING.md`.
 
 ## Running and verifying
 
@@ -31,7 +31,7 @@ Design and film workflow (UI, motion web, product films, PV/MAD edits) shipped a
 
 ## Repository documents
 
-- Keep root Markdown limited to project/agent entry points, `DESIGN.md`, `MOTION.md`, and open-source/release documents; `scripts/qa.cjs` checks the allowed names. Put maintained guides in `docs/`, historical drafts in `docs/archive/`, change records in `openspec/changes/<change-id>/`, and local captures/logs/scratch output in ignored `.design-pipeline/`.
+- Keep root Markdown limited to project/agent entry points, `DESIGN.md`, `MOTION.md`, `CHANGELOG.md` and `THIRD_PARTY_NOTICES.md`; contributing, security and conduct documents live in `.github/`. `scripts/qa.cjs` checks the allowed names. Put maintained guides in `docs/`, historical drafts in `docs/archive/`, change records in `openspec/changes/<change-id>/`, and local captures/logs/scratch output in ignored `.design-pipeline/`.
 - Keep local agent installations, BMAD/output, skill-manager locks and root dotpaths out of Git. Shared dotpaths require an explicit `.gitignore` exception; `.github/`, `.gitignore` and `.gitattributes` are the current exceptions. QA rejects tracked ignored files. Preserve local copies when removing them from the index.
 - Project `DESIGN.md` follows the [Google DESIGN.md format](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md): visual tokens and design rationale in the official section order. Treat Product Context and Source Decisions as local provenance extensions. Keep engineering process and QA reports in change documents, not in visual component guidance.
 - Keep original source bundles in `skill/vendor/`, maintained callable helpers in `skill/tools/`, and task guides in `skill/references/`. Preserve upstream bytes and update consumers when moving a source bundle.
@@ -40,7 +40,7 @@ Design and film workflow (UI, motion web, product films, PV/MAD edits) shipped a
 
 ### Issue tracker
 
-Execution tasks use Multica under the canonical host project-tracking policy. See `docs/agents/issue-tracker.md`.
+Work is tracked in GitHub issues and pull requests on `2233admin/design-pipeline`. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

@@ -30,7 +30,7 @@ to that baseline.
 ```powershell
 node prewalk-pipeline.cjs compare `
   --url https://stencil.so/blog/prewalk `
-  --implementation-url ../../experiments/prewalk-pipeline/index.html `
+  --implementation-url ../../examples/prewalk-pipeline/index.html `
   --reference-dir ../../openspec/changes/clone-stencil-prewalk-pipeline/verification-4/reference `
   --out <temporary-output-directory>
 ```

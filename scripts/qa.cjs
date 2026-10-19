@@ -96,7 +96,7 @@ try {
   const requiredRepoFiles = ["package.json", "package-lock.json", "README.md", "CHANGELOG.md", "LICENSE", "DESIGN.md", "MOTION.md", "THIRD_PARTY_NOTICES.md", "skill/SKILL.md", "scripts/package.cjs", "scripts/install-local.cjs", "scripts/test-manifest.json", "skill/references/package-resources.json", "openspec/specs/design-pipeline/spec.md"];
   for (const file of requiredRepoFiles) report(fs.existsSync(path.join(repoRoot, file)), file);
 
-  const rootMarkdown = new Set(["AGENTS.md", "CHANGELOG.md", "CLAUDE.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", "DESIGN.md", "MOTION.md", "README.md", "SECURITY.md", "THIRD_PARTY_NOTICES.md"]);
+  const rootMarkdown = new Set(["AGENTS.md", "CHANGELOG.md", "CLAUDE.md", "DESIGN.md", "MOTION.md", "README.md", "THIRD_PARTY_NOTICES.md"]);
   const unexpectedRootDocs = fs.readdirSync(repoRoot, { withFileTypes: true }).filter((entry) => entry.isFile() && /\.md$/i.test(entry.name) && !rootMarkdown.has(entry.name)).map((entry) => entry.name);
   report(unexpectedRootDocs.length === 0, `root Markdown stays limited to entry, foundation and governance documents${unexpectedRootDocs.length ? `: move ${unexpectedRootDocs.join(", ")} into docs/ or the active change` : ""}`);
 

@@ -1,6 +1,6 @@
 # QA — jst-hud-clock
 
-Surface: `experiments/jst-countdown/index.html` (single file, no dependencies).
+Surface: `examples/jst-countdown/index.html` (single file, no dependencies).
 Evidence: `qa-desktop.png` (1280x720), `qa-mobile.png` (375x812), captured with the gstack browse
 headless Chromium.
 

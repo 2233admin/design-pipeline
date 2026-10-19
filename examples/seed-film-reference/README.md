@@ -8,7 +8,7 @@ Moving footage, cool grading, detail crops and fine annotations lead into a canv
 From the repository root:
 
 ```sh
-node experiments/seed-film-reference/server.cjs
+node examples/seed-film-reference/server.cjs
 ```
 
 Open <http://127.0.0.1:4176/> and choose **播放影片 · 开启声音**. The initial frame stays held until an explicit play action. Playback, seeking, restart, mute, volume and fullscreen are available below the film. All playback assets are local; there is no install step.
