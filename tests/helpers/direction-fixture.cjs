@@ -83,6 +83,12 @@ function writeDirectionSet(root, { ids = ["notebook", "desk", "atlas"], medium =
   const thumbs = { html: write(root, "direction-previews/thumbs.html", thumbsHtml), png: write(root, "direction-previews/thumbs/screenshot.png", Buffer.concat([pngBytes({ width: 1500, height: 700 }), Buffer.from(`thumbs${second}`)])) };
   const picks = ["designer-1", "reference-1", "roulette-1"];
   const directions = ids.map((id, index) => {
+    // What `composition capture` writes beside the screenshot: one legible headline in the page's own type.
+    write(root, `direction-previews/dir-${index + 1}/elements.json`, JSON.stringify({
+      viewport: { width: 1440, height: 900 },
+      background: [[244, 239, 228], [16, 20, 24], [232, 236, 242]][index],
+      items: [{ kind: "text", id: "h1:1", text: id, box: { x: 80, y: 80, w: 400, h: 110 }, fontSize: 96, fontWeight: 700, fontFamily: `"${["Fraunces", "IBM Plex Mono", "Inter"][index]}", serif`, color: [[34, 34, 34], [221, 221, 221], [17, 17, 17]][index], background: [[244, 239, 228], [16, 20, 24], [232, 236, 242]][index] }],
+    }));
     const html = `<!doctype html><title>${id}</title><style>body{background:#${["f4efe4", "101418", "e8ecf2"][index]};font-family:"${["Fraunces", "IBM Plex Mono", "Inter"][index]}",serif;color:#${["222222", "dddddd", "111111"][index]}}h1{font-size:96px}</style><h1>${id}</h1>`;
     return {
       id,

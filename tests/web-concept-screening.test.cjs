@@ -90,8 +90,17 @@ test("the owner is shown the board and three captures and picks, mixes or reject
   for (const choice of ["2", "d", "a,a"]) refuses(fresh, { by: "owner", stage: "concept", choice, answer: "I like it" }, "CONTRACT_INVALID");
   refuses(fresh, { by: "owner", stage: "concept", choice: "b,c" }, "CONTRACT_INVALID");
   refuses(fresh, { by: "owner", stage: "concept", choice: "b", mix: ["layout=b"], answer: "B please" }, "CONTRACT_INVALID");
+  refuses(fresh, { by: "owner", stage: "concept", choice: "b" }, "CONTRACT_INVALID");
   decide(fresh, { by: "owner", stage: "concept", choice: "b", answer: "B reads right" });
   assert.equal(readState(fresh).decisions.concept, "b");
+  assert.equal(nextAction(fresh).stage, "components");
+  // Editing the receipt after the pick reopens the stage: later stages must read what the owner saw.
+  const picked = readReceipt(fresh);
+  const original = JSON.parse(JSON.stringify(picked));
+  picked.directions[1].thesis = "Rewritten after the pick";
+  saveReceipt(fresh, picked);
+  assert.equal(nextAction(fresh).stage, "concepts");
+  saveReceipt(fresh, original);
   assert.equal(nextAction(fresh).stage, "components");
   decide(fresh, { by: "owner", stage: "concept", choice: "b,c", mix: ["layout=b", "colour=c"], taste: ["too plain, more like a magazine"], answer: "B's layout with C's colour" });
   const { concept, conceptNotes, conceptMix, variants } = readState(fresh).decisions;

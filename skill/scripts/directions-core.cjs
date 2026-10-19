@@ -168,6 +168,9 @@ function rouletteFindings(card, context, add) {
   const start = Number.isInteger(source.second) ? source.second % numbers.length : 0;
   const expectedNumber = skipped ? numbers[(start + skipped.length) % numbers.length] : null;
   const prefix = skipped ? skipped.every((number, index) => number === numbers[(start + index) % numbers.length]) : false;
+  // A skip is legitimate only past a style the ledger's recent deliveries used.
+  const unearned = (skipped || []).filter((number) => !recent.has(styleKey(source.section, number)));
+  if (unearned.length) add("roulette-skip-unearned", `${label} skips ${unearned.join(", ")}, which no recent delivery in the ledger used.`, `Redo the draw with \`direction draw --medium ${medium} --second ${source.second}\` and copy its output; it skips only ledger collisions.`);
   if (!skipped || !prefix || source.number !== expectedNumber) {
     add("roulette-number-mismatch", `${label} records number ${source.number} but second ${source.second} in ${source.section} gives ${expectedNumber ?? "?"}${skipped?.length ? ` after skipping ${skipped.join(", ")}` : ""}.`, `Redo the draw with \`direction draw --medium ${medium} --second ${source.second}\` and copy its output; the number is S % count + 1, advancing only past ledger collisions listed in skipped.`);
   }
@@ -269,13 +272,17 @@ function versionFindings(root, receipt, cards, { add, recent, recentEntries }) {
 function appearanceFindings(root, direction, recentEntries, add) {
   if (!direction.html || artifactProblem(root, direction.html, "html", [".html"])) return;
   const htmlFile = resolveInside(root, direction.html.path, "html", { scope: SCOPE });
+  // `composition capture` writes elements.json beside the screenshot; without it readability is unmeasured.
   let elements = null;
   try {
     elements = JSON.parse(fs.readFileSync(path.join(path.dirname(resolveInside(root, direction.screenshot.path, "screenshot", { scope: SCOPE })), "elements.json"), "utf8"));
-  } catch { /* no capture elements: the CSS alone measures the version */ }
+    if (!Array.isArray(elements?.items) || !elements.viewport) elements = null;
+  } catch { /* reported below */ }
   if (elements) {
     const { checkTextLegibility } = require("./composition-core.cjs");
     for (const finding of checkTextLegibility(elements)) add(finding.code, `version ${direction.id}: ${finding.message}.`, finding.fix);
+  } else {
+    add("version-elements-missing", `version ${direction.id} has no readable elements.json beside its screenshot, so its text readability is unmeasured.`, `Capture it with \`composition capture --composition ${direction.html.path} --output <the screenshot's folder>\`, which writes screenshot.png and elements.json together.`);
   }
   const appearance = summarizeAppearance({ elements, source: fs.readFileSync(htmlFile, "utf8") });
   for (const entry of recentEntries) {

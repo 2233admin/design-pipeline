@@ -138,9 +138,12 @@ const VERSION_IDS = ["a", "b", "c"];
 // Markup the checks read: a marker inside an HTML comment is not on the page.
 const markup = html => html.replace(/<!--[\s\S]*?-->/g, "");
 
-// A pick closes the stage and a later rejection reopens it.
-function conceptChosen(state) {
-  return history(state, "variants").at(-1)?.verdict === "pick" && Boolean(state.decisions?.concept);
+// A pick closes the stage and a later rejection reopens it; so does a receipt edited or deleted after
+// the pick, since what the owner reviewed is no longer what later stages read.
+function conceptChosen(state, root) {
+  const latest = history(state, "variants").at(-1);
+  if (latest?.verdict !== "pick" || !state.decisions?.concept) return false;
+  return !root || latest.sha256 === fileSha(root, RECEIPT);
 }
 
 const CONCEPTS = {
@@ -181,12 +184,9 @@ function recordConcept(state, root, options, next) {
   const mix = pickedMix(options.mix);
   if (Object.keys(mix).length && choices.length < 2) fail("workflow", "--mix combines parts of several versions, so --choice names each version it takes from. Fix: for example --choice a,c --mix layout=a --mix colour=c");
   if (Object.values(mix).some(id => !choices.includes(id))) fail("workflow", "--mix may take parts only from the versions --choice names");
-  const notes = choices.length > 1
-    ? reason(options.answer, "say what to take from each combined variant, in the owner's words")
-    : typeof options.answer === "string" && options.answer.trim() ? options.answer.trim() : null;
+  const notes = reason(options.answer, choices.length > 1 ? "say what to take from each combined variant, in the owner's words" : "record the exact words behind the pick (the owner's, or the art director's reason when delegated)");
   state.decisions.concept = choices.join(",");
-  if (notes) state.decisions.conceptNotes = notes;
-  else delete state.decisions.conceptNotes;
+  state.decisions.conceptNotes = notes;
   if (Object.keys(mix).length) state.decisions.conceptMix = mix;
   else delete state.decisions.conceptMix;
   state.decisions.variants = [...variants, { verdict: "pick", choice: state.decisions.concept, ...(page ? { sha256: page } : {}), ...(Object.keys(mix).length ? { mix } : {}), at }];

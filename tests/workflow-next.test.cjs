@@ -2939,7 +2939,7 @@ test("records carry who decided, agent records name the agent, and returned comm
   confirmPlayback(root);
   decide(root, { by: "agent", stage: "reference", answer: "none" });
   writeVariants(root);
-  decide(root, { by: "agent", stage: "concept", choice: "B" });
+  decide(root, { by: "agent", stage: "concept", choice: "B", answer: "B fits the brief best" });
   const state = readState(root);
   assert.equal(state.decisions.variants.at(-1).by, "agent");
   assert.equal(state.decisions.variants.at(-1).agent, "art-model", "a directed pick names the art director");
@@ -3145,7 +3145,7 @@ test("a kept section is asked, an art director keeps the routed ask, and a deleg
   const concepts = nextAction(picked);
   assert.equal(concepts.type, "ask", "a delegated concept pick keeps its ask");
   assert.match(concepts.record, / --by agent --stage concept /);
-  decide(picked, { by: "agent", stage: "concept", choice: "B" });
+  decide(picked, { by: "agent", stage: "concept", choice: "B", answer: "B fits the brief best" });
   assert.equal(nextAction(picked).stage, "components");
 });
 

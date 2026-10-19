@@ -176,6 +176,12 @@ test("roulette inconsistencies against the catalog are findings", () => {
   skipped.cards[5].source.skipped = [9];
   saveReceipt(root, skipped);
   assert.ok(codes(root).includes("roulette-number-mismatch"));
+  // A skip must be earned by a ledger collision: a valid-looking prefix with an empty ledger is not.
+  const unearned = writeDirectionSet(root);
+  Object.assign(unearned.cards[5].source, { skipped: [2], number: 3, style: "Style east3 Name", specimen: "assets/style-specimens/east/03-east-style-3.html" });
+  saveReceipt(root, unearned);
+  assert.ok(codes(root).includes("roulette-skip-unearned"));
+  assert.ok(!codes(root).includes("roulette-number-mismatch"));
   // With a context and a pool the draw comes from the pool.
   const pooled = writeDirectionSet(root, { context: "Apple" });
   pooled.cards[4].source.pool = [4, 9, 15];
@@ -218,6 +224,10 @@ test("the readability measurement applies to a captured version's elements", () 
   reset();
   const root = project();
   writeDirectionSet(root);
+  fs.rmSync(path.join(root, "direction-previews/dir-1/elements.json"));
+  assert.ok(codes(root).includes("version-elements-missing"), "an uncaptured version cannot pass readability");
+  fs.writeFileSync(path.join(root, "direction-previews/dir-1/elements.json"), "{not json");
+  assert.ok(codes(root).includes("version-elements-missing"));
   fs.writeFileSync(path.join(root, "direction-previews/dir-1/elements.json"), JSON.stringify({ viewport: { width: 1440, height: 900 }, items: [{ kind: "text", id: "p:1", text: "Grey on grey", box: { x: 10, y: 10, w: 200, h: 20 }, fontSize: 14, fontWeight: 400, color: [150, 150, 150], background: [160, 160, 160] }] }));
   const result = findings(root);
   assert.ok(result.findings.some((item) => item.code === "text-contrast" && /notebook/.test(item.message)));

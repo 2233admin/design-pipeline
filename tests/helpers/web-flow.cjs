@@ -42,8 +42,8 @@ function writeVariants(root) {
   writeDirectionSet(root, { ids: ["a", "b", "c"] });
 }
 
-function pickVariant(root, choice = "A", answer) {
-  return decide(root, { by: "owner", stage: "concept", choice, ...(answer ? { answer } : {}) });
+function pickVariant(root, choice = "A", answer = "This one, it reads best") {
+  return decide(root, { by: "owner", stage: "concept", choice, answer });
 }
 
 function writeReference(root) {
