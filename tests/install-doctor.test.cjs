@@ -22,7 +22,7 @@ const missingTool = () => { throw Object.assign(new Error("not found"), { code: 
 const nothingFound = { locateBrowser: missingTool, findBlender: missingTool, probeTool: () => null };
 const everythingFound = {
   locateBrowser: () => ({ executable: "/usr/bin/chromium", source: "chromium" }),
-  findBlender: () => ({ path: "/usr/bin/blender", version: "4.2.1" }),
+  findBlender: () => ({ path: "/usr/bin/blender", version: "4.2.1", major: 4, minor: 2 }),
   probeTool: () => "7.0",
 };
 
@@ -229,4 +229,25 @@ test("doctor exits 2 and says blocked when a required item is missing", () => {
   } finally {
     fs.rmSync(copy, { recursive: true, force: true });
   }
+});
+
+test("a Blender older than 4.2 is reported missing with the install command", () => {
+  const doctor = inspectDoctor(path.join(repoRoot, "skill"));
+  const environment = inspectEnvironment(doctor, { ...everythingFound, findBlender: () => ({ path: "/usr/bin/blender", version: "4.1.0", major: 4, minor: 1 }), platform: "linux", home: os.tmpdir(), env: {} });
+  const entry = environment.tiers.optional.find((candidate) => candidate.id === "blender");
+  assert.equal(entry.ok, false);
+  assert.match(entry.detail, /older than 4\.2/);
+  assert.equal(typeof entry.fix, "string");
+});
+
+test("a required failure with no single command prints an instruction, never a run: line of prose", () => {
+  const doctor = { ...inspectDoctor(path.join(repoRoot, "skill")), node: "20.0.0" };
+  const environment = inspectEnvironment(doctor, { ...everythingFound, platform: "linux", home: os.tmpdir(), env: {} });
+  const node = environment.tiers.required.find((entry) => entry.id === "node");
+  assert.equal(node.ok, false);
+  assert.equal(node.fix, undefined);
+  assert.match(node.todo, /nodejs\.org/);
+  const text = renderDoctor(doctor, environment);
+  assert.match(text, /do: {2}Install Node\.js 22\.12/);
+  assert.doesNotMatch(text, /run: install Node/);
 });

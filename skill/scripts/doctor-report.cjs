@@ -60,8 +60,9 @@ function probeTool(name) {
   return String(result.stdout).match(/version\s+(\S+)/)?.[1] || "found";
 }
 
-function item(id, label, ok, detail, fix) {
-  return { id, label, ok, detail, ...(ok || !fix ? {} : { fix }) };
+// `fix` is a command the user can paste; `todo` is an instruction when no single command exists.
+function item(id, label, ok, detail, fix, todo) {
+  return { id, label, ok, detail, ...(ok ? {} : fix ? { fix } : todo ? { todo } : {}) };
 }
 
 function inspectEnvironment(doctor, options = {}) {
@@ -74,8 +75,8 @@ function inspectEnvironment(doctor, options = {}) {
   const cli = path.join(doctor.packageRoot, "scripts", "designer-pipeline.cjs");
 
   const required = [
-    item("node", `Node.js ${NODE_REQUIRED.replace(/\.0$/, "")} or newer`, nodeAtLeast(doctor.node), `v${doctor.node}`, "install Node.js 22.12 or newer from https://nodejs.org/"),
-    item("package", "Skill files", doctor.missing.length === 0, doctor.missing.length ? `missing: ${doctor.missing.slice(0, 5).join(", ")}${doctor.missing.length > 5 ? ", ..." : ""}` : "all present", install.kind === "claude-plugin" ? "claude plugin update design-pipeline@design-pipeline" : `reinstall the skill (${INSTALL_DOC})`),
+    item("node", `Node.js ${NODE_REQUIRED.replace(/\.0$/, "")} or newer`, nodeAtLeast(doctor.node), `v${doctor.node}`, null, "Install Node.js 22.12 or newer from https://nodejs.org/, then run doctor again."),
+    item("package", "Skill files", doctor.missing.length === 0, doctor.missing.length ? `missing: ${doctor.missing.slice(0, 5).join(", ")}${doctor.missing.length > 5 ? ", ..." : ""}` : "all present", install.kind === "claude-plugin" ? "claude plugin update design-pipeline@design-pipeline" : null, `Reinstall the skill with the command for your agent in ${INSTALL_DOC}.`),
   ];
 
   let browser;
@@ -106,7 +107,9 @@ function inspectEnvironment(doctor, options = {}) {
   let blenderItem;
   try {
     const found = blender(undefined);
-    blenderItem = item("blender", "Blender 4.2 or newer (3D film templates)", true, `${found.version} at ${found.path}`);
+    // The same floor renderTemplate enforces: an older Blender is found but cannot render the templates.
+    const recent = found.major > 4 || (found.major === 4 && found.minor >= 2);
+    blenderItem = item("blender", "Blender 4.2 or newer (3D film templates)", recent, recent ? `${found.version} at ${found.path}` : `${found.version} at ${found.path} is older than 4.2`, installCommand("blender", platform));
   } catch (error) {
     blenderItem = item("blender", "Blender 4.2 or newer (3D film templates)", false, error.code === "TOOL_MISSING" ? "not found" : String(error.message).slice(0, 160), installCommand("blender", platform));
   }
@@ -133,6 +136,7 @@ function renderDoctor(doctor, environment) {
     for (const entry of entries) {
       lines.push(`  [${entry.ok ? "ok" : "missing"}] ${entry.label}: ${entry.detail}`);
       if (!entry.ok && entry.fix) lines.push(`        run: ${entry.fix}`);
+      else if (!entry.ok && entry.todo) lines.push(`        do:  ${entry.todo}`);
     }
   }
   const absent = [...environment.tiers.recommended, ...environment.tiers.optional].filter((entry) => !entry.ok).length;

@@ -75,7 +75,7 @@ node "<skill 目录>/scripts/check-design-foundation.cjs" --project-root . --jso
 
 ## 附录 A：离线 Release 包
 
-不能用上面两条命令时，从 [Releases](https://github.com/2233admin/design-pipeline/releases) 下载 `design-pipeline-skill.zip`（Windows）或 `design-pipeline-skill.tgz`（Unix）和 `checksums.txt`，校验后用包内的安装器安装。归档根目录是 `design-pipeline/`，里面有 `SKILL.md`、`scripts/install-local.cjs` 等。安装器默认目标是 `~/.agents/skills/design-pipeline`；Claude Code 用户请改用上面的插件，或把 `--root` 指向 `~/.claude/skills`。
+不能用上面两条命令时，从 [Releases](https://github.com/2233admin/design-pipeline/releases) 下载 `design-pipeline-skill.zip`（Windows）或 `design-pipeline-skill.tgz`（Unix）和 `checksums.txt`，校验后用包内的安装器安装。归档根目录是 `design-pipeline/`，里面有 `SKILL.md`、`scripts/install-local.cjs` 等。下面的命令显式写出目标 `~/.agents/skills/design-pipeline`，因为 0.12.0 及更早的包里安装器默认装到旧位置；Claude Code 用户请改用上面的插件，或把 `--root` 指向 `~/.claude/skills`。
 
 Git Bash / Unix：
 
@@ -90,7 +90,8 @@ curl -fL "$base/checksums.txt" -o "$work/checksums.txt"
 (cd "$work" && awk '$2 == "design-pipeline-skill.tgz" { print }' checksums.txt | sha256sum -c -)
 
 tar -xzf "$work/design-pipeline-skill.tgz" -C "$work"
-node "$work/design-pipeline/scripts/install-local.cjs" --source "$work/design-pipeline"
+node "$work/design-pipeline/scripts/install-local.cjs" --source "$work/design-pipeline" \
+  --root "$HOME/.agents/skills" --target "$HOME/.agents/skills/design-pipeline"
 ```
 
 Windows PowerShell：
@@ -113,7 +114,8 @@ $actual = (Get-FileHash $archive -Algorithm SHA256).Hash.ToUpperInvariant()
 if ($actual -ne $expected) { throw "SHA-256 mismatch for $archive" }
 
 Expand-Archive -LiteralPath $archive -DestinationPath $extract -Force
-node (Join-Path $extract "design-pipeline\scripts\install-local.cjs") --source (Join-Path $extract "design-pipeline")
+node (Join-Path $extract "design-pipeline\scripts\install-local.cjs") --source (Join-Path $extract "design-pipeline") `
+  --root (Join-Path $HOME ".agents\skills") --target (Join-Path $HOME ".agents\skills\design-pipeline")
 ```
 
 升级现有安装时在 `install-local.cjs` 命令末尾加 `--replace`；不加时安装器拒绝覆盖已有目标。Release 包不会安装目标项目的 npm、pnpm、Yarn、Bun 或其他运行时依赖。
