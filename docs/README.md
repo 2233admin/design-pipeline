@@ -1,5 +1,6 @@
 # 文档
 
+- [安装与第一次运行](install.md)、[功能详解](features.md)、[维护者指南](maintainers.md)：从 README 移来的详细说明。
 - [项目视觉规范](../DESIGN.md)：遵循 [Google DESIGN.md](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md)，描述视觉语言与设计理由。
 - [项目动效规范](../MOTION.md)：本仓库的静态呈现，以及目标项目的动效边界。
 - [安装与升级](../skill/references/installation.md)、[工具索引](../skill/tools/README.md)：安装 skill 后按需阅读。
