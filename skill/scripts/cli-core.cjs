@@ -480,7 +480,9 @@ function publicHelp() {
     "  iart search|route|verify",
     "  sources fetch --bundle mengto-skills|iart-motion-skills|design-direction-library | --all   (download a bundle at its pinned revision into the user cache; DESIGN_PIPELINE_CACHE overrides the location)",
     "  toolchain request --plan <job-plan.json> --artifact <stack-input.json> [--write --output <toolchain-request.json>]",
-    "  toolchain resolve|probe|receipt-check",
+    "  toolchain resolve --artifact <toolchain-request.json> [--write --output <toolchain-plan.json>]",
+    "  toolchain probe --artifact <toolchain-request.json> [--project-root <package dir inside --root>] [--write --output <file>]",
+    "  toolchain receipt-check --receipt <receipt.json> [--artifact <toolchain-plan.json>] [--evidence-root <dir>] [--require-files]",
     "  execution route|prepare|finalize",
     "  benchmark brief --manifest <file> | benchmark evaluate --manifest <file> --measurements <file> [--record-feedback]",
     "  source audit",
@@ -1332,6 +1334,14 @@ function toolchainSources() {
   };
 }
 
+// Probes run in the target package directory: --root by default, or a --project-root directory
+// that must stay inside --root, so a pipeline root can keep its artifacts above a nested package.
+function probeProjectRoot(parsed, root) {
+  const projectRoot = contained(root, option(parsed, "--project-root", root), "--project-root");
+  if (!fs.statSync(projectRoot).isDirectory()) fail("cli", `--project-root must be a directory: ${projectRoot}`);
+  return projectRoot;
+}
+
 function toolchainCommand(parsed, root, action) {
   if (action === "request") {
     const planFile = artifact(parsed, root, "--plan");
@@ -1354,7 +1364,7 @@ function toolchainCommand(parsed, root, action) {
       ? readJson(contained(root, request.jobPlanPath, "job plan"), "job plan")
       : null;
     const plan = resolveToolchain(request, toolchainSources(), { jobPlan });
-    const result = action === "probe" ? probeToolchain(plan, { projectRoot: root }) : plan;
+    const result = action === "probe" ? probeToolchain(plan, { projectRoot: probeProjectRoot(parsed, root) }) : plan;
     const output = writeResult(parsed, root, result);
     return { result: { status: result.status, [action === "probe" ? "probe" : "plan"]: result, ...(output ? { output } : {}) }, exitCode: result.status === "blocked" ? 2 : 0 };
   }
