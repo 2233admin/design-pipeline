@@ -35,6 +35,7 @@ test("ui replicate holds at extract until the reference is registered and the fo
   assert.equal(reference.stage, "reference");
   assert.match(reference.instruction, /reference-evidence\.json/);
   assert.doesNotMatch(reference.instruction, /timed frames|bounded graybox/);
+  assert.doesNotMatch(reference.instruction, /analyze-video|--fps 24/, "a page or screenshot reference gets no film analysis");
   writeReference(dir);
   const bare = nextAction(dir);
   assert.deepEqual([bare.stage, bare.type], ["extract", "run"]);
@@ -49,6 +50,13 @@ test("ui replicate holds at extract until the reference is registered and the fo
   const design = fs.readFileSync(path.join(dir, "DESIGN.md"), "utf8");
   fs.writeFileSync(path.join(dir, "DESIGN.md"), design.replace(/^- Rejected the reference's content, copy, brand marks and logos\.\n/m, ""));
   assert.deepEqual(codes(nextAction(dir)), ["design-source-decisions-incomplete"]);
+  // An adopted line that names the brand does not reject it; every protected item must be rejected.
+  fs.writeFileSync(path.join(dir, "DESIGN.md"), design.replace("- Rejected the reference's content, copy, brand marks and logos.", "- Adopted the reference's brand colours and copy tone."));
+  assert.deepEqual(codes(nextAction(dir)), ["design-source-decisions-incomplete"]);
+  fs.writeFileSync(path.join(dir, "DESIGN.md"), design.replace("content, copy, brand marks and logos", "content, copy and brand marks"));
+  const partial = nextAction(dir).findings.find(item => item.code === "design-source-decisions-incomplete");
+  assert.match(partial.message, /logos/);
+  assert.doesNotMatch(partial.message, /content|copy|brand/);
   fs.writeFileSync(path.join(dir, "DESIGN.md"), design);
   fs.rmSync(path.join(dir, "MOTION.md"));
   assert.deepEqual(codes(nextAction(dir)), ["motion-missing"]);
@@ -224,7 +232,12 @@ test("a website-cloning manifest that is not complete keeps the probe open and n
   assert.match(probe.instruction, /hero spacing differs/);
   assert.match(probe.instruction, /component topology/);
   assert.match(probe.instruction, /brand marks/);
-  fs.writeFileSync(path.join(change, "website-cloning.json"), JSON.stringify({ ...manifest, status: "complete", verification: { status: "passed", reasons: [] } }));
+  // A complete verdict evaluated before the latest page check judged an older page.
+  fs.writeFileSync(path.join(change, "website-cloning.json"), JSON.stringify({ ...manifest, status: "complete", verification: { status: "passed", reasons: [], evaluatedAt: "2000-01-01T00:00:00.000Z" } }));
+  const old = nextAction(dir);
+  assert.deepEqual([old.stage, old.type], ["probe", "run"]);
+  assert.match(old.instruction, /evaluated before the latest page check/);
+  fs.writeFileSync(path.join(change, "website-cloning.json"), JSON.stringify({ ...manifest, status: "complete", verification: { status: "passed", reasons: [], evaluatedAt: new Date(Date.now() + 1000).toISOString() } }));
   assert.equal(nextAction(dir).stage, "review");
   const other = path.join(dir, "design", "changes", "clone-older");
   fs.mkdirSync(other, { recursive: true });

@@ -41,6 +41,7 @@ const decideBase = root => `${cliCommand()} decide --root ${shellPath(path.resol
 
 const REFERENCE = reference("Register the page or screenshot you are reproducing as evidence, then record what you observed in it.", {
   guides: ["references/feature-routes.md"],
+  exclusive: true,
   work: `Keep the reference (a screenshot, or a capture of the page) inside the project. Write reference-evidence.json (schema design-pipeline.reference-evidence.v2, intent.role primary-target, source kind image or live-page, requiredArtifacts including graybox.png; references/reference-spec.md and the Static Reference Reconstruction steps in references/feature-routes.md) and reference.md with the observed structure, layout rhythm, type scale, colour, motion parameters, invariants and uncertainties. Do not build yet: the next step extracts DESIGN.md and MOTION.md from this evidence.`,
 });
 
@@ -53,6 +54,26 @@ function sourceDecisions(text) {
   const rest = text.slice(heading.index + heading[0].length);
   const next = /^##\s+/m.exec(rest);
   return (next ? rest.slice(0, next.index) : rest).trim();
+}
+
+// What replicate never borrows, each named on a rejected / not-borrowed line (or the list under it),
+// so "Adopted brand colours" never counts as rejecting the brand.
+const PROTECTED = [["content", /\bcontent\b|内容/i], ["copy", /\bcopy\b|\bwording\b|文案/i], ["brand marks", /\bbrand\b|品牌/i], ["logos", /\blogos?\b|标志|徽标/i]];
+const REJECTED = /\breject|\bnot borrow|\bdo not borrow|\bnot adopt|\bexclude|不借用|不采用|不沿用|排除|拒绝/i;
+const ADOPTED = /\badopt|\bborrow(?!ed\b)|借用|采用|沿用/i;
+function unborrowedMissing(section) {
+  const kept = [];
+  let mode = null; // "heading": a rejected sub-heading, until the next heading · "line": a rejected line and the list under it
+  for (const line of section.split(/\r?\n/)) {
+    const heading = /^\s*#{2,6}\s/.test(line);
+    if (heading) { mode = REJECTED.test(line) ? "heading" : null; continue; }
+    if (mode === "heading") { kept.push(line); continue; }
+    if (REJECTED.test(line)) { mode = "line"; kept.push(line); continue; }
+    if (mode === "line" && /^\s*(?:[-*+]|\d+\.)\s/.test(line) && !ADOPTED.test(line)) { kept.push(line); continue; }
+    if (line.trim()) mode = null;
+  }
+  const rejected = kept.join("\n");
+  return PROTECTED.filter(([, pattern]) => !pattern.test(rejected)).map(([name]) => name);
 }
 
 // Group sizes of the DESIGN.md front matter (colors: 8, typography: 6, ...), for the owner's summary.
@@ -90,7 +111,8 @@ function findings(state, root) {
   else {
     // The borrowed list is the Source Decisions section; replicate also names what is never borrowed.
     const section = sourceDecisions(fs.readFileSync(path.join(project, "DESIGN.md"), "utf8")) ?? "";
-    if (!/(?:\bcontent\b|\bcopy\b|\bbrand\b|\blogos?\b|内容|文案|品牌)/i.test(section)) add("design-source-decisions-incomplete", "DESIGN.md Source Decisions does not say that the reference's content, copy, brand marks and logos are not borrowed.", "In Source Decisions list what is adopted (structure, layout rhythm, type scale, colour, motion parameters) and what is rejected (the reference's content, copy, brand marks and logos), then run next again.");
+    const missing = unborrowedMissing(section);
+    if (missing.length) add("design-source-decisions-incomplete", `DESIGN.md Source Decisions does not reject the reference's ${missing.join(", ")}.`, "In Source Decisions list what is adopted (structure, layout rhythm, type scale, colour, motion parameters) and, under a rejected / not borrowed line, the reference's content, copy, brand marks and logos, then run next again.");
   }
   const motion = attempt(() => checkMotionFoundation({ projectRoot: project }));
   if (motion.error) add("motion-invalid", `MOTION.md is invalid: ${motion.error}`, "Repair MOTION.md (references/motion-foundation.md), then run next again.");
@@ -205,10 +227,15 @@ function cloneFidelity(state, root) {
   const [dir] = dirs;
   const read = attempt(() => readJson(path.join(dir, MANIFEST), "website-cloning manifest"));
   const manifest = read.result ?? {};
+  // The verdict judged the page as it was then: a later interaction pass (any page or reference edit
+  // forces one, its inputs being hash-bound) means the evaluator has not seen the current page.
+  const evaluated = Date.parse(manifest.verification?.evaluatedAt ?? "");
+  const checkedAt = state.gates?.interaction?.status === "passed" ? state.gates.interaction.at : 0;
+  const fresh = Number.isFinite(evaluated) && evaluated >= checkedAt;
   return {
     dir,
-    complete: manifest.status === "complete" && manifest.verification?.status === "passed",
-    status: read.error ? "unreadable" : manifest.status ?? "unknown",
+    complete: manifest.status === "complete" && manifest.verification?.status === "passed" && fresh,
+    status: read.error ? "unreadable" : manifest.status === "complete" && !fresh ? "complete but evaluated before the latest page check, so the page it judged is not the current one" : manifest.status ?? "unknown",
     reasons: read.error ? [read.error] : manifest.verification?.reasons ?? [],
     protectedInvariants: manifest.implementationAuthority?.protectedInvariants ?? [],
     allowedDifferences: manifest.implementationAuthority?.allowedDifferences ?? [],
