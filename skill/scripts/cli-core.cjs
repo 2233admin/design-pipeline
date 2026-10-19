@@ -134,7 +134,7 @@ const { inspectHolosticker, verifyHolostickerSnapshot } = require("./holosticker
 const { inspectDesignMdSource, searchDesignMdSource, verifyDesignMdSource } = require("./design-md-source-core.cjs");
 const { routeIartRequest, searchIartSkills, verifyIartSnapshot } = require("./iart-motion-skills-core.cjs");
 const { resolveFrontendStack, validateRegistry: validateFrontendStackRegistry } = require("./frontend-stack-core.cjs");
-const { buildToolchainRequest, probeToolchain, resolveToolchain, validateToolchainReceipt } = require("./toolchain-core.cjs");
+const { buildToolchainRequest, probeToolchain, resolveToolchain, targetDirectory, validateToolchainReceipt } = require("./toolchain-core.cjs");
 const { finalizeExecutionTarget, prepareExecutionTarget, resolveExecutionTarget } = require("./execution-target-core.cjs");
 const { run: runAdaptation } = require("./adaptation-core.cjs");
 const {
@@ -1335,15 +1335,6 @@ function toolchainSources() {
   };
 }
 
-// The plan's targetRoot names the target package directory relative to --root. It must be an
-// existing directory whose real path stays inside --root, so a plan is only emitted for, and
-// probes only run in, a contained package directory.
-function toolchainTargetDir(root, targetRoot) {
-  const directory = contained(root, targetRoot, "targetRoot");
-  if (!fs.statSync(directory).isDirectory()) fail("cli", `targetRoot must be a directory: ${targetRoot}`);
-  return directory;
-}
-
 function toolchainCommand(parsed, root, action) {
   if (action === "request") {
     const planFile = artifact(parsed, root, "--plan");
@@ -1366,8 +1357,9 @@ function toolchainCommand(parsed, root, action) {
       ? readJson(contained(root, request.jobPlanPath, "job plan"), "job plan")
       : null;
     const plan = resolveToolchain(request, toolchainSources(), { jobPlan });
-    const targetDir = toolchainTargetDir(root, plan.targetRoot);
-    const result = action === "probe" ? probeToolchain(plan, { projectRoot: targetDir }) : plan;
+    // A plan is only emitted for an existing, contained targetRoot; probe derives the same directory itself.
+    if (action === "resolve") targetDirectory(root, plan.targetRoot);
+    const result = action === "probe" ? probeToolchain(plan, { root }) : plan;
     const output = writeResult(parsed, root, result);
     return { result: { status: result.status, [action === "probe" ? "probe" : "plan"]: result, ...(output ? { output } : {}) }, exitCode: result.status === "blocked" ? 2 : 0 };
   }

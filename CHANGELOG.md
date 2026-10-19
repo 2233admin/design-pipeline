@@ -114,7 +114,10 @@ All notable changes to Design Pipeline are documented here.
   `./app` and `app\` all become `app`) and covered by the plan hash, so probe results and receipts
   are bound to the directory. `..` segments, absolute paths and `:` are rejected in the request;
   `toolchain resolve` and `toolchain probe` reject a missing directory, a file, and symlinks or
-  junctions that resolve outside `--root`. A failed probe names the directory it ran in. Both
+  junctions that resolve outside `--root`. A failed probe names the directory it ran in.
+  `probeToolchain(plan, options)` derives that directory itself from `options.root` and the plan:
+  `root` is required and any other option, including the former `projectRoot`, is rejected, so a
+  caller can no longer run a probe in one directory while its message names another. Both
   commands reject `--project-root` and point to `targetRoot` instead. `jobPlanPath` uses the same
   path normaliser, so a path with any `..` segment, such as `a/../job-plan.json`, is now rejected
   (change `fix-svg-d3-lifecycle`).

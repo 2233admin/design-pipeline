@@ -17,6 +17,7 @@ const {
   fail,
   nonEmpty,
   pathInside,
+  resolveInside,
   sha256,
   sortValue,
 } = require("./contract-utils.cjs");
@@ -287,14 +288,29 @@ function probeMessage(child) {
   return raw.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).at(-1) || `probe exited ${child.status}`;
 }
 
-// A failed command probe names the directory it ran in, relative to --root, so a probe of the
-// wrong package (for example a forgotten targetRoot) explains itself.
-function unavailable(probe, plan, message) {
-  return { toolId: probe.toolId, status: "unavailable", version: null, message: `${message} (probed in ${plan.targetRoot})` };
+// The only source of the directory where target-project commands run: --root plus the plan's
+// targetRoot. It must exist, be a directory, and keep its real path inside root (junctions
+// included). Callers cannot supply a directory, so a probe can neither run elsewhere nor report a
+// directory it did not use.
+function targetDirectory(root, targetRoot) {
+  const realRoot = fs.realpathSync(path.resolve(root));
+  const real = fs.realpathSync(resolveInside(realRoot, targetRoot, "targetRoot", { scope: "toolchain", mustExist: true }));
+  resolveInside(realRoot, real, "targetRoot", { scope: "toolchain" });
+  if (!fs.statSync(real).isDirectory()) invalid(`targetRoot must be a directory: ${targetRoot}`);
+  return real;
 }
 
-function probeToolchain(plan, options = {}) {
-  const projectRoot = fs.realpathSync(path.resolve(options.projectRoot || process.cwd()));
+// A failed command probe names the directory it actually ran in, relative to --root, so a probe
+// of the wrong package (for example a forgotten targetRoot) explains itself.
+function unavailable(probe, where, message) {
+  return { toolId: probe.toolId, status: "unavailable", version: null, message: `${message} (probed in ${where})` };
+}
+
+function probeToolchain(plan, options) {
+  assertKeys(options, ["root"], ["root", "runner"], "probe options", "toolchain");
+  const root = fs.realpathSync(path.resolve(options.root));
+  const cwd = targetDirectory(root, plan.targetRoot);
+  const where = path.relative(root, cwd).split(path.sep).join("/") || ".";
   if (plan.status === "blocked") {
     return sortValue({
       schema: PROBE_SCHEMA,
@@ -310,16 +326,16 @@ function probeToolchain(plan, options = {}) {
     if (probe.kind === "governed-review") return { toolId: probe.toolId, status: "review", version: null, message: "review route was not probed" };
     if (!Array.isArray(probe.command) || !probe.command.length) return { toolId: probe.toolId, status: "unavailable", version: null, message: "no trusted probe command" };
     const child = runner(probe.command[0], probe.command.slice(1), {
-      cwd: projectRoot,
+      cwd,
       encoding: "utf8",
       env: boundedProbeEnv(),
       windowsHide: true,
       timeout: probe.timeoutMs,
       maxBuffer: 1024 * 1024,
     });
-    if (child.error) return unavailable(probe, plan, child.error.message);
+    if (child.error) return unavailable(probe, where, child.error.message);
     const message = probeMessage(child);
-    if (child.status !== 0) return unavailable(probe, plan, message);
+    if (child.status !== 0) return unavailable(probe, where, message);
     return { toolId: probe.toolId, status: "available", version: message || null, message: message || "probe completed" };
   });
   const blockers = results.filter((item) => item.status === "unavailable").map((item) => `${item.toolId}: ${item.message}`);
@@ -381,6 +397,7 @@ module.exports = {
   buildToolchainRequest,
   probeToolchain,
   resolveToolchain,
+  targetDirectory,
   validateRequest,
   validateToolchainReceipt,
 };

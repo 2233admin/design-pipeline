@@ -20,13 +20,19 @@
   `skill/scripts/toolchain-core.cjs`), with one path normaliser shared with `jobPlanPath`;
   `validateRequest` returns the canonical request and `resolveToolchain` uses it.
 - [x] 3.2 Resolve `plan.targetRoot` inside `--root` for `toolchain resolve` and `toolchain probe`
-  in `skill/scripts/cli-core.cjs` with `contained()` and a directory check, probe there, name the
-  directory in failed probe messages, and reject `--project-root` on both commands.
+  with a containment and directory check, probe there, name the directory in failed probe
+  messages, and reject `--project-root` on both commands.
 - [x] 3.3 Add the canonicalisation, hash, rejection and nested-package regressions to
   `tests/toolchain-routing.test.cjs` and `tests/designer-pipeline-cli.test.cjs`; they fail before
   3.1 and 3.2.
 - [x] 3.4 Document `targetRoot` in the CLI help, `docs/cli-and-reference-providers.md`,
   `skill/references/stages.md`, `## SVG D3 Project Lifecycle` and `CHANGELOG.md`.
+- [x] 3.5 Derive the probe directory only in `skill/scripts/toolchain-core.cjs`:
+  `targetDirectory(root, targetRoot)` resolves and checks `plan.targetRoot`;
+  `probeToolchain(plan, { root, runner })` rejects any other option, including `projectRoot`, and
+  runs only there; `toolchain resolve` checks the directory before writing and `toolchain probe`
+  passes only `--root`. The regression in `tests/toolchain-routing.test.cjs` fails on the
+  `27d2a27` core and passes after.
 
 ## 4. Verification
 
@@ -37,3 +43,5 @@
   `verification.md`.
 - [x] 4.4 Run `toolchain request`, `toolchain resolve --write` and `toolchain probe` through the
   CLI on a temporary pipeline root whose stack input sets `targetRoot` to `app`.
+- [x] 4.5 Run the same three commands on the real workbench pipeline root
+  (`ShinkaEvolve/shinka/research/webui`, change `award-redesign`, `targetRoot` `app`).
