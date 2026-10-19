@@ -70,6 +70,10 @@ function walk(deliverable, tier, mode) {
     // Web: the quick stated skip, or the playback the owner confirmed; the others answer the questions.
     intake: action => (deliverable !== "web" ? decide(dir, { by: "owner", stage: "intake", answer: "default" }) : action.type === "run" ? statedSkip(dir) : confirmPlayback(dir)),
     reference: () => (mode === "replicate" ? touch(dir, "reference.md", "Observed enamel at three angles.") : decide(dir, { by: "owner", stage: "reference", answer: "none" })),
+    extract: action => {
+      const flow = require("./helpers/replicate-flow.cjs");
+      if (action.type === "run") { flow.writeEvidence(dir); flow.writeFoundations(dir); } else flow.confirmExtraction(dir);
+    },
     concepts: () => {
       if (deliverable === "web") return exists("concepts.html") ? pickVariant(dir) : writeVariants(dir);
       if (deliverable === "ui") return exists("direction-preview.json") ? decide(dir, { by: "owner", stage: "concept", choice: "waived", answer: "Keep the existing look" }) : touch(dir, "direction-preview.json", JSON.stringify({ schema: "design-pipeline.direction-preview.v1", changeId: path.basename(dir), applicability: { status: "waived", reason: "established-surface" }, comparison: null, directions: [], decision: { status: "waived", selectedDirectionId: null, rationale: "The surface already has its direction." } }));
@@ -94,7 +98,7 @@ function walk(deliverable, tier, mode) {
       const file = path.join(dir, "interaction.json");
       if (!fs.existsSync(file)) return touch(dir, "interaction.json", motionProbeFile);
       if (fs.readFileSync(file, "utf8") === motionProbeFile) return touch(dir, "interaction.json", auditProbeFile);
-      return recordGate(dir, "interaction", "passed", ["interaction.json", "index.html"], {}, LINEAGE);
+      return recordGate(dir, "interaction", "passed", ["interaction.json", "index.html"], {}, { ...LINEAGE, tokens: ["DESIGN.md", "MOTION.md"].filter(exists) });
     },
     check: () => (deliverable === "edit" ? recordGate(dir, "edit", "passed", ["edit.json", "edit/analysis.json", "renders/edit.mp4"]) : recordGate(dir, "film", "passed", ["storyboard.json", "out.mp4"])),
     review: () => decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" }),
@@ -109,7 +113,7 @@ function walk(deliverable, tier, mode) {
     assert.ok(fix[action.stage], `no fixture for ${action.stage}`);
     fix[action.stage](action);
   }
-  throw new Error(`${deliverable}/${tier} did not finish`);
+  throw new Error(`${deliverable}/${tier}${mode ? `/${mode}` : ""} did not finish: ${seen.slice(-6).map(item => `${item.stage}/${item.type}`).join(" ")}`);
 }
 
 test("every command and record template on the film, edit, web and ui walks is the runnable node invocation", () => {
@@ -381,7 +385,7 @@ test("project root binds all emitted workflow command and record routes includin
   assertBound(nextAction(dir));
   for (const deliverable of ["film", "edit", "web", "ui"]) {
     for (const tier of ["quick", "standard", "full"]) {
-      for (const mode of ["brief", "replicate", "freeform"]) {
+      for (const mode of ["brief", "replicate"]) {
         const state = { deliverable, tier, mode, decisions: {}, gates: {}, rules: [] };
         if (deliverable === "ui") {
           const selected = path.join(dir, tier + "-" + mode);

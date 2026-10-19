@@ -89,6 +89,7 @@
     "page-refs.test.cjs",
     "page-review.test.cjs",
     "workflow-next.test.cjs",
+    "workflow-replicate.test.cjs",
     "product-source-workflow.test.cjs",
     "workflow-action-commands.test.cjs",
     "returned-command-safety.test.cjs",

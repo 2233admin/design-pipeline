@@ -49,6 +49,19 @@ Options:
 
 The initializer creates or augments one OpenSpec/design change. Re-running the identical request resumes without rewriting state history. It never marks a run complete.
 
+## Using it from `next`
+
+`designer-pipeline next --deliverable web --mode replicate` (or `ui`) is the workflow entry for a
+supplied reference page or screenshot. Its extract step has `next` itself check the reference
+evidence, `DESIGN.md`, `MOTION.md` and, at `standard` and `full`, the design-system package, and
+then asks the owner to confirm what is borrowed; the confirmation binds their hashes, so a later
+edit asks again. For a live page, the extract step also names `scripts/init-website-clone.cjs`
+(`next` does not run it: it needs the change id, the allowed differences and the protected
+invariants). When the project holds a `website-cloning.json` (at its root or in a change directory),
+a web replicate project's probe and delivery stay open until the manifest reports `complete`
+from `scripts/evaluate-website-clone.cjs`; `next` returns the evaluator command with the
+manifest's protected invariants and allowed differences until then.
+
 ## 2. Target Roles
 
 Every target has one role:

@@ -151,10 +151,10 @@ const passStoryboard = dir => recordGate(dir, "storyboard", "passed", ["storyboa
 const passFilm = dir => recordGate(dir, "film", "passed", ["storyboard.json", "out.mp4", ...["index.html", "timeline.json", "score-grid.json"].filter(file => fs.existsSync(path.join(dir, file))), ...evidence(dir)]);
 
 test("product-promo films add source, and sample at standard and full; other films keep their stage ids", t => {
-  for (const mode of ["brief", "freeform"]) assert.deepEqual(ids({ tier: "quick", mode, jobPlan: PRODUCT }), ["source", "plan", "build", "check", "review"]);
+  for (const mode of ["brief"]) assert.deepEqual(ids({ tier: "quick", mode, jobPlan: PRODUCT }), ["source", "plan", "build", "check", "review"]);
   assert.deepEqual(ids({ tier: "quick", mode: "replicate", jobPlan: PRODUCT }), ["reference", "source", "plan", "build", "check", "review"]);
   for (const tier of ["standard", "full"]) {
-    for (const mode of ["brief", "replicate", "freeform"]) assert.deepEqual(ids({ tier, mode, jobPlan: PRODUCT }), PRODUCT_STANDARD);
+    for (const mode of ["brief", "replicate"]) assert.deepEqual(ids({ tier, mode, jobPlan: PRODUCT }), PRODUCT_STANDARD);
   }
   for (const jobPlan of [undefined, { deliverableForm: "motion-graphics-video" }]) {
     assert.deepEqual(ids({ tier: "quick", mode: "brief", jobPlan }), ["plan", "build", "check", "review"]);
@@ -162,7 +162,7 @@ test("product-promo films add source, and sample at standard and full; other fil
     for (const tier of ["standard", "full"]) assert.deepEqual(ids({ tier, mode: "brief", jobPlan }), ["intake", "reference", "concepts", "plan", "build", "check", "review", "deliver"]);
   }
   // The same orders through a real bound plan.
-  for (const [tier, mode, first, total] of [["quick", "brief", "source", 5], ["quick", "replicate", "reference", 6], ["standard", "brief", "intake", 10], ["full", "freeform", "intake", 10]]) {
+  for (const [tier, mode, first, total] of [["quick", "brief", "source", 5], ["quick", "replicate", "reference", 6], ["standard", "brief", "intake", 10], ["full", "brief", "intake", 10]]) {
     const dir = project(t);
     writePlan(dir, PRODUCT_QUERY);
     initState(dir, { deliverable: "film", tier, mode });
@@ -173,7 +173,7 @@ test("product-promo films add source, and sample at standard and full; other fil
 });
 
 test("films without a product-launch-video plan keep their first actions and intake questions", t => {
-  for (const [tier, mode, first] of [["quick", "brief", "plan"], ["quick", "replicate", "reference"], ["standard", "brief", "intake"], ["full", "freeform", "intake"]]) {
+  for (const [tier, mode, first] of [["quick", "brief", "plan"], ["quick", "replicate", "reference"], ["standard", "brief", "intake"], ["full", "brief", "intake"]]) {
     const plain = project(t), bound = project(t);
     initState(plain, { deliverable: "film", tier, mode });
     writePlan(bound, MOTION_QUERY);
@@ -672,7 +672,7 @@ test("a recorded blocked check reports blocked rather than incomplete", t => {
 test("every product-promo stage names a section of the film guide", () => {
   const guide = fs.readFileSync(path.join(__dirname, "../skill/references/workflow-film.md"), "utf8");
   for (const tier of ["quick", "standard", "full"]) {
-    for (const mode of ["brief", "replicate", "freeform"]) {
+    for (const mode of ["brief", "replicate"]) {
       for (const id of ids({ tier, mode, jobPlan: PRODUCT })) assert.match(guide, new RegExp(`^## ${id}$`, "m"), `workflow-film.md lacks ## ${id}`);
     }
   }

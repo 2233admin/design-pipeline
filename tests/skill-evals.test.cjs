@@ -135,7 +135,7 @@ test("quick Chinese page eval checks browser behavior and the public workflow", 
   const item = manifest.cases.find((entry) => entry.id === "quick-chinese-profile-page");
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "skill-eval-page-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const start = runCli(root, ["next", "--project-root", ".", "--deliverable", "ui", "--tier", "quick", "--mode", "freeform"]);
+  const start = runCli(root, ["next", "--project-root", ".", "--deliverable", "ui", "--tier", "quick", "--mode", "brief"]);
   assert.equal(start.type, "run");
   assert.equal(start.stage, "work");
   fs.copyFileSync(path.join(behaviorFixtures, "index.html"), path.join(root, "index.html"));
@@ -194,9 +194,9 @@ test("quick Chinese page eval checks browser behavior and the public workflow", 
     assert.equal(next.diligence.current, true);
     assert.deepEqual(next.evidence.gates, {});
     const state = JSON.parse(fs.readFileSync(path.join(root, ".design-pipeline/state.json"), "utf8"));
-    assert.deepEqual([state.deliverable, state.tier, state.mode], ["ui", "quick", "freeform"]);
+    assert.deepEqual([state.deliverable, state.tier, state.mode], ["ui", "quick", "brief"]);
     checkOutcome(item, root, { state: next.type === "done" ? "ready" : next.type, signals: {
-      "quick-workflow": state.deliverable === "ui" && state.tier === "quick" && state.mode === "freeform",
+      "quick-workflow": state.deliverable === "ui" && state.tier === "quick" && state.mode === "brief",
       "required-validation": required.every(Boolean), "email-validation": invalidEmail, "keyboard-save": success === "资料已保存。",
       "reload-persistence": saved.name === "林晓雨" && saved.email === "xiaoyu@example.com" && saved.notifications === false,
       "responsive": size[0] === size[1] && size[1] === 320, "no-animation": animationCount === 0,

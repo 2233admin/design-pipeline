@@ -3,11 +3,11 @@
 Motion-first websites and pages. `designer-pipeline next` names the current stage; read only that
 section. Stage order:
 
-- `quick` brief/freeform: intake, components, build, probe, review; `quick` replicate: intake,
-  reference, components, build, probe, review.
-- `standard` and `full` brief/freeform: intake, reference, concepts, components, description, build,
+- `quick` brief: intake, components, build, probe, review; `quick` replicate: intake, reference,
+  extract, components, build, probe, review.
+- `standard` and `full` brief: intake, reference, concepts, components, description, build,
   probe, review, deliver. Replicate keeps the reference direction and omits replacement concepts:
-  intake, reference, components, description, build, probe, review, deliver.
+  intake, reference, extract, components, description, build, probe, review, deliver.
 
 At `standard` and `full` the agent talks before it builds: a conversation that ends in a playback
 the owner confirms, three switchable first-screen variants (not in replicate), the concrete
@@ -134,6 +134,7 @@ Record each reply with the command the ask returns:
 | --- | --- | --- |
 | Confirms the playback | `record`: `decide --stage intake --verdict accept --answer "<the playback the owner confirmed>" [--anti-goal "<anti-goal>" ...]` | `decisions.intake` holds the playback, marked `playback: "confirmed"`; intake is done |
 | Corrects it | `correction`: `decide --stage intake --verdict reject --answer "<what the owner said is wrong or missing>"` | The correction becomes a rule (`playback N`) and intake stays open |
+| Answers "default" | `default`: `decide --stage intake --answer default` | The owner accepts every recommendation, as for ui and film; `decisions.intake` holds `default`, marked `defaulted: true`. Not at `quick`, which states its decisions |
 | Asks you to just start | `skip`: `decide --stage intake --choice skip --answer "<the line telling the owner what you decided on their behalf>" [--anti-goal "<anti-goal>" ...]` | Tell the owner that line first; `decisions.intake` holds it, marked `skipped: true` |
 
 Replace the optional `[--anti-goal "<anti-goal>" ...]` in the `record` or `skip` command with one
@@ -176,6 +177,35 @@ Use `reference-spec.md` for observed regions, invariants and unknowns; for recon
 frames when supplied, and mark missing timestamps or uncertain motion. `reference.md` records
 document delivery, not verified understanding. Full reference checks include graybox evidence;
 do not require that aggregate to be ready before building the bounded graybox.
+
+## extract
+
+Replicate mode only (`ui` and `web`). The reference is extracted before anything is built.
+
+1. Register the reference as evidence: `reference-evidence.json` (v2, `intent.role: primary-target`),
+   as the [reference](#reference) step and `feature-routes.md` describe.
+2. Write a draft `DESIGN.md` and `MOTION.md` from it, and at `standard` and `full` the
+   design-system package (`design-system-package.md`), compiled with `design-system compile` so
+   the owner can see the previews. `DESIGN.md` Source Decisions lists what is borrowed (adopted:
+   structure, layout rhythm, type scale, colour, motion parameters) and what is not (rejected: the
+   reference's content, copy, brand marks and logos).
+3. `next` runs the existing checks itself: the reference check (its approval, a complete video
+   analysis; a pending graybox or geometry stage is the build's work), `foundation check` for
+   `DESIGN.md` and `MOTION.md`, the design-system package at `standard` and `full`, and that Source
+   Decisions names what is not borrowed. While any fails it returns a `run` with `findings`, each
+   with its fix. For a live-page reference, run `scripts/init-website-clone.cjs`
+   (`website-cloning.md`) to write `website-cloning.json` with the protected invariants and allowed
+   differences; the probe and delivery then consult its evaluator verdict.
+4. When the checks pass, `next` asks the owner to confirm the extraction: it shows `DESIGN.md`,
+   `MOTION.md`, `reference.md` and the compiled design-system previews and cover, a `tokens`
+   summary, and `borrowed` (Source Decisions). Record their words with `decide --stage extract
+   --by owner --verdict accept --answer "<the owner's words>"`, or their "no" with `--verdict
+   reject` (it becomes a rule and the extraction is revised).
+
+The confirmation stores the hashes of `DESIGN.md`, `MOTION.md`, `reference.md` and
+`reference-evidence.json`. Editing any of them reopens it (the ask says what changed); the
+description approval, the probe pass and the delivery bind the same files, so a re-confirmed
+extraction asks for them again. Final acceptance stays with the owner.
 
 ## concepts
 
@@ -637,6 +667,12 @@ if geometry is blocked; detail geometry and fidelity claims still require their 
 Creating files or passing engineering checks does not grant visual acceptance.
 
 ## probe
+
+In replicate mode the probe pass also binds `reference.md` and `reference-evidence.json`, and a
+`website-cloning.json` in the project (or in its change directory) must report `complete`: `next`
+returns the evaluator command (`scripts/evaluate-website-clone.cjs`, which checks protected
+invariants, allowed differences and the declared interaction environment) until it does, at the
+probe and again at delivery.
 
 If `interaction.json` is missing, write it, schema `design-pipeline.interaction-probe.v1`: one probe
 per key interaction (a section with no driver has none, but the page keeps at least one; see

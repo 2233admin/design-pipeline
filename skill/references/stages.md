@@ -376,6 +376,14 @@ Before claiming completion, follow `references/lifecycle.md` and `references/qa-
 The full extraction targets are in `references/pipeline-method.md`, `references/feature-routes.md`,
 `references/lifecycle.md`, and this stage guide. Load only what the selected route requires.
 
+Replicate mode (`next --mode replicate` for ui and web) replaces the intake-to-direction path with
+an extract step: the reference is registered as `reference-evidence.json` and `reference.md`, then
+extracted into a draft `DESIGN.md`, `MOTION.md` and, at standard and full, the design-system
+package. `next` runs `reference check` and `foundation check` itself, the owner confirms what is
+borrowed and what is not (`decide --stage extract`), and the confirmation binds the hashes of those
+files; later stages recompute them and reopen the confirmation when one changed. Details:
+`workflow-web.md#extract`.
+
 ## Stage 1: Guided Design Intake
 
 The guided first-wave flow is:

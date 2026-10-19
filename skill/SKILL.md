@@ -17,6 +17,7 @@ Pick one row, open what it names, and open nothing else until the task needs it.
 | The task | Start here | Then |
 | --- | --- | --- |
 | A complete deliverable (UI, web page, film, edit) | `designer-pipeline next --project-root <project>` | [Follow `next`](#follow-next-for-a-complete-deliverable) |
+| The user gave a reference page or screenshot to follow | `designer-pipeline next --project-root <project> --deliverable web\|ui --mode replicate` | [Follow `next`](#follow-next-for-a-complete-deliverable) |
 | One supporting job: drawing, image placement, text fitting, comparison, motion maps | `tools/README.md` | one selected guide → its implementation/example |
 | Workflow stages, UI, references, implementation and review | `references/stages.md` | the stage the task is in |
 | New website, redesign, visual critique, style, image-to-code, brand board | `references/taste-skill.md` | the selected original source |
@@ -45,10 +46,12 @@ showing a draft. A returned `blocked` action (exit 2) names what is missing in `
 `instruction`; ask the user for it and never work around it.
 
 For a new complete deliverable, choose its kind and tier from the request; let the user override.
-Use `--mode replicate` when reproducing a supplied reference, and `--mode freeform` when the user
-gave no direction. `quick` covers one motion, shot, component or fix; `standard` covers one whole
-deliverable with its applicable brief, concept and draft decisions; `full` adds the expanded
-planning and evidence workflow, including the OpenSpec change required by `next`. In this repository,
+Use `--mode replicate` when reproducing a supplied reference: for ui and web, `next` first has you
+extract the reference into DESIGN.md and MOTION.md (and the design-system package), checks them
+itself, and asks the owner to confirm what is borrowed before anything is built. `quick` covers one
+motion, shot, component or fix; `standard` covers one whole deliverable with its applicable brief,
+concept and draft decisions; `full` adds the expanded planning and evidence workflow, including the
+OpenSpec change required by `next`. In this repository,
 behavior changes always use an OpenSpec change. Preserve any stronger change process required by a
 user project. If a new project needs a deliverable or tier, answer the `next` question and use the
 `record` command it returns to initialize the existing workflow.

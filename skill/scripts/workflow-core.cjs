@@ -27,26 +27,27 @@ const SCHEMA = "design-pipeline.workflow-state.v1";
 const STATE = path.join(".design-pipeline", "state.json");
 const DELIVERABLES = ["film", "edit", "web", "ui"];
 const TIERS = ["quick", "standard", "full"];
-const MODES = ["brief", "replicate", "freeform"];
+const MODES = ["brief", "replicate"];
 
 // Sub-workflows by deliverable (Q5, Q7): film, edit and web have their own stage modules and
 // guides.
-const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, deliveryRecorded, gateStatus, invalidateCheckedEvidence, reason, reference, reviewInputHashes, statement } = require("./workflows/shared.cjs");
+const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, deliveryRecorded, gateStatus, extractionDigest, invalidateCheckedEvidence, reason, reviewInputHashes, statement } = require("./workflows/shared.cjs");
 const roles = require("./workflows/roles.cjs");
 const rules = require("./workflows/rules.cjs");
 const away = require("./workflows/away.cjs");
 const ui = require("./workflows/ui.cjs");
+const replicate = require("./workflows/replicate.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
-const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
 function codeStages(state) {
   const { tier, mode } = state;
   const work = {
     id: "work",
-    finished: (state) => Boolean(state.decisions?.delivered),
+    // A replicated ui delivery is bound to the extraction it was built from.
+    finished: (state) => Boolean(state.decisions?.delivered) && (mode !== "replicate" || state.decisions.deliveredExtraction === extractionDigest(state)),
     action: (_state, root) => ({
       type: "run",
-      instruction: `${tier === "full" ? "Open an OpenSpec change under openspec/changes/<id>/ and follow references/pipeline-reference.md" : `Follow references/pipeline-reference.md at the ${tier} tier (no OpenSpec; at standard create DESIGN.md/MOTION.md if missing, and for ui and web deliverables the design-system package per references/design-system-package.md)`}${mode === "replicate" ? "; reproduce the reference and its invariants" : ""}. In tasks.md isolate one visual goal per task: source/reference region or applicable scene node, goal and invariants, inputs, literal modification scope, outputs, runtime/comparison checks and failure return step. For references, start a bounded graybox for structure and occlusion; once it exists, read the complete results of reference check, reconstruction check and applicable scene check. If required prerequisite stages are not ready, repair their findings before material, polish or motion that depends on them; follow the stage-specific permissions in references/reconstruction-spec.md, including optical work when graybox is ready but geometry is blocked. Verify the rendered surface; file delivery and engineering checks do not grant visual acceptance. When verified, run the command to record the delivery (replace <evidence>).`,
+      instruction: `${tier === "full" ? "Open an OpenSpec change under openspec/changes/<id>/ and follow references/pipeline-reference.md" : `Follow references/pipeline-reference.md at the ${tier} tier (no OpenSpec; at standard create DESIGN.md/MOTION.md if missing, and for ui and web deliverables the design-system package per references/design-system-package.md; a replicate run already has them from its confirmed extraction, which the build follows)`}${mode === "replicate" ? "; reproduce the reference and its invariants" : ""}. In tasks.md isolate one visual goal per task: source/reference region or applicable scene node, goal and invariants, inputs, literal modification scope, outputs, runtime/comparison checks and failure return step. For references, start a bounded graybox for structure and occlusion; once it exists, read the complete results of reference check, reconstruction check and applicable scene check. If required prerequisite stages are not ready, repair their findings before material, polish or motion that depends on them; follow the stage-specific permissions in references/reconstruction-spec.md, including optical work when graybox is ready but geometry is blocked. Verify the rendered surface; file delivery and engineering checks do not grant visual acceptance. When verified, run the command to record the delivery (replace <evidence>).`,
       command: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer <evidence>`,
       ...(mode === "replicate" ? { guide: "references/pipeline-reference.md" } : {}),
       why: tier === "full" ? "Full tier keeps OpenSpec lineage." : "Lighter tiers skip specification ceremony but keep the gates.",
@@ -55,10 +56,11 @@ function codeStages(state) {
   // Every tier ends with the owner's acceptance of the delivered work: visual quality is not
   // something a passing check can accept on the owner's behalf.
   // A ui interface is chosen from a rendered direction preview before it is built; replicate keeps
-  // its reference instead, and quick has no owner stages before the work.
+  // its reference, extracted into DESIGN.md and MOTION.md the owner confirms, instead, and quick has no
+  // owner stages before the work.
   const intake = state.deliverable === "ui" ? ui.UI_INTAKE : INTAKE;
   const direction = state.deliverable === "ui" && tier !== "quick" && mode !== "replicate" ? [ui.DIRECTION] : [];
-  return [...(tier === "quick" ? [] : [intake]), ...(mode === "replicate" ? [REFERENCE] : []), ...direction, work, REVIEW];
+  return [...(tier === "quick" ? [] : [intake]), ...(mode === "replicate" ? [replicate.REFERENCE, replicate.EXTRACT] : []), ...direction, work, REVIEW];
 }
 
 function stagesFor(state) {
@@ -177,7 +179,7 @@ function askSubject(state, root, stageId, action) {
 function nextAction(root, { deferral = true } = {}) {
   const state = readState(root);
   if (!state) {
-    return { type: "ask", stage: "start", language: LANGUAGE, question: "What are we making, and how big is it?", recommended: "film/standard for a promo or explainer; edit/standard for PV or MAD; quick for a single motion, shot or component; full only for large shared work.", record: `${cliCommand()} next --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --deliverable film|edit|web|ui --tier quick|standard|full [--mode brief|replicate|freeform] [--job-plan job-plan.json]`, line: "No project state yet: choose the deliverable and tier." };
+    return { type: "ask", stage: "start", language: LANGUAGE, question: "What are we making, and how big is it?", recommended: "film/standard for a promo or explainer; edit/standard for PV or MAD; quick for a single motion, shot or component; full only for large shared work.", record: `${cliCommand()} next --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --deliverable film|edit|web|ui --tier quick|standard|full [--mode brief|replicate] [--job-plan job-plan.json]`, line: "No project state yet: choose the deliverable and tier." };
   }
   stateJobPlan(root, state);
   const stages = stagesFor(state);
@@ -242,7 +244,7 @@ const deliveryCurrent = (state, root) => state.deliverable === "ui" ? Boolean(st
 // falls back to the action type: an ask records the owner's words, a run the agent's decision.
 function withRoles(action, state) {
   const out = { ...action };
-  for (const key of ["record", "correction", "skip", "command", "then"]) {
+  for (const key of ["record", "correction", "skip", "default", "command", "then"]) {
     if (typeof out[key] !== "string" || !/ decide --root /.test(out[key]) || /--by /.test(out[key])) continue;
     const checkpoint = /--stage (\S+)/.exec(out[key])?.[1];
     const entry = state.delegation?.[checkpoint];
@@ -327,7 +329,7 @@ function decide(root, options = {}) {
   if (!state) fail("workflow", "no project state. Fix: run next with --deliverable and --tier first", { code: "INPUT_MISSING" });
   stateJobPlan(root, state); // A stale Stage 0 binding records nothing.
   const stage = options.stage;
-  assertEnum(stage, ["intake", "reference", "concept", "components", "description", "section", "sample", "review", "deliver"], "stage", "workflow");
+  assertEnum(stage, ["intake", "reference", "extract", "concept", "components", "description", "section", "sample", "review", "deliver"], "stage", "workflow");
   state.decisions = state.decisions || {};
   // Filled in memory; the map is saved with the decision, so a refused call changes nothing.
   roles.ensureDelegation(state, stagesFor(state).map(item => item.id));
@@ -394,6 +396,11 @@ function decide(root, options = {}) {
     const answer = options.answer || "none";
     if (answer === "none" && state.mode === "replicate") fail("workflow", "replicate mode cannot skip the reference. Fix: write reference.md from the reference you are reproducing");
     state.decisions.reference = answer;
+  } else if (stage === "extract") {
+    if (!stagesFor(state).some(item => item.id === "extract")) fail("workflow", `--stage extract applies only to ui and web replicate workflows; this project is ${state.deliverable}/${state.mode}. Fix: follow next.`);
+    const next = nextAction(root, ANSWERING);
+    if (next.stage !== "extract" || next.type !== "ask") fail("workflow", `Cannot record the extraction while ${next.stage === "extract" ? "its checks are failing" : `${next.stage} is unfinished`}. Fix: follow next.`, { code: "WORKFLOW_NOT_READY" });
+    replicate.recordExtraction(state, root, options);
   } else if (stage === "concept" && state.deliverable === "ui") {
     if (!stagesFor(state).some((item) => item.id === "concepts")) fail("workflow", "this ui run has no direction stage (quick tier or replicate mode). Fix: follow next");
     const next = nextAction(root, ANSWERING);
@@ -452,6 +459,7 @@ function decide(root, options = {}) {
       state.decisions.deliveredSha256 = "sha256:" + sha256(fs.readFileSync(file));
     }
     state.decisions.delivered = options.answer || true;
+    if (state.deliverable === "ui" && state.mode === "replicate") state.decisions.deliveredExtraction = extractionDigest(state);
     if (state.deliverable !== "ui") state.decisions.deliveryInputHashes = structuredClone(reviewInputHashes(state));
   }
   // A skipped standard conversation hands intake to the agent: the owner chose not to be asked.
@@ -505,7 +513,8 @@ function diligence(root, options = {}) {
 function recordGate(root, gate, status, inputs = [], report = {}, lineage = null) {
   const state = readState(root);
   if (!state) return;
-  const bound = lineage ? [...inputs, ...lineage.files, ...lineage.tokens] : inputs;
+  const extra = gate === "interaction" ? replicate.boundReferenceFiles(state, root) : [];
+  const bound = lineage ? [...inputs, ...extra, ...lineage.files, ...lineage.tokens] : inputs;
   const inputHashes = status === "passed" ? Object.fromEntries(bound.filter(Boolean).map(input => {
     const file = resolveInside(root, input, "checked input", { scope: "workflow", mustExist: true });
     return [path.relative(root, file).split(path.sep).join("/"), "sha256:" + sha256(fs.readFileSync(file))];

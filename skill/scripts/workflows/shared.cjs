@@ -96,10 +96,17 @@ function gateStatus(state, root, gate, inputs = []) {
 
 const gatePassed = (...args) => gateStatus(...args).status === "passed";
 
+// The digest later stages bind to in replicate mode (workflows/replicate.cjs): the files the owner's
+// latest extraction confirmation judged, or null when none stands.
+function extractionDigest(state) {
+  const latest = state.mode === "replicate" && Array.isArray(state.decisions?.extractions) ? state.decisions.extractions.at(-1) : null;
+  return latest?.verdict === "accept" ? "sha256:" + sha256(canonicalJson(latest.inputs)) : null;
+}
+
 // What a final review binds: the checked outputs, or for ui (which has no checking gate of its own)
 // the delivery evidence its work stage recorded.
 function reviewInputHashes(state) {
-  if (state.deliverable === "ui") return state.decisions?.delivered ? { delivered: "sha256:" + sha256(String(state.decisions.delivered)) } : null;
+  if (state.deliverable === "ui") return state.decisions?.delivered ? { delivered: "sha256:" + sha256(String(state.decisions.delivered)), ...(extractionDigest(state) ? { extraction: extractionDigest(state) } : {}) } : null;
   const gate = { film: "film", edit: "edit", web: "interaction" }[state.deliverable];
   return state.gates?.[gate]?.inputHashes || null;
 }
@@ -120,6 +127,7 @@ function invalidateCheckedEvidence(state) {
   delete state.decisions.delivered;
   delete state.decisions.deliveryInputHashes;
   delete state.decisions.deliveredSha256;
+  delete state.decisions.deliveredExtraction;
 }
 
 const INTAKE = {
@@ -156,7 +164,7 @@ function reference(study, context = {}) {
         ? observation.kind === "observe-window"
           ? `Inspect ${observation.windowId} (${observation.startSec}–${observation.endSec}s) in ${observation.viewerPath || observation.reportPath}, using frames ${observation.frameIds.join(", ")}. ${observation.instruction} Update observations in ${observation.reportPath}, refresh videoAnalysis.sha256 in reference-evidence.json, and record actual findings in reference.md. Use the attached resample arguments if needed.`
           : `${observation.instruction}${observation.resample ? " Use the attached resample arguments." : ""} Current report: ${observation.reportPath}.`
-        : `For a local video first run ${cliCommand()} reference analyze-video --root ${shellPath(path.resolve(root))} --path <contained-video> --output <new-evidence-dir>; inspect the ordered timed windows, confirm shot bounds and applicable target properties, and fill observations in its report, then bind videoAnalysis.path/sha256 in reference-evidence.json. Resample uncertain intervals with --start <sec> --end <sec> --fps 24 into a new directory. In an existing project run ${cliCommand()} project inspect --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --write --output .design-pipeline/project-analysis-v1.json and read the relevant source lines before proposing changes.`;
+        : `${context.work ? `${context.work} ` : ""}For a local video first run ${cliCommand()} reference analyze-video --root ${shellPath(path.resolve(root))} --path <contained-video> --output <new-evidence-dir>; inspect the ordered timed windows, confirm shot bounds and applicable target properties, and fill observations in its report, then bind videoAnalysis.path/sha256 in reference-evidence.json. Resample uncertain intervals with --start <sec> --end <sec> --fps 24 into a new directory. In an existing project run ${cliCommand()} project inspect --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --write --output .design-pipeline/project-analysis-v1.json and read the relevant source lines before proposing changes.`;
       return {
         type: "run",
         study, images, guides,
@@ -240,4 +248,4 @@ function meaningful(answer, minimum, what, flag = "--answer", { cjkWeight = 0.5,
 const statement = (answer, what, flag) => meaningful(answer, 6, what, flag);
 const reason = (answer, what, flag) => meaningful(answer, 2, what, flag, { cjkWeight: 1, unit: "each CJK character counts as one" });
 
-module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, invalidateCheckedEvidence, reason, reference, reviewInputHashes, statement };
+module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, extractionDigest, invalidateCheckedEvidence, reason, reference, reviewInputHashes, statement };

@@ -253,6 +253,11 @@ node skill/scripts/designer-pipeline.cjs design-system route \
 
 捕获参考证据，从完整组件合同构建，独立比较结果后才声称保真度。
 
+给出参考页面或截图时，用 `next --deliverable web|ui --mode replicate` 进入：先把参考提取成
+`DESIGN.md`、`MOTION.md`（standard/full 另加设计系统包），`next` 自己跑参考检查与基础检查，
+再由 owner 确认“借用什么、不借用什么”，之后才建设；确认绑定这些文件的哈希，事后改动会重新
+询问。网页项目带有 `website-cloning.json` 时，探测与交付还要求保真评估结果为 `complete`。
+
 整站或登录后页面另有内置的 `deepclonewebsite` 功能切片参考：支持可见浏览器登录门、
 同域页面归型、`structure`/显式 `full` 捕获、离线多页链接，以及基于可见证据的产品结构、
 数据模型、后端需求和设计系统假设。它是固定版本、哈希校验的被动源码参考，不会安装或
