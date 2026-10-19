@@ -366,7 +366,8 @@ function declaredBrands(text) {
   const context = sectionText(text, ["product context"]);
   const declared = (context.match(BRAND_LINE) || [])[1];
   if (!declared || NO_BRAND.test(declared.trim())) return null;
-  const brands = declared.split(/[,，、;；]/).map((name) => name.trim()).filter(Boolean);
+  // A playback's "(my guess)"-style note is provenance, not part of the name.
+  const brands = declared.split(/[,，、;；]/).map((name) => name.replace(/\s*[(（][^)）]*[)）]\s*$/, "").trim()).filter(Boolean);
   if (!brands.length) return null;
   return { brands, factsPath: (context.match(FACTS_LINE) || [])[1] || null };
 }
