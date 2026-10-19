@@ -114,9 +114,87 @@ Screenshots are the 375x812, 768x1024 and 1440x900 sets from Browser / Visual Ch
 Whether a scroll-driven page builds and then lands is judged by scrolling it at full speed; the
 screenshots show state, not pacing.
 
+## Critique on request
+
+Run this only when the owner asks for a critique, a score or "how good is this". It is not part of
+delivery, `review` or any gate, and `next` never schedules it. It reads W1 to W7 as evidence and
+changes none of them. It applies to any visual output (page, deck, infographic, app screen, cover).
+
+### Dimensions
+
+Score each dimension 0 to 10 with one sentence of evidence. Concept comes first because execution
+only amplifies it: polishing an empty concept makes a brighter template.
+
+| Dimension | Reads | W rules it reads |
+| --- | --- | --- |
+| 0 Concept | The idea, in one sentence; the chosen direction card's hero and skeleton | none; asked of the whole piece |
+| 1 Direction fidelity | Whether it embodies the chosen direction and project `DESIGN.md` without mixing in other looks | W7 |
+| 2 Hierarchy and pacing | Reading order, density contrast, ground changes, the landing section | W1 W2 W3 W4 W5 |
+| 3 Craft | Alignment, spacing system, colour and font count, edge precision | none; read from screenshots, with `UC-` ids as supporting evidence |
+| 4 Function | Every element serves the goal; the key action or fact is where the eye lands; motion answers a driver | W6 |
+| 5 Originality | Avoids the stock look (gradient orb for AI, neon on near-black, matrix rain, circuit boards); a reasoned surprise | none; the direction card's source and the ledger |
+
+Levels, written for Concept; the other dimensions apply the same bands to the question in the table:
+
+- 9 to 10: an idea grown from this user's content, a motif nothing else could replace.
+- 7 to 8: a clear idea; the motif fits but a nearby topic would also work.
+- 5 to 6: style without an idea; good looking, says nothing.
+- 3 to 4: a template with a skin on it.
+- 1 to 2: wrong style, or decoration piled up.
+
+Concept questions: can the idea be said in one sentence; with all text and logos covered, is the
+subject still recognisable (for type-led work, ask whether the typographic treatment survives a
+change of subject); would it still hold with another client's name (if yes it is a template and
+Concept is at most 5); does the form come from the content rather than from a style list.
+
+Anchors for the others: Hierarchy, heading at least 2.5 times body size, three or four distinct
+levels, and the squint test (blur the screenshot; the order must survive). Craft, one spacing scale,
+at most four colours plus greys, at most two type families, one alignment axis.
+
+Emphasis by output (Concept is first for all of them and is never traded away):
+
+| Output | Weigh most | Relax |
+| --- | --- | --- |
+| Cover or social image | Originality, hierarchy | Function |
+| Infographic | Function, hierarchy | Originality (accuracy first) |
+| Deck | Hierarchy, function | Originality (clarity first) |
+| PDF or white paper | Craft, function | Originality (professional first) |
+| Landing page or site | Function, hierarchy | none |
+| App UI | Function, craft | Direction fidelity (usability first) |
+
+### Overall score
+
+The overall score is the mean of the six dimension scores, to one decimal. **Concept veto:** when
+Concept is 5 or lower, the overall score is capped at 6.0 and the critique says to fix the concept
+before the execution. Bands: 8 and above strong, 6 to 7.9 good, 4 to 5.9 needs work, below 4 fails.
+
+### Output form
+
+Every critique has these parts, in this order:
+
+1. Scores: the six dimension scores with one sentence each, then the overall score and band (and the
+   veto when it applied).
+2. Keep: what works, in design terms the owner can protect during revisions.
+3. Fix: problems ordered by severity, each tagged fatal (the piece fails its job or concept),
+   important (visibly weakens it) or polish (small refinement). Each gives the current state, why it
+   matters and a concrete fix with numbers (for example "heading 16px to 48px", "gaps only
+   8/16/24/32/48"). A fix without a value is not a fix; project tokens win over these examples.
+4. Quick Wins: the three changes that improve the piece most in five minutes, as a checkbox list.
+
+### What a critique is not
+
+- Not Visual Acceptance: the score is a reviewer's aid. Only the owner records acceptance, and the
+  owner's choice outranks the score. If the owner chose a direction or declined a finding, say what
+  the critique would change and do not override the choice.
+- Not Component Conformance: gate findings and `UC-` ids stay there, separately, with their existing
+  meaning. A critique line never turns a failing finding into a pass or the reverse.
+- Not a gate or a receipt: nothing reads it. Keep the text under a `Critique` heading in `qa.md`
+  beside, never inside, the Visual Acceptance block.
+
 ## What these rules are not
 
-- Not a gate: they add no finding code, no status and no receipt, and block nothing.
+- Not a gate: they add no finding code, no status and no receipt, and block nothing. The scored
+  critique above reads them only when the owner asks for one.
 - Not Component Conformance: the gate findings named above keep their meaning and severity there.
 - Not acceptance: an agent never records Visual Acceptance; `qa.md` leaves it pending until a
   reviewer records it.
