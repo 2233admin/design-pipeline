@@ -18,7 +18,7 @@ const { addRule } = require("./rules.cjs");
 // what the agent understood before any direction is made; the history is the web intake's.
 const playbackApplies = (state) => state.tier !== "quick" && state.mode !== "replicate";
 const playbacks = (state) => (Array.isArray(state.decisions?.playbacks) ? state.decisions.playbacks : []);
-const PLAYBACK = `Play back the owner's reply as a short card, one line each: the need, the audience, the scene (where and when it is used), the tone, and the expectations they did not say but probably have (mark each guess as your guess). End the card with: "${CLOSING_LINE}" Do not ask the owner to name or pick a style in words: they choose among rendered directions next.`;
+const PLAYBACK = `Play back the owner's reply as a short card, one line each: the need, the audience, the scene (where and when it is used), the tone, and the expectations they did not say but probably have (mark each guess as your guess). When the conversation or brief names a real brand or product, add one line for it (\"Real brands: Stripe, Meta (my guess)\", or \"Real brands: none\"); once DESIGN.md is written, record the confirmed brands in its Product Context as \"Real brands: <names>\" with the bare names (drop notes such as \"(my guess)\"). End the card with: "${CLOSING_LINE}" Do not ask the owner to name or pick a style in words: they choose among rendered directions next.`;
 
 const UI_INTAKE = {
   ...INTAKE,

@@ -157,6 +157,9 @@ test("brand names match exactly: Meta is not satisfied by Meta Quest 3", (t) => 
   // Both declared, case-insensitively equal names do match.
   const both = project(t, { tokens, context: "Real brands: meta quest 3\nBrand facts: brand-facts.md", files: { "brand-facts.md": facts } });
   assert.deepEqual(codes(both), []);
+  // A playback's guess note copied into the declaration is not part of the name.
+  const noted = project(t, { tokens, context: "Real brands: Meta Quest 3 (my guess)\nBrand facts: brand-facts.md", files: { "brand-facts.md": facts } });
+  assert.deepEqual(codes(noted), []);
 });
 
 test("a declared brand without a package is a finding with the fix", (t) => {
