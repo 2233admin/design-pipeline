@@ -19,7 +19,7 @@ The existing svg-d3 adapter SHALL define probe, plan, invoke and verify using th
 
 ### Requirement: Toolchain plan names a contained target package directory
 
-The toolchain request MAY carry `targetRoot`, the target package directory relative to `--root`, from the stack input, and the toolchain plan SHALL always carry it, as `.` when the request omits it. Request validation SHALL canonicalise it (backslashes become `/`, POSIX normalisation, no trailing `/`) so equivalent spellings produce identical request and plan bytes, and SHALL reject empty values, absolute paths, any `:` and any `..` segment. Because the plan hash covers `targetRoot`, the probe result and every receipt bound by `planSha256` SHALL be bound to that directory. `toolchain resolve` and `toolchain probe` SHALL require `targetRoot` to resolve to an existing directory inside `--root` after following symlinks and junctions, and otherwise SHALL fail without writing output or running a probe. `toolchain probe` SHALL run its command probes in that directory without any directory option, and a failed command probe SHALL name the directory relative to `--root`. The request, job plan and any `--write` output SHALL stay contained under `--root`, and the probe SHALL stay read-only. `toolchain resolve` and `toolchain probe` SHALL reject `--project-root` with `UNKNOWN_OPTION` and a message naming `targetRoot`.
+The toolchain request MAY carry `targetRoot`, the target package directory relative to `--root`, from the stack input, and the toolchain plan SHALL always carry it, as `.` when the request omits it. Request validation SHALL canonicalise it (backslashes become `/`, POSIX normalisation, no trailing `/`) so equivalent spellings produce identical request and plan bytes, and SHALL reject empty values, absolute paths, any `:` and any `..` segment. Because the plan hash covers `targetRoot`, the probe result and every receipt bound by `planSha256` SHALL be bound to that directory. `toolchain resolve` and `toolchain probe` SHALL require `targetRoot` to resolve to an existing directory inside `--root` after following symlinks and junctions, and otherwise SHALL fail without writing output or running a probe. `toolchain probe` SHALL run its command probes in that directory without any directory option, and a failed command probe SHALL name the directory relative to `--root`. The probe API SHALL derive that directory only from `--root` and the plan's `targetRoot` and SHALL reject any caller-supplied directory before running a probe. The request, job plan and any `--write` output SHALL stay contained under `--root`, and the probe SHALL stay read-only. `toolchain resolve` and `toolchain probe` SHALL reject `--project-root` with `UNKNOWN_OPTION` and a message naming `targetRoot`.
 
 #### Scenario: Package nested below the pipeline root
 
@@ -38,6 +38,12 @@ The toolchain request MAY carry `targetRoot`, the target package directory relat
 
 - **WHEN** `targetRoot` is empty, absolute, contains `:` or a `..` segment, or names a missing path, a file, or a symlink or junction resolving outside `--root`
 - **THEN** request validation, `toolchain resolve` or `toolchain probe` SHALL fail with a distinct path error and SHALL NOT write output or run a probe in that location
+
+#### Scenario: Caller-chosen probe directory
+
+- **WHEN** a direct `probeToolchain` call passes a directory option such as `projectRoot`, or omits `root`
+- **THEN** it SHALL fail before running any probe
+- **AND** with `root` given, every command probe SHALL run in `root` plus the plan's `targetRoot`, and a failed probe SHALL name that directory
 
 #### Scenario: Stale directory option
 

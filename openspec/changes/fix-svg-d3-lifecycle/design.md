@@ -6,9 +6,9 @@
 `lifecycle`. `validateLifecycle` in `skill/scripts/adapter-core.cjs` and
 `adapter-registry.schema.json` fix its shape: a `command` probe with a 100..30000 ms timeout, a plan
 guide with dependencies and requirements, an invocation and a verification receipt schema with
-evidence types. `probeToolchain` runs the probe with its `projectRoot` option as working directory
-and a bounded environment; the CLI passed `--root`. Exit 0 reports stdout as the version, any
-other exit blocks with the last stderr line.
+evidence types. `probeToolchain` ran the probe with its `projectRoot` option (default: the process
+working directory) as working directory and a bounded environment; the CLI passed `--root`. Exit 0
+reports stdout as the version, any other exit blocks with the last stderr line.
 `toolchain resolve` does not run probes. The toolchain plan, bound by `planSha256` in the probe
 result and every toolchain receipt, did not record which directory target-project commands run in.
 
@@ -38,8 +38,9 @@ SVG or semantic table. The lifecycle must express exactly these facts.
    or visual acceptance.
 5. **The plan names the target package directory as `targetRoot`.** The field follows the
    component-first `target.root` naming; `projectRoot` already means the workflow root for CLI
-   `--project-root`, an absolute Git root in `execution-target-core.cjs` and an absolute cwd in
-   `probeToolchain`. The request may carry `targetRoot` (from the stack input, passed through by
+   `--project-root` and an absolute Git root in `execution-target-core.cjs`, and it named the
+   caller-chosen working directory option of `probeToolchain` that this change removes. The
+   request may carry `targetRoot` (from the stack input, passed through by
    `buildToolchainRequest` like other choices); the plan always does, `.` when omitted, so
    `planSha256` binds the probe result and every receipt to that directory. There is no per-entry
    `cwd` on probes, invocations or verification entries, no new probe-result field and no schema
@@ -52,15 +53,22 @@ SVG or semantic table. The lifecycle must express exactly these facts.
    `resolveToolchain` use it, so `app`, `app/`, `./app` and `app\` give the same request and plan
    bytes. The lexical check runs on hand-edited requests too, because they reach `resolve` and
    `probe` without the builder.
-   The CLI resolves `plan.targetRoot` against `--root` for both `toolchain resolve` and
-   `toolchain probe` with the existing `contained()` realpath check plus a directory check, so
-   `resolve --write` never emits a plan for a missing directory, a file, or a path that escapes
-   `--root` through a symlink or junction. `probe` passes the resolved directory to
-   `probeToolchain` as its `projectRoot`; the probe command and `probeToolchain`'s signature are
-   unchanged. A failed command probe appends `(probed in <targetRoot>)` to its message so a
-   forgotten `targetRoot` explains itself. The request, job plan and `--write` output still
-   resolve against `--root`. Containment is deliberate: a pipeline run probes only packages it
-   owns. Nothing detects a nested `package.json` automatically; the stack input names it.
+   `targetDirectory(root, targetRoot)` in `toolchain-core.cjs` is the only code that turns
+   `plan.targetRoot` into a directory. It resolves the value inside the real `--root` with
+   `resolveInside` (the check behind the CLI's `contained()`), requires it to exist, takes its
+   real path, checks containment again and requires a directory, so a missing directory, a file,
+   or a path that escapes `--root` through a symlink or junction fails.
+   `probeToolchain(plan, options)` accepts only `root` (required) and `runner`; any other key,
+   including the former `projectRoot`, fails before anything runs. It derives its working
+   directory with `targetDirectory(root, plan.targetRoot)` before it looks at the plan status, so
+   a caller cannot choose the directory, and a probe can neither run outside the plan's
+   `targetRoot` nor report a directory it did not use. A failed command probe appends
+   `(probed in <directory>)`, the directory it ran in relative to `--root`, so a forgotten
+   `targetRoot` explains itself. `toolchain resolve` calls `targetDirectory` before it writes, so
+   `resolve --write` never emits a plan for an unusable `targetRoot`; `toolchain probe` passes
+   only `--root`. The request, job plan and `--write` output still resolve against `--root`.
+   Containment is deliberate: a pipeline run probes only packages it owns. Nothing detects a
+   nested `package.json` automatically; the stack input names it.
    `--project-root` stays a global known option for other commands, so `dispatch` rejects it
    explicitly for `toolchain resolve` and `toolchain probe` with `UNKNOWN_OPTION` and a message
    pointing to `targetRoot`, next to the existing per-command action rejection.
@@ -77,3 +85,7 @@ SVG or semantic table. The lifecycle must express exactly these facts.
 - Receipts bind the plan, and so `targetRoot`, only through `planSha256`; they do not record their
   own working directory, and `receipt-check` does not cross-check the tool or command against the
   plan. Those are separate follow-ups.
+- `probeToolchain` now requires `root` and rejects `projectRoot`, so a direct caller that passed a
+  directory or relied on the process working directory fails with `probe options is missing root`
+  or `probe options has unsupported properties: projectRoot`. The CLI is the only caller in this
+  repository.

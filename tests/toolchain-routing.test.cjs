@@ -74,7 +74,7 @@ test("trusted probes report actual availability without mutating the target proj
   const plan = resolveToolchain(request(), sources, { jobPlan: buildJobPlan(routeJob({ query: request().brief })) });
   const calls = [];
   const result = probeToolchain(plan, {
-    projectRoot: path.resolve(__dirname, ".."),
+    root: path.resolve(__dirname, ".."),
     runner(command, args, options) {
       calls.push({ command, args, cwd: options.cwd });
       return { status: 0, stdout: "xy=0.0.6;reflex=0.8.0\n", stderr: "" };
@@ -83,6 +83,7 @@ test("trusted probes report actual availability without mutating the target proj
   assert.equal(result.status, "ready");
   assert.equal(calls.length, 1);
   assert.equal(calls[0].command, "python");
+  assert.equal(calls[0].cwd, fs.realpathSync(path.resolve(__dirname, "..")));
   assert.equal(result.results.find(({ toolId }) => toolId === "reflex-xy").version, "xy=0.0.6;reflex=0.8.0");
 });
 
@@ -114,7 +115,7 @@ test("graphics jobs require a selected runtime, including an existing project ru
     assert.equal(missing.graphics, null);
     assert.ok(missing.blockers.some((item) => /graphics.*(?:family|adapter)/.test(item)));
     let invoked = false;
-    assert.equal(probeToolchain(missing, { runner() { invoked = true; } }).status, "blocked");
+    assert.equal(probeToolchain(missing, { root: path.resolve(__dirname, ".."), runner() { invoked = true; } }).status, "blocked");
     assert.equal(invoked, false);
   }
   for (const choice of [{ graphics: { adapter: "threejs" } }, { existing: { graphics: "threejs" } }, { existing: { graphics: { adapter: "threejs" } } }]) {
@@ -238,17 +239,43 @@ test("toolchain resolve rejects a drifted job plan", () => {
   );
 });
 
-test("failed probes block with one actionable root-cause line naming the probe directory", () => {
+test("probes run only in --root plus the plan's targetRoot and name that directory", () => {
+  const temp = fs.realpathSync(os.tmpdir());
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(temp, "toolchain-target-root-")));
+  const outside = fs.realpathSync(fs.mkdtempSync(path.join(temp, "toolchain-target-outside-")));
   const jobPlan = buildJobPlan(routeJob({ query: request().brief }));
-  const runner = () => ({ status: 1, stdout: "", stderr: "Traceback (most recent call last):\ninternal frame\nPackageNotFoundError: xy\n" });
-  const result = probeToolchain(resolveToolchain(request(), sources, { jobPlan }), { projectRoot: path.resolve(__dirname, ".."), runner });
-  assert.equal(result.status, "blocked");
-  assert.equal(result.results.find(({ toolId }) => toolId === "reflex-xy").message, "PackageNotFoundError: xy (probed in .)");
-  assert.deepEqual(result.blockers, ["reflex-xy: PackageNotFoundError: xy (probed in .)"]);
-  const nested = probeToolchain(resolveToolchain(request({ targetRoot: "app" }), sources, { jobPlan }), { projectRoot: path.resolve(__dirname, ".."), runner });
-  assert.deepEqual(nested.blockers, ["reflex-xy: PackageNotFoundError: xy (probed in app)"]);
-  const missing = probeToolchain(resolveToolchain(request(), sources, { jobPlan }), { projectRoot: path.resolve(__dirname, ".."), runner: () => ({ error: new Error("spawn python ENOENT") }) });
-  assert.deepEqual(missing.blockers, ["reflex-xy: spawn python ENOENT (probed in .)"]);
+  const plan = (targetRoot) => resolveToolchain(request(targetRoot === undefined ? {} : { targetRoot }), sources, { jobPlan });
+  const cwds = [];
+  const runner = (command, args, options) => {
+    cwds.push(options.cwd);
+    return { status: 1, stdout: "", stderr: "Traceback (most recent call last):\ninternal frame\nPackageNotFoundError: xy\n" };
+  };
+  try {
+    fs.mkdirSync(path.join(root, "app"));
+    fs.writeFileSync(path.join(root, "file.txt"), "");
+    fs.symlinkSync(outside, path.join(root, "escape"), "junction");
+    const result = probeToolchain(plan(), { root, runner });
+    assert.equal(result.status, "blocked");
+    assert.equal(result.results.find(({ toolId }) => toolId === "reflex-xy").message, "PackageNotFoundError: xy (probed in .)");
+    assert.deepEqual(result.blockers, ["reflex-xy: PackageNotFoundError: xy (probed in .)"]);
+    const nested = probeToolchain(plan("app"), { root, runner });
+    assert.deepEqual(nested.blockers, ["reflex-xy: PackageNotFoundError: xy (probed in app)"]);
+    assert.deepEqual(cwds, [root, path.join(root, "app")]);
+    const missing = probeToolchain(plan(), { root, runner: () => ({ error: new Error("spawn python ENOENT") }) });
+    assert.deepEqual(missing.blockers, ["reflex-xy: spawn python ENOENT (probed in .)"]);
+    assert.throws(() => probeToolchain(plan(), { root, projectRoot: root, runner }), /probe options has unsupported properties: projectRoot/);
+    assert.throws(() => probeToolchain(plan(), { runner }), /probe options is missing root/);
+    assert.throws(() => probeToolchain(plan("missing"), { root, runner }), /targetRoot does not exist/);
+    assert.throws(() => probeToolchain(plan("file.txt"), { root, runner }), /targetRoot must be a directory: file\.txt/);
+    assert.throws(() => probeToolchain(plan("escape"), { root, runner }), /targetRoot resolves outside/);
+    assert.equal(cwds.length, 2);
+  } finally {
+    for (const directory of [root, outside]) {
+      const relative = path.relative(temp, directory);
+      assert.ok(relative && !relative.startsWith("..") && !path.isAbsolute(relative));
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
+  }
 });
 
 test("Vite DevTools routes its project-local probe and evidence contract", () => {
@@ -337,7 +364,7 @@ test("both native Three.js routes probe only the pinned target runtime without i
       write("node_modules/three/package.json", installed);
       fs.writeFileSync(path.join(local, "index.cjs"), "module.exports = {};\n");
       const before = fs.readFileSync(path.join(root, "package.json"), "utf8");
-      const result = probeToolchain(plan, { projectRoot: root });
+      const result = probeToolchain(plan, { root });
       assert.equal(result.status, "ready");
       assert.equal(result.results.find(({ toolId }) => toolId === adapter).version, "three=0.180.0");
       assert.equal(fs.readFileSync(path.join(root, "package.json"), "utf8"), before);
@@ -349,17 +376,17 @@ test("both native Three.js routes probe only the pinned target runtime without i
         [{ ...pkg, scripts: { dev: "  " } }, /scripts.dev/],
       ]) {
         write("package.json", target);
-        const failed = probeToolchain(plan, { projectRoot: root });
+        const failed = probeToolchain(plan, { root });
         assert.equal(failed.status, "blocked");
         assert.match(failed.blockers[0], cause);
         assert.equal(fs.readFileSync(path.join(root, "package.json"), "utf8"), JSON.stringify(target));
       }
       write("package.json", { devDependencies: pkg.dependencies, scripts: pkg.scripts });
-      assert.equal(probeToolchain(plan, { projectRoot: root }).status, "ready");
+      assert.equal(probeToolchain(plan, { root }).status, "ready");
       fs.writeFileSync(path.join(local, "index.cjs"), "throw new Error('local package import failed');\n");
-      assert.match(probeToolchain(plan, { projectRoot: root }).blockers[0], /local package import failed/);
+      assert.match(probeToolchain(plan, { root }).blockers[0], /local package import failed/);
       fs.unlinkSync(path.join(local, "package.json"));
-      assert.equal(probeToolchain(plan, { projectRoot: root }).status, "blocked");
+      assert.equal(probeToolchain(plan, { root }).status, "blocked");
     }
   } finally {
     const relative = path.relative(fs.realpathSync(os.tmpdir()), fs.realpathSync(root));
@@ -391,19 +418,19 @@ test("React with SVG/D3 resolves ready and probes only the pinned target d3 with
     assert.deepEqual(plan.invocations.find(({ toolId }) => toolId === "svg-d3").command, ["npm", "run", "dev"]);
     assert.deepEqual(plan.verification.find(({ toolId }) => toolId === "svg-d3").evidenceTypes, ["dom", "screenshot", "accessibility"]);
 
-    const missing = probeToolchain(plan, { projectRoot: root });
+    const missing = probeToolchain(plan, { root });
     assert.equal(missing.status, "blocked");
     assert.match(missing.blockers[0], /^svg-d3: Cannot read the target project package\.json/);
 
     write("package.json", pkg);
-    const withoutPackage = probeToolchain(plan, { projectRoot: root });
+    const withoutPackage = probeToolchain(plan, { root });
     assert.equal(withoutPackage.status, "blocked");
     assert.match(withoutPackage.blockers[0], /^svg-d3: Cannot resolve the d3 package of the target project at node_modules\/d3/);
 
     write("node_modules/d3/package.json", installed);
     entry("export function select() {}\n");
     const before = fs.readFileSync(path.join(root, "package.json"), "utf8");
-    const result = probeToolchain(plan, { projectRoot: root });
+    const result = probeToolchain(plan, { root });
     assert.deepEqual(result.blockers, []);
     assert.equal(result.status, "ready");
     assert.equal(result.results.find(({ toolId }) => toolId === "svg-d3").version, "d3=7.9.0");
@@ -416,19 +443,19 @@ test("React with SVG/D3 resolves ready and probes only the pinned target d3 with
       [{ ...pkg, scripts: { dev: "  " } }, /scripts\.dev/],
     ]) {
       write("package.json", target);
-      const failed = probeToolchain(plan, { projectRoot: root });
+      const failed = probeToolchain(plan, { root });
       assert.equal(failed.status, "blocked");
       assert.match(failed.blockers[0], cause);
       assert.equal(fs.readFileSync(path.join(root, "package.json"), "utf8"), JSON.stringify(target));
     }
     write("package.json", { devDependencies: pkg.dependencies, scripts: pkg.scripts });
-    assert.equal(probeToolchain(plan, { projectRoot: root }).status, "ready");
+    assert.equal(probeToolchain(plan, { root }).status, "ready");
     entry("export const scaleLinear = () => {};\n");
-    assert.match(probeToolchain(plan, { projectRoot: root }).blockers[0], /does not export select/);
+    assert.match(probeToolchain(plan, { root }).blockers[0], /does not export select/);
     entry("throw new Error('local package import failed');\n");
-    assert.match(probeToolchain(plan, { projectRoot: root }).blockers[0], /local package import failed/);
+    assert.match(probeToolchain(plan, { root }).blockers[0], /local package import failed/);
     write("node_modules/d3/package.json", { ...installed, name: "not-d3" });
-    assert.equal(probeToolchain(plan, { projectRoot: root }).status, "blocked");
+    assert.equal(probeToolchain(plan, { root }).status, "blocked");
   } finally {
     const relative = path.relative(fs.realpathSync(os.tmpdir()), fs.realpathSync(root));
     assert.ok(relative && !relative.startsWith("..") && !path.isAbsolute(relative));
