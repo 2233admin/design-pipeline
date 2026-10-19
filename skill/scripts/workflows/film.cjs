@@ -11,6 +11,7 @@ const path = require("node:path");
 const { canonicalJson, isObject, resolveInside, sha256 } = require("../contract-utils.cjs");
 const { cliCommand, shellPath, CONCEPTS, INTAKE, REVIEW, deliveryRecorded, exists, reference } = require("./shared.cjs");
 const { newestRender } = require("../film-project-core.cjs");
+const { installCommand } = require("../install-hints.cjs");
 const { PRODUCT_PROMO_FORM, probe, productSourceAdmission, productSourceFiles, run } = require("../film-core.cjs");
 
 function draftRender(root) {
@@ -181,7 +182,7 @@ function inspectSample(root) {
     run(tools.ffmpeg, ["-v", "error", "-xerror", "-i", file, "-map", "0:v:0", "-f", "null", "-"]);
     return { findings: [] };
   } catch (error) {
-    if (error.code === "TOOL_MISSING") return { findings: [finding("sample-probe-unavailable", error.message, "Install ffmpeg and ffprobe on PATH so the sample can be checked, then run next again.")] };
+    if (error.code === "TOOL_MISSING") return { findings: [finding("sample-probe-unavailable", error.message, `Run \`${installCommand("ffmpeg")}\` (it installs ffmpeg and ffprobe) so the sample can be checked, then run next again.`)] };
     return notVideo(String(error.message).split(/\r?\n/)[0].slice(0, 300));
   }
 }

@@ -10,6 +10,7 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { assertEnum, assertKeys, assertString, fail, resolveInside, sha256 } = require("./contract-utils.cjs");
 const { withFix } = require("./film-hints.cjs");
+const { installCommand } = require("./install-hints.cjs");
 
 const STORYBOARD_SCHEMA = "design-pipeline.film-storyboard.v1";
 const RENDER_SCHEMA = "design-pipeline.film-render-evidence.v1";
@@ -451,7 +452,7 @@ function checkStoryboard(board, options = {}) {
 
 function run(bin, args, options = {}) {
   const result = spawnSync(bin, args, { encoding: options.binary ? "buffer" : "utf8", maxBuffer: 1 << 28, windowsHide: true });
-  if (result.error) fail("film render", `${bin} unavailable: ${result.error.message}`, { code: "TOOL_MISSING" });
+  if (result.error) fail("film render", `${bin} unavailable: ${result.error.message}. Fix: run \`${installCommand("ffmpeg")}\` (it installs ffmpeg and ffprobe) and keep both on PATH`, { code: "TOOL_MISSING" });
   if (result.status !== 0) {
     const stderr = String(result.stderr || "").trim();
     const diagnostic = stderr.length > 6144 ? `${stderr.slice(0, 4096)}\n[diagnostic truncated]\n${stderr.slice(-2048)}` : stderr;

@@ -7,11 +7,22 @@
 ![Last Commit](https://img.shields.io/github/last-commit/2233admin/design-pipeline)
 ![Node](https://img.shields.io/badge/Node-22+-339933)
 
-```bash
-npx skills add 2233admin/design-pipeline --skill design-pipeline --agent codex --global
+Claude Code：
+
+```text
+/plugin marketplace add 2233admin/design-pipeline
+/plugin install design-pipeline@design-pipeline
 ```
 
-装好以后，在 Codex、Claude Code 等 coding agent 里直接说需求，例如“用 design-pipeline 给这个项目做一个设置页”。其他 agent、离线 Release 包和升级方式见 [安装与第一次运行](docs/install.md)。需要 Node.js 22 或更新版本。
+Codex 和其他 agent：
+
+```bash
+SKILLS_DOWNLOAD_MAX_BYTES=104857600 SKILLS_EXTRACT_MAX_BYTES=268435456 SKILLS_EXTRACT_MAX_FILES=5000 \
+  npx skills add https://github.com/2233admin/design-pipeline/releases/latest/download/design-pipeline-skill.zip \
+  --skill design-pipeline -a codex -g
+```
+
+然后让你的 agent 运行 `designer-pipeline doctor`：它列出缺什么、每项给一条可复制的命令，不会替你安装任何东西。装好以后直接说需求，例如“用 design-pipeline 给这个项目做一个设置页”。Windows、离线 Release 包和升级方式见 [安装与第一次运行](docs/install.md)。需要 Node.js 22.12 或更新版本。
 
 [能做什么](#能做什么) · [怎么工作](#怎么工作) · [作品案例](#作品案例珐琅徽章) · [原则](#几条原则) · [文档](#继续阅读)
 
@@ -76,7 +87,7 @@ npx skills add 2233admin/design-pipeline --skill design-pipeline --agent codex -
 
 ## 继续阅读
 
-- [安装与第一次运行](docs/install.md)：本地安装、Release 包、可选依赖检查、第一个设计基础。
+- [安装与第一次运行](docs/install.md)：Claude Code 插件、Codex 等 agent、`doctor`、离线 Release 包、第一个设计基础。
 - [功能详解](docs/features.md)：每项能力的说明与命令。
 - [Agent 入口 `skill/SKILL.md`](skill/SKILL.md)：Agent 读到的路由表。
 - [维护者指南](docs/maintainers.md)：OpenSpec、仓库布局、维护命令与发布标准；贡献流程见 [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md)。

@@ -12,6 +12,7 @@ const os = require("node:os");
 const path = require("node:path");
 const childProcess = require("node:child_process");
 const { fail } = require("./contract-utils.cjs");
+const { installCommand } = require("./install-hints.cjs");
 
 const SCOPE = "film blender";
 const TEMPLATE_DIR = path.join(__dirname, "../references/blender-templates");
@@ -47,7 +48,7 @@ function findBlender(explicit) {
     if (!match) fail(SCOPE, `detected Blender executable returned no recognizable version at ${executable}: ${String(version.stdout || version.stderr || "").trim() || "empty output"}`, { code: "TOOL_FAILED" });
     return { path: executable, version: `${match[1]}.${match[2]}.${match[3]}`, major: Number(match[1]), minor: Number(match[2]) };
   }
-  fail(SCOPE, "Blender was not detected in PATH or supported platform locations. If already installed, pass --blender <path to blender executable> or set BLENDER_PATH; otherwise install Blender 4.2 LTS or newer", { code: "TOOL_MISSING" });
+  fail(SCOPE, "Blender was not detected in PATH or supported platform locations. If already installed, pass --blender <path to blender executable> or set BLENDER_PATH; otherwise run `" + installCommand("blender") + "` (Blender 4.2 LTS or newer)", { code: "TOOL_MISSING" });
 }
 
 function listTemplates() {

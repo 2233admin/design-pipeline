@@ -1,6 +1,7 @@
 ---
 name: design-pipeline
 description: Design and visual workflow guidance for tasks involving graphics, images, typography, layout, frontend UI, rendering, animation, reference studies, design reviews, motion websites, product films, and edits. Use this skill to choose the relevant method or tool while preserving the user's project workflow and acceptance decisions.
+compatibility: Requires Node.js 22.12+. Evidence gates and captures need a Chromium-based browser; film, edit and audio work needs ffmpeg and ffprobe; 3D film templates need Blender 4.2+; the large MengTo and iart skill libraries download on first use over the network. Run `designer-pipeline doctor` to see what is present.
 ---
 
 # design-pipeline

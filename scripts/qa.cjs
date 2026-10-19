@@ -116,6 +116,8 @@ try {
   const skillText = fs.readFileSync(path.join(repoRoot, "skill/SKILL.md"), "utf8");
   const frontmatter = skillText.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   report(Boolean(frontmatter && /^name:\s*design-pipeline\s*$/m.test(frontmatter[1]) && /^description:\s*\S+/m.test(frontmatter[1])), "skill frontmatter");
+  const compatibility = frontmatter?.[1].match(/^compatibility:[ \t]*(\S.*)$/m)?.[1];
+  report(Boolean(compatibility) && compatibility.length <= 500, "skill frontmatter declares compatibility (500 characters at most)");
 
   const testManifest = readJson(path.join(repoRoot, "scripts/test-manifest.json"));
   report(testManifest.schema === "design-pipeline.test-manifest.v1" && Array.isArray(testManifest.tests), "test manifest schema");

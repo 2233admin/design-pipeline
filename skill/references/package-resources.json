@@ -3,6 +3,7 @@
   "packageRoot": "skill",
   "generated": [
     "PACKAGE.json",
+    ".claude-plugin/plugin.json",
     "scripts/install-local.cjs"
   ],
   "required": [
@@ -143,6 +144,8 @@
     "scripts/render-score.cjs",
     "references/film-score.md",
     "scripts/blender-core.cjs",
+    "scripts/install-hints.cjs",
+    "scripts/doctor-report.cjs",
     "scripts/blender-project-core.cjs",
     "references/blender-templates/product-turntable.json",
     "references/blender-templates/product-turntable.py",

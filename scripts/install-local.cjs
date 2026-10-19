@@ -81,8 +81,9 @@ function install(options) {
   const packagedRoot = path.join(repoRoot, "SKILL.md");
   const defaultSource = fs.existsSync(packagedRoot) ? repoRoot : path.join(repoRoot, "skill");
   const source = path.resolve(options.source || defaultSource);
-  const defaultRoot = process.env.CODEX_SKILLS_DIR || path.join(process.env.CODEX_HOME || path.join(os.homedir(), ".codex"), "skills");
-  const root = path.resolve(options.root || defaultRoot);
+  // ~/.agents/skills is the user-level skills directory Codex and the other agents that follow the
+  // Agent Skills layout scan. Claude Code installs through its plugin marketplace instead.
+  const root = path.resolve(options.root || path.join(os.homedir(), ".agents", "skills"));
   const target = path.resolve(options.target || path.join(root, "design-pipeline"));
   if (!fs.existsSync(source) || !fs.statSync(source).isDirectory()) fail(`source does not exist: ${source}`);
   if (fs.lstatSync(source).isSymbolicLink()) fail(`source cannot be a symlink or junction: ${source}`);

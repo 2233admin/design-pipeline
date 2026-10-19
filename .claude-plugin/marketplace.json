@@ -1,0 +1,20 @@
+{
+  "name": "design-pipeline",
+  "description": "Design and film workflow skill: UI, motion web, product films, PV/MAD edits.",
+  "owner": {
+    "name": "2233admin",
+    "url": "https://github.com/2233admin"
+  },
+  "plugins": [
+    {
+      "name": "design-pipeline",
+      "description": "Design and film workflow with evidence gates; installs the latest GitHub Release package.",
+      "category": "design",
+      "homepage": "https://github.com/2233admin/design-pipeline",
+      "source": {
+        "source": "archive",
+        "url": "https://github.com/2233admin/design-pipeline/releases/latest/download/design-pipeline-skill.zip"
+      }
+    }
+  ]
+}

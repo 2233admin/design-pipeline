@@ -54,6 +54,7 @@
     "good-css.test.cjs",
     "graybox-gate.test.cjs",
     "holosticker.test.cjs",
+    "install-doctor.test.cjs",
     "install-local.test.cjs",
     "impeccable-product-design.test.cjs",
     "interface-discipline.test.cjs",
