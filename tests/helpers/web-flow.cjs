@@ -35,7 +35,10 @@ function statedSkip(root, answer = STATED) {
   return decide(root, { by: "owner", stage: "intake", choice: "skip", answer });
 }
 
+// Each flow starts from an empty ledger: with a browser present, earlier flows' deliveries in this
+// process measure the same fixture page and would collide with it.
 function writeVariants(root) {
+  fs.rmSync(directionEnv.ledger, { force: true });
   writeDirectionSet(root, { ids: ["a", "b", "c"] });
 }
 
