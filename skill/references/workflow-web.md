@@ -768,6 +768,8 @@ Show the page, its motion at full speed and a one-paragraph gate summary. When t
 treatment (not in `replicate` mode), the reviewer also reads W1 to W7 (`web-direction.md`) and
 reports them under Visual Acceptance in `qa.md`; the agent never records acceptance and gate
 findings stay Conformance. Offer the [numbered page](#element-references) as at a section review.
+A scored critique is produced only when the owner asks for one, in the form of
+[Critique on request](web-direction.md#critique-on-request); it is never run automatically.
 
 The owner accepts, or rejects with one sentence. Either way, record their own words from the
 conversation: `decide --stage review --verdict accept|reject --answer "<the owner's words>"`. An

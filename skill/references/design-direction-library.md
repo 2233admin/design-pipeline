@@ -9,8 +9,14 @@ the project's `DESIGN.md`, `MOTION.md`, owner decisions or the pipeline's gates.
 is Chinese; keep the user's language when you quote or adapt it.
 
 Adoption into the workflow happens through separate changes: #155 (direction sources), #154
-(appearance ledger), #156 (brand and facts) and #157 (critique). Until those land, read and borrow
-from the library; do not treat it as a required step.
+(appearance ledger), #156 (brand and facts) and #157 (critique). What is adopted is required where
+its guide says so; for anything not yet adopted, read and borrow from the library.
+
+Adopted: #155 and #154, the ui and web direction stage (six cards from three sources, the thumbnail
+board, three full versions and the appearance ledger; `direction-preview.md`). #157: the critique guide's dimensions, level criteria, concept veto and three-part
+output (Keep, Fix, Quick Wins) are folded into `web-direction.md#critique-on-request` and mapped to
+the W1 to W7 review rules. It runs only when the owner asks for a critique, is guidance with no code
+check, and a critique score is never Visual Acceptance.
 
 ## Where it is
 
@@ -30,7 +36,7 @@ its Git blob id, size and SHA-256 and lists the 84 specimens (`specimens[]`: `id
 | `assets/style-specimens/<family>/NN-name.html` | The 84 single-file HTML specimens; `<family>` is `web`, `ppt`, `info`, `app` or `east`. |
 | `references/directions.md` | How to make three directions that differ in structure, not only in skin. |
 | `references/workflow.md`, `references/design-context.md` | Intake questions and the working order after a direction is chosen. |
-| `references/critique-guide.md` | Scored critique: concept first, then execution. |
+| `references/critique-guide.md` | Scored critique: concept first, then execution. Adopted into `web-direction.md#critique-on-request`; follow the pipeline text. |
 | `references/brand-asset-protocol.md` | Find and verify a brand's real logo, product images, colors and fonts before designing with them. |
 | `references/content-guidelines.md` | Rules against generic generated looks, and scale rules. |
 | `references/evolution.md`, `references/experience.md` | Keeping preferences, a ledger of past looks and verified lessons between projects. |
