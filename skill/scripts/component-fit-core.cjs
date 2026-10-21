@@ -85,6 +85,8 @@ function normalizeProjectInventory(source, fallbackFramework) {
   return { components, array: false, status, document: sortValue(document) };
 }
 const UNSPECIFIC_LICENSES = new Set(["unverified", "mixed", "unknown", "unspecified", "undisclosed"]);
+// Catalog license states that keep a declared license under project review, as component routing does.
+const REVIEW_LICENSE_STATES = new Set(["unverified", "commercial"]);
 
 function assertObject(value, label) {
   if (!isObject(value)) fail("component-fit", `${label} must be an object`);
@@ -335,8 +337,25 @@ function summarizeCandidate(entry, capability, request, directionLock) {
   };
 }
 
-function providerCandidates(providers, capability, request, directionLock) {
+// The catalog source record with the provider's sourceId is the only license authority for an
+// external provider; the provider registry carries no license of its own.
+function providerLicense(provider, catalog) {
+  if (provider.mode === "project-owned") return { license: "project-owned", requiresLicense: false };
+  if (provider.sourceId === undefined) return { license: null, requiresLicense: false };
+  const records = catalog.entries.filter((entry) => entry.recordType === "source" && entry.sourceId === provider.sourceId);
+  if (records.length > 1) fail("component-fit", `catalog has ${records.length} source records for provider ${provider.id} sourceId ${provider.sourceId}`);
+  const [record] = records;
+  if (!record) return { license: null, requiresLicense: false };
+  const verifiedId = record.license?.state === "verified" && nonEmpty(record.license.id) ? record.license.id : null;
+  return {
+    license: verifiedId || (nonEmpty(record.provenance?.license) ? record.provenance.license : null),
+    requiresLicense: REVIEW_LICENSE_STATES.has(record.license?.state),
+  };
+}
+
+function providerCandidates(providers, licenses, capability, request, directionLock) {
   return providers.filter((provider) => provider.capabilities?.includes(capability)).map((provider) => {
+    const resolved = licenses.get(provider.id);
     const entry = {
       id: `provider:${provider.id}`,
       name: provider.label || provider.id,
@@ -347,13 +366,16 @@ function providerCandidates(providers, capability, request, directionLock) {
         platforms: [request.platform],
       },
       provenance: {
-        license: provider.mode === "project-owned" ? "project-owned" : provider.license || null,
+        license: resolved.license,
         source: provider.source || provider.id,
         url: provider.source || null,
       },
       alignment: { framework: request.framework },
     };
     const dimensions = fitDimensions(entry, capability, request, directionLock);
+    if (resolved.requiresLicense) {
+      dimensions.license = fitDimension({ ...entry, routing: { ...entry.routing, requiresLicense: true } }, capability, "license", request, directionLock);
+    }
     const requestedFramework = typeof request.framework === "string" ? request.framework.toLowerCase() : null;
     const providerFrameworks = (provider.frameworks || []).map((framework) => framework.toLowerCase());
     const compatibleFramework = !requestedFramework || providerFrameworks.includes(requestedFramework) || providerFrameworks.includes("agnostic");
@@ -382,7 +404,7 @@ function providerCandidates(providers, capability, request, directionLock) {
       fallback: null,
       license: entry.provenance.license,
       evidenceStatus: provider.status,
-      requiresLicense: false,
+      requiresLicense: resolved.requiresLicense,
     };
   });
 }
@@ -502,6 +524,7 @@ function buildComponentFitMatrix(input) {
     : normalizeDesignSystemSnapshot(input.catalog);
   validateComponentCatalogRouting(catalog);
   const providers = providerEntries(input);
+  const providerLicenses = new Map(providers.map((provider) => [provider.id, providerLicense(provider, catalog)]));
   const providerDocument = normalizedProviderDocument(input.providers || [], providers);
   assertStringArray(input.capabilities, "capabilities", { unique: true });
   const capabilities = [...new Set(input.capabilities)].sort();
@@ -516,7 +539,7 @@ function buildComponentFitMatrix(input) {
   const rows = capabilities.map((capability) => {
     const candidates = [
       ...project.filter((component) => component.capabilities.includes(capability)).map((component) => projectCandidate(component, capability, request, directionLock)),
-      ...providerCandidates(providers, capability, request, directionLock),
+      ...providerCandidates(providers, providerLicenses, capability, request, directionLock),
       ...entries.filter((entry) => entry.routing?.capabilities?.includes(capability)).map((entry) => summarizeCandidate(entry, capability, request, directionLock)),
     ].sort((a, b) => a.id.localeCompare(b.id));
     const decision = candidateDecision(candidates, capability, directionLock);
