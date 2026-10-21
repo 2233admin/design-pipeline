@@ -101,6 +101,16 @@ All notable changes to Design Pipeline are documented here.
   `.agents/skills` installations by default, while preserving legacy Codex roots and exclusive
   explicit root overrides (change `fix-standard-skills-install-discovery`).
 
+- `component fit` no longer judges every external component provider unlicensed. Provider
+  candidates read `provider.license`, a field the provider registry does not allow, so React Aria,
+  Ark UI and Vuetify0 always failed the license dimension with `source has no license declaration`
+  and were `blocked`. The license now comes from the component source catalog record whose
+  `sourceId` matches the provider's: its verified `license.id`, otherwise its `provenance.license`
+  (React Aria resolves to Apache-2.0 and passes). A provider without a `sourceId` or a matching
+  source record still fails; unverified, commercial and unspecific licenses go to `review`; two
+  source records for one `sourceId` fail the build. The matrix candidate's `license` shows the
+  resolved value, and `validate-fit --catalog` reports a stale catalog binding when that record
+  changes (change `fix-provider-license-from-catalog`).
 - `toolchain resolve` no longer blocks every React + D3 project with
   `svg-d3 has no probe/plan/invoke/verify lifecycle`. `svg-d3` now has the project-owned lifecycle
   Three.js uses: the probe requires an exact `d3` pin matching `node_modules/d3`, a nonempty
