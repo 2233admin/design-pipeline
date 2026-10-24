@@ -182,7 +182,8 @@ test("isolated release archive carries every film source blob without ambient so
       env: { ...process.env, PACKAGE_VERSION: "0.0.0-dev", RELEASE_MODE: "0", GITHUB_REF_NAME: "", SOURCE_DATE_EPOCH: "1791504000" },
     });
     assert.equal(packaged.status, 0, packaged.stderr || packaged.stdout);
-    const extracted = run("tar", ["-xzf", path.join(root, "design-pipeline-skill.tgz"), "-C", root, ...Object.keys(REVIEWED).map(name => `design-pipeline/vendor/${name}/`)], root);
+    // A relative archive name keeps GNU tar (Git Bash) from reading "C:\..." as host:path; bsdtar accepts it too.
+    const extracted = run("tar", ["-xzf", "design-pipeline-skill.tgz", "-C", root, ...Object.keys(REVIEWED).map(name => `design-pipeline/vendor/${name}/`)], root);
     assert.equal(extracted.status, 0, extracted.stderr);
     for (const name of Object.keys(REVIEWED)) {
       const installed = path.join(root, "design-pipeline/vendor", name);

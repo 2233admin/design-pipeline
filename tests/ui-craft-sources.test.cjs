@@ -275,7 +275,8 @@ function packageArchive() {
     PACKAGE_VERSION: "0.0.0-dev", RELEASE_MODE: "0", GITHUB_REF_NAME: "", SOURCE_DATE_EPOCH: "1791504000",
   });
   assert.equal(built.status, 0, built.stderr || built.stdout);
-  const archive = path.join(root, "design-pipeline-skill.tgz");
+  // A relative archive name keeps GNU tar (Git Bash) from reading "C:\..." as host:path; bsdtar accepts it too.
+  const archive = "design-pipeline-skill.tgz";
   const listed = run("tar", ["-tzf", archive], root);
   assert.equal(listed.status, 0, listed.stderr);
   packaged.entries = new Set(listed.stdout.split(/\r?\n/).filter(Boolean));
