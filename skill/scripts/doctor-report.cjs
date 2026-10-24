@@ -1,9 +1,10 @@
 "use strict";
 
 // The readable half of `doctor`. cli-core.cjs `inspectDoctor` stays the source of what is required
-// (Node, package files); this adds where the skill is installed, which agents are present, and the
-// recommended and optional tools. Each missing item carries one copyable command. Nothing here
-// installs anything, and only a missing required item makes the result blocked.
+// (Node, package files, a recorded copy that still matches its source); this adds where the skill is
+// installed and where it came from, which agents are present, and the recommended and optional
+// tools. Each missing item carries one copyable command. Nothing here installs anything, and only a
+// failed required item makes the result blocked.
 
 const fs = require("node:fs");
 const os = require("node:os");
@@ -12,6 +13,7 @@ const { spawnSync } = require("node:child_process");
 const { locateBrowser } = require("./browser-locate.cjs");
 const { findBlender } = require("./blender-core.cjs");
 const { fetchCommand, installCommand } = require("./install-hints.cjs");
+const { gitSource } = require("./install-provenance.cjs");
 
 const NODE_REQUIRED = "22.12.0";
 const INSTALL_DOC = "https://github.com/2233admin/design-pipeline/blob/main/docs/install.md";
@@ -65,6 +67,17 @@ function item(id, label, ok, detail, fix, todo) {
   return { id, label, ok, detail, ...(ok ? {} : fix ? { fix } : todo ? { todo } : {}) };
 }
 
+function provenanceFacts(provenance) {
+  if (provenance.status === "invalid") return provenance.blocking;
+  const dirty = provenance.dirty === true ? "uncommitted changes" : provenance.dirty === false ? "clean" : "clean state unknown";
+  return `${provenance.version ? `v${provenance.version}` : "version unknown"}, commit ${provenance.commit ? provenance.commit.slice(0, 7) : "unknown"}, ${dirty}, digest ${provenance.digestMatch ? "matches" : "does not match"}`;
+}
+
+function provenanceDetail(provenance) {
+  if (provenance.status === "invalid" || !provenance.blocking) return provenanceFacts(provenance);
+  return `${provenance.blocking} (${provenanceFacts(provenance)})`;
+}
+
 function inspectEnvironment(doctor, options = {}) {
   const platform = options.platform || process.platform;
   const env = options.env || process.env;
@@ -73,11 +86,23 @@ function inspectEnvironment(doctor, options = {}) {
   const probe = options.probeTool || probeTool;
   const install = classifyInstall(doctor.packageRoot, { ...options, env });
   const cli = path.join(doctor.packageRoot, "scripts", "designer-pipeline.cjs");
+  const provenance = doctor.provenance || { status: "absent", blocking: null };
+  const reinstall = install.kind === "claude-plugin" ? "claude plugin update design-pipeline@design-pipeline" : installCommand("skill", platform);
+  // A checkout run in place is not an installed copy: its Git state is shown, never checked.
+  if (install.kind === "other" && provenance.status === "absent") {
+    const origin = gitSource(doctor.packageRoot);
+    if (origin) install.git = { commit: origin.commit, branch: origin.branch, dirty: origin.dirty };
+  }
 
   const required = [
     item("node", `Node.js ${NODE_REQUIRED.replace(/\.0$/, "")} or newer`, nodeAtLeast(doctor.node), `v${doctor.node}`, null, "Install Node.js 22.12 or newer from https://nodejs.org/, then run doctor again."),
     item("package", "Skill files", doctor.missing.length === 0, doctor.missing.length ? `missing: ${doctor.missing.slice(0, 5).join(", ")}${doctor.missing.length > 5 ? ", ..." : ""}` : "all present", install.kind === "claude-plugin" ? "claude plugin update design-pipeline@design-pipeline" : null, `Reinstall the skill with the command for your agent in ${INSTALL_DOC}.`),
+    ...(provenance.status === "absent" ? [] : [item("provenance", "Installed copy matches its recorded source", !provenance.blocking, provenanceDetail(provenance), reinstall)]),
   ];
+  // Marketplace and older packages carry no record; that is worth knowing, never a blocker.
+  const unrecorded = provenance.status === "absent" && install.kind !== "other"
+    ? [item("provenance", "Install provenance (which source this copy came from)", false, "provenance not recorded", reinstall)]
+    : [];
 
   let browser;
   try {
@@ -117,14 +142,22 @@ function inspectEnvironment(doctor, options = {}) {
   return {
     install,
     agents: detectAgents({ home: options.home, env }),
-    tiers: { required, recommended: [browser], optional: [libraries, ffmpeg, blenderItem] },
+    tiers: { required, recommended: [browser, ...unrecorded], optional: [libraries, ffmpeg, blenderItem] },
   };
+}
+
+function sourceLine(provenance = { status: "absent" }, git) {
+  if (provenance.status !== "absent") return provenanceFacts(provenance);
+  if (!git) return "not recorded";
+  const dirty = git.dirty === true ? "uncommitted changes" : git.dirty === false ? "clean" : "clean state unknown";
+  return `Git checkout, branch ${git.branch || "unknown"}, commit ${git.commit ? git.commit.slice(0, 7) : "unknown"}, ${dirty} (run in place; not checked)`;
 }
 
 function renderDoctor(doctor, environment) {
   const lines = ["design-pipeline doctor", ""];
   lines.push(`Installed at  ${environment.install.path}`);
   lines.push(`Installed as  ${environment.install.label}`);
+  lines.push(`Source        ${sourceLine(doctor.provenance, environment.install.git)}`);
   lines.push(`Agents found  ${environment.agents.length ? environment.agents.join(", ") : "none detected"}`);
   const sections = [
     ["Required (the skill does not work without these)", environment.tiers.required],

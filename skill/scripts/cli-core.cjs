@@ -146,6 +146,7 @@ const {
 } = require("./designmd-core.cjs");
 const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 const { inspectEnvironment, nodeAtLeast, renderDoctor } = require("./doctor-report.cjs");
+const { inspectProvenance } = require("./install-provenance.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
 const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later"]);
@@ -366,6 +367,8 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     missing.push("vendor/design-direction-library/manifest.json");
   }
   const nodeSupported = nodeAtLeast(nodeVersion);
+  // A recorded copy whose files changed after install, or that was copied from uncommitted work.
+  const provenance = inspectProvenance(skillRoot);
   const registry =
     missing.length || !fs.existsSync(path.join(skillRoot, "references", "graphics-runtime-catalog.json"))
       ? null
@@ -377,7 +380,7 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
           ),
         );
   return {
-    status: missing.length || !nodeSupported ? "blocked" : "ready",
+    status: missing.length || !nodeSupported || provenance.blocking ? "blocked" : "ready",
     node: nodeVersion,
     nodeSupported,
     packageRoot: skillRoot,
@@ -392,6 +395,7 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     iart,
     directionLibrary,
     registry,
+    provenance,
   };
 }
 
@@ -1844,7 +1848,8 @@ function holostickerCommand(parsed, action) {
 }
 
 // Default output is the readable report; --json keeps the machine result, which gains `environment`.
-// Only a missing required item (Node, package files) blocks; recommended and optional tools never do.
+// Only a failed required item (Node, package files, a recorded copy that drifted from its source)
+// blocks; recommended and optional tools never do.
 function doctorCommand({ parsed, root }) {
   const doctor = { ...inspectDoctor(), root };
   const result = { ...doctor, environment: inspectEnvironment(doctor) };

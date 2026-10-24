@@ -5,6 +5,11 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
+// Packaged, this installer sits beside the skill's own scripts; in the repository the skill is skill/.
+const provenance = require([
+  path.join(__dirname, "install-provenance.cjs"),
+  path.join(__dirname, "..", "skill", "scripts", "install-provenance.cjs"),
+].find((file) => fs.existsSync(file)));
 
 function fail(message) { throw new Error(message); }
 function inside(root, target) {
@@ -64,6 +69,8 @@ function removeTree(target) {
   if (fs.existsSync(target)) fs.rmSync(target, { recursive: true, force: true });
 }
 
+// A copy of uncommitted work installs, and its own doctor then reports it blocked; every other
+// blocked result, and any digest mismatch, fails the install.
 function validateStagedPackage(target) {
   const cli = path.join(target, "scripts", "designer-pipeline.cjs");
   const result = spawnSync(process.execPath, [cli, "doctor", "--root", target, "--json"], {
@@ -71,9 +78,43 @@ function validateStagedPackage(target) {
     encoding: "utf8",
     windowsHide: true,
   });
-  if (result.status !== 0) {
-    fail(`staged package doctor failed: ${(result.stderr || result.stdout || "unknown error").trim()}`);
+  if (result.status === 0) return;
+  let report = null;
+  try { report = JSON.parse(result.stdout); } catch { report = null; }
+  const onlyDirty = result.status === 2 && report?.missing?.length === 0 && report.nodeSupported === true &&
+    report.provenance?.dirty === true && report.provenance.digestMatch === true;
+  if (!onlyDirty) fail(`staged package doctor failed: ${(result.stderr || result.stdout || "unknown error").trim()}`);
+}
+
+function readVersion(origin) {
+  const file = origin?.top ? path.join(origin.top, "VERSION") : null;
+  return file && fs.existsSync(file) ? fs.readFileSync(file, "utf8").trim() || null : null;
+}
+
+// PACKAGE.json is the package record. A Release package carries one with provenance: its digest must
+// match the staged copy. Otherwise the record is written here, keeping an older package's fields.
+function recordProvenance(source, staged) {
+  const digest = provenance.treeDigest(staged);
+  const carried = provenance.readRecord(source);
+  if (carried.status === "invalid") fail(`source ${provenance.FILE} is unreadable: ${carried.error}`);
+  if (carried.status === "recorded") {
+    const problems = provenance.provenanceFields(carried.record);
+    if (problems.length) fail(`source ${provenance.FILE} provenance is malformed: ${problems.join("; ")}`);
+    if (carried.record.treeDigest !== digest) fail(`source files do not match ${provenance.FILE}: recorded ${carried.record.treeDigest}, found ${digest}`);
+    return carried.record;
   }
+  const origin = provenance.gitSource(source);
+  const record = {
+    ...(carried.record || {}),
+    ...provenance.provenanceRecord({
+      version: carried.record?.version ?? readVersion(origin),
+      commit: origin?.commit ?? null,
+      dirty: origin?.dirty ?? null,
+      treeDigest: digest,
+    }),
+  };
+  fs.writeFileSync(path.join(staged, provenance.FILE), `${JSON.stringify(record, null, 2)}\n`);
+  return record;
 }
 
 function install(options) {
@@ -117,10 +158,12 @@ function install(options) {
     }
 
     fs.cpSync(realSource, temporary, { recursive: true, errorOnExist: true });
+    const recorded = recordProvenance(realSource, temporary);
+    const summary = { version: recorded.version ?? null, commit: recorded.commit, dirty: recorded.dirty, treeDigest: recorded.treeDigest };
     validateStagedPackage(temporary);
     if (!targetExisted) {
       fs.renameSync(temporary, target);
-      return { root: realRoot, source: realSource, target, replaced: false };
+      return { root: realRoot, source: realSource, target, replaced: false, provenance: summary };
     }
 
     let backedUp = false;
@@ -137,7 +180,7 @@ function install(options) {
       if (backedUp && fs.existsSync(backup)) fs.renameSync(backup, target);
       throw error;
     }
-    return { root: realRoot, source: realSource, target, replaced: true };
+    return { root: realRoot, source: realSource, target, replaced: true, provenance: summary };
   } finally {
     if (lockFd !== undefined) fs.closeSync(lockFd);
     removeTree(temporary);

@@ -52,12 +52,19 @@ Upgrade: `claude plugin update design-pipeline@design-pipeline`, or run the Skil
 ## Check the install
 
 Run `node "<skill-root>/scripts/designer-pipeline.cjs" doctor`. It prints where the skill is
-installed, which agents it found, and three tiers: required (Node.js 22.12+, skill files; a missing
-item exits 2), recommended (a Chromium-based browser for evidence gates) and optional (the MengTo
-and iart libraries, ffmpeg and ffprobe, Blender). Every missing item prints one command to run.
-Missing recommended or optional items exit 0. `doctor --json` prints the machine result. `doctor`
-never installs, replaces or repairs anything; run a printed command only when the task needs that
-tool, and tell the user what you are about to install first.
+installed and which source it came from, which agents it found, and three tiers: required (Node.js
+22.12+, skill files, and for a copy with a provenance record, that its files still match it; a
+failed item exits 2), recommended (a Chromium-based browser for evidence gates) and optional (the
+MengTo and iart libraries, ffmpeg and ffprobe, Blender). Every missing item prints one command to
+run. Missing recommended or optional items exit 0. `doctor --json` prints the machine result.
+`doctor` never installs, replaces or repairs anything; run a printed command only when the task
+needs that tool, and tell the user what you are about to install first.
+
+The provenance record is `PACKAGE.json` at the skill root (version, commit, whether the source had
+uncommitted changes, a digest of the installed files). The `Source` line shows it. A copy whose
+files changed after install, or that was installed from uncommitted work, is blocked: tell the user
+and offer the printed reinstall command. A copy without a record gets a recommended warning only; a
+checkout used in place shows its Git commit, branch and state and is not checked.
 
 ## Call a tool from a project
 

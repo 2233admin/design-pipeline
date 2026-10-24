@@ -12,6 +12,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { WHOLE_BUNDLES: FETCHABLE_BUNDLES } = require("../skill/scripts/vendor-cache.cjs");
+const provenance = require("../skill/scripts/install-provenance.cjs");
 const zlib = require("node:zlib");
 const { spawnSync } = require("node:child_process");
 const { validateReleaseContract, formatReleaseContractResult } = require("./release-contract.cjs");
@@ -55,6 +56,9 @@ function fail(message) {
   throw new Error(message);
 }
 
+// File and directory names the Skills CLI (vercel-labs/skills installer.ts) skips when it copies a skill.
+const SKILLS_CLI_DROPS = new Set(["metadata.json", ".git", "__pycache__", "__pypackages__"]);
+
 function parseSourceDateEpoch(value, label) {
   if (!/^\d+$/.test(value)) {
     fail(`${label} must be a non-negative integer`);
@@ -83,12 +87,15 @@ function resolveSourceDateEpoch() {
     : zipMinimumEpoch;
 }
 
-function packageMetadata(sourceDateEpoch) {
+// PACKAGE.json is also the install provenance record (skill/scripts/install-provenance.cjs): the
+// commit the archive was built from and the digest of every other file in it.
+function packageMetadata(sourceDateEpoch, treeDigest) {
+  const origin = provenance.gitSource(skillDir, [".", "../scripts/install-local.cjs"]);
   return Buffer.from(
     `${JSON.stringify(
       {
+        ...provenance.provenanceRecord({ version, commit: origin?.commit ?? null, dirty: origin?.dirty ?? null, treeDigest }),
         name: "design-pipeline",
-        version,
         packagedAt: new Date(sourceDateEpoch * 1000).toISOString(),
         source: "https://github.com/2233admin/design-pipeline",
         install: [
@@ -154,6 +161,11 @@ function collectArchiveEntries(sourceDateEpoch) {
     if (stat.isSymbolicLink()) {
       fail(`symbolic links are not supported in release archives: ${relativePath}`);
     }
+    // The Skills CLI drops these names when it copies a skill; shipping one would make every copy it
+    // installs differ from the PACKAGE.json digest.
+    if (SKILLS_CLI_DROPS.has(path.basename(relativePath)) && (stat.isDirectory() || path.basename(relativePath) === "metadata.json")) {
+      fail(`the Skills CLI does not install ${relativePath.split(path.sep).join("/")}; remove or rename it`);
+    }
     if (stat.isDirectory()) {
       entries.push({
         name: `${archiveName}/`,
@@ -184,15 +196,23 @@ function collectArchiveEntries(sourceDateEpoch) {
     visit(path.join(skillDir, child), child);
   }
   const generatedEntries = new Map([
-    ["PACKAGE.json", packageMetadata(sourceDateEpoch)],
     [".claude-plugin/plugin.json", pluginManifest()],
     ["scripts/install-local.cjs", fs.readFileSync(path.join(repoRoot, "scripts/install-local.cjs"))],
   ]);
   for (const generated of resourceManifest.generated) {
+    if (generated === provenance.FILE) continue;
     const data = generatedEntries.get(generated);
     if (!data) fail(`no generator is defined for package resource: ${generated}`);
     entries.push({ name: `design-pipeline/${generated}`, data, isDirectory: false });
   }
+  if (!resourceManifest.generated.includes(provenance.FILE)) fail(`${provenance.FILE} must be a generated package resource`);
+  // The digest covers exactly the bytes written into the archive, so an extracted copy recomputes it.
+  const treeDigest = provenance.digestOf(
+    entries
+      .filter((entry) => !entry.isDirectory)
+      .map((entry) => ({ path: entry.name.slice("design-pipeline/".length), sha256: provenance.sha256(entry.data) })),
+  );
+  entries.push({ name: `design-pipeline/${provenance.FILE}`, data: packageMetadata(sourceDateEpoch, treeDigest), isDirectory: false });
   entries.sort((left, right) =>
     left.name < right.name ? -1 : left.name > right.name ? 1 : 0,
   );

@@ -146,6 +146,7 @@
     "scripts/blender-core.cjs",
     "scripts/install-hints.cjs",
     "scripts/doctor-report.cjs",
+    "scripts/install-provenance.cjs",
     "scripts/blender-project-core.cjs",
     "references/blender-templates/product-turntable.json",
     "references/blender-templates/product-turntable.py",

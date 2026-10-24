@@ -40,13 +40,13 @@ npx skills add https://github.com/2233admin/design-pipeline/releases/latest/down
 
 ## 确认安装
 
-对 agent 说：“运行 design-pipeline 的 `doctor`”。命令是 `node "<skill 目录>/scripts/designer-pipeline.cjs" doctor`，`<skill 目录>` 就是 agent 加载的 `SKILL.md` 所在目录。输出分三档：
+对 agent 说：“运行 design-pipeline 的 `doctor`”。命令是 `node "<skill 目录>/scripts/designer-pipeline.cjs" doctor`，`<skill 目录>` 就是 agent 加载的 `SKILL.md` 所在目录。开头的 `Source` 行说明这份 skill 从哪里来：版本、提交（短哈希）、来源是否有未提交改动、文件摘要是否仍然一致。输出分三档：
 
-- **必需**：Node.js 22.12+ 与 skill 文件齐全。缺任何一项退出码为 2，其余情况为 0。
-- **推荐**：Chromium 系浏览器，用于证据门禁和截图。第一次跑门禁时才会用到。
+- **必需**：Node.js 22.12+ 与 skill 文件齐全；带来源记录（skill 根目录的 `PACKAGE.json`）的安装还要求文件与记录一致、且不是从有未提交改动的工作区装的。任何一项不满足退出码为 2，其余情况为 0。
+- **推荐**：Chromium 系浏览器，用于证据门禁和截图。第一次跑门禁时才会用到。标准位置上没有来源记录的旧安装在这里提示 “provenance not recorded”，不阻塞。
 - **可选**：MengTo 与 iart 技能库（`sources fetch --all`）、ffmpeg 与 ffprobe（影片、剪辑、音频）、Blender（3D 影片模板）。
 
-缺项旁边会打印一条命令，例如 `npx hyperframes browser ensure`；在你需要那项能力时运行它。门禁或影片任务第一次找不到浏览器、ffmpeg 或 Blender 时，报错里是同一条命令。`doctor --json` 输出机器可读的结果。
+缺项旁边会打印一条命令，例如 `npx hyperframes browser ensure`；在你需要那项能力时运行它。门禁或影片任务第一次找不到浏览器、ffmpeg 或 Blender 时，报错里是同一条命令。来源不一致时打印的是重装命令。直接在仓库检出里运行的 skill 只显示 Git 提交、分支与是否有改动，不做检查。`doctor --json` 输出机器可读的结果（含 `provenance`）。
 
 装好以后在项目里直接说需求，例如“用 design-pipeline 给这个项目做一个设置页”。调用 CLI 时用已安装 skill 的绝对路径，并在项目目录运行或传 `--root`：
 
@@ -118,7 +118,7 @@ node (Join-Path $extract "design-pipeline\scripts\install-local.cjs") --source (
   --root (Join-Path $HOME ".agents\skills") --target (Join-Path $HOME ".agents\skills\design-pipeline")
 ```
 
-升级现有安装时在 `install-local.cjs` 命令末尾加 `--replace`；不加时安装器拒绝覆盖已有目标。Release 包不会安装目标项目的 npm、pnpm、Yarn、Bun 或其他运行时依赖。
+升级现有安装时在 `install-local.cjs` 命令末尾加 `--replace`；不加时安装器拒绝覆盖已有目标。包里的 `PACKAGE.json` 记录了打包时的提交和文件摘要，解压后改过任何文件，安装器都会拒绝安装。Release 包不会安装目标项目的 npm、pnpm、Yarn、Bun 或其他运行时依赖。
 
 ## 附录 B：本地仓库
 
@@ -128,4 +128,4 @@ node (Join-Path $extract "design-pipeline\scripts\install-local.cjs") --source (
 node scripts/install-local.cjs --source skill
 ```
 
-`--root <skills 目录>` 与 `--target <路径>` 可以改位置，`--replace` 覆盖已有安装。已装过旧版时，旧位置 `~/.codex/skills/design-pipeline` 不会被迁移或删除；确认新位置可用后自行删掉它，以免两份 skill 同时被扫描到。
+`--root <skills 目录>` 与 `--target <路径>` 可以改位置，`--replace` 覆盖已有安装。安装器把检出的提交、`VERSION` 和是否有未提交改动写进安装目录的 `PACKAGE.json`；从有未提交改动的工作区安装能装上，但 `doctor` 会报 blocked，提交后重装即可。已装过旧版时，旧位置 `~/.codex/skills/design-pipeline` 不会被迁移或删除；确认新位置可用后自行删掉它，以免两份 skill 同时被扫描到。
