@@ -1,0 +1,9 @@
+{
+  "embeddedFont": false,
+  "excluded": "temml/dist/Temml.woff2",
+  "reason": "Pinned font nameID13 prohibits commercial use (FontCreator home edition); package MIT does not resolve this conflicting embedded grant.",
+  "replacement": "Local system MathML fonts; no downloaded or bundled font",
+  "observedCopyright": "Copyright (c) 2009-2010 Design Science, Inc.; Copyright (c) 2014-2018 Khan Academy; Copyright (c) 2021 Ron Kok",
+  "licenseNameID13": "This font is made with the home edition of FontCreator. You may not use this font for commercial purposes.",
+  "licenseNameID14": "https://www.high-logic.com/font-license-agreement"
+}

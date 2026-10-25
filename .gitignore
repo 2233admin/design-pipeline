@@ -37,3 +37,7 @@ NUL
 
 # This tracked upstream source must survive personal *.bin ignore rules.
 !/skill/vendor/mengto-skills/upstream/agent-skills/game-combat/water-crystal-skill-vfx/demo/layout/layout.bin
+
+# Local tool state, not product source.
+/orca/
+/osprey/

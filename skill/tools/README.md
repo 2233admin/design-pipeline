@@ -24,9 +24,11 @@ by the visual problem; using a helper does not create a film project or select a
 | Poses, spacing, acting, audiovisual phrasing | [Animation thinking](../references/animation-thinking.md) | Existing choreography and motion study |
 | Explicit product film or short motion loop | [Built-in film methods](../references/film-methods.md) | Complete Cinetic/product-film sources, real component provenance, selected recipes and configurable motion primitives through existing film tools |
 | Reusable motion case structures | [Prompt Motion template library](../references/prompt-motion/README.md) | Offline `film templates` search/detail; indexed sources, curated inputs/rules and authored adaptation limits |
+| 场景动效 / Scenario motion — basic, web, game, text, scene | [Motion recipes](../references/motion-recipes/README.md), [full offline gallery](motion-recipes/full/index.html), [four interactive specimens](motion-recipes/README.md) | Exact catalogue variants with bilingual search, authored parameters and seek/reverse/reduced inspection; adapt via family guides, not a production runtime or film conversion |
 | DOM/SVG timelines, scroll, layout or existing Three.js property animation | [Runtime guidance](../references/capability-routing.md) | Local GSAP playbook, Anime.js construction/seek/cleanup methods; companions optional |
 | Layout/text checks, interactions, 3D and GPU materials | [Composition](../references/composition-gate.md), [runtime routing](../references/graphics-runtime-routing.md) | Existing capture, gates and project renderer |
 | Intrinsic layout, CSS tokens, content/overflow, control states and native CSS motion | [Good CSS](../references/good-css.md), [offline specimens](good-css/README.md) | Complete pinned practices and a Node-only builder for local live studies |
+| Complex explanation, architecture walkthrough, decision comparison or handoff | [Offline explanations](answer-me-with-html/README.md) | Node-only Markdown-to-HTML helper, default doc/paper; local includes, embedded-source disclosure and manual feedback only, not every answer or workflow acceptance |
 
 Read this index first, then one tool guide, then the needed function/example. Do not preload the
 whole source library. Existing adapters and receipts retain their authority.

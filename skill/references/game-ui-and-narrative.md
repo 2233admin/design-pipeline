@@ -12,6 +12,11 @@ Cover health/status, objectives, inventory, maps, prompts, cooldowns, notificati
 pause, settings, and failure/recovery states. Prioritize glanceability, safe areas, input modality,
 and non-interference with the play field.
 
+For 血条拖尾 / hp ghost bar, 冷却完成 / cooldown completion, 奖励到账 / reward arrival and
+菜单切换 / menu switch, use the [motion recipe index](motion-recipes/README.md) and matched offline
+specimen. Apply the existing opportunity screen and UI transition rules, project motion tokens
+and authoritative game state; decorative completion must not decide HP, availability or rewards.
+
 ### Menus And Meta UI
 
 Cover title, profile, save/load, settings, controls, accessibility, inventory, progression,

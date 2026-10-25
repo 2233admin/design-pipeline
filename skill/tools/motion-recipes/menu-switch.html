@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Menu switch · 菜单切换</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: system-ui, sans-serif;
+      background: #141c24;
+      color: #edf3f8;
+      /* Specimen-local adaptation values, not a project-wide token scale. */
+      --recipe-enter-ms: 180;
+      --recipe-exit-ms: 120;
+      --recipe-icon-ms: 160;
+      --recipe-ease: cubic-bezier(.2, .8, .2, 1);
+      --recipe-border: #465c70;
+      --recipe-accent: #a6ccff;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { inline-size: min(64rem, calc(100% - 2rem)); margin-inline: auto; padding-block: clamp(2rem, 6vw, 5rem); }
+    h1 { margin-block: .5rem 1rem; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.15; }
+    h2 { margin-block: 0 1rem; font-size: 1.3rem; }
+    p { max-inline-size: 68ch; line-height: 1.65; }
+    .eyebrow { color: var(--recipe-accent); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; }
+    .lede, .note { color: #b9c9db; }
+    .shell { margin-block: 2rem; padding: clamp(1.25rem, 3vw, 2rem); border: 1px solid var(--recipe-border); border-radius: 1rem; background: #1c2a38; }
+    .toolbar { position: relative; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-block-end: 2rem; }
+    .brand { font-weight: 650; }
+    button { min-block-size: 44px; padding: .75rem 1rem; border: 1px solid var(--recipe-border); border-radius: .5rem; background: #283d50; color: inherit; font: inherit; cursor: pointer; }
+    button:active { background: #3e5770; }
+    button:disabled { cursor: default; }
+    :focus-visible { outline: 3px solid #a6ccff; outline-offset: 4px; }
+    .menu-control { position: relative; }
+    #menu-toggle { display: flex; align-items: center; gap: .75rem; }
+    .icon { display: inline-block; position: relative; inline-size: 24px; block-size: 24px; }
+    .stroke { position: absolute; inset-inline-start: 2px; inset-block-start: 11px; inline-size: 20px; block-size: 2px; background: currentColor; border-radius: 1px; transform-origin: center; }
+    .stroke:nth-child(1) { transform: translateY(-6px); }
+    .stroke:nth-child(3) { transform: translateY(6px); }
+    #menu-panel { position: absolute; inset-block-start: calc(100% + .5rem); inset-inline-end: 0; z-index: 1; inline-size: min(17rem, calc(100vw - 4rem)); padding: .75rem; border: 1px solid var(--recipe-border); border-radius: .75rem; background: #223447; opacity: 0; transform: translateY(-8px); }
+    #menu-panel[aria-hidden="true"] { pointer-events: none; }
+    #menu-panel p { margin-block: .25rem .75rem; color: #b9c9db; font-size: .85rem; }
+    #menu-panel button { display: block; inline-size: 100%; text-align: start; margin-block: .25rem; }
+    #menu-panel button[aria-pressed="true"] { border-color: var(--recipe-accent); background: #345476; font-weight: 650; }
+    .view { min-block-size: 13rem; }
+    .view ul { padding-inline-start: 1.3rem; line-height: 1.9; }
+    .controls { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+    label { display: flex; align-items: center; gap: .65rem; min-block-size: 44px; cursor: pointer; }
+    input[type="checkbox"] { inline-size: 1.2rem; block-size: 1.2rem; accent-color: var(--recipe-accent); }
+    dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .5rem 1rem; margin-block: 1.5rem; line-height: 1.5; }
+    dt { color: #b9c9db; }
+    dd { margin: 0; overflow-wrap: anywhere; }
+    [hidden] { display: none !important; }
+    a { color: var(--recipe-accent); text-underline-offset: .2em; }
+    footer { border-block-start: 1px solid var(--recipe-border); padding-block-start: 1rem; color: #b9c9db; }
+    @media (hover: hover) and (pointer: fine) { button:not(:disabled):hover { border-color: #b9c9db; } }
+  </style>
+</head>
+<body>
+  <main data-recipe="menu-switch">
+    <header>
+      <p class="eyebrow">Motion recipe / 04 · Original offline specimen</p>
+      <h1>Menu switch <span lang="zh">菜单切换</span></h1>
+      <p class="lede">The requested menu state is effective now, not after the icon settles. Open, close and reopen quickly: old exit cleanup must never hide the new open menu.</p>
+    </header>
+    <section class="shell" aria-label="Game hub navigation specimen">
+      <div class="toolbar">
+        <span class="brand">Expedition hub <span lang="zh">探索中心</span></span>
+        <div class="menu-control">
+          <button id="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-panel">
+            <span class="icon" aria-hidden="true"><span class="stroke"></span><span class="stroke"></span><span class="stroke"></span></span>
+            <span id="toggle-label">Open menu</span>
+          </button>
+          <nav id="menu-panel" aria-label="Hub views" aria-hidden="true" inert hidden>
+            <p>Choose a hub view</p>
+            <button type="button" data-view="overview" aria-controls="view-overview" aria-pressed="true" disabled>Overview <span lang="zh">总览</span></button>
+            <button type="button" data-view="inventory" aria-controls="view-inventory" aria-pressed="false" disabled>Inventory <span lang="zh">背包</span></button>
+            <button type="button" data-view="settings" aria-controls="view-settings" aria-pressed="false" disabled>Settings <span lang="zh">设置</span></button>
+          </nav>
+        </div>
+      </div>
+      <section id="view-overview" class="view" aria-labelledby="heading-overview">
+        <h2 id="heading-overview" tabindex="-1">Overview <span lang="zh">总览</span></h2>
+        <p>Your expedition is ready. Use the menu to inspect supplies or adjust this local specimen's preferences.</p>
+        <ul><li>Destination: Northern ridge</li><li>Next objective: Reach the survey station</li></ul>
+      </section>
+      <section id="view-inventory" class="view" aria-labelledby="heading-inventory" hidden inert>
+        <h2 id="heading-inventory" tabindex="-1">Inventory <span lang="zh">背包</span></h2>
+        <p>These are real, distinct view contents, not an icon-only toggle.</p>
+        <ul><li>Survey kit ×1</li><li>Trail ration ×3</li><li>Map fragment ×2</li></ul>
+      </section>
+      <section id="view-settings" class="view" aria-labelledby="heading-settings" hidden inert>
+        <h2 id="heading-settings" tabindex="-1">Settings <span lang="zh">设置</span></h2>
+        <label><input id="captions" type="checkbox" checked> Show objective captions</label>
+        <p id="caption-state">Objective captions: on</p>
+        <p class="note">This preference stays selected when you leave and return to the settings view.</p>
+      </section>
+    </section>
+    <section aria-labelledby="controls-title">
+      <h2 id="controls-title">Interruption controls</h2>
+      <div class="controls">
+        <button id="settle" type="button">Settle current motion</button>
+        <button id="reset" type="button">Reset menu and view</button>
+        <label><input id="reduced-motion" type="checkbox"> Reduced motion</label>
+      </div>
+      <dl>
+        <dt>Requested menu</dt><dd id="menu-state">Closed</dd>
+        <dt>Current view</dt><dd id="view-state">Overview</dd>
+        <dt>Presentation</dt><dd id="presentation-state">Settled</dd>
+        <dt>Motion mode</dt><dd id="motion-mode"></dd>
+      </dl>
+      <p class="note">Enter/Space toggles. Tab reaches destinations only while open. Escape closes and returns focus to the toggle; selecting a view closes the menu and focuses its heading. This is a nonmodal disclosure, not an ARIA menu widget or a focus trap.</p>
+    </section>
+    <footer>Project-authored timings: panel 180/120 ms, icon at most 160 ms. <a href="../../references/motion-recipes/menu-switch.md">Read the recipe</a>. System reduced-motion preference takes precedence over the checkbox.</footer>
+  </main>
+  <script>
+    (() => {
+      const toggle = document.querySelector('#menu-toggle');
+      const label = document.querySelector('#toggle-label');
+      const panel = document.querySelector('#menu-panel');
+      const strokes = [...document.querySelectorAll('.stroke')];
+      const destinations = [...panel.querySelectorAll('[data-view]')];
+      const views = [...document.querySelectorAll('.view')];
+      const menuText = document.querySelector('#menu-state');
+      const viewText = document.querySelector('#view-state');
+      const presentationText = document.querySelector('#presentation-state');
+      const modeText = document.querySelector('#motion-mode');
+      const reduced = document.querySelector('#reduced-motion');
+      const preference = matchMedia('(prefers-reduced-motion: reduce)');
+      const listeners = new AbortController();
+      const options = { signal: listeners.signal };
+      const tokens = getComputedStyle(document.documentElement);
+      const enterMs = Number(tokens.getPropertyValue('--recipe-enter-ms'));
+      const exitMs = Number(tokens.getPropertyValue('--recipe-exit-ms'));
+      const iconMs = Number(tokens.getPropertyValue('--recipe-icon-ms'));
+      const easing = tokens.getPropertyValue('--recipe-ease').trim();
+      let requestedOpen = false;
+      let selectedView = 'overview';
+      let revision = 0;
+      let animations = [];
+      reduced.checked = preference.matches;
+
+      function reducedMotion() { return preference.matches || reduced.checked; }
+
+      function cancelAnimations() {
+        revision += 1;
+        for (const animation of animations) {
+          animation.onfinish = null;
+          animation.cancel();
+        }
+        animations = [];
+      }
+
+      function targetStates(open) {
+        return [
+          { transform: open ? 'translateY(0)' : 'translateY(-8px)', opacity: open ? '1' : '0' },
+          { transform: open ? 'rotate(45deg)' : 'translateY(-6px)', opacity: '1' },
+          { transform: 'none', opacity: open ? '0' : '1' },
+          { transform: open ? 'rotate(-45deg)' : 'translateY(6px)', opacity: '1' }
+        ];
+      }
+
+      function settleMotion() {
+        cancelAnimations();
+        [panel, ...strokes].forEach((element, index) => {
+          Object.assign(element.style, targetStates(requestedOpen)[index]);
+        });
+        panel.hidden = !requestedOpen;
+        presentationText.textContent = 'Settled';
+      }
+
+      function setOpen(open, restoreFocus = true) {
+        const elements = [panel, ...strokes];
+        // Capture rendered values while old animations still own presentation.
+        const from = elements.map(element => {
+          const style = getComputedStyle(element);
+          return { transform: style.transform, opacity: style.opacity };
+        });
+        cancelAnimations();
+        requestedOpen = open;
+        // Focus must leave before the panel becomes semantically inactive.
+        if (!open && restoreFocus && panel.contains(document.activeElement)) toggle.focus();
+        toggle.setAttribute('aria-expanded', String(open));
+        label.textContent = open ? 'Close menu' : 'Open menu';
+        panel.inert = !open;
+        panel.setAttribute('aria-hidden', String(!open));
+        // Native disabled buttons also exclude inactive content without inert support.
+        destinations.forEach(button => { button.disabled = !open; });
+        menuText.textContent = open ? 'Open' : 'Closed';
+        const targets = targetStates(open);
+        elements.forEach((element, index) => { Object.assign(element.style, targets[index]); });
+        if (reducedMotion() || typeof panel.animate !== 'function') {
+          panel.hidden = !open;
+          presentationText.textContent = 'Settled · static';
+          return;
+        }
+        // Hidden governs final rendering only; inert/aria-hidden already govern exit.
+        panel.hidden = false;
+        const owner = revision;
+        const duration = open ? enterMs : exitMs;
+        animations = elements.map((element, index) => element.animate([from[index], targets[index]], {
+          duration: index === 0 ? duration : Math.min(iconMs, duration), easing
+        }));
+        presentationText.textContent = open ? 'Entering · already available' : 'Exiting · already inactive';
+        animations[0].onfinish = () => {
+          if (owner !== revision || requestedOpen !== open) return;
+          settleMotion();
+        };
+      }
+
+      function selectView(name, focusHeading) {
+        selectedView = name;
+        const next = document.querySelector(`#view-${name}`);
+        // If another control had focus in the departing view, move it before hiding.
+        const old = views.find(view => !view.hidden);
+        const focusLeaves = old && old !== next && old.contains(document.activeElement);
+        next.hidden = false;
+        next.inert = false;
+        if (focusHeading || focusLeaves) next.querySelector('h2').focus();
+        views.forEach(view => {
+          view.hidden = view !== next;
+          view.inert = view !== next;
+        });
+        destinations.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.view === selectedView)));
+        viewText.textContent = next.querySelector('h2').textContent;
+      }
+
+      function updateMotionMode() {
+        modeText.textContent = preference.matches ? 'Reduced · system preference' : reduced.checked ? 'Reduced · checkbox' : 'Normal · bounded retargeting';
+        if (reducedMotion()) settleMotion();
+      }
+
+      toggle.addEventListener('click', () => setOpen(!requestedOpen), options);
+      destinations.forEach(button => button.addEventListener('click', () => {
+        selectView(button.dataset.view, true);
+        setOpen(false, false);
+      }, options));
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && requestedOpen) {
+          event.preventDefault();
+          toggle.focus();
+          setOpen(false);
+        }
+      }, options);
+      document.querySelector('#settle').addEventListener('click', settleMotion, options);
+      document.querySelector('#reset').addEventListener('click', () => {
+        selectView('overview', false);
+        setOpen(false);
+        settleMotion();
+      }, options);
+      document.querySelector('#captions').addEventListener('change', event => {
+        document.querySelector('#caption-state').textContent = `Objective captions: ${event.target.checked ? 'on' : 'off'}`;
+      }, options);
+      reduced.addEventListener('change', updateMotionMode, options);
+      preference.addEventListener('change', updateMotionMode);
+      window.addEventListener('resize', settleMotion, options);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) settleMotion();
+      }, options);
+      window.addEventListener('pagehide', event => {
+        settleMotion();
+        if (!event.persisted) {
+          preference.removeEventListener('change', updateMotionMode);
+          listeners.abort();
+        }
+      }, options);
+      updateMotionMode();
+    })();
+  </script>
+</body>
+</html>

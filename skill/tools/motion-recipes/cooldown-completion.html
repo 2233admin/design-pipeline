@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cooldown completion · 冷却完成</title>
+<style>
+:root { color-scheme: light; --paper: #f2eee5; --ink: #29352f; --muted: #526057; --rule: #c6c8bb; --accent: #326c51; --track: #ddd9ce; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 system-ui, "Microsoft YaHei", "PingFang SC", sans-serif; }
+main { max-width: 900px; margin: auto; padding: clamp(20px, 5vw, 60px); }
+h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.15; letter-spacing: -.03em; margin: 10px 0 20px; }
+h2 { font-size: 20px; margin-top: 0; }
+p { max-width: 65ch; }
+a { color: var(--accent); text-underline-offset: .2em; }
+.card { margin: 28px 0; padding: clamp(18px, 4vw, 32px); border: 1px solid var(--rule); border-radius: 12px; background: #faf8f1; }
+.ability-layout { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+.dial { position: relative; width: 160px; height: 160px; flex: none; }
+svg { display: block; width: 100%; height: 100%; }
+.ring-track { fill: none; stroke: var(--track); stroke-width: 5; }
+#progress-arc { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; transform: rotate(-90deg); transform-origin: 60px 60px; }
+#completion-cue { fill: none; stroke: var(--accent); stroke-width: 2; opacity: 0; transform-origin: 60px 60px; }
+.dial-label { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+#remaining { font-size: 25px; font-weight: 650; font-variant-numeric: tabular-nums; }
+#state { font-weight: 650; }
+.controls { display: flex; gap: 10px; flex-wrap: wrap; margin: 22px 0; }
+button, select { font: inherit; color: var(--ink); background: #faf8f1; border: 1px solid var(--ink); border-radius: 6px; padding: 9px 14px; min-height: 44px; }
+button { cursor: pointer; }
+button:disabled { color: #62685f; border-style: dashed; background: #e6e3d9; cursor: not-allowed; }
+button:active:not(:disabled) { background: var(--track); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+label { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-height: 44px; }
+input { width: 18px; height: 18px; accent-color: var(--accent); }
+#status { min-height: 3.2em; }
+.details { display: flex; gap: 24px; flex-wrap: wrap; border-top: 1px solid var(--rule); padding-top: 16px; }
+.details p { margin: 0; }
+output { font-variant-numeric: tabular-nums; }
+small { display: block; color: var(--muted); }
+</style>
+</head>
+<body>
+<main data-recipe="cooldown-completion" data-cue="inactive">
+<header>
+<p>GAME HUD / STATE INDICATION</p>
+<h1>Cooldown completion <span lang="zh-CN">冷却完成</span></h1>
+<p>The current deadline decides when the ability is ready. A single quiet cue acknowledges completion; its playback never unlocks the ability.</p>
+<p><a href="../../references/motion-recipes/cooldown-completion.md">Recipe, tuning and source evidence</a></p>
+</header>
+<section class="card" aria-labelledby="ability-heading">
+<h2 id="ability-heading">Shield ability / <span lang="zh-CN">护盾技能</span></h2>
+<div class="ability-layout">
+<div class="dial">
+<svg viewBox="0 0 120 120" aria-hidden="true">
+<circle class="ring-track" cx="60" cy="60" r="45"></circle>
+<circle id="progress-arc" cx="60" cy="60" r="45"></circle>
+<circle id="completion-cue" cx="60" cy="60" r="54"></circle>
+</svg>
+<div class="dial-label"><output id="remaining">0.0 s</output><span id="state">Ready</span></div>
+</div>
+<div>
+<div id="cooldown-progress" role="progressbar" aria-label="Cooldown elapsed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-valuetext="Ready"></div>
+<button id="ability" type="button" aria-describedby="state">Use ability</button>
+<p><small>Available immediately at the deadline, not after the cue.</small></p>
+</div>
+</div>
+<label for="duration">Next run duration <select id="duration"><option value="1500">1.5 seconds</option><option value="3000" selected>3 seconds</option><option value="6000">6 seconds</option></select></label>
+<div class="controls" aria-label="Cooldown controls">
+<button id="start" type="button">Start / restart cooldown</button>
+<button id="cancel" type="button">Cancel — ready without cue</button>
+<button id="reset" type="button">Reset</button>
+</div>
+<label><input id="reduced-motion" type="checkbox"> Reduce motion (text countdown, no moving arc or cue)</label>
+<small id="motion-mode">Motion preference</small>
+<p id="status" role="status" aria-live="polite" aria-atomic="true">Ready. No completion cue on initial load.</p>
+<div class="details" aria-label="Run diagnostics">
+<p>Genuine completions: <output id="completion-count">0</output></p>
+<p>Ability uses: <output id="use-count">0</output></p>
+</div>
+</section>
+<section aria-labelledby="try-heading">
+<h2 id="try-heading">Try replacing the current run</h2>
+<ol>
+<li>Start: the ability disables immediately, the countdown follows its deadline, then Ready appears with one 180 ms cue.</li>
+<li>Restart just before completion: the old run cannot unlock the new one or increment the completion count.</li>
+<li>Cancel or reset while running or during a cue: old work disappears; no delayed Ready announcement returns.</li>
+<li>Enable reduced motion: text still counts down, readiness and completion count are unchanged, but the arc stays hidden and no cue moves.</li>
+<li>Wait at Ready: the count and ring stay still. There is no idle replay.</li>
+</ol>
+<p><small>All code and values are project-authored. The countdown duration is product time, not the completion animation budget. No external assets, scripts, fonts or network calls.</small></p>
+</section>
+</main>
+<script>
+(() => {
+  'use strict';
+  const main = document.querySelector('main');
+  const ability = document.querySelector('#ability');
+  const duration = document.querySelector('#duration');
+  const remaining = document.querySelector('#remaining');
+  const state = document.querySelector('#state');
+  const progress = document.querySelector('#cooldown-progress');
+  const arc = document.querySelector('#progress-arc');
+  const cue = document.querySelector('#completion-cue');
+  const status = document.querySelector('#status');
+  const completionCount = document.querySelector('#completion-count');
+  const useCount = document.querySelector('#use-count');
+  const reducedControl = document.querySelector('#reduced-motion');
+  const mode = document.querySelector('#motion-mode');
+  const preference = matchMedia('(prefers-reduced-motion: reduce)');
+  const CIRCUMFERENCE = 2 * Math.PI * 45;
+  const CUE_MS = 180; // Local authored completion budget, independent of deadline.
+  let run = null;
+  let generation = 0;
+  let frame = 0;
+  let deadlineTimer = 0;
+  let cueTimer = 0;
+  let cueGeneration = 0;
+  let cueAnimation = null;
+  let completions = 0;
+  let uses = 0;
+  let listeners;
+  reducedControl.checked = preference.matches;
+  arc.style.strokeDasharray = String(CIRCUMFERENCE);
+  const isReduced = () => preference.matches || reducedControl.checked;
+
+  function paint(now) {
+    const left = run ? Math.max(0, run.deadline - now) : 0;
+    const elapsed = run ? Math.max(0, Math.min(1, 1 - left / run.duration)) : 1;
+    ability.disabled = Boolean(run);
+    state.textContent = run ? 'Cooling down' : 'Ready';
+    remaining.value = `${(left / 1000).toFixed(1)} s`;
+    progress.setAttribute('aria-valuenow', String(Math.floor(elapsed * 100)));
+    progress.setAttribute('aria-valuetext', run ? `${(left / 1000).toFixed(1)} seconds remaining` : 'Ready');
+    arc.style.visibility = isReduced() ? 'hidden' : 'visible';
+    arc.style.strokeDashoffset = String(CIRCUMFERENCE * (1 - elapsed));
+    completionCount.value = String(completions);
+    useCount.value = String(uses);
+    main.dataset.state = run ? 'cooling' : 'ready';
+  }
+
+  function clearCue() {
+    ++cueGeneration;
+    clearTimeout(cueTimer);
+    cueTimer = 0;
+    if (cueAnimation) cueAnimation.cancel();
+    cueAnimation = null;
+    main.dataset.cue = 'inactive';
+  }
+
+  function showCue() {
+    clearCue();
+    // Reduced motion consumes the genuine completion without replaying its decoration.
+    if (isReduced() || typeof cue.animate !== 'function') return;
+    const owner = cueGeneration;
+    main.dataset.cue = 'active';
+    cueAnimation = cue.animate([
+      { opacity: 0, transform: 'scale(0.96)', offset: 0 },
+      { opacity: 0.8, transform: 'scale(1)', offset: 0.35 },
+      { opacity: 0, transform: 'scale(1.025)', offset: 1 }
+    ], { duration: CUE_MS, easing: 'linear' });
+    cueTimer = setTimeout(() => {
+      if (owner === cueGeneration) clearCue();
+    }, CUE_MS);
+  }
+
+  function stopRun() {
+    ++generation;
+    cancelAnimationFrame(frame);
+    clearTimeout(deadlineTimer);
+    frame = deadlineTimer = 0;
+    run = null;
+  }
+
+  function synchronize(now) {
+    if (run && now >= run.deadline) {
+      stopRun();
+      ++completions; // Exactly once: the completed run is removed before presentation.
+      paint(now);
+      status.textContent = `Ready. Cooldown completed once; total completions ${completions}.`;
+      showCue();
+    } else {
+      paint(now);
+    }
+  }
+
+  function tick(now, owner) {
+    frame = 0;
+    if (!run || run.id !== owner) return;
+    synchronize(now);
+    if (run && run.id === owner) frame = requestAnimationFrame(time => tick(time, owner));
+  }
+
+  function scheduleDeadline(owner) {
+    if (!run || run.id !== owner) return;
+    deadlineTimer = setTimeout(() => {
+      deadlineTimer = 0;
+      if (!run || run.id !== owner) return;
+      synchronize(performance.now()); // Timer wake reevaluates time; it does not declare readiness.
+      if (run && run.id === owner) scheduleDeadline(owner);
+    }, Math.max(1, run.deadline - performance.now()));
+  }
+
+  function start() {
+    stopRun();
+    clearCue();
+    const now = performance.now();
+    const ms = Number(duration.value);
+    run = { id: ++generation, deadline: now + ms, duration: ms };
+    paint(now);
+    status.textContent = `New cooldown: ${(ms / 1000).toFixed(1)} seconds. Previous run and cue cancelled.`;
+    const owner = run.id;
+    scheduleDeadline(owner);
+    frame = requestAnimationFrame(time => tick(time, owner));
+  }
+
+  function cancel(message = 'Cancelled. Ready immediately; no completion cue.') {
+    stopRun();
+    clearCue();
+    paint(performance.now());
+    status.textContent = message;
+  }
+
+  function updateMode() {
+    if (isReduced()) clearCue();
+    synchronize(performance.now());
+    mode.textContent = preference.matches
+      ? 'System reduced motion is active; unchecking cannot override it.'
+      : reducedControl.checked ? 'Reduced motion: text countdown only, no completion movement.' : 'Normal: deadline-driven arc plus one 180 ms completion cue.';
+  }
+
+  function bind() {
+    listeners = new AbortController();
+    const options = { signal: listeners.signal };
+    ability.addEventListener('click', () => {
+      synchronize(performance.now());
+      if (run) return;
+      ++uses;
+      start();
+    }, options);
+    document.querySelector('#start').addEventListener('click', start, options);
+    document.querySelector('#cancel').addEventListener('click', () => cancel(), options);
+    document.querySelector('#reset').addEventListener('click', () => {
+      completions = uses = 0;
+      duration.value = '3000';
+      cancel('Reset. Ready; counters cleared and next duration restored to 3 seconds.');
+    }, options);
+    reducedControl.addEventListener('change', updateMode, options);
+    preference.addEventListener('change', updateMode, options);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) synchronize(performance.now());
+    }, options);
+  }
+
+  window.addEventListener('pagehide', () => {
+    cancel('Page left: current run and cue cancelled. Ready on return.');
+    listeners.abort();
+  });
+  window.addEventListener('pageshow', event => {
+    if (event.persisted) { bind(); updateMode(); }
+  });
+  bind();
+  updateMode();
+})();
+</script>
+</body>
+</html>

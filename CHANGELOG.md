@@ -145,6 +145,7 @@ All notable changes to Design Pipeline are documented here.
   it, including its host's descendants and other pseudo-element, and is `indeterminate` when it
   cannot be placed. An inline link's hit-area pseudo-element is measured against the link's own
   padding box, and generated text that its margins move is measured where it sits.
+
 - `film check` and `verify film-render` clamp beat samples to the last frame, so the 95% sample
   of a short final procedural beat no longer crashes the check on a missing evidence frame
   (change `add-ff-tracking-template`).
@@ -216,20 +217,52 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Bounded built-in answer-me-with-html helper for complex explanations, architecture decisions and
+  handoffs: doc/paper by default, optional wide board, offline local includes and manual feedback.
+  Raw active markup, remote assets and escaped file includes are rejected; the original draft is
+  deliberately embedded and disclosed. No automatic acceptance, new receipt or workflow mutation
+  (change `internalize-answer-me-with-html`).
+
+
+- Full offline Motion Reference discovery (change `expand-motion-recipes-to-full-reference`):
+  782 independently reconciled source IDs across 64 categories map to 583 original executable
+  mechanisms and explicit parameters in the existing canonical method catalogue. Five family
+  guides and an exact-variant gallery cover basic, web, game, text and scene adaptation, with
+  opt-in playback, reverse/cold seeking, reduced motion and editable CJK/Latin content.
+  Existing four standalone recipes and component-only filtering are preserved. Source metadata
+  is attributed inspiration, not copied implementation or source-wide visual acceptance.
+
+- Four project-owned game/web motion recipes (change `add-game-web-motion-recipes`): HP ghost
+  bar, cooldown completion, reward arrival and menu switch. Each includes concrete state/timing
+  guidance and an offline DOM/SVG specimen with interruption and reduced-motion controls.
+  Chinese/English method searches use the existing catalog; web component filtering is unchanged.
+  Motion Reference is attributed inspiration only; no upstream code, assets or new runtime/gate.
 - Project-owned UI transition rules (change `internalize-ui-transition-methods`): offline
   state-change selection and observable manual review cases for identity, geometry, coordinated
   entrance/exit, latest-state interruption, numeric meaning, focus, reduced motion and cleanup.
   Web build/review and animation entry points route to the guide. Public transitions.dev methods
   are pinned as source evidence only; no snippets, library, paid entitlement or new runtime gate.
+
+
 - Tracking HUD film template (change `add-ff-tracking-template`): the complete pinned MIT
   mrsarac/ff-tracking project is vendored under `skill/vendor/ff-tracking/` as locked reference
   through the existing film source importer and checks, and ported to a HyperFrames template in
   `skill/tools/ff-tracking-hud/`: one `film.config.js` drives a tracks module (the upstream `hud`
   crate, matching its fixtures for all 180 frames), a Canvas 2D terminal drawn glyph by glyph, a
-  WebGL2 port of the lens shader, CPU-projected tracker labels and ffmpeg-synthesized sound.
+  WebGL2 port of the lens shader that samples it bilinearly as fframes does, CPU-projected tracker
+  labels and ffmpeg-synthesized sound (Gaussian noise, Butterworth band-pass sections).
   `film scaffold --template tracking-hud` writes the project; `probe.cjs` checks seek determinism
-  and label-to-glyph alignment. `references/film-tracking-hud-template.md` and the film build
-  table route to it. No new gate, receipt, flag or dependency.
+  and label-to-glyph alignment. Before writing anything, `build.cjs` refuses content that would
+  break the film: a line outside the screen area, a target off the safe frame, a lock ping within
+  0.1 s of a cut, palette text under 3:1, a Done label wider than its pill, a last frame without
+  its subject, or a character the vendored JetBrains Mono lacks (CJK, emoji). `shots[].lock` names
+  the word a shot locks on, and the build then requires that word and its LOCK label to read.
+  `references/film-tracking-hud-template.md` and the film build table route to it. No new gate,
+  receipt, flag or dependency. Exercised on a 6 s design-pipeline promo whose typed lines quote
+  the build, probe and `film check` output of its own run; the promo is local evidence, not
+  shipped.
+
+
 - Measured UI craft audit (change `audit-rendered-ui-craft`): `interaction.json`
   (`design-pipeline.interaction-probe.v1`) accepts `"kind": "audit"` probes, and
   `verify interaction` measures the rendered page at each declared viewport for 17 `audit.*`

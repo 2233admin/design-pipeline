@@ -1,6 +1,6 @@
 {
   "schema": "design-pipeline-companions.v1",
-  "updatedAt": "2026-10-13",
+  "updatedAt": "2026-10-14",
   "groups": [
     {
       "name": "Core pipeline",
@@ -563,6 +563,37 @@
         {"id": "issue-spec", "skill": "gstack-spec", "patterns": [{"source": "GitHub issue", "flags": "i"}]},
         {"id": "code-review", "skill": "gstack-review", "patterns": [{"source": "review", "flags": "i"}]},
         {"id": "pull-request-ship", "skill": "gstack-ship", "patterns": [{"source": "create (?:a )?PR", "flags": "i"}, {"source": "pull request", "flags": "i"}]}
+      ]
+    },
+    {
+      "id": "answer-me-with-html-built-in",
+      "name": "Built-in offline explanation helper",
+      "skill": "design-pipeline",
+      "level": "enhancement",
+      "sourceId": "2233admin/answer-me-with-html",
+      "source": "https://github.com/2233admin/answer-me-with-html/tree/4da5ae89ac435683110aa1b8707d9d4170184c55",
+      "sourceMeta": {
+        "id": "answer-me-with-html",
+        "kind": "github",
+        "url": "https://github.com/2233admin/answer-me-with-html/tree/4da5ae89ac435683110aa1b8707d9d4170184c55",
+        "canonicalUrl": "https://github.com/QingYunA/answer-me-with-html",
+        "reviewedRevision": "4da5ae89ac435683110aa1b8707d9d4170184c55",
+        "reviewedVersion": "0.5.2",
+        "reviewedContentHash": "612fdee283ec1b05b4be35de4bfef712ecfe3a4abab5c91f428aab57252413d8",
+        "contentHashScope": "scoped preserved Git tree listed by manifest.source.scope: sorted POSIX path, NUL, SHA-256 blob hash, newline",
+        "reviewedAt": "2026-10-14T00:00:00.000Z",
+        "freshnessDays": 365,
+        "license": "repository/dagre/graphlib/temml MIT; marked MIT and BSD notices; inherited KaTeX/React MIT and mhchem Apache-2.0; esbuild build input MIT; restricted Temml font excluded",
+        "provenanceManifest": "vendor/answer-me-with-html/manifest.json",
+        "runtimePath": "tools/answer-me-with-html/renderer.mjs",
+        "noticePath": "vendor/answer-me-with-html/LICENSES.txt",
+        "fontPolicyPath": "vendor/answer-me-with-html/maintained/font-policy.json",
+        "originalSkillPath": "vendor/answer-me-with-html/upstream/skills/answer-me-with-html/SKILL.md",
+        "useBoundary": "task-triggered offline explanation renderer; original skill instructions inert; authorized local includes and embedded source disclosure; manual feedback only, no acceptance/state/receipts"
+      },
+      "fallback": "Use tools/answer-me-with-html/README.md and its Node-only build-explanation.cjs for a complex explanation, architecture decision or handoff when useful; otherwise retain normal project communication.",
+      "requirements": [
+        {"id": "built-in-guide-routed", "skill": "design-pipeline", "patterns": [{"source": "tools/answer-me-with-html/README\\.md"}]}
       ]
     },
     {

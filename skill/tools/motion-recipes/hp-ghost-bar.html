@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HP ghost bar · 血条拖尾</title>
+<style>
+:root { color-scheme: light; --paper: #f2eee5; --ink: #29352f; --muted: #526057; --rule: #c6c8bb; --health: #326c51; --trail: #a65d32; --track: #ddd9ce; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 system-ui, "Microsoft YaHei", "PingFang SC", sans-serif; }
+main { max-width: 900px; margin: auto; padding: clamp(20px, 5vw, 60px); }
+h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.15; letter-spacing: -.03em; margin: 10px 0 20px; }
+h2 { font-size: 20px; margin-top: 0; }
+p { max-width: 65ch; }
+a { color: var(--health); text-underline-offset: .2em; }
+.card { margin: 28px 0; padding: clamp(18px, 4vw, 32px); border: 1px solid var(--rule); border-radius: 12px; background: #faf8f1; }
+.reading { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; font-weight: 650; }
+output { font-variant-numeric: tabular-nums; }
+.track { position: relative; height: 32px; overflow: hidden; border: 1px solid var(--ink); border-radius: 4px; background: var(--track); }
+.fill { position: absolute; inset: 0; transform-origin: left center; }
+.ghost { background: repeating-linear-gradient(135deg, var(--trail) 0 5px, #e2b187 5px 9px); }
+.real { background: var(--health); }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 6px; background: var(--health); }
+.legend .trail-key::before { background: repeating-linear-gradient(135deg, var(--trail) 0 3px, #e2b187 3px 5px); }
+.controls { display: flex; gap: 10px; flex-wrap: wrap; margin: 22px 0; }
+button { font: inherit; color: var(--ink); background: #faf8f1; border: 1px solid var(--ink); border-radius: 6px; padding: 9px 14px; min-height: 44px; cursor: pointer; }
+button:active { background: var(--track); }
+:focus-visible { outline: 3px solid var(--health); outline-offset: 4px; }
+label { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+input { width: 18px; height: 18px; accent-color: var(--health); }
+.details { display: flex; gap: 24px; flex-wrap: wrap; border-top: 1px solid var(--rule); padding-top: 16px; }
+.details p { margin: 0; }
+#status { min-height: 3.2em; }
+small { display: block; color: var(--muted); }
+</style>
+</head>
+<body>
+<main data-recipe="hp-ghost-bar">
+<header>
+<p>GAME HUD / STATE INDICATION</p>
+<h1>HP ghost bar <span lang="zh-CN">血条拖尾</span></h1>
+<p>Real health changes immediately. The striped remainder briefly explains the loss; it never owns HP or blocks another input.</p>
+<p><a href="../../references/motion-recipes/hp-ghost-bar.md">Recipe, tuning and source evidence</a></p>
+</header>
+<section class="card" aria-labelledby="hp-label">
+<div class="reading"><span id="hp-label">Health / <span lang="zh-CN">生命值</span></span><output id="hp-value">100 / 100 HP</output></div>
+<div id="health" class="track" role="meter" aria-labelledby="hp-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-valuetext="100 out of 100 HP">
+<div id="ghost-fill" class="fill ghost" aria-hidden="true"></div>
+<div id="hp-fill" class="fill real" aria-hidden="true"></div>
+</div>
+<p class="legend"><span>Solid: current HP</span><span class="trail-key">Striped: visual remainder only</span></p>
+<div class="controls" aria-label="Health controls">
+<button id="damage" type="button">Damage −20</button>
+<button id="heavy-damage" type="button">Heavy damage −45</button>
+<button id="burst" type="button">Rapid damage ×3 (−10 each)</button>
+<button id="heal" type="button">Heal +25</button>
+<button id="reset" type="button">Reset to 100</button>
+</div>
+<label><input id="reduced-motion" type="checkbox"> Reduce motion (align the trail immediately)</label>
+<small id="motion-mode">Motion preference</small>
+<p id="status" role="status" aria-live="polite" aria-atomic="true">Ready. No animation on initial load.</p>
+<div class="details" aria-label="Presentation diagnostics">
+<p>Visual trail: <output id="trail-value">100.0</output></p>
+<p>Phase: <output id="phase">Aligned</output></p>
+</div>
+</section>
+<section aria-labelledby="try-heading">
+<h2 id="try-heading">Try interruption, not just playback</h2>
+<ol>
+<li>Damage once: HP reads 80 immediately; the stripe waits 80 ms and catches up in 180 ms.</li>
+<li>Damage again during settlement: the stripe continues from its current presentation, not 100.</li>
+<li>Heal or reset during a trail: both layers align immediately; old work cannot return.</li>
+<li>Enable reduced motion, then damage: the same HP result appears with no waiting or sliding.</li>
+</ol>
+<p><small>All code and values are project-authored. This study's palette and timings are examples, not shared project tokens. No external assets, scripts, fonts or network calls.</small></p>
+</section>
+</main>
+<script>
+(() => {
+  'use strict';
+  const main = document.querySelector('main');
+  const health = document.querySelector('#health');
+  const value = document.querySelector('#hp-value');
+  const realFill = document.querySelector('#hp-fill');
+  const ghostFill = document.querySelector('#ghost-fill');
+  const trailValue = document.querySelector('#trail-value');
+  const phase = document.querySelector('#phase');
+  const status = document.querySelector('#status');
+  const reducedControl = document.querySelector('#reduced-motion');
+  const mode = document.querySelector('#motion-mode');
+  const preference = matchMedia('(prefers-reduced-motion: reduce)');
+  // Local authored parameters, not a new token scale.
+  const HOLD_MS = 80;
+  const SETTLE_MS = 180;
+  let hp = 100;
+  let ghost = 100;
+  let trail = null;
+  let frame = 0;
+  let listeners;
+  reducedControl.checked = preference.matches;
+  const isReduced = () => preference.matches || reducedControl.checked;
+
+  function sample(now) {
+    if (!trail) return ghost;
+    const progress = Math.max(0, Math.min(1, (now - trail.start - HOLD_MS) / SETTLE_MS));
+    return trail.from + (trail.to - trail.from) * progress;
+  }
+
+  function paint(now) {
+    ghost = sample(now);
+    realFill.style.transform = `scaleX(${hp / 100})`;
+    ghostFill.style.transform = `scaleX(${ghost / 100})`;
+    value.value = `${hp} / 100 HP`;
+    health.setAttribute('aria-valuenow', String(hp));
+    health.setAttribute('aria-valuetext', `${hp} out of 100 HP`);
+    trailValue.value = ghost.toFixed(1);
+    phase.value = trail ? (now < trail.start + HOLD_MS ? 'Holding' : 'Settling') : 'Aligned';
+    main.dataset.state = hp === 0 ? 'depleted' : 'healthy';
+  }
+
+  function cancelTrail() {
+    cancelAnimationFrame(frame);
+    frame = 0;
+    trail = null;
+  }
+
+  function tick(now) {
+    frame = 0;
+    if (!trail) return;
+    if (now >= trail.start + HOLD_MS + SETTLE_MS) {
+      ghost = hp;
+      trail = null;
+    }
+    paint(now);
+    if (trail) frame = requestAnimationFrame(tick);
+  }
+
+  function change(delta) {
+    const now = performance.now();
+    const next = Math.max(0, Math.min(100, hp + delta));
+    if (next === hp) {
+      status.textContent = `HP remains ${hp}. No change, no new motion.`;
+      return;
+    }
+    // Sample before replacing the presentation owner; never reuse an obsolete start.
+    ghost = sample(now);
+    cancelTrail();
+    const previous = hp;
+    hp = next; // Authoritative state is committed before visual work.
+    if (hp > previous || isReduced()) {
+      ghost = hp;
+    } else {
+      trail = { from: Math.max(ghost, hp), to: hp, start: now };
+      frame = requestAnimationFrame(tick);
+    }
+    paint(now);
+    status.textContent = `${hp < previous ? 'Damage' : 'Healing'}: ${previous} → ${hp} HP. ${trail ? 'Visual remainder settling.' : 'Both layers aligned.'}`;
+  }
+
+  function reset() {
+    cancelTrail();
+    hp = ghost = 100;
+    paint(performance.now());
+    status.textContent = 'Reset: 100 HP. Previous trail cancelled.';
+  }
+
+  function updateMode() {
+    if (isReduced()) {
+      cancelTrail();
+      ghost = hp;
+      paint(performance.now());
+    }
+    mode.textContent = preference.matches
+      ? 'System reduced motion is active; unchecking cannot override it.'
+      : reducedControl.checked ? 'Reduced motion: immediate alignment.' : 'Normal: 80 ms hold + 180 ms linear settlement.';
+  }
+
+  function bind() {
+    listeners = new AbortController();
+    const options = { signal: listeners.signal };
+    document.querySelector('#damage').addEventListener('click', () => change(-20), options);
+    document.querySelector('#heavy-damage').addEventListener('click', () => change(-45), options);
+    document.querySelector('#burst').addEventListener('click', () => {
+      change(-10); change(-10); change(-10);
+      status.textContent = `Three immediate damage events. HP is ${hp}; only the latest trail is owned.`;
+    }, options);
+    document.querySelector('#heal').addEventListener('click', () => change(25), options);
+    document.querySelector('#reset').addEventListener('click', reset, options);
+    reducedControl.addEventListener('change', updateMode, options);
+    preference.addEventListener('change', updateMode, options);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && trail) {
+        cancelAnimationFrame(frame);
+        tick(performance.now());
+      }
+    }, options);
+  }
+
+  window.addEventListener('pagehide', () => {
+    cancelTrail();
+    ghost = hp;
+    paint(performance.now());
+    listeners.abort();
+  });
+  window.addEventListener('pageshow', event => {
+    if (event.persisted) { bind(); updateMode(); }
+  });
+  bind();
+  paint(performance.now());
+  updateMode();
+})();
+</script>
+</body>
+</html>

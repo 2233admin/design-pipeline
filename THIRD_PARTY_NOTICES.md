@@ -520,6 +520,32 @@ Exact revisions, scope and full-license locations are listed in
 [the example's notices](examples/enamel-badge/THIRD_PARTY_NOTICES.md).
 The original reference video, screenshots and audio are not redistributed.
 
+## answer-me-with-html
+
+The preserved snapshot under `skill/vendor/answer-me-with-html/upstream/` is from the reviewed
+fork https://github.com/2233admin/answer-me-with-html at commit
+`4da5ae89ac435683110aa1b8707d9d4170184c55` (version 0.5.2, reviewed 2026-10-14), with canonical
+provenance https://github.com/QingYunA/answer-me-with-html. Original repository license:
+MIT, Copyright (c) 2026 Answer me with HTML contributors; full text in `upstream/LICENSE`.
+
+The maintained library bundles these pinned runtime dependencies, not the upstream CLI:
+
+- `@dagrejs/dagre` 3.1.1 and `@dagrejs/graphlib` 4.0.5: MIT.
+- `marked` 18.0.14: complete MIT and BSD-style Markdown notices, including inherited code attribution.
+- `temml` 0.14.0: MIT, with inherited KaTeX MIT, React MIT and mhchem Apache-2.0 attribution; all inherited notices and the complete Apache license are included.
+- Pinned build tooling `esbuild` 0.28.2: MIT; build input, not a consumer-side install.
+
+The complete verified redistribution texts and inventory are in
+`skill/vendor/answer-me-with-html/LICENSES.txt`; generation copies that file beside `index.html`.
+The source manifest records source/build/runtime/notice hashes. Original source and maintained
+library/glue are separate; upstream skill, plugin, installer and video instructions remain inert.
+
+**Font boundary:** the pinned Temml font's embedded license restricts commercial use; Temml's MIT
+package declaration does not clear that font. The maintained runtime does not embed it, using local
+system math fonts without a remote font service instead. The exact finding and adaptation are
+recorded in `skill/vendor/answer-me-with-html/maintained/font-policy.json`. This integration does
+not claim blanket clearance for upstream assets or include that font in generated explanations.
+
 ## vojtaholik/good-css
 
 The complete byte-preserved source snapshot under `skill/vendor/good-css/upstream/` is from
@@ -789,3 +815,18 @@ rights and are not this project's default assets. Referenced web fonts are loade
 hosts by the specimens and are not distributed. The package does not run upstream scripts, install
 its dependencies or activate any hook. `skill/references/design-direction-library.md` describes
 the bundle neutrally; the project's workflow does not change.
+
+## Roboto Flex (offline typography study)
+
+The unmodified Roboto Flex 3.200 variable font is distributed as
+`skill/tools/motion-recipes/full/text-roboto-flex.ttf`, under the SIL Open Font License 1.1.
+Publisher: The Roboto Flex Project Authors. The full copyright and license notice is retained
+beside the binary in `text-roboto-flex-OFL.txt`; `text-roboto-flex-provenance.json` records
+the primary [release source](https://github.com/googlefonts/roboto-flex/releases/download/3.200/roboto-flex-fonts.zip)
+and binary axis observations.
+
+The 1,787,292-byte font's SHA-256 is
+`a55c1e67f6dcf27f2bb71dc3e4c03d3abcbc5054411aac943b2f94985195825e`.
+It supplies a Latin variable-axis capability sample; CJK content keeps system-font semantics.
+No font, code or asset was copied from Motion Reference, and no licence for that site's
+implementations or assets is asserted.
