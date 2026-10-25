@@ -7,6 +7,7 @@
 <style>
 :root { color-scheme: light; --paper: #f2eee5; --ink: #29352f; --muted: #526057; --rule: #c6c8bb; --accent: #326c51; --track: #ddd9ce; }
 * { box-sizing: border-box; }
+html { background: var(--paper); }
 body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 system-ui, "Microsoft YaHei", "PingFang SC", sans-serif; }
 main { max-width: 900px; margin: auto; padding: clamp(20px, 5vw, 60px); }
 h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.15; letter-spacing: -.03em; margin: 10px 0 20px; }
@@ -30,7 +31,7 @@ button:disabled { color: #62685f; border-style: dashed; background: #e6e3d9; cur
 button:active:not(:disabled) { background: var(--track); }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
 label { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-height: 44px; }
-input { width: 18px; height: 18px; accent-color: var(--accent); }
+input { flex: none; width: 24px; height: 24px; accent-color: var(--accent); }
 #status { min-height: 3.2em; }
 .details { display: flex; gap: 24px; flex-wrap: wrap; border-top: 1px solid var(--rule); padding-top: 16px; }
 .details p { margin: 0; }
