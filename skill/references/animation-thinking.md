@@ -10,6 +10,10 @@ concept/technique sources and pure easing/spring/timing adapter. Choose a techni
 action and convert its source frames to the chosen fps; random draws and 60fps are not required.
 Ordinary component motion may borrow a primitive within its existing clock and task artifacts.
 
+For ordinary UI state changes, use [UI transition rules](ui-transition-rules.md) to select an
+effect or no motion and review identity, geometry, interruption and semantics. Keep its decisions
+in existing UI motion/task artifacts; film storyboard fields below are not required for UI work.
+
 ## Direct the change
 
 Before choosing an effect, state the viewer's intended read: what should they notice, feel, or

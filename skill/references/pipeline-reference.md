@@ -124,6 +124,17 @@ node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system search \
   --query "<page brief>" --platform web
 ```
 
+For 血条拖尾 / hp ghost bar, 冷却完成 / cooldown completion, 奖励到账 / reward arrival and
+菜单切换 / menu switch, use the [motion recipe index](motion-recipes/README.md) and its offline
+specimens. Search the same snapshot with `--root "$SKILL_ROOT" --kind doc --query "<scenario>"`
+and omit `--platform web`: these original project-owned method records are not web components.
+The existing catalog normalization and motion/QA evidence remain authoritative; no film route
+or additional gate/receipt is introduced.
+The same source also indexes full basic/web/game/text/scene mechanism studies with stable
+`motion-reference/<source-id>` methods. Open the [offline gallery](../tools/motion-recipes/full/index.html)
+and select that exact source ID (`#motion=<source-id>`); the family guide distinguishes study
+timelines from production interactions and current project tokens.
+
 Web route/search excludes source-only, method and template references such as film, GEPA,
 Prompt Motion and HyperFrames. Motion (`npm install motion`, ESM `motion`/`motion/react`)
 and anime.js (`npm install animejs`, ESM `animejs`) are verified MIT library candidates for

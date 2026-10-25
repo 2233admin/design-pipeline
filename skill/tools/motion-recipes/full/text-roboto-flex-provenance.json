@@ -1,0 +1,25 @@
+{
+  "family": "Roboto Flex",
+  "localFile": "text-roboto-flex.ttf",
+  "originalFile": "RobotoFlex[GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght].ttf",
+  "publisher": "The Roboto Flex Project Authors",
+  "release": "3.200",
+  "source": "https://github.com/googlefonts/roboto-flex/releases/download/3.200/roboto-flex-fonts.zip",
+  "sourceCommitFromPublisherMetadata": "739e06dc46ebb14cddd88b9768a6c1504d4677f6",
+  "metadata": "https://github.com/google/fonts/blob/main/ofl/robotoflex/METADATA.pb",
+  "licenseSource": "https://github.com/google/fonts/blob/main/ofl/robotoflex/OFL.txt",
+  "license": "SIL Open Font License 1.1",
+  "licenseFile": "text-roboto-flex-OFL.txt",
+  "binaryModified": false,
+  "bytes": 1787292,
+  "sha256": "a55c1e67f6dcf27f2bb71dc3e4c03d3abcbc5054411aac943b2f94985195825e",
+  "axisObservation": "Direct binary fvar table parsing, not CSS property-name inference",
+  "studyAxes": {
+    "wght": { "min": 100, "default": 400, "max": 1000 },
+    "wdth": { "min": 25, "default": 100, "max": 151 },
+    "slnt": { "min": -10, "default": 0, "max": 0 }
+  },
+  "otherBinaryAxes": ["opsz", "GRAD", "XOPQ", "YOPQ", "XTRA", "YTUC", "YTLC", "YTAS", "YTDE", "YTFI"],
+  "languageBoundary": "Latin/Cyrillic/Greek publisher font. No CJK variable-font claim; semantic CJK content uses system fonts and a separate Latin capability sample demonstrates actual axes.",
+  "sourceMotionReferenceAssetsCopied": false
+}

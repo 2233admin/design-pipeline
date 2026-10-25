@@ -70,6 +70,9 @@ name a repository. This is triggered by the work's needs, not a required search 
   accessibility and CJK rules govern adaptation; image-only methods need an available provider.
 - CSS authoring or review in any stack: `references/good-css.md` for the complete built-in
   practice library, project adaptations and offline specimens; load its matched source entries.
+- Complex explanation, architecture, decision comparison or handoff that benefits from diagrams:
+  `tools/answer-me-with-html/README.md` for an offline doc/paper explanation and manual feedback.
+  Use only when helpful, not for every answer; disclose embedded source before sharing.
 - UI polish, accessibility fixes, motion-principle checks, shadcn/ui projects and browser
   driving: `references/ui-craft-sources.md` is the project rule index: the measured page audit
   (`verify interaction`, required in web `probe`), the `UC-` review checklist and the six pinned
@@ -90,7 +93,10 @@ name a repository. This is triggered by the work's needs, not a required search 
   existing governed route permits adaptation or execution.
 - Installation, upgrade and skill location: `references/installation.md`.
 - Animation decisions: `references/animation-thinking.md` and, when required by the route,
-  `references/animation-opportunity-and-review.md`.
+  `references/animation-opportunity-and-review.md`. For ordinary UI state changes, also read
+  `references/ui-transition-rules.md` before selecting effects and during rendered review.
+  For scenario/mechanism discovery, use `references/motion-recipes/README.md`: the full offline
+  gallery covers basic/web/game/text/scene studies alongside the four state-owned specimens.
 - Film direction and storyboards: `references/product-film-direction.md` and
   `references/film-choreography/`.
 - Built-in Cinetic/Product Film methods: `references/film-methods.md` for explicit film/loop

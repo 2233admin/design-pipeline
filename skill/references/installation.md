@@ -6,7 +6,7 @@ entry is a Node.js script, not a standalone binary. Use Node.js 22 or newer.
 
 ## Install the current checkout
 
-To put the current checkout in Codex's canonical `~/.codex/skills/design-pipeline` location, run
+To put the current checkout in the legacy Codex `~/.codex/skills/design-pipeline` location, run
 the repository's local installer from the repository root:
 
 ```sh
@@ -47,9 +47,9 @@ npx skills add "/absolute/path/to/design-pipeline/skill" \
 ```
 
 Project-scoped Codex installation uses `.agents/skills/design-pipeline` in the project.
-Add `--global` for a user-level installation. Take the actual root from the Skills CLI output
-or the `SKILL.md` path loaded by your agent; it can differ from the repository installer's
-`~/.codex/skills` destination.
+Add `--global` for a user-level installation under `~/.agents/skills/design-pipeline`.
+Use the actual path from the Skills CLI output or the `SKILL.md` loaded by your agent when
+calling scripts; the repository's local installer uses the legacy `~/.codex/skills` destination.
 
 The project also documents the portable skill-manager command for a pushed repository version:
 
@@ -65,7 +65,7 @@ those changes.
 
 Call the installed CLI by its absolute path, run it from the project you want to affect, and pass
 that project's root explicitly. Set `SKILL_ROOT` to the path reported by your installer or agent;
-this example uses the repository installer's canonical destination:
+this example uses the repository installer's legacy destination:
 
 ```sh
 SKILL_ROOT="$HOME/.codex/skills/design-pipeline"
@@ -81,6 +81,41 @@ files, APIs and a small browser study.
 Check the installed copy with `node "<installed-skill-root>/scripts/designer-pipeline.cjs"
 doctor --root <project>`. Ask the agent to load that installation's `design-pipeline` skill;
 the file paths in its loaded instructions identify which copy it is using.
+
+`doctor` diagnoses the installed copy and runtime environment; it does not automatically
+install, replace or repair skills.
+
+## Self-check discovery roots
+
+Run the installed dependency self-check from the project directory:
+
+```sh
+node "$SKILL_ROOT/scripts/check-deps.cjs" --json
+```
+
+With no nonempty explicit root setting, the self-check searches these directories in order:
+
+1. `<CODEX_HOME>/skills` when `CODEX_HOME` is set, otherwise `~/.codex/skills`.
+2. `~/.agents/skills` for standard Skills CLI user installations.
+3. `<current-working-directory>/.agents/skills` for standard project installations.
+
+Default directories are resolved to absolute paths and de-duplicated in first-seen order.
+`CODEX_HOME` changes only the legacy candidate, not the user or project `.agents` roots.
+Run from the intended project: the project root is the current working directory, not the
+installed script's directory. The legacy root remains first when multiple copies are available.
+
+For custom locations, set `DESIGN_PIPELINE_SKILL_ROOTS`, or `CODEX_SKILLS_DIR` when the
+former is unset or empty. Each value is a list of skills directories (the parents of
+`design-pipeline` and companion directories), separated by `:` on macOS/Linux or `;` on
+Windows. Entries are resolved relative to the current working directory when not absolute.
+The first nonempty setting wins: `DESIGN_PIPELINE_SKILL_ROOTS` takes precedence over
+`CODEX_SKILLS_DIR`. An explicit list replaces all defaults; no default directory is appended,
+so an invalid configured root still fails even if a complete default installation exists.
+
+The JSON report includes searched roots, discovered companions and missing core resources.
+A missing required skill or resource returns `FAIL` and exit 1; a complete core package returns
+`OK` and exit 0 even when optional companions are absent. This check is diagnostic only and
+does not install or repair anything.
 
 ## Runtime notes
 

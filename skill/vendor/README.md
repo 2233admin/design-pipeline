@@ -23,6 +23,7 @@ does not install dependencies, grant execution authority or certify visual quali
 | `playwright-cli/` | [Exploratory browser driving](../references/ui-craft-sources.md#playwright-cli) | `manifest.json`, scoped snapshot hash |
 | `taste-skill/` | [Visual direction and interface recipes](../references/taste-skill.md) | `manifest.json`, source Git tree and snapshot hashes |
 | `good-css/` | [CSS practices and specimens](../references/good-css.md) | `manifest.json`, source Git tree, snapshot hashes and separate font notices |
+| `answer-me-with-html/` | [Offline explanations](../tools/answer-me-with-html/README.md) | `manifest.json`, pinned source/build/runtime hashes and complete dependency/font `LICENSES.txt`; original skill instructions inert |
 | `cinetic/` | [Film methods and techniques](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |
 | `product-film-skill/` | [Product film methods](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |
 | `ff-tracking/` | [Tracking HUD film template](../references/film-tracking-hud-template.md) | `manifest.json`, source Git tree, snapshot hashes and separate font/MT19937 notices |

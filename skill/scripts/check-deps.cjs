@@ -19,14 +19,18 @@ function optionValue(name) {
   return value;
 }
 
+const cwd = process.cwd();
 const configuredSkillRoots =
   process.env.DESIGN_PIPELINE_SKILL_ROOTS || process.env.CODEX_SKILLS_DIR;
 const skillRoots = configuredSkillRoots
   ? configuredSkillRoots.split(path.delimiter).filter(Boolean).map((root) => path.resolve(root))
-  : [path.join(process.env.CODEX_HOME || path.join(os.homedir(), ".codex"), "skills")];
+  : [...new Set([
+    path.join(process.env.CODEX_HOME || path.join(os.homedir(), ".codex"), "skills"),
+    path.join(os.homedir(), ".agents", "skills"),
+    path.join(cwd, ".agents", "skills"),
+  ].map((root) => path.resolve(root)))];
 const skillRoot = skillRoots[0];
 
-const cwd = process.cwd();
 const registryPath = path.join(__dirname, "..", "references", "companion-capabilities.json");
 let registry;
 try {

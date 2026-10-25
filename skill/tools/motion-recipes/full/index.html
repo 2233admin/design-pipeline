@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>动效研究室 · Motion Recipe Studies</title>
+  <link rel="stylesheet" href="gallery.css">
+</head>
+<body>
+  <header class="masthead">
+    <a class="wordmark" href="../README.md">DESIGN PIPELINE <span> / Motion studies</span></a>
+    <a href="../../../references/motion-recipes/README.md">配方索引 / Recipe index ↗</a>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">OFFLINE · ORIGINAL · SEEKABLE</p>
+      <h1 id="page-title">让动效成为选择，<br><span>而不是默认。</span></h1>
+      <p>Find a mechanism. Inspect its states. Adapt only what the product needs.<br>按场景找到机制，检查起止状态，再适配项目的交互与动效预算。</p>
+    </section>
+    <div class="workspace">
+      <aside class="library" aria-labelledby="library-title">
+        <h2 id="library-title">选择研究 / Choose a study</h2>
+        <label for="search">搜索 / Search</label>
+        <input id="search" type="search" placeholder="中文、English、exact ID" autocomplete="off">
+        <div class="filters">
+          <div><label for="group">分组 / Group</label><select id="group"><option value="">All / 全部</option><option value="basic">Basic / 基础</option><option value="web">Web / 网页</option><option value="game">Game / 游戏</option><option value="text">Text / 文字</option><option value="scene">Scene / 场景</option></select></div>
+          <div><label for="category">类别 / Category</label><select id="category"><option value="">All / 全部</option></select></div>
+        </div>
+        <p id="count" role="status" aria-live="polite"></p>
+        <label for="variant">确切条目 / Exact variant</label>
+        <select id="variant"><option value="">Choose a variant / 选择条目</option></select>
+        <p id="filter-note" class="hint"></p>
+        <label for="sample-text">示例文字 / Sample text</label>
+        <textarea id="sample-text" rows="3" maxlength="240">动效，让状态更清晰。 Motion makes state clear. ✨</textarea>
+        <p class="hint">Text studies use this content; every change remounts the selected mechanism without changing its parameters.</p>
+        <details><summary>使用边界 / Adaptation boundary</summary><p>本页是原创机制研究，不是生产运行时。时长为作者教学时间线，不是参考站实测，也不是项目默认 tokens。真实状态、焦点、频率与中断仍由产品负责。</p><p>Original studies, not copied source demos. Catalogue metadata is not source-wide visual verification or owner Visual Acceptance.</p></details>
+      </aside>
+      <section class="study" aria-labelledby="title">
+        <div class="study-heading"><p class="eyebrow">SELECTED MECHANISM</p><h2 id="title">Loading local catalogue / 载入本地条目</h2><p id="description"></p><p id="metadata" class="hint"></p></div>
+        <p id="error" role="alert" hidden></p>
+        <div id="stage" class="stage" role="group" aria-label="Original motion study / 原创动效研究"></div>
+        <div class="transport" role="group" aria-label="Playback inspection / 播放检查">
+          <div class="transport-buttons"><button id="play" type="button" aria-pressed="false">Play / 播放</button><button id="replay" type="button">Replay / 重播</button><label class="check"><input id="reverse" type="checkbox">Reverse / 反向</label><label class="check"><input id="reduced" type="checkbox">Reduced motion / 减弱动效</label></div>
+          <div class="timeline"><label for="seek">进度 / Seek</label><input id="seek" type="range" min="0" max="1000" step="1" value="0"><output id="progress" for="seek">0%</output></div>
+        </div>
+        <nav class="study-links" aria-label="Selected recipe references"><a id="guide" hidden>读适配指南 / Read adaptation guide ↗</a><a id="source" target="_blank" rel="noopener noreferrer" hidden>参考条目 / Source metadata ↗</a></nav>
+        <details class="config"><summary>作者参数 / Authored parameters</summary><pre id="parameters"></pre><p class="hint">The exact selected catalogue values drive the study. Current DESIGN.md, MOTION.md and semantic primitives override these teaching values in a product.</p></details>
+      </section>
+    </div>
+    <noscript>This offline gallery needs JavaScript. The linked Markdown guides remain readable. 此研究页需要 JavaScript，配方指南仍可独立阅读。</noscript>
+  </main>
+  <footer>Original project-owned mechanisms · Motion Reference metadata inspiration · No upstream code or assets copied.</footer>
+  <script src="basic.js"></script>
+  <script src="web.js"></script>
+  <script src="game-spatial.js"></script>
+  <script src="game-material.js"></script>
+  <script src="game-impact.js"></script>
+  <script src="game.js"></script>
+  <script src="text-core.js"></script>
+  <script src="text-glyph.js"></script>
+  <script src="text-media.js"></script>
+  <script src="text-semantic.js"></script>
+  <script src="text-interactive.js"></script>
+  <script src="text.js"></script>
+  <script src="scene-camera.js"></script>
+  <script src="scene-composite.js"></script>
+  <script src="scene.js"></script>
+  <script src="data.js"></script>
+  <script src="gallery.js"></script>
+</body>
+</html>
