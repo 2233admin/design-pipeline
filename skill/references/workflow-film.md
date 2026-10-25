@@ -169,6 +169,16 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
   action, response and result are each shown by an action beat citing that step's capture, in that
   order (one continuous beat may carry all three); a title, card or hold cannot show a step.
   The run log, captures and bound job plan are checked inputs: changing them reopens this check.
+- Allowed values (the gate rejects anything else): `grammar` is `continuous-transformation`,
+  `product-demonstration`, `match-cut-montage`, `footage-led`, `kinetic-type` or `combination`
+  (a hard-cut montage such as a PV is `match-cut-montage` or `combination`); `beats[].role` is
+  `action`, `title-hold` or `brand-hold`; `beats[].transformation.kind` is `morph`, `state-change`,
+  `reveal-in-context`, `camera-move`, `match-cut`, `type-to-object`, `data-update`, `assembly`,
+  `footage` or `none`; `beats[].handoff` is `open`, `continuation`, `match-cut`, `morph`,
+  `camera-carry`, `hard-cut`, `dissolve` or `reset` (the first beat is `open`, no other beat is);
+  `sound.cues[].kind` is `entry`, `exit`, `downbeat`, `accent`, `riser`, `impact`, `voiceover` or
+  `silence`. `film-core.cjs` is the source; `tests/film-storyboard-values.test.cjs` keeps this list
+  equal to it.
 - Carry: every beat whose handoff is `continuation`, `morph`, `camera-carry` or `match-cut` names
   a `carrier` — what survives the boundary and what it becomes ("prompt bar opens into the app
   window"). A claimed carry with nothing named for it to carry is a placeholder, not a plan.
@@ -227,6 +237,11 @@ under legible text, resting text within 4% of the frame edge and text under 2.4%
 height are review prompts. Deliberate layering takes `data-layout-allow-overlap`; deliberate
 warnings take `film check --allow <code>`. Static UI layout: `composition capture` then
 `verify composition` (`composition-gate.md`). A re-render reopens this stage.
+
+`hyperframes check` stops before its browser session when lint reports an error, yet its
+Runtime, Layout, Motion and Contrast sections still print `0 errors` and `0 samples`. Layout has run
+only when it reports a sample count above zero and the output does not contain `Browser session
+never ran`; otherwise fix the lint errors and rerun before trusting any section.
 
 For a product promo the check stops at the storyboard step, with only the admission findings,
 until `productSource` is admitted; the run log, captures and bound job plan are hashed inputs.

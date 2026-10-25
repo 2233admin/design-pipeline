@@ -90,6 +90,10 @@ sub-compositions, snapshot visible midpoints and inspect each mounted scene. Pre
 approval; render only after approval, then verify that the output exists, is non-empty, and has a
 plausible duration.
 
+A lint error stops `check` before the browser session starts, and the sections after it still print
+`0 errors` and `0 sample(s)`. Treat Layout, Motion and Contrast as not run when the output contains
+`Browser session never ran` or reports zero samples; fix lint and rerun.
+
 Keep the CLI version pinned for reproducibility. A latest-version upgrade probe may be run before a
 render-affecting command, but a dependency bump is a separate, explicit change and must be followed
 by `npx --no-install hyperframes check`.
