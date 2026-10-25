@@ -651,6 +651,14 @@ Before selecting a non-trivial UI state transition, read [UI transition rules](u
 choose from the actual content/layout/overlay/navigation/list/value change, or explicitly keep it
 static. Reuse the existing opportunity screen, project motion tokens and motion/task record.
 
+For 血条拖尾 / hp ghost bar, 冷却完成 / cooldown completion, 奖励到账 / reward arrival or
+菜单切换 / menu switch, select one [motion recipe](motion-recipes/README.md) and its offline
+specimen. Adapt its state/interruption cases within those rules and the current renderer; the
+study's authored parameters are not another token scale, runtime or film workflow.
+For broader scroll, layout, gesture, loading, feedback or text mechanisms, search the same
+index's full catalogue and open its exact offline variant. Read the family guide's production
+state/input ownership adaptation; a seekable study alone is not a production interaction.
+
 Use the task fields in `stages.md#stage-4-tasks`: one visual goal with explicit inputs, scope,
 outputs, checks and repair path. For references, first render bounded structure/occlusion in a
 graybox. Then read complete `reference check`, `reconstruction check` and applicable `scene check`

@@ -17,6 +17,7 @@ const {
   fail,
   nonEmpty,
   pathInside,
+  resolveInside,
   sha256,
   sortValue,
 } = require("./contract-utils.cjs");
@@ -30,6 +31,21 @@ const RUNNABLE_SUPPORT = new Set(["native", "generic-workflow", "companion"]);
 
 function invalid(message) { fail("toolchain", message); }
 
+// One convention for request paths relative to --root: `\` becomes `/`, then the path is
+// POSIX-normalised without trailing `/`. Drive letters (any `:`), absolute paths and `..`
+// segments (checked before normalising, so `a/../b` is rejected too) are refused.
+function containedRelativePath(raw, label, { allowRoot }) {
+  assertString(raw, label, "toolchain");
+  const slashed = raw.replace(/\\/g, "/");
+  const reject = (reason) => invalid(`${label} must be a contained relative path: ${reason}`);
+  if (slashed.includes(":")) reject("drive letters and ':' are not allowed");
+  if (path.posix.isAbsolute(slashed)) reject("absolute paths are not allowed");
+  if (slashed.split("/").includes("..")) reject("'..' segments are not allowed");
+  const normalized = path.posix.normalize(slashed).replace(/\/+$/, "") || ".";
+  if (normalized === "." && !allowRoot) reject("it must name a file, not the root");
+  return normalized;
+}
+
 function validateRequest(request) {
   if (!request || typeof request !== "object") invalid("request must be an object");
   if (request.schema !== REQUEST_SCHEMA) invalid("unsupported request schema");
@@ -38,7 +54,7 @@ function validateRequest(request) {
   assertKeys(
     request,
     ["schema", "framework", "brief", "jobId", "jobPlanSha256", "jobPlanPath", "deliverableForm"],
-    ["schema", "framework", "brief", "existing", "requested", "capabilities", "graphics", "context", "jobId", "jobPlanSha256", "jobPlanPath", "deliverableForm"],
+    ["schema", "framework", "brief", "existing", "requested", "capabilities", "graphics", "context", "jobId", "jobPlanSha256", "jobPlanPath", "deliverableForm", "targetRoot"],
     "request",
     "toolchain",
   );
@@ -59,18 +75,14 @@ function validateRequest(request) {
     if (request.graphics.family !== undefined) assertString(request.graphics.family, "graphics.family", "toolchain");
     if (request.graphics.adapter !== undefined) assertString(request.graphics.adapter, "graphics.adapter", "toolchain");
   }
-  return request;
+  if (request.targetRoot === undefined) return request;
+  return { ...request, targetRoot: containedRelativePath(request.targetRoot, "targetRoot", { allowRoot: true }) };
 }
 
 function buildToolchainRequest(jobPlan, choices, jobPlanPath) {
   validateJobPlan(jobPlan);
   assertObject(choices, "choices", "toolchain");
-  assertString(jobPlanPath, "jobPlanPath", "toolchain");
-  const relativePath = path.posix.normalize(jobPlanPath.replace(/\\/g, "/"));
-  if (path.win32.isAbsolute(jobPlanPath) || /^[a-z]:/i.test(jobPlanPath) || path.posix.isAbsolute(relativePath)
-      || relativePath === "." || relativePath === ".." || relativePath.startsWith("../")) {
-    invalid("jobPlanPath must be a contained relative file path");
-  }
+  const relativePath = containedRelativePath(jobPlanPath, "jobPlanPath", { allowRoot: false });
   const binding = {
     schema: REQUEST_SCHEMA,
     brief: jobPlan.query,
@@ -82,8 +94,7 @@ function buildToolchainRequest(jobPlan, choices, jobPlanPath) {
   for (const [field, value] of Object.entries(binding)) {
     if (Object.hasOwn(choices, field) && choices[field] !== value) invalid(`${field} conflict: choices do not match the job plan`);
   }
-  const request = { ...binding, ...choices };
-  validateRequest(request);
+  const request = validateRequest({ ...binding, ...choices });
   bindJobPlan(request, jobPlan);
   return sortValue(request);
 }
@@ -208,8 +219,8 @@ function graphicsStages(adapter) {
   };
 }
 
-function resolveToolchain(request, sources, options = {}) {
-  validateRequest(request);
+function resolveToolchain(input, sources, options = {}) {
+  const request = validateRequest(input);
   const jobPlan = bindJobPlan(request, options.jobPlan);
   const classifiedForm = classifyDeliverableForm(request.brief);
   if (classifiedForm !== request.deliverableForm) invalid(`deliverable-form conflict: brief classified as ${classifiedForm}, request declares ${request.deliverableForm}`);
@@ -231,6 +242,7 @@ function resolveToolchain(request, sources, options = {}) {
     schema: PLAN_SCHEMA,
     status: blockers.length ? "blocked" : "ready",
     deliverableForm: request.deliverableForm,
+    targetRoot: request.targetRoot ?? ".",
     framework: frontend.framework,
     brief: request.brief,
     styling: frontend.selected.styling,
@@ -276,8 +288,29 @@ function probeMessage(child) {
   return raw.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).at(-1) || `probe exited ${child.status}`;
 }
 
-function probeToolchain(plan, options = {}) {
-  const projectRoot = fs.realpathSync(path.resolve(options.projectRoot || process.cwd()));
+// The only source of the directory where target-project commands run: --root plus the plan's
+// targetRoot. It must exist, be a directory, and keep its real path inside root (junctions
+// included). Callers cannot supply a directory, so a probe can neither run elsewhere nor report a
+// directory it did not use.
+function targetDirectory(root, targetRoot) {
+  const realRoot = fs.realpathSync(path.resolve(root));
+  const real = fs.realpathSync(resolveInside(realRoot, targetRoot, "targetRoot", { scope: "toolchain", mustExist: true }));
+  resolveInside(realRoot, real, "targetRoot", { scope: "toolchain" });
+  if (!fs.statSync(real).isDirectory()) invalid(`targetRoot must be a directory: ${targetRoot}`);
+  return real;
+}
+
+// A failed command probe names the directory it actually ran in, relative to --root, so a probe
+// of the wrong package (for example a forgotten targetRoot) explains itself.
+function unavailable(probe, where, message) {
+  return { toolId: probe.toolId, status: "unavailable", version: null, message: `${message} (probed in ${where})` };
+}
+
+function probeToolchain(plan, options) {
+  assertKeys(options, ["root"], ["root", "runner"], "probe options", "toolchain");
+  const root = fs.realpathSync(path.resolve(options.root));
+  const cwd = targetDirectory(root, plan.targetRoot);
+  const where = path.relative(root, cwd).split(path.sep).join("/") || ".";
   if (plan.status === "blocked") {
     return sortValue({
       schema: PROBE_SCHEMA,
@@ -293,16 +326,17 @@ function probeToolchain(plan, options = {}) {
     if (probe.kind === "governed-review") return { toolId: probe.toolId, status: "review", version: null, message: "review route was not probed" };
     if (!Array.isArray(probe.command) || !probe.command.length) return { toolId: probe.toolId, status: "unavailable", version: null, message: "no trusted probe command" };
     const child = runner(probe.command[0], probe.command.slice(1), {
-      cwd: projectRoot,
+      cwd,
       encoding: "utf8",
       env: boundedProbeEnv(),
       windowsHide: true,
       timeout: probe.timeoutMs,
       maxBuffer: 1024 * 1024,
     });
-    if (child.error) return { toolId: probe.toolId, status: "unavailable", version: null, message: child.error.message };
+    if (child.error) return unavailable(probe, where, child.error.message);
     const message = probeMessage(child);
-    return { toolId: probe.toolId, status: child.status === 0 ? "available" : "unavailable", version: child.status === 0 ? message || null : null, message: message || "probe completed" };
+    if (child.status !== 0) return unavailable(probe, where, message);
+    return { toolId: probe.toolId, status: "available", version: message || null, message: message || "probe completed" };
   });
   const blockers = results.filter((item) => item.status === "unavailable").map((item) => `${item.toolId}: ${item.message}`);
   return sortValue({
@@ -363,6 +397,7 @@ module.exports = {
   buildToolchainRequest,
   probeToolchain,
   resolveToolchain,
+  targetDirectory,
   validateRequest,
   validateToolchainReceipt,
 };

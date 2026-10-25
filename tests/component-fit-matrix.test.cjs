@@ -256,9 +256,14 @@ test("includes governed framework providers alongside catalog sources for capabi
   assert.equal(result.providerHash.length, 64);
   const reactAria = row.candidates.find((candidate) => candidate.id === "provider:react-aria");
   assert.equal(reactAria.sourceId, "adobe/react-spectrum");
-  assert.equal(row.candidates.find((candidate) => candidate.id === "provider:project-dom").sourceId, "project-components");
-  assert.equal(reactAria.dimensions.license.status, "fail");
-  assert.equal(reactAria.status, "blocked");
+  const projectDom = row.candidates.find((candidate) => candidate.id === "provider:project-dom");
+  assert.equal(projectDom.sourceId, "project-components");
+  assert.equal(projectDom.license, "project-owned");
+  assert.equal(reactAria.license, "Apache-2.0");
+  assert.equal(reactAria.dimensions.license.status, "pass");
+  assert.equal(reactAria.requiresLicense, false);
+  assert.equal(reactAria.status, "review");
+  assert.equal(reactAria.dimensions.visualFit.status, "review");
   const reordered = buildComponentFitMatrix({
     framework: "react",
     platform: "web",
@@ -336,7 +341,7 @@ test("keeps selected non-ready foundations blocked and self-validating", () => {
   assert.match(result.foundation.blocker.reason, /not ready/);
   assert.doesNotThrow(() => validateComponentFitMatrix(result));
 });
-test("keeps optional provider source identity strict without granting license authority", () => {
+test("keeps optional provider source identity strict and leaves providers without sourceId unlicensed", () => {
   const governed = providerRegistry();
   const input = {
     framework: "react", platform: "web", capabilities: ["overlay.dialog"],
@@ -361,6 +366,59 @@ test("keeps optional provider source identity strict without granting license au
     ...input,
     providers: { ...governed, providers: governed.providers.map((provider) => ({ ...provider, unexpected: true })) },
   }), /provider contains unsupported fields/);
+});
+function withProviderSource(base, sourceId, change) {
+  return {
+    ...base,
+    entries: base.entries.map((entry) => {
+      if (entry.recordType !== "source" || entry.sourceId !== sourceId) return entry;
+      const changed = change(structuredClone(entry));
+      delete changed.hash;
+      return { ...changed, hash: sha256(canonicalJson(sortValue(changed))) };
+    }),
+  };
+}
+test("resolves provider licenses only from the catalog source record named by sourceId", () => {
+  const governed = providerRegistry();
+  const base = catalog();
+  const input = { framework: "react", platform: "web", capabilities: ["overlay.dialog"], directionLock: directionLock(), providers: governed };
+  const candidate = (matrix, id = "provider:react-aria") => matrix.rows[0].candidates.find((item) => item.id === id);
+  const built = buildComponentFitMatrix({ ...input, catalog: base });
+  for (const [id, license] of [["provider:react-aria", "Apache-2.0"], ["provider:ark-ui", "MIT"], ["provider:project-dom", "project-owned"]]) {
+    assert.equal(candidate(built, id).license, license);
+    assert.equal(candidate(built, id).dimensions.license.status, "pass");
+  }
+  assert.equal(validateComponentFitMatrix(built, { catalog: base, providers: governed }).matrixHash, built.matrixHash);
+
+  const relicensed = withProviderSource(base, "adobe/react-spectrum", (entry) => ({ ...entry, provenance: { ...entry.provenance, license: "MIT" }, license: { ...entry.license, id: "MIT" } }));
+  assert.equal(candidate(buildComponentFitMatrix({ ...input, catalog: relicensed })).license, "MIT");
+  assert.throws(() => validateComponentFitMatrix(built, { catalog: relicensed, providers: governed }), /catalog binding is stale/);
+
+  const review = [
+    ["unverified state", (entry) => ({ ...entry, license: { ...entry.license, state: "unverified" } }), "Apache-2.0"],
+    ["unverified placeholder", (entry) => ({ ...entry, provenance: { ...entry.provenance, license: "unverified" }, license: { state: "unverified", evidence: entry.license.evidence } }), "unverified"],
+    ["commercial state", (entry) => ({ ...entry, provenance: { ...entry.provenance, license: "LicenseRef-Example" }, license: { ...entry.license, state: "commercial", id: "LicenseRef-Example" } }), "LicenseRef-Example"],
+    ["unspecific provenance without license record", ({ license, ...entry }) => ({ ...entry, provenance: { ...entry.provenance, license: " Mixed " } }), " Mixed "],
+  ];
+  for (const [label, change, license] of review) {
+    const reactAria = candidate(buildComponentFitMatrix({ ...input, catalog: withProviderSource(base, "adobe/react-spectrum", change) }));
+    assert.equal(reactAria.license, license, label);
+    assert.equal(reactAria.dimensions.license.status, "review", label);
+    assert.notEqual(reactAria.status, "ready", label);
+  }
+
+  const unindexed = { ...governed, providers: governed.providers.map((provider) => provider.id === "react-aria" ? { ...provider, sourceId: "example/unindexed" } : provider) };
+  const missing = candidate(buildComponentFitMatrix({ ...input, providers: unindexed, catalog: base }));
+  assert.equal(missing.sourceId, "example/unindexed");
+  assert.equal(missing.license, null);
+  assert.deepEqual(missing.dimensions.license, { status: "fail", reason: "source has no license declaration" });
+  assert.equal(missing.status, "blocked");
+
+  const source = base.entries.find((entry) => entry.recordType === "source" && entry.sourceId === "adobe/react-spectrum");
+  const duplicate = { ...source, id: `${source.id}-copy`, localId: `${source.localId}-copy` };
+  delete duplicate.hash;
+  duplicate.hash = sha256(canonicalJson(sortValue(duplicate)));
+  assert.throws(() => buildComponentFitMatrix({ ...input, catalog: { ...base, entries: [...base.entries, duplicate] } }), /2 source records for provider react-aria sourceId adobe\/react-spectrum/);
 });
 
 test("rejects malformed capabilities, direction-lock options, providers, and matrix structure", () => {

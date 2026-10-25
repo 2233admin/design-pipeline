@@ -90,6 +90,36 @@ New candidates enter through `adapter-intake.schema.json` and `adapter intake`, 
 revision/hash, license evidence, maintenance evidence, permission/network review, adoption mode,
 update/removal policy, and score provenance. A registry change requires deterministic tests.
 
+## SVG D3 Project Lifecycle
+
+`svg-d3` uses the target project's installed D3. Declare an exact version in
+`dependencies.d3` or `devDependencies.d3` and provide a nonempty `package.json#scripts.dev` for
+that project's development server. The toolchain probe runs in the directory that holds this
+`package.json`, named by the plan's `targetRoot`: `.` (that is, `--root`) by default. When the
+package sits below the pipeline root, set `"targetRoot": "app"` in the stack input before
+`toolchain request`; `toolchain resolve` and `toolchain probe` then use `<--root>/app`.
+`targetRoot` must be relative without `..` segments or `:`, and must resolve to an existing
+directory inside `--root`; a missing directory, a file, or a symlink or junction that resolves
+outside `--root` is rejected. This containment is deliberate: the request, job plan and any
+`--write` output stay under `--root`, and the plan hash, which every probe result and receipt
+binds, covers the directory. A failed probe names the directory it ran in, such as
+`(probed in .)`, so a forgotten `targetRoot` is visible.
+The probe reads `node_modules/d3/package.json`, checks that the package is `d3` and that the
+declared and installed versions match, resolves the package entry from the project root, requires
+it to stay inside that `node_modules/d3`, imports it and requires its `select` export. It never
+installs a package, searches global modules or starts the server.
+Missing dependencies, version ranges, mismatches, missing dev scripts and import errors remain
+blocked with their concrete cause.
+
+The returned invocation is `npm run dev`, owned by the target project; its `dev` script can call
+the project's own start command or package manager. The agent must run and record the actual
+invocation before supplying evidence. Package import proves availability only. The plan lists DOM,
+screenshot and accessibility evidence for `design-pipeline.toolchain-receipt.v1`; collect those
+from the rendered charts in the real browser, including accessible names or a semantic table for
+the data marks. When the interactive charts cannot run, the declared degradation is a static SVG
+or semantic table. Receipt structure and file hashes do not prove runtime behavior or visual
+acceptance.
+
 ## Threejs Project Lifecycle
 
 Reviewed runtime baseline: Three.js 0.186.1, source commit

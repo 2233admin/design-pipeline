@@ -37,3 +37,10 @@ NUL
 
 # This tracked upstream source must survive personal *.bin ignore rules.
 !/skill/vendor/mengto-skills/upstream/agent-skills/game-combat/water-crystal-skill-vfx/demo/layout/layout.bin
+
+# Local tool state, not product source.
+/orca/
+/osprey/
+
+# Pinned npm package outputs the answer-me-with-html manifest lists; the global dist/ rule must not drop them.
+!/skill/vendor/answer-me-with-html/dependencies/**/dist/

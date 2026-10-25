@@ -117,6 +117,9 @@ name a repository. This is triggered by the work's needs, not a required search 
 - `references/ui-craft-sources.md` is the project rule index: the measured page audit
   (`verify interaction`, required in web `probe`), the `UC-` review checklist and the six pinned
   sources plus React Doctor as provenance.
+- Complex explanation, architecture, decision comparison or handoff that benefits from diagrams:
+  `tools/answer-me-with-html/README.md` for an offline doc/paper explanation and manual feedback.
+  Use only when helpful, not for every answer; disclose embedded source before sharing.
 
 ### Web components
 
@@ -129,6 +132,8 @@ Load only returned component-source entries and their needed pointers, not the w
 Start with `references/animation-thinking.md` and, when required by the route,
 `references/animation-opportunity-and-review.md`. For ordinary UI state changes, also read
 `references/ui-transition-rules.md` before selecting effects and during rendered review.
+For scenario/mechanism discovery, use `references/motion-recipes/README.md`: the full offline
+gallery covers basic/web/game/text/scene studies alongside the four state-owned specimens.
 
 ### Film and edit
 

@@ -74,7 +74,7 @@ test("trusted probes report actual availability without mutating the target proj
   const plan = resolveToolchain(request(), sources, { jobPlan: buildJobPlan(routeJob({ query: request().brief })) });
   const calls = [];
   const result = probeToolchain(plan, {
-    projectRoot: path.resolve(__dirname, ".."),
+    root: path.resolve(__dirname, ".."),
     runner(command, args, options) {
       calls.push({ command, args, cwd: options.cwd });
       return { status: 0, stdout: "xy=0.0.6;reflex=0.8.0\n", stderr: "" };
@@ -83,6 +83,7 @@ test("trusted probes report actual availability without mutating the target proj
   assert.equal(result.status, "ready");
   assert.equal(calls.length, 1);
   assert.equal(calls[0].command, "python");
+  assert.equal(calls[0].cwd, fs.realpathSync(path.resolve(__dirname, "..")));
   assert.equal(result.results.find(({ toolId }) => toolId === "reflex-xy").version, "xy=0.0.6;reflex=0.8.0");
 });
 
@@ -114,7 +115,7 @@ test("graphics jobs require a selected runtime, including an existing project ru
     assert.equal(missing.graphics, null);
     assert.ok(missing.blockers.some((item) => /graphics.*(?:family|adapter)/.test(item)));
     let invoked = false;
-    assert.equal(probeToolchain(missing, { runner() { invoked = true; } }).status, "blocked");
+    assert.equal(probeToolchain(missing, { root: path.resolve(__dirname, ".."), runner() { invoked = true; } }).status, "blocked");
     assert.equal(invoked, false);
   }
   for (const choice of [{ graphics: { adapter: "threejs" } }, { existing: { graphics: "threejs" } }, { existing: { graphics: { adapter: "threejs" } } }]) {
@@ -153,8 +154,62 @@ test("request preparation preserves the real job plan and rejects conflicting or
   assert.throws(() => buildToolchainRequest({ ...jobPlan, query: `${jobPlan.query} changed` }, choices, "job-plan.json"), /hash does not match/);
   assert.throws(() => buildToolchainRequest(jobPlan, { ...choices, unused: true }, "job-plan.json"), /unsupported properties/);
   assert.throws(() => buildToolchainRequest(jobPlan, { ...choices, graphics: { adapter: "threejs", unused: true } }, "job-plan.json"), /unsupported properties/);
-  for (const unsafe of ["../job-plan.json", "a/../../job-plan.json", "..\\job-plan.json", "/tmp/job-plan.json", "C:\\temp\\job-plan.json", "C:job-plan.json", "."]) {
-    assert.throws(() => buildToolchainRequest(jobPlan, choices, unsafe), /contained relative/);
+  for (const [unsafe, message] of [
+    ["../job-plan.json", /contained relative path: '\.\.' segments/],
+    ["a/../../job-plan.json", /contained relative path: '\.\.' segments/],
+    ["a/../job-plan.json", /contained relative path: '\.\.' segments/],
+    ["..\\job-plan.json", /contained relative path: '\.\.' segments/],
+    ["/tmp/job-plan.json", /contained relative path: absolute paths/],
+    ["C:\\temp\\job-plan.json", /contained relative path: drive letters/],
+    ["C:job-plan.json", /contained relative path: drive letters/],
+    [".", /contained relative path: it must name a file/],
+  ]) {
+    assert.throws(() => buildToolchainRequest(jobPlan, choices, unsafe), message, unsafe);
+  }
+  assert.equal(buildToolchainRequest(jobPlan, choices, "state\\job-plan.json").jobPlanPath, "state/job-plan.json");
+});
+
+test("targetRoot names the target package directory, is canonical, and is bound by the plan hash", () => {
+  const jobPlan = buildJobPlan(routeJob({ query: request().brief }));
+  const hash = (value) => sha256(canonicalJson(value));
+  const omitted = resolveToolchain(request(), sources, { jobPlan });
+  assert.equal(omitted.targetRoot, ".", "an omitted targetRoot resolves to the --root directory");
+  assert.equal(hash(resolveToolchain(request({ targetRoot: "." }), sources, { jobPlan })), hash(omitted));
+  const nested = resolveToolchain(request({ targetRoot: "app" }), sources, { jobPlan });
+  assert.equal(nested.targetRoot, "app");
+  assert.notEqual(hash(nested), hash(omitted), "changing targetRoot changes the plan hash");
+  assert.notEqual(hash(resolveToolchain(request({ targetRoot: "apps/web" }), sources, { jobPlan })), hash(nested));
+  for (const spelling of ["app/", "./app", "app\\", "./app/", "app/./"]) {
+    assert.equal(canonicalJson(resolveToolchain(request({ targetRoot: spelling }), sources, { jobPlan })), canonicalJson(nested), spelling);
+  }
+  for (const spelling of ["./", ".\\"]) assert.equal(resolveToolchain(request({ targetRoot: spelling }), sources, { jobPlan }).targetRoot, ".", spelling);
+  assert.equal(resolveToolchain(request({ targetRoot: "apps\\web\\" }), sources, { jobPlan }).targetRoot, "apps/web");
+
+  const graphicsPlan = buildJobPlan(routeJob({ query: "Build an interactive Three.js scene with a custom GLSL shader" }));
+  const choices = { framework: "agnostic", graphics: { adapter: "threejs" }, requested: { styling: "none", uiLibrary: "none" } };
+  const withoutTarget = buildToolchainRequest(graphicsPlan, choices, "job-plan.json");
+  assert.equal(Object.hasOwn(withoutTarget, "targetRoot"), false, "an omitted targetRoot keeps the request bytes unchanged");
+  const prepared = buildToolchainRequest(graphicsPlan, { ...choices, targetRoot: "app" }, "job-plan.json");
+  assert.deepEqual(prepared, { ...withoutTarget, targetRoot: "app" });
+  for (const spelling of ["app/", "./app", "app\\"]) {
+    assert.equal(canonicalJson(buildToolchainRequest(graphicsPlan, { ...choices, targetRoot: spelling }, "job-plan.json")), canonicalJson(prepared), spelling);
+  }
+
+  for (const [unsafe, message] of [
+    ["../outside", /targetRoot must be a contained relative path: '\.\.' segments are not allowed/],
+    ["app/../..", /targetRoot must be a contained relative path: '\.\.' segments are not allowed/],
+    ["app/../other", /targetRoot must be a contained relative path: '\.\.' segments are not allowed/],
+    ["/srv/app", /targetRoot must be a contained relative path: absolute paths are not allowed/],
+    ["\\\\server\\share", /targetRoot must be a contained relative path: absolute paths are not allowed/],
+    ["C:/x", /targetRoot must be a contained relative path: drive letters and ':' are not allowed/],
+    ["C:\\x", /targetRoot must be a contained relative path: drive letters and ':' are not allowed/],
+    ["app:web", /targetRoot must be a contained relative path: drive letters and ':' are not allowed/],
+    ["", /targetRoot must be a non-empty string/],
+    ["  ", /targetRoot must be a non-empty string/],
+    [7, /targetRoot must be a non-empty string/],
+  ]) {
+    assert.throws(() => resolveToolchain(request({ targetRoot: unsafe }), sources, { jobPlan }), message, `resolve ${unsafe}`);
+    assert.throws(() => buildToolchainRequest(graphicsPlan, { ...choices, targetRoot: unsafe }, "job-plan.json"), message, `request ${unsafe}`);
   }
 });
 
@@ -184,17 +239,43 @@ test("toolchain resolve rejects a drifted job plan", () => {
   );
 });
 
-test("failed probes block with one actionable root-cause line", () => {
-  const plan = resolveToolchain(request(), sources, { jobPlan: buildJobPlan(routeJob({ query: request().brief })) });
-  const result = probeToolchain(plan, {
-    projectRoot: path.resolve(__dirname, ".."),
-    runner() {
-      return { status: 1, stdout: "", stderr: "Traceback (most recent call last):\ninternal frame\nPackageNotFoundError: xy\n" };
-    },
-  });
-  assert.equal(result.status, "blocked");
-  assert.equal(result.results.find(({ toolId }) => toolId === "reflex-xy").message, "PackageNotFoundError: xy");
-  assert.deepEqual(result.blockers, ["reflex-xy: PackageNotFoundError: xy"]);
+test("probes run only in --root plus the plan's targetRoot and name that directory", () => {
+  const temp = fs.realpathSync(os.tmpdir());
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(temp, "toolchain-target-root-")));
+  const outside = fs.realpathSync(fs.mkdtempSync(path.join(temp, "toolchain-target-outside-")));
+  const jobPlan = buildJobPlan(routeJob({ query: request().brief }));
+  const plan = (targetRoot) => resolveToolchain(request(targetRoot === undefined ? {} : { targetRoot }), sources, { jobPlan });
+  const cwds = [];
+  const runner = (command, args, options) => {
+    cwds.push(options.cwd);
+    return { status: 1, stdout: "", stderr: "Traceback (most recent call last):\ninternal frame\nPackageNotFoundError: xy\n" };
+  };
+  try {
+    fs.mkdirSync(path.join(root, "app"));
+    fs.writeFileSync(path.join(root, "file.txt"), "");
+    fs.symlinkSync(outside, path.join(root, "escape"), "junction");
+    const result = probeToolchain(plan(), { root, runner });
+    assert.equal(result.status, "blocked");
+    assert.equal(result.results.find(({ toolId }) => toolId === "reflex-xy").message, "PackageNotFoundError: xy (probed in .)");
+    assert.deepEqual(result.blockers, ["reflex-xy: PackageNotFoundError: xy (probed in .)"]);
+    const nested = probeToolchain(plan("app"), { root, runner });
+    assert.deepEqual(nested.blockers, ["reflex-xy: PackageNotFoundError: xy (probed in app)"]);
+    assert.deepEqual(cwds, [root, path.join(root, "app")]);
+    const missing = probeToolchain(plan(), { root, runner: () => ({ error: new Error("spawn python ENOENT") }) });
+    assert.deepEqual(missing.blockers, ["reflex-xy: spawn python ENOENT (probed in .)"]);
+    assert.throws(() => probeToolchain(plan(), { root, projectRoot: root, runner }), /probe options has unsupported properties: projectRoot/);
+    assert.throws(() => probeToolchain(plan(), { runner }), /probe options is missing root/);
+    assert.throws(() => probeToolchain(plan("missing"), { root, runner }), /targetRoot does not exist/);
+    assert.throws(() => probeToolchain(plan("file.txt"), { root, runner }), /targetRoot must be a directory: file\.txt/);
+    assert.throws(() => probeToolchain(plan("escape"), { root, runner }), /targetRoot resolves outside/);
+    assert.equal(cwds.length, 2);
+  } finally {
+    for (const directory of [root, outside]) {
+      const relative = path.relative(temp, directory);
+      assert.ok(relative && !relative.startsWith("..") && !path.isAbsolute(relative));
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
+  }
 });
 
 test("Vite DevTools routes its project-local probe and evidence contract", () => {
@@ -283,7 +364,7 @@ test("both native Three.js routes probe only the pinned target runtime without i
       write("node_modules/three/package.json", installed);
       fs.writeFileSync(path.join(local, "index.cjs"), "module.exports = {};\n");
       const before = fs.readFileSync(path.join(root, "package.json"), "utf8");
-      const result = probeToolchain(plan, { projectRoot: root });
+      const result = probeToolchain(plan, { root });
       assert.equal(result.status, "ready");
       assert.equal(result.results.find(({ toolId }) => toolId === adapter).version, "three=0.180.0");
       assert.equal(fs.readFileSync(path.join(root, "package.json"), "utf8"), before);
@@ -295,18 +376,86 @@ test("both native Three.js routes probe only the pinned target runtime without i
         [{ ...pkg, scripts: { dev: "  " } }, /scripts.dev/],
       ]) {
         write("package.json", target);
-        const failed = probeToolchain(plan, { projectRoot: root });
+        const failed = probeToolchain(plan, { root });
         assert.equal(failed.status, "blocked");
         assert.match(failed.blockers[0], cause);
         assert.equal(fs.readFileSync(path.join(root, "package.json"), "utf8"), JSON.stringify(target));
       }
       write("package.json", { devDependencies: pkg.dependencies, scripts: pkg.scripts });
-      assert.equal(probeToolchain(plan, { projectRoot: root }).status, "ready");
+      assert.equal(probeToolchain(plan, { root }).status, "ready");
       fs.writeFileSync(path.join(local, "index.cjs"), "throw new Error('local package import failed');\n");
-      assert.match(probeToolchain(plan, { projectRoot: root }).blockers[0], /local package import failed/);
+      assert.match(probeToolchain(plan, { root }).blockers[0], /local package import failed/);
       fs.unlinkSync(path.join(local, "package.json"));
-      assert.equal(probeToolchain(plan, { projectRoot: root }).status, "blocked");
+      assert.equal(probeToolchain(plan, { root }).status, "blocked");
     }
+  } finally {
+    const relative = path.relative(fs.realpathSync(os.tmpdir()), fs.realpathSync(root));
+    assert.ok(relative && !relative.startsWith("..") && !path.isAbsolute(relative));
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("React with SVG/D3 resolves ready and probes only the pinned target d3 without invoking its server", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "toolchain-d3-"));
+  const local = path.join(root, "node_modules/d3");
+  fs.mkdirSync(path.join(local, "src"), { recursive: true });
+  const installed = { name: "d3", version: "7.9.0", type: "module", main: "src/index.js", exports: { umd: "./dist/d3.min.js", default: "./src/index.js" } };
+  const pkg = { type: "module", dependencies: { d3: "7.9.0" }, scripts: { dev: "node -e \"throw new Error('probe must not start the server')\"" } };
+  const write = (name, value) => fs.writeFileSync(path.join(root, name), JSON.stringify(value));
+  const entry = (source) => fs.writeFileSync(path.join(local, "src/index.js"), source);
+  const brief = "Build a React analytics dashboard with D3 SVG charts";
+  const jobPlan = buildJobPlan(routeJob({ query: brief }));
+  try {
+    const plan = resolveToolchain(request({
+      brief, framework: "react", requested: { styling: "none", uiLibrary: "none" },
+      graphics: { adapter: "svg-d3" },
+    }), sources, { jobPlan });
+    assert.equal(plan.status, "ready");
+    assert.deepEqual(plan.blockers, []);
+    assert.equal(plan.graphics.id, "svg-d3");
+    assert.equal(plan.graphics.guide, "references/graphics-runtime-routing.md#svg-d3-project-lifecycle");
+    assert.deepEqual(plan.probes.find(({ toolId }) => toolId === "svg-d3").command.slice(0, 2), ["node", "-e"]);
+    assert.deepEqual(plan.invocations.find(({ toolId }) => toolId === "svg-d3").command, ["npm", "run", "dev"]);
+    assert.deepEqual(plan.verification.find(({ toolId }) => toolId === "svg-d3").evidenceTypes, ["dom", "screenshot", "accessibility"]);
+
+    const missing = probeToolchain(plan, { root });
+    assert.equal(missing.status, "blocked");
+    assert.match(missing.blockers[0], /^svg-d3: Cannot read the target project package\.json/);
+
+    write("package.json", pkg);
+    const withoutPackage = probeToolchain(plan, { root });
+    assert.equal(withoutPackage.status, "blocked");
+    assert.match(withoutPackage.blockers[0], /^svg-d3: Cannot resolve the d3 package of the target project at node_modules\/d3/);
+
+    write("node_modules/d3/package.json", installed);
+    entry("export function select() {}\n");
+    const before = fs.readFileSync(path.join(root, "package.json"), "utf8");
+    const result = probeToolchain(plan, { root });
+    assert.deepEqual(result.blockers, []);
+    assert.equal(result.status, "ready");
+    assert.equal(result.results.find(({ toolId }) => toolId === "svg-d3").version, "d3=7.9.0");
+    assert.equal(fs.readFileSync(path.join(root, "package.json"), "utf8"), before);
+    for (const [target, cause] of [
+      [{ ...pkg, dependencies: {} }, /exact d3 version/],
+      [{ ...pkg, dependencies: { d3: "^7.9.0" } }, /exact d3 version/],
+      [{ ...pkg, dependencies: { d3: "7.8.5" } }, /d3 version mismatch: declared 7\.8\.5, installed 7\.9\.0/],
+      [{ ...pkg, scripts: {} }, /scripts\.dev/],
+      [{ ...pkg, scripts: { dev: "  " } }, /scripts\.dev/],
+    ]) {
+      write("package.json", target);
+      const failed = probeToolchain(plan, { root });
+      assert.equal(failed.status, "blocked");
+      assert.match(failed.blockers[0], cause);
+      assert.equal(fs.readFileSync(path.join(root, "package.json"), "utf8"), JSON.stringify(target));
+    }
+    write("package.json", { devDependencies: pkg.dependencies, scripts: pkg.scripts });
+    assert.equal(probeToolchain(plan, { root }).status, "ready");
+    entry("export const scaleLinear = () => {};\n");
+    assert.match(probeToolchain(plan, { root }).blockers[0], /does not export select/);
+    entry("throw new Error('local package import failed');\n");
+    assert.match(probeToolchain(plan, { root }).blockers[0], /local package import failed/);
+    write("node_modules/d3/package.json", { ...installed, name: "not-d3" });
+    assert.equal(probeToolchain(plan, { root }).status, "blocked");
   } finally {
     const relative = path.relative(fs.realpathSync(os.tmpdir()), fs.realpathSync(root));
     assert.ok(relative && !relative.startsWith("..") && !path.isAbsolute(relative));

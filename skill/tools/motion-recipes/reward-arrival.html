@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reward arrival · 奖励到账</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: system-ui, sans-serif;
+      background: #111a20;
+      color: #eef5f7;
+      /* Specimen-local values, not a project-wide token scale. */
+      --recipe-flight-ms: 260;
+      --recipe-ease: cubic-bezier(.2, .8, .2, 1);
+      --recipe-accent: #f8cc72;
+      --recipe-border: #465762;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { inline-size: min(64rem, calc(100% - 2rem)); margin-inline: auto; padding-block: clamp(2rem, 6vw, 5rem); }
+    h1 { margin-block: .5rem 1rem; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.15; }
+    h2 { margin-block: 0 1rem; font-size: 1.1rem; }
+    p { max-inline-size: 66ch; line-height: 1.65; }
+    .eyebrow { color: var(--recipe-accent); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; }
+    .lede, .note { color: #b7c8d1; }
+    .stage { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: 2rem; margin-block: 2rem; align-items: stretch; }
+    .card { padding: clamp(1.25rem, 3vw, 2rem); background: #1b2832; border: 1px solid var(--recipe-border); border-radius: 1rem; }
+    .wallet { display: flex; flex-direction: column; align-items: start; justify-content: center; }
+    .balance { margin-block: .5rem; font-size: clamp(2.5rem, 7vw, 4rem); line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .balance small { font-size: 1rem; color: #b7c8d1; }
+    .controls { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+    button { min-block-size: 44px; padding: .75rem 1rem; border: 1px solid var(--recipe-border); border-radius: .5rem; background: #273946; color: inherit; font: inherit; cursor: pointer; }
+    #grant { background: var(--recipe-accent); color: #19242b; border-color: var(--recipe-accent); font-weight: 650; }
+    button:active { background: #3d5361; }
+    #grant:active { background: #e4b95f; }
+    :focus-visible { outline: 3px solid #8ae3ef; outline-offset: 4px; }
+    label { display: flex; align-items: center; gap: .65rem; min-block-size: 44px; cursor: pointer; }
+    input { inline-size: 1.2rem; block-size: 1.2rem; accent-color: var(--recipe-accent); }
+    dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .5rem 1rem; margin-block: 1.5rem; line-height: 1.5; }
+    dt { color: #b7c8d1; }
+    dd { margin: 0; overflow-wrap: anywhere; }
+    #announcement { min-block-size: 3.3em; margin-block-end: 0; }
+    #coin { position: fixed; inset-inline-start: 0; inset-block-start: 0; z-index: 2; display: grid; place-items: center; inline-size: 2.5rem; block-size: 2.5rem; border: 2px solid #ffe3a7; border-radius: 50%; background: #a57218; color: #fff6df; font-size: .8rem; font-weight: 700; pointer-events: none; }
+    [hidden] { display: none !important; }
+    a { color: #8ae3ef; text-underline-offset: .2em; }
+    footer { border-block-start: 1px solid var(--recipe-border); padding-block-start: 1rem; color: #b7c8d1; }
+    @media (hover: hover) and (pointer: fine) { button:hover { border-color: #b7c8d1; } }
+  </style>
+</head>
+<body>
+  <main data-recipe="reward-arrival">
+    <header>
+      <p class="eyebrow">Motion recipe / 03 · Original offline specimen</p>
+      <h1>Reward arrival <span lang="zh">奖励到账</span></h1>
+      <p class="lede">The grant is real immediately. A single decorative coin only explains where it went; finishing, skipping or cancelling the flight cannot change the wallet.</p>
+    </header>
+    <div class="stage">
+      <section class="card" aria-labelledby="reward-title">
+        <h2 id="reward-title">Quest reward <span lang="zh">任务奖励</span></h2>
+        <p>Each deliberate press grants exactly 10 coins. Press repeatedly while the presentation is moving: every grant counts, but only the newest visual journey remains.</p>
+        <button id="grant" type="button">Grant +10 coins</button>
+        <p id="announcement" role="status" aria-live="polite" aria-atomic="true">No grants yet. Wallet total: 0 coins.</p>
+      </section>
+      <section class="card wallet" aria-labelledby="wallet-title">
+        <h2 id="wallet-title">Wallet <span lang="zh">钱包</span></h2>
+        <div id="wallet-target" class="balance"><span id="total">0</span> <small>coins</small></div>
+        <p class="note">This total never waits for an animation callback.</p>
+      </section>
+    </div>
+    <section aria-labelledby="controls-title">
+      <h2 id="controls-title">Interruption controls</h2>
+      <div class="controls">
+        <button id="cancel" type="button">Cancel presentation</button>
+        <button id="reset" type="button">Reset wallet</button>
+        <label><input id="reduced-motion" type="checkbox"> Reduced motion</label>
+      </div>
+      <dl>
+        <dt>Committed grants</dt><dd id="grant-count">0</dd>
+        <dt>Presentation</dt><dd id="presentation-state">Idle</dd>
+        <dt>Motion mode</dt><dd id="motion-mode"></dd>
+      </dl>
+      <p class="note">System reduced-motion preference takes precedence over the checkbox. Resize, scroll, leaving the page or hiding the tab settles the decorative presentation without changing the total.</p>
+    </section>
+    <footer>Project-authored timing: 260 ms, no delay, no loop. <a href="../../references/motion-recipes/reward-arrival.md">Read the recipe</a>. This specimen is not a real economy or delivery service.</footer>
+    <div id="coin" aria-hidden="true" hidden>+10</div>
+  </main>
+  <script>
+    (() => {
+      const grantButton = document.querySelector('#grant');
+      const walletTarget = document.querySelector('#wallet-target');
+      const coin = document.querySelector('#coin');
+      const totalText = document.querySelector('#total');
+      const countText = document.querySelector('#grant-count');
+      const announcement = document.querySelector('#announcement');
+      const presentationText = document.querySelector('#presentation-state');
+      const reduced = document.querySelector('#reduced-motion');
+      const modeText = document.querySelector('#motion-mode');
+      const preference = matchMedia('(prefers-reduced-motion: reduce)');
+      const listeners = new AbortController();
+      const options = { signal: listeners.signal };
+      const tokens = getComputedStyle(document.documentElement);
+      const duration = Number(tokens.getPropertyValue('--recipe-flight-ms'));
+      const easing = tokens.getPropertyValue('--recipe-ease').trim();
+      let total = 0;
+      let grants = 0;
+      let revision = 0;
+      let flight = null;
+      reduced.checked = preference.matches;
+
+      function reducedMotion() { return preference.matches || reduced.checked; }
+
+      function clearFlight() {
+        revision += 1;
+        if (flight) {
+          flight.onfinish = null;
+          flight.cancel();
+          flight = null;
+        }
+        coin.hidden = true;
+        coin.style.removeProperty('transform');
+        coin.style.removeProperty('opacity');
+      }
+
+      function settlePresentation(reason) {
+        clearFlight();
+        presentationText.textContent = reason;
+      }
+
+      function presentGrant() {
+        // Capture the current visual pose before cancelling, then retarget it.
+        const current = flight && !coin.hidden ? getComputedStyle(coin) : null;
+        const from = current ? { transform: current.transform, opacity: current.opacity } : null;
+        clearFlight();
+        if (reducedMotion() || typeof coin.animate !== 'function') {
+          presentationText.textContent = 'Static · grant already committed';
+          return;
+        }
+        // Geometry is sampled once per grant, never on each animation frame.
+        coin.hidden = false;
+        const source = grantButton.getBoundingClientRect();
+        const destination = walletTarget.getBoundingClientRect();
+        const size = coin.getBoundingClientRect();
+        const start = `translate(${source.x + source.width / 2 - size.width / 2}px, ${source.y + source.height / 2 - size.height / 2}px)`;
+        const end = `translate(${destination.x + destination.width / 2 - size.width / 2}px, ${destination.y + destination.height / 2 - size.height / 2}px) scale(.7)`;
+        coin.style.transform = end;
+        coin.style.opacity = '0';
+        const owner = revision;
+        const animation = coin.animate([
+          from || { transform: start, opacity: '1' },
+          { transform: end, opacity: '0' }
+        ], { duration, easing });
+        flight = animation;
+        presentationText.textContent = 'Flying · grant already committed';
+        animation.onfinish = () => {
+          if (owner !== revision || flight !== animation) return;
+          // Presentation cleanup only: never write total/grants here.
+          settlePresentation('Arrived · presentation only');
+        };
+      }
+
+      function grant() {
+        total += 10;
+        grants += 1;
+        totalText.textContent = String(total);
+        countText.textContent = String(grants);
+        announcement.textContent = `Granted 10 coins. Wallet total: ${total} coins. ${grants} deliberate grants.`;
+        presentGrant();
+      }
+
+      function updateMotionMode() {
+        modeText.textContent = preference.matches ? 'Reduced · system preference' : reduced.checked ? 'Reduced · checkbox' : 'Normal · bounded flight';
+        if (reducedMotion()) settlePresentation('Static · presentation cleared');
+      }
+
+      grantButton.addEventListener('click', grant, options);
+      document.querySelector('#cancel').addEventListener('click', () => settlePresentation('Cancelled · total unchanged'), options);
+      document.querySelector('#reset').addEventListener('click', () => {
+        settlePresentation('Reset · no pending flight');
+        total = 0;
+        grants = 0;
+        totalText.textContent = '0';
+        countText.textContent = '0';
+        announcement.textContent = 'Wallet reset. Total: 0 coins. No grants in this session.';
+      }, options);
+      reduced.addEventListener('change', updateMotionMode, options);
+      preference.addEventListener('change', updateMotionMode);
+      const abandonGeometry = () => {
+        if (flight) settlePresentation('Settled · geometry changed, total unchanged');
+      };
+      window.addEventListener('resize', abandonGeometry, options);
+      window.addEventListener('scroll', abandonGeometry, { ...options, passive: true });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && flight) settlePresentation('Settled · tab hidden, total unchanged');
+      }, options);
+      window.addEventListener('pagehide', event => {
+        settlePresentation('Settled · page left, total unchanged');
+        if (!event.persisted) {
+          preference.removeEventListener('change', updateMotionMode);
+          listeners.abort();
+        }
+      }, options);
+      updateMotionMode();
+    })();
+  </script>
+</body>
+</html>
