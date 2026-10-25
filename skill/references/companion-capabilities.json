@@ -588,7 +588,7 @@
         "runtimePath": "tools/answer-me-with-html/renderer.mjs",
         "noticePath": "vendor/answer-me-with-html/LICENSES.txt",
         "fontPolicyPath": "vendor/answer-me-with-html/maintained/font-policy.json",
-        "originalSkillPath": "vendor/answer-me-with-html/upstream/skills/answer-me-with-html/SKILL.md",
+        "originalSkillPath": "vendor/answer-me-with-html/upstream/skills/answer-me-with-html/UPSTREAM-SKILL.md",
         "useBoundary": "task-triggered offline explanation renderer; original skill instructions inert; authorized local includes and embedded source disclosure; manual feedback only, no acceptance/state/receipts"
       },
       "fallback": "Use tools/answer-me-with-html/README.md and its Node-only build-explanation.cjs for a complex explanation, architecture decision or handoff when useful; otherwise retain normal project communication.",

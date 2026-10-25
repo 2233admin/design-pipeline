@@ -6,6 +6,7 @@ const os = require("node:os");
 const crypto = require("node:crypto");
 const { pathToFileURL } = require("node:url");
 const { canonicalTree, fail } = require("./git-tree-snapshot.cjs");
+const { storedPath, upstreamFiles } = require("../skill/scripts/upstream-path.cjs");
 const { sha256, aggregateLicenses, REVISION, PACKAGES, SCOPE, entry, fontPolicy } = require("./import-answer-me-with-html.cjs");
 const ROOT = path.resolve(__dirname, "../skill/vendor/answer-me-with-html");
 const OUTPUT = path.resolve(__dirname, "../skill/tools/answer-me-with-html/renderer.mjs");
@@ -41,12 +42,14 @@ function validateSources(root = ROOT, { runtime = false, output = OUTPUT } = {})
   if (manifest.schema !== "design-pipeline.answer-me-with-html-source.v1" || manifest.source?.revision !== REVISION || manifest.source?.gitTree !== GIT_TREE || manifest.snapshot?.treeSha256 !== TREE || manifest.snapshot?.fileCount !== 107) fail("reviewed source provenance mismatch");
   same(manifest.source.scope, SCOPE, "source scope");
   const snapshot = path.join(root, "upstream");
-  same(filesIn(snapshot), manifest.snapshot.objects.map((item) => item.path).sort(), "source files");
+  const stored = upstreamFiles(filesIn(snapshot));
+  if (stored.issues.length) fail(stored.issues.join("; "));
+  same(stored.files.sort(), manifest.snapshot.objects.map((item) => item.path).sort(), "source files");
   let byteCount = 0;
   for (const object of manifest.snapshot.objects) {
     if (!["100644", "100755"].includes(object.mode)) fail(`unsupported Git mode: ${object.path}`);
-    checkedFile(snapshot, object.path, object.sha256);
-    const bytes = fs.readFileSync(path.join(snapshot, object.path));
+    checkedFile(snapshot, storedPath(object.path), object.sha256);
+    const bytes = fs.readFileSync(path.join(snapshot, storedPath(object.path)));
     if (bytes.length !== object.size || crypto.createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex") !== object.oid) fail(`Git blob mismatch: ${object.path}`);
     byteCount += bytes.length;
   }

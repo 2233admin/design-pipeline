@@ -7,6 +7,7 @@ const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
 const { validateSources, filesIn } = require("../scripts/build-answer-me-with-html-runtime.cjs");
+const { upstreamFiles } = require("../skill/scripts/upstream-path.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const vendorRoot = path.join(repoRoot, "skill/vendor/answer-me-with-html");
@@ -56,7 +57,7 @@ test("answer-me-with-html validates complete reviewed source, dependencies, noti
   assert.equal(provenance.snapshot.treeSha256, "612fdee283ec1b05b4be35de4bfef712ecfe3a4abab5c91f428aab57252413d8");
   assert.equal(provenance.snapshot.fileCount, 107);
   assert.equal(provenance.snapshot.objects.length, 107);
-  assert.deepEqual(provenance.snapshot.objects.map((item) => item.path).sort(), filesIn(path.join(vendorRoot, "upstream")));
+  assert.deepEqual(provenance.snapshot.objects.map((item) => item.path).sort(), upstreamFiles(filesIn(path.join(vendorRoot, "upstream"))).files.sort());
   assert.deepEqual(provenance.dependencies.map(({ name, version }) => [name, version]), [
     ["@dagrejs/dagre", "3.1.1"], ["@dagrejs/graphlib", "4.0.5"], ["marked", "18.0.14"], ["temml", "0.14.0"], ["esbuild", "0.28.2"]
   ]);

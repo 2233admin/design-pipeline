@@ -2334,11 +2334,11 @@
       },
       {
         "path": "scripts/build-answer-me-with-html-runtime.cjs",
-        "sha256": "09b486f354843bde805575a969cbf988f01842a40635ac12185310c5f98517c5"
+        "sha256": "b62491ad8b2504b6e697fd7cca0b0676cab904a45ea2abc541dac92313840d5a"
       },
       {
         "path": "scripts/git-tree-snapshot.cjs",
-        "sha256": "edd19b85c0d426c0048cd5fd887ac0cadab354ed39744f12ba291e706c676087"
+        "sha256": "aef3880d9c994b56748f67e12e7a0bcbb0caea4010a55ce544cac2c6ce617204"
       }
     ],
     "inputs": [

@@ -41,3 +41,6 @@ NUL
 # Local tool state, not product source.
 /orca/
 /osprey/
+
+# Pinned npm package outputs the answer-me-with-html manifest lists; the global dist/ rule must not drop them.
+!/skill/vendor/answer-me-with-html/dependencies/**/dist/

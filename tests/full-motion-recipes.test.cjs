@@ -95,10 +95,11 @@ test("bilingual filtered discovery inherits existing documentation and component
 
 test("offline browser exact selection, filter persistence, playback and error recovery", { timeout: 120_000 }, async t => {
   const { pathToFileURL } = require("node:url");
-  const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+  const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
   let browser;
   try {
-    browser = await resolvePuppeteer(path.dirname(root)).launch({ executablePath: resolveChrome(), headless: true });
+    browser = await resolvePuppeteer(path.dirname(root)).launch({ executablePath: resolveBrowser(), headless: true });
   } catch (error) {
     if (error.code !== "TOOL_MISSING") throw error;
     t.skip(error.message);
