@@ -19,7 +19,7 @@ const PLACEHOLDER = /^(tbd|todo|n\/?a|none|-|\.\.\.|placeholder)$/i;
 const FRAME_TOLERANCE_SEC = 0.05;
 const PARITY_START_FRAMES = 2;
 const PARITY_SOUND_SEC = 0.1;
-const CUT_KEYS = ["no", "startSec", "endSec", "size", "camera", "picture", "action", "dialogue", "text", "sound", "transition", "energy", "note", "ref", "thumb"];
+const CUT_KEYS = ["no", "startSec", "endSec", "size", "camera", "picture", "action", "dialogue", "text", "sound", "transition", "energy", "note", "ref", "thumb", "design"];
 
 const text = (value) => typeof value === "string" && value.trim() !== "" && !PLACEHOLDER.test(value.trim());
 const energyOf = (meanShare) => (meanShare < 0.03 ? "still" : meanShare < 0.15 ? "low" : meanShare < 0.4 ? "mid" : "high");
@@ -42,7 +42,7 @@ function validateCuts(cuts, board) {
     if (typeof cut.transition !== "string") fail(SCOPE, `${label}.transition must be a string`);
     if (cut.size !== undefined && typeof cut.size !== "string") fail(SCOPE, `${label}.size must be a string`);
     if (cut.camera !== undefined && (!Array.isArray(cut.camera) || cut.camera.some((entry) => typeof entry !== "string"))) fail(SCOPE, `${label}.camera must be a string array`);
-    for (const key of ["action", "dialogue", "text", "note", "ref", "thumb", "energy"]) {
+    for (const key of ["action", "dialogue", "text", "note", "ref", "thumb", "design", "energy"]) {
       if (cut[key] !== undefined && typeof cut[key] !== "string") fail(SCOPE, `${label}.${key} must be a string`);
     }
     if (cut.sound !== undefined) {
@@ -166,11 +166,12 @@ const cell = (value) => escapeHtml(value).replace(/\n/g, "<br>");
 function renderCutSheet(board) {
   const fps = board.fps || 30;
   const thumbs = board.cuts.some((cut) => cut.thumb);
+  const designs = board.cuts.some((cut) => cut.design);
   const rows = board.cuts.map((cut) => {
     const picture = [cut.size, ...(cut.camera || [])].filter(Boolean).join(" / ");
     const sound = (cut.sound || []).map((entry) => `${entry.atSec.toFixed(2)}s ${entry.note}`).join("\n");
     const speech = [cut.dialogue, cut.text].filter(Boolean).join("\n");
-    return `<tr><td class="no">${cell(cut.no)}<br><small>${cell(cut.transition)}</small></td>${thumbs ? `<td class="thumb">${cut.thumb ? `<img src="${escapeHtml(cut.thumb)}" alt="${escapeHtml(cut.no)}">` : ""}</td>` : ""}<td><b>${cell(picture)}</b><br>${cell(cut.picture)}</td><td>${cell(cut.action)}${cut.note ? `<br><small>${cell(cut.note)}</small>` : ""}</td><td>${cell(speech)}</td><td>${cell(sound)}</td><td class="time">${timeLabel(cut.endSec - cut.startSec, fps)}<br><small>${cut.startSec.toFixed(2)}s</small></td></tr>`;
+    return `<tr><td class="no">${cell(cut.no)}<br><small>${cell(cut.transition)}</small></td>${thumbs ? `<td class="thumb">${cut.thumb ? `<img src="${escapeHtml(cut.thumb)}" alt="${escapeHtml(cut.no)}">` : ""}</td>` : ""}${designs ? `<td class="thumb">${cut.design ? `<img src="${escapeHtml(cut.design)}" alt="design ${escapeHtml(cut.no)}">` : ""}</td>` : ""}<td><b>${cell(picture)}</b><br>${cell(cut.picture)}</td><td>${cell(cut.action)}${cut.note ? `<br><small>${cell(cut.note)}</small>` : ""}</td><td>${cell(speech)}</td><td>${cell(sound)}</td><td class="time">${timeLabel(cut.endSec - cut.startSec, fps)}<br><small>${cut.startSec.toFixed(2)}s</small></td></tr>`;
   });
   return `<!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -187,7 +188,7 @@ td.thumb img{display:block;width:160px;height:auto}
 tr{break-inside:avoid}
 </style></head><body>
 <h1>${escapeHtml(board.id)} — ${board.cuts.length} cuts, ${board.durationSec}s @ ${fps}fps</h1>
-<table><thead><tr><th>CUT</th>${thumbs ? "<th>画像</th>" : ""}<th>画</th><th>アクション</th><th>セリフ・文字</th><th>音</th><th>秒+コマ</th></tr></thead><tbody>
+<table><thead><tr><th>CUT</th>${thumbs ? "<th>参考</th>" : ""}${designs ? "<th>設計</th>" : ""}<th>画</th><th>アクション</th><th>セリフ・文字</th><th>音</th><th>秒+コマ</th></tr></thead><tbody>
 ${rows.join("\n")}
 </tbody></table></body></html>
 `;

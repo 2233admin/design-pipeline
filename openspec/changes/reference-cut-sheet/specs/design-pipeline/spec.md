@@ -2,7 +2,7 @@
 
 ### Requirement: Film storyboards can carry a cut list
 
-`film-storyboard.v1` SHALL accept an optional `cuts` array. Each cut SHALL have a unique `no`, `startSec`, `endSec`, `picture` and `transition`, and MAY have `size`, `camera`, `action`, `dialogue`, `text`, `sound`, `energy`, `note`, `ref` and `thumb`. `size`, `camera`, `transition` and `energy` SHALL come from the closed cut-sheet vocabulary; a cut without `size` or `camera` is undescribed. Boards without `cuts` SHALL validate and check as before.
+`film-storyboard.v1` SHALL accept an optional `cuts` array. Each cut SHALL have a unique `no`, `startSec`, `endSec`, `picture` and `transition`, and MAY have `size`, `camera`, `action`, `dialogue`, `text`, `sound`, `energy`, `note`, `ref`, `thumb` and `design`. `size`, `camera`, `transition` and `energy` SHALL come from the closed cut-sheet vocabulary; a cut without `size` or `camera` is undescribed. Boards without `cuts` SHALL validate and check as before.
 
 #### Scenario: Valid cut list
 
@@ -31,12 +31,17 @@
 
 ### Requirement: Cuts render as a cut sheet
 
-`film cut-sheet --project-root <dir>` SHALL write a printable cut sheet with one row per cut in the column order CUT, 画, アクション, セリフ・文字, 音, 秒+コマ, adding a thumbnail column when any cut has `thumb`. Time SHALL show seconds plus frames at the board fps. The command SHALL NOT modify the storyboard.
+`film cut-sheet --project-root <dir>` SHALL write a printable cut sheet with one row per cut in the column order CUT, 画, アクション, セリフ・文字, 音, 秒+コマ, adding a reference thumbnail column when any cut has `thumb` and a design column beside it when any cut has `design`. Time SHALL show seconds plus frames at the board fps. The command SHALL NOT modify the storyboard.
 
 #### Scenario: Sheet from cuts
 
 - **WHEN** the command runs on a board with 3 cuts
 - **THEN** the sheet SHALL contain 3 rows in cut order and the time of a 3.5 s cut at 24 fps SHALL read `3+12`.
+
+#### Scenario: Reference and design side by side
+
+- **WHEN** a cut has both `thumb` and `design`
+- **THEN** its row SHALL show the reference thumbnail and the designed frame in adjacent cells.
 
 #### Scenario: No cuts
 

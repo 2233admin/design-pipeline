@@ -185,7 +185,7 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
   sheet (e-conte); a beat is the sequence, a cut is one continuous shot inside one beat. Each cut has
   `no`, `startSec`, `endSec`, `picture`, `transition`, `size`, `camera`, and may have `action`,
   `dialogue`, `text`, `sound` (`[{ atSec, note }]`), `energy`, `note`, `ref` (reference shot id) and
-  `thumb`. `cuts[].size` is `LONG`, `FULL`, `KNEE`, `WAIST`, `BUST`, `UP`, `BIGUP`, `INSERT` or
+  `thumb` (reference frame), `design` (the designed frame for the cut, project-relative image). `cuts[].size` is `LONG`, `FULL`, `KNEE`, `WAIST`, `BUST`, `UP`, `BIGUP`, `INSERT` or
   `GRAPHIC`; `cuts[].camera` entries are `FIX`, `PAN`, `TILT`, `TU`, `TB`, `FOLLOW`, `ZOOM-IN`,
   `ZOOM-OUT`, `ROLL`, `SHAKE` or `RACK`; `cuts[].transition` is `CT`, `OL`, `FI`, `FO`, `WI`, `WO`,
   `WIPE`, `GLITCH` or `FLASH`; `cuts[].energy` is `still`, `low`, `mid` or `high`. `film cut-sheet`

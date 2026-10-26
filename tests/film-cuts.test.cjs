@@ -80,6 +80,15 @@ test("duplicate cut numbers and unknown keys are contract errors", () => {
   assert.throws(() => run(board({ cuts: undefined, referenceCuts: "ref.json" })), /need cuts/);
 });
 
+test("a cut with a reference thumbnail and a design shows both side by side", () => {
+  const html = renderCutSheet(board({ cuts: [cut("001", 0, 3, { thumb: "ref/001.png", design: "design/001.png" }), cut("002", 3, 6, { thumb: "ref/002.png" })] }));
+  assert.ok(html.includes("<th>参考</th><th>設計</th>"));
+  const first = html.slice(html.indexOf("ref/001.png"));
+  assert.ok(first.indexOf("design/001.png") > 0 && first.indexOf("design/001.png") < first.indexOf("</tr>"));
+  assert.equal(html.split("design/00").length - 1, 1);
+  assert.throws(() => run(board({ cuts: [cut("001", 0, 3, { design: 5 }), cut("002", 3, 6)] })), /design must be a string/);
+});
+
 test("the sheet shows seconds plus frames and one row per cut", () => {
   assert.equal(timeLabel(3.5, 24), "3+12");
   const html = renderCutSheet(board({ cuts: [cut("001", 0, 3.5, { dialogue: "line <b>", thumb: "t/001.png" }), cut("002", 3.5, 6)] }));

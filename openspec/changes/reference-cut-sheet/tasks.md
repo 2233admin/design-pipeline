@@ -18,5 +18,5 @@
 - [ ] 3.1 Get one real production cut sheet from the user and confirm the column order and the vocabulary enums before freezing them.
 - [x] 3.2 `skill/references` film docs (`workflow-film.md`): cut fields and vocabulary; shot-for-shot work uses `--shots` then `film cut-sheet --from-reference`.
 - [x] 3.3 Tests (registered in `scripts/test-manifest.json`) for every scenario above; new skill files listed in `package-resources.json`.
-- [ ] 3.4 `npm test`.
+- [ ] 3.4 `npm test` (tar-based package tests fail on this host, also on main).
 - [ ] 3.5 Run on `.design-pipeline/kurumi`: seed 90 cuts, fill from `storyboard.json`, render the sheet, run parity against the reference itself (expect zero findings).
