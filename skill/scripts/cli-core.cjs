@@ -47,6 +47,7 @@ const { exitCodeForStatus: componentFirstExitCode } = require("./component-first
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
 const { checkStoryboard, evaluateFilmRender, productSourceFiles } = require("./film-core.cjs");
+const { renderCutSheet, seedCuts } = require("./film-cut-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
 const { evaluateFilmRuns } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
@@ -157,7 +158,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--system-dir", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--agent-browser", "--agent-browser-state", "--project-root",
-  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict", "--job-plan", "--bundle",
+  "--direction-lock", "--providers", "--storyboard", "--from-reference", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict", "--job-plan", "--bundle",
   "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--start", "--end", "--fps", "--max-frames", "--cut-threshold", "--min-shot", "--by", "--page-review", "--until", "--assisted-by", "--tradeoff", "--revision", "--affects",
@@ -467,6 +468,7 @@ function publicHelp() {
     "  film score --project-root <dir> --bpm <n> [--template punchy-launch|calm-build|tech-pulse --key c] | [--pattern score.strudel.js] [--output assets/score.wav] [--write] [--replace]",
     "    (Strudel, AGPL-3.0, is installed into <dir>/.design-pipeline/strudel on first use; never bundled)",
     "  film blocks --project-root <dir> [--query <action words>] [--tag 3d|shader|transition|...] [--type block|component] [--refresh]",
+    "  film cut-sheet --project-root <dir> [--from-reference <shots-analysis report.json>]   (writes cut-sheet.html from storyboard.json cuts; --from-reference first seeds one cut per detected shot, descriptions left empty, never overwrites existing cuts)",
     "  film check --project-root <dir> [--allow code,code]   (runs storyboard, timeline, render and composition gates; each finding carries a fix; --allow accepts named composition warnings)",
     "  film-eval measure --manifest <benchmark.json> --runs <runs-dir> [--output <measurements.json>]",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
@@ -1175,7 +1177,7 @@ function filmLayout(parsed, root, composition, url, times) {
 // source's run log and captures, and the bound Stage 0 job plan. Recording them as checked inputs
 // lets the existing workflow input hashes reopen the gate when any of them changes.
 function filmEvidenceInputs(board, plan) {
-  return [...productSourceFiles(board), ...(plan?.jobPlanPath ? [plan.jobPlanPath] : [])];
+  return [...productSourceFiles(board), ...(typeof board.referenceCuts === "string" ? [board.referenceCuts] : []), ...(plan?.jobPlanPath ? [plan.jobPlanPath] : [])];
 }
 
 function verifyCommand(parsed, root, action) {
@@ -2439,6 +2441,31 @@ const COMMANDS = {
           const catalog = loadCatalog(project, { refresh: option(parsed, "--refresh") === true });
           const results = searchBlocks(catalog.items, option(parsed, "--query", ""), { tag: option(parsed, "--tag"), type: option(parsed, "--type"), limit: option(parsed, "--limit") ? Number(option(parsed, "--limit")) : 10 });
           return { result: { status: "found", catalogSize: catalog.items.length, cached: catalog.cached, results, next: "Name the chosen block in the beat's `block` field, run its install command, and host it at the beat's time." }, exitCode: 0 };
+        },
+      },
+      "cut-sheet": {
+        required: ["--project-root"],
+        run: ({ parsed, root }) => {
+          const project = contained(root, option(parsed, "--project-root"), "--project-root");
+          const boardFile = path.join(project, "storyboard.json");
+          const board = readJson(boardFile, "film storyboard");
+          let seeded = 0;
+          if (option(parsed, "--from-reference")) {
+            const reportFile = contained(root, option(parsed, "--from-reference"), "--from-reference");
+            const report = readJson(reportFile, "shot analysis report");
+            board.cuts = seedCuts(board, report, { thumbPath: (frame) => path.relative(project, path.resolve(root, frame.path)).split(path.sep).join("/") });
+            seeded = board.cuts.length;
+            if (board.referenceCuts === undefined) {
+              // The project keeps its own copy so the gate input stays inside it and hashes with it.
+              fs.copyFileSync(reportFile, path.join(project, "reference-shots.json"));
+              board.referenceCuts = "reference-shots.json";
+            }
+            fs.writeFileSync(boardFile, JSON.stringify(board, null, 2) + "\n");
+          }
+          if (!Array.isArray(board.cuts) || board.cuts.length === 0) fail("film cut-sheet", "storyboard.json has no cuts. Fix: run film cut-sheet --from-reference <reference analyze-video --shots report.json> to seed them", { code: "CUTS_MISSING" });
+          const sheet = path.join(project, "cut-sheet.html");
+          fs.writeFileSync(sheet, renderCutSheet(board));
+          return { result: { status: "written", cuts: board.cuts.length, seeded, sheet: path.relative(root, sheet).split(path.sep).join("/"), creativeAcceptance: "not-assessed" }, exitCode: 0 };
         },
       },
       check: {

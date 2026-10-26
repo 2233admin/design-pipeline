@@ -141,6 +141,7 @@
     "scripts/film-timeline-core.cjs",
     "scripts/film-eval-core.cjs",
     "scripts/film-hints.cjs",
+    "scripts/film-cut-core.cjs",
     "scripts/upstream-path.cjs",
     "scripts/vendor-cache.cjs",
     "scripts/fetch-sources.cjs",

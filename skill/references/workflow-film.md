@@ -119,7 +119,7 @@ Read its overview and ordered windows; author named target/property/start/end ob
 real frame ids and uncertainties, then bind `videoAnalysis` in the existing reference evidence.
 Resample short or uncertain changes with `--start <sec> --end <sec> --fps 12`. When the film
 follows the reference shot by shot, add `--shots` and read every shot with its sound events before
-writing the storyboard. For an existing
+writing the storyboard. Then run `film cut-sheet --project-root <dir> --from-reference <report.json>` to seed one cut per detected shot and fill the cuts (see the cut sheet bullet below). For an existing
 project use `project inspect` and connect observations to actual source evidence. The executable
 details and limits are in `reference-spec.md#video-content-and-project-analysis`.
 
@@ -180,6 +180,20 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
   `camera-carry`, `hard-cut`, `dissolve` or `reset` (the first beat is `open`, no other beat is);
   `sound.cues[].kind` is `entry`, `exit`, `downbeat`, `accent`, `riser`, `impact`, `voiceover` or
   `silence`. `film-core.cjs` is the source; `tests/film-storyboard-values.test.cjs` keeps this list
+  equal to it.
+- Cut sheet (shot-for-shot work): the optional `cuts` array follows the Japanese TV-animation cut
+  sheet (e-conte); a beat is the sequence, a cut is one continuous shot inside one beat. Each cut has
+  `no`, `startSec`, `endSec`, `picture`, `transition`, `size`, `camera`, and may have `action`,
+  `dialogue`, `text`, `sound` (`[{ atSec, note }]`), `energy`, `note`, `ref` (reference shot id) and
+  `thumb`. `cuts[].size` is `LONG`, `FULL`, `KNEE`, `WAIST`, `BUST`, `UP`, `BIGUP`, `INSERT` or
+  `GRAPHIC`; `cuts[].camera` entries are `FIX`, `PAN`, `TILT`, `TU`, `TB`, `FOLLOW`, `ZOOM-IN`,
+  `ZOOM-OUT`, `ROLL`, `SHAKE` or `RACK`; `cuts[].transition` is `CT`, `OL`, `FI`, `FO`, `WI`, `WO`,
+  `WIPE`, `GLITCH` or `FLASH`; `cuts[].energy` is `still`, `low`, `mid` or `high`. `film cut-sheet`
+  writes `cut-sheet.html` (CUT / 画 / アクション / セリフ・文字 / 音 / 秒+コマ). `referenceCuts` names the
+  shot analysis copy inside the project (`--from-reference` copies it to `reference-shots.json`);
+  `film check` then reports `parity-*` warnings for cut start (2 frames), energy, declared sound
+  (0.1 s), missing and unreferenced shots, and fails them only with `parityStrict: true`. Parity is
+  not visual acceptance. `film-cut-core.cjs` is the source; `tests/film-cuts.test.cjs` keeps this list
   equal to it.
 - Carry: every beat whose handoff is `continuation`, `morph`, `camera-carry` or `match-cut` names
   a `carrier` — what survives the boundary and what it becomes ("prompt bar opens into the app

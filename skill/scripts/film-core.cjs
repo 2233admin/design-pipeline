@@ -11,6 +11,7 @@ const { spawnSync } = require("node:child_process");
 const { assertEnum, assertKeys, assertString, fail, resolveInside, sha256 } = require("./contract-utils.cjs");
 const { withFix } = require("./film-hints.cjs");
 const { installCommand } = require("./install-hints.cjs");
+const { checkCuts, checkParity, validateCuts } = require("./film-cut-core.cjs");
 
 const STORYBOARD_SCHEMA = "design-pipeline.film-storyboard.v1";
 const RENDER_SCHEMA = "design-pipeline.film-render-evidence.v1";
@@ -242,7 +243,7 @@ function productSourceFiles(board) {
 }
 
 function validateShape(board) {
-  assertKeys(board, ["schema", "id", "durationSec", "grammar", "benefit", "proofAction", "sound", "beats"], ["schema", "id", "durationSec", "fps", "grammar", "benefit", "proofAction", "reference", "sound", "beats", "endState", "rendering", "productSource"], "storyboard", SCOPE);
+  assertKeys(board, ["schema", "id", "durationSec", "grammar", "benefit", "proofAction", "sound", "beats"], ["schema", "id", "durationSec", "fps", "grammar", "benefit", "proofAction", "reference", "sound", "beats", "endState", "rendering", "productSource", "cuts", "referenceCuts", "parityStrict"], "storyboard", SCOPE);
   if (board.endState !== undefined) assertEnum(board.endState, ["free", "rest", "loop"], "endState", SCOPE);
   if (board.schema !== STORYBOARD_SCHEMA) fail(SCOPE, `schema must be ${STORYBOARD_SCHEMA}`);
   real(board.id, "id");
@@ -330,6 +331,8 @@ function validateShape(board) {
       for (const id of beat.source) if (!captures.has(id)) fail(SCOPE, `${label}.source references unknown capture ${id}${board.productSource?.status === "admitted" ? "" : " (no admitted productSource records it)"}`);
     }
   }
+  if (board.cuts !== undefined) validateCuts(board.cuts, board);
+  else if (board.referenceCuts !== undefined || board.parityStrict !== undefined) fail(SCOPE, "referenceCuts and parityStrict need cuts");
 }
 
 function checkStoryboard(board, options = {}) {
@@ -427,6 +430,14 @@ function checkStoryboard(board, options = {}) {
     if (actionBeats.length && accented / actionBeats.length < 0.5) add("sound-unbound", `${accented}/${actionBeats.length} action beats bind a sound cue`);
   }
 
+  // Cut sheet: structure findings fail like beat findings; parity findings are warnings unless parityStrict.
+  let parity;
+  if (board.cuts) {
+    const addCut = (code, message, cutNo, severity) => findings.push(withFix("storyboard", { code, message, ...(cutNo ? { cutNo } : {}), ...(severity ? { severity } : {}) }, options.projectRoot));
+    checkCuts(board, addCut);
+    if (board.referenceCuts !== undefined) parity = checkParity(board, addCut, options.projectRoot);
+  }
+
   const cutsPlanned = transitions.filter((beat) => CUT_HANDOFFS.has(beat.handoff)).map((beat) => beat.startSec);
   return {
     schema: STORYBOARD_SCHEMA,
@@ -444,6 +455,7 @@ function checkStoryboard(board, options = {}) {
       restSec,
     },
     ...(admission.required ? { admission } : {}),
+    ...(parity ? { parity } : {}),
     creativeAcceptance: "not-assessed",
   };
 }
