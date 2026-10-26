@@ -312,3 +312,64 @@ test("production inventory requires every declared shot property and resolves on
   fs.appendFileSync(path.join(root, report.source.path), "changed source");
   assert.throws(() => resolveVideoObservation(root, binding, { target: "logo", property: "geometry.contour", cache: new Map() }), /video-source-hash-mismatch/);
 });
+
+test("shot mode segments at detected cuts, spends frames per shot and places sound inside its shot", { skip: !available }, t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "reference-shots-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  // Three 1 s solid shots; a 440 Hz tone from 1.3 to 1.8 s (shot two); silence everywhere else.
+  const created = spawnSync("ffmpeg", ["-v", "error",
+    "-f", "lavfi", "-i", "color=c=red:s=64x48:r=24:d=1", "-f", "lavfi", "-i", "color=c=white:s=64x48:r=24:d=1", "-f", "lavfi", "-i", "color=c=blue:s=64x48:r=24:d=1",
+    "-f", "lavfi", "-i", "aevalsrc='if(between(t,1.3,1.8),0.5*sin(2*PI*440*t),0)':s=44100:d=3",
+    "-filter_complex", "[0:v][1:v][2:v]concat=n=3:v=1:a=0[v]", "-map", "[v]", "-map", "3:a", "-c:v", "ffv1", "-c:a", "pcm_s16le", path.join(root, "input.mkv")], { windowsHide: true, encoding: "utf8" });
+  assert.equal(created.status, 0, created.stderr);
+
+  const sampled = analyzeVideo(root, { path: "input.mkv", output: "shots", shots: true });
+  const report = sampled.report;
+  assert.equal(report.sampling.segmentation, "shots");
+  assert.equal(report.sampling.windowSec, null);
+  assert.equal(report.shots, undefined, "detected shots are not the confirmed inventory");
+  assert.deepEqual(report.segments.map(segment => segment.reason), ["detected-shot", "detected-shot", "detected-shot"]);
+  for (const [i, at] of [1, 2].entries()) assert.ok(Math.abs(report.segments[i + 1].startSec - at) <= 1 / 24 + 1e-6, `cut ${at}s found at ${report.segments[i + 1].startSec}`);
+  const atSec = new Map(report.frames.map(frame => [frame.id, frame.atSec]));
+  for (const segment of report.segments) assert.ok(new Set(segment.frameIds.map(id => atSec.get(id))).size >= 3, `${segment.id} has three distinct frames`);
+  const tone = report.segments[1].soundEvents;
+  assert.ok(tone.some(onset => Math.abs(onset.atSec - 1.3) <= .05 && onset.strength > 0), JSON.stringify(tone));
+  assert.deepEqual(report.segments[0].soundEvents, []);
+  assert.ok(report.segments[2].silences.some(quiet => quiet.startSec <= 2.05 && quiet.endSec >= 2.95), JSON.stringify(report.segments[2].silences));
+  assert.ok(report.segments.every(segment => segment.motion && segment.motion.meanShare <= segment.motion.peakShare));
+  const overview = fs.readFileSync(path.join(root, "shots", "index.html"), "utf8");
+  for (const segment of report.segments) assert.match(overview, new RegExp(`${segment.id} · ${segment.startSec.toFixed(2)}–${segment.endSec.toFixed(2)}s`));
+  const checked = checkVideoAnalysis(root, sampled.descriptor, report.source);
+  assert.equal(checked.status, "pending");
+  assert.match(checked.nextActions[0].instruction, /detected shot is a candidate/);
+
+  const merged = analyzeVideo(root, { path: "input.mkv", output: "merged", shots: true, minShotSec: 1.2 }).report;
+  assert.equal(merged.segments.length, 1, "cuts closer than the minimum shot merge into the earlier shot");
+
+  const short = analyzeVideo(root, { path: "input.mkv", output: "short", shots: true, maxFrames: 4, sampleFps: 1 }).report;
+  assert.equal(short.sampling.budgetLimited, true);
+  for (const segment of short.segments) assert.ok(segment.frameIds.length >= 1, `${segment.id} keeps its middle frame`);
+  assert.ok(short.sampling.limitations.some(line => /^Shot shot-00[23] .* required sampled frames/.test(line)), short.sampling.limitations.join("\n"));
+
+  const windows = analyzeVideo(root, { path: "input.mkv", output: "windows" }).report;
+  assert.equal(windows.sampling.windowSec, 2);
+  assert.equal(windows.sampling.segmentation, undefined);
+  assert.ok(windows.segments.every(segment => segment.reason === "ordered-window" && segment.soundEvents === undefined && segment.motion === undefined));
+
+  assert.throws(() => analyzeVideo(root, { path: "input.mkv", output: "bad-threshold", shots: true, cutThreshold: 1.5 }), /cut-threshold/);
+  assert.throws(() => analyzeVideo(root, { path: "input.mkv", output: "bad-min", shots: true, minShotSec: 0 }), /min-shot/);
+  assert.throws(() => analyzeVideo(root, { path: "input.mkv", output: "no-shots", cutThreshold: .2 }), /only with --shots/);
+  for (const name of ["bad-threshold", "bad-min", "no-shots"]) assert.equal(fs.existsSync(path.join(root, name)), false, `${name} wrote no output`);
+
+  const reportPath = path.join(root, sampled.descriptor.path);
+  for (const mutate of [
+    value => { value.segments[1].soundEvents[0].atSec = 0.5; },
+    value => { value.segments[0].motion.meanShare = 2; },
+    value => { value.sampling.windowSec = 2; },
+    value => { value.segments[0].reason = "ordered-window"; },
+  ]) {
+    const invalid = structuredClone(report); mutate(invalid);
+    fs.writeFileSync(reportPath, JSON.stringify(invalid));
+    assert.throws(() => checkVideoAnalysis(root, { path: sampled.descriptor.path, sha256: sha256(fs.readFileSync(reportPath)) }, report.source), /shot|sound|motion|segmentation/i);
+  }
+});

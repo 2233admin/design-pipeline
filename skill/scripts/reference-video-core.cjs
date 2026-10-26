@@ -5,7 +5,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { assertKeys, assertString, assertStringArray, fail, pngDimensions, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
-const { run, probe, detectCuts, motionProfile } = require("./film-core.cjs");
+const { run, probe, detectCuts, motionProfile, soundEvents } = require("./film-core.cjs");
 const { encodePng } = require("./png-core.cjs");
 const { sampleImage, motionMap } = require("../tools/visual-diagnostics/diagnostics.cjs");
 const { cliCommand } = require("./workflows/shared.cjs");
@@ -119,7 +119,7 @@ function frameSelection(frames) {
 function viewer(root, file, title, frames, navigation = "", diagnostic) {
   const image = frame => {
     const src = escape(relative(path.dirname(file), path.join(root, frame.path)));
-    return `<figure><a href="${src}" target="_blank"><img src="${src}" alt="${escape(frame.id)} at ${frame.atSec.toFixed(6)}s"></a><figcaption>${escape(frame.id)} · ${frame.atSec.toFixed(6)}s · source PTS ${frame.sourcePtsSec.toFixed(6)} · source frame ${frame.sourceFrameIndex}<br><a href="${src}" target="_blank">Open source pixels</a></figcaption></figure>`;
+    return `<figure><a href="${src}" target="_blank"><img src="${src}" alt="${escape(frame.id)} at ${frame.atSec.toFixed(6)}s"></a><figcaption>${frame.caption ? `<strong>${escape(frame.caption)}</strong><br>` : ""}${escape(frame.id)} · ${frame.atSec.toFixed(6)}s · source PTS ${frame.sourcePtsSec.toFixed(6)} · source frame ${frame.sourceFrameIndex}<br><a href="${src}" target="_blank">Open source pixels</a></figcaption></figure>`;
   };
   const mapView = diagnostic === undefined ? "" : diagnostic
     ? `<section><h2>Sampled pixel-change map</h2><p>${escape(diagnostic.limits)}</p><figure><a href="${escape(relative(path.dirname(file), path.join(root, diagnostic.path)))}" target="_blank"><img src="${escape(relative(path.dirname(file), path.join(root, diagnostic.path)))}" alt="Sampled pixel-change heatmap for ${escape(diagnostic.segmentId)}"></a><figcaption>${diagnostic.pairCount} adjacent sampled frame pairs · ${diagnostic.width}×${diagnostic.height} px</figcaption></figure></section>`
@@ -141,6 +141,14 @@ function analyzeVideo(rootInput, options = {}) {
   const maxFrames = options.maxFrames === undefined ? 160 : Number(options.maxFrames);
   number(startSec, "startSec"); positive(endSec, "endSec"); positive(sampleFps, "sampleFps");
   if (sampleFps > 60 || !Number.isInteger(maxFrames) || maxFrames < 2 || maxFrames > 400) fail(SCOPE, "sampleFps must be <= 60 and maxFrames an integer from 2 to 400");
+  // Shot mode: segment at detected cuts instead of 2 s windows. 0.18 with a 0.25 s minimum matched a
+  // hand count of 90 shots in a 99.8 s anime PV; 0.3 (the window-mode default) missed soft cuts.
+  const shotMode = options.shots === true;
+  if (!shotMode && (options.cutThreshold !== undefined || options.minShotSec !== undefined)) fail(SCOPE, "--cut-threshold and --min-shot apply only with --shots");
+  const cutThreshold = options.cutThreshold === undefined ? (shotMode ? .18 : .3) : Number(options.cutThreshold);
+  const minShotSec = options.minShotSec === undefined ? .25 : Number(options.minShotSec);
+  if (!(cutThreshold > 0 && cutThreshold < 1)) fail(SCOPE, "--cut-threshold must be between 0 and 1");
+  if (!(minShotSec > 0) || !Number.isFinite(minShotSec)) fail(SCOPE, "--min-shot must be a positive number of seconds");
   if (startSec >= endSec || endSec > durationSec + EPS) fail(SCOPE, "sampling range must be inside source duration with start < end");
   const output = options.output || "video-analysis";
   const directory = contained(root, output, "output");
@@ -154,7 +162,16 @@ function analyzeVideo(rootInput, options = {}) {
   const scheduleCount = Math.min(requestedFrames, maxFrames);
   const regular = new Map();
   for (let i = 0; i < scheduleCount; i++) { const frame = nearest(inside, startSec + i * (endSec - startSec) / (scheduleCount - 1)); regular.set(frame.atSec, frame); }
-  const candidateCutsSec = detectCuts(source.path, tools, .3).filter(at => at >= startSec && at <= endSec);
+  const candidateCutsSec = detectCuts(source.path, tools, cutThreshold).filter(at => at >= startSec && at <= endSec);
+  // Cuts closer than the minimum shot merge into the earlier shot; bounds snap to decoded frames.
+  const shots = [];
+  if (shotMode) {
+    const bounds = [startSec];
+    for (const at of candidateCutsSec) { const snapped = nearest(inside, at).atSec; if (snapped - bounds.at(-1) >= minShotSec - EPS && endSec - snapped >= minShotSec - EPS) bounds.push(snapped); }
+    bounds.push(endSec);
+    for (let i = 0; i < bounds.length - 1; i++) shots.push({ id: `shot-${String(i + 1).padStart(3, "0")}`, startSec: bounds[i], endSec: bounds[i + 1] });
+  }
+  const within = (begin, end) => inside.filter(frame => frame.atSec >= begin - EPS && (frame.atSec < end - EPS || end === endSec && frame.atSec <= end + EPS));
   const motion = motionProfile(source.path, tools).filter(row => row.atSec >= startSec && row.atSec <= endSec);
   const motionCandidates = localMotionCandidates(motion, startSec, endSec);
   const contextFps = Math.min(24, media.fps);
@@ -165,13 +182,22 @@ function analyzeVideo(rootInput, options = {}) {
     windows.push({ startSec: begin, endSec: end, frames: own });
     if (own.length) { minimum.set(own[0].atSec, own[0]); minimum.set(own.at(-1).atSec, own.at(-1)); }
   }
-  let budgetLimited = requestedFrames > maxFrames || minimum.size > maxFrames;
+  let budgetLimited = requestedFrames > maxFrames || !shotMode && minimum.size > maxFrames;
   const sequenceLimitations = [];
-  for (const frame of evenly([...minimum.values()].sort((a, b) => a.sourceFrameIndex - b.sourceFrameIndex), maxFrames)) selected.set(frame.atSec, frame);
+  const shotFrames = shots.map(shot => { const list = within(shot.startSec, shot.endSec); return { shot, list, picks: list.length ? [list[Math.floor((list.length - 1) / 2)], list[0], list.at(-1)] : [] }; });
+  if (shotMode) {
+    // Middles for every shot first, then first frames, then last frames, while the budget lasts.
+    for (let rank = 0; rank < 3; rank++) for (const { picks } of shotFrames) {
+      const frame = picks[rank];
+      if (!frame || selected.has(frame.atSec)) continue;
+      if (selected.size >= maxFrames) { budgetLimited = true; continue; }
+      selected.set(frame.atSec, frame);
+    }
+  } else for (const frame of evenly([...minimum.values()].sort((a, b) => a.sourceFrameIndex - b.sourceFrameIndex), maxFrames)) selected.set(frame.atSec, frame);
   // Cluster nearby hints for inspection while preserving every original cut/peak in the report.
   const candidateCenters = [];
   for (const at of [...candidateCutsSec, ...motionCandidates.map(row => row.atSec)].sort((a, b) => a - b)) if (!candidateCenters.some(center => Math.abs(center - at) <= .2 + EPS)) candidateCenters.push(at);
-  for (const at of candidateCenters) {
+  if (!shotMode) for (const at of candidateCenters) {
     // Use source cadence up to 24fps inside a 0.4s neighbourhood. The nearest
     // decoded PTS is evidence; requested times are never interpolated frames.
     const group = new Map();
@@ -190,7 +216,13 @@ function analyzeVideo(rootInput, options = {}) {
   if (remaining.length > capacity) budgetLimited = true;
   const fillers = capacity === 1 && remaining.length ? [remaining[Math.floor(remaining.length / 2)]] : capacity > 1 ? evenly(remaining, capacity) : [];
   for (const frame of fillers) selected.set(frame.atSec, frame);
-  for (const window of windows) if (new Set(window.frames.filter(frame => selected.has(frame.atSec)).map(frame => frame.atSec)).size < 2) {
+  for (const { shot, list } of shotFrames) {
+    const possible = new Set(list.map(frame => frame.atSec)).size, kept = new Set(list.filter(frame => selected.has(frame.atSec)).map(frame => frame.atSec)).size;
+    const range = `${shot.startSec.toFixed(6)}–${shot.endSec.toFixed(6)}s`;
+    if (kept < Math.min(3, possible)) { budgetLimited = true; sequenceLimitations.push(`Shot ${shot.id} (${range}) has ${kept} of ${Math.min(3, possible)} required sampled frames. Inspect --start ${shot.startSec.toFixed(6)} --end ${shot.endSec.toFixed(6)} --fps ${contextFps} --output <new-dir>, or rerun with a larger --max-frames.`); }
+    else if (possible < 3) sequenceLimitations.push(`Shot ${shot.id} (${range}) spans only ${possible} decoded frame${possible === 1 ? "" : "s"}; it may be a flash or a detection artefact.`);
+  }
+  if (!shotMode) for (const window of windows) if (new Set(window.frames.filter(frame => selected.has(frame.atSec)).map(frame => frame.atSec)).size < 2) {
     budgetLimited = true;
     sequenceLimitations.push(`Window ${window.startSec.toFixed(6)}–${window.endSec.toFixed(6)}s lacks two distinct sampled source times. Inspect --start ${window.startSec.toFixed(6)} --end ${window.endSec.toFixed(6)} --fps 12 --output <new-dir>; the source cadence may itself provide insufficient distinct states.`);
   }
@@ -215,11 +247,22 @@ function analyzeVideo(rootInput, options = {}) {
   if (mapPixels.length !== mapFrameBytes * frames.length) fail(SCOPE, "motion thumbnails do not match the selected frame count");
   const mapFrameIndex = new Map(frames.map((frame, i) => [frame.id, i]));
   const segments = [], motionMaps = [], motionMapLimitations = [];
-  for (let begin = startSec; begin < endSec - EPS; begin += 2) {
-    const end = Math.min(begin + 2, endSec), id = `window-${String(segments.length + 1).padStart(3, "0")}`;
+  const parts = shotMode ? shots.map(shot => ({ id: shot.id, begin: shot.startSec, end: shot.endSec, reason: "detected-shot" })) : [];
+  if (!shotMode) for (let begin = startSec; begin < endSec - EPS; begin += 2) parts.push({ id: `window-${String(parts.length + 1).padStart(3, "0")}`, begin, end: Math.min(begin + 2, endSec), reason: "ordered-window" });
+  const sound = shotMode && media.hasAudio ? soundEvents(source.path, tools, { local: true }) : null;
+  for (const { id, begin, end, reason } of parts) {
     const own = frames.filter(frame => frame.atSec >= begin - EPS && (frame.atSec < end - EPS || end === endSec && frame.atSec <= end + EPS));
     const file = resolveInside(root, path.join(windowDirectory, `${id}.html`), "window viewer output", { scope: SCOPE });
-    const segment = { id, startSec: begin, endSec: end, reason: "ordered-window", frameIds: own.map(frame => frame.id), viewerPath: relative(root, file) };
+    const segment = { id, startSec: begin, endSec: end, reason, frameIds: own.map(frame => frame.id), viewerPath: relative(root, file) };
+    if (shotMode) {
+      // Skip the first 0.1 s: that pair of 10 fps samples straddles the cut itself.
+      const rows = motion.filter(row => row.atSec > begin + .1 + EPS && row.atSec <= end + EPS);
+      if (rows.length) segment.motion = { meanShare: Number((rows.reduce((sum, row) => sum + row.share, 0) / rows.length).toFixed(4)), peakShare: Number(Math.max(...rows.map(row => row.share)).toFixed(4)) };
+      if (sound) {
+        segment.soundEvents = sound.onsets.filter(onset => onset.atSec >= begin - EPS && onset.atSec < end - EPS);
+        segment.silences = sound.silences.filter(quiet => quiet.startSec < end - EPS && quiet.endSec > begin + EPS).map(quiet => ({ startSec: Math.max(quiet.startSec, begin), endSec: Math.min(quiet.endSec, end) }));
+      }
+    }
     segments.push(segment);
     let diagnostic = null;
     if (new Set(own.map(frame => frame.atSec)).size >= 2) {
@@ -244,11 +287,14 @@ function analyzeVideo(rootInput, options = {}) {
     viewer(root, file, `${id}: ${begin.toFixed(6)}–${end.toFixed(6)}s (with adjacent boundary context)`, context, `<p><a href="../index.html">Overview</a></p>`, diagnostic);
   }
   const viewerFile = resolveInside(root, path.join(directory, "index.html"), "overview output", { scope: SCOPE });
-  viewer(root, viewerFile, "Video reference: ordered overview", evenly(frames, 16), `<ol>${segments.map(segment => `<li><a href="windows/${escape(segment.id)}.html">${escape(segment.id)}: ${segment.startSec.toFixed(6)}–${segment.endSec.toFixed(6)}s, ${segment.frameIds.length} ordered samples</a></li>`).join("")}</ol>`);
+  const overview = shotMode
+    ? segments.filter(segment => segment.frameIds.length).map(segment => { const frame = frames.find(item => item.id === segment.frameIds[Math.floor((segment.frameIds.length - 1) / 2)]); return { ...frame, caption: `${segment.id} · ${segment.startSec.toFixed(2)}–${segment.endSec.toFixed(2)}s` }; })
+    : evenly(frames, 16);
+  viewer(root, viewerFile, shotMode ? "Video reference: detected shot overview" : "Video reference: ordered overview", overview, `<ol>${segments.map(segment => `<li><a href="windows/${escape(segment.id)}.html">${escape(segment.id)}: ${segment.startSec.toFixed(6)}–${segment.endSec.toFixed(6)}s, ${segment.frameIds.length} ordered samples</a></li>`).join("")}</ol>`);
   fs.writeFileSync(resolveInside(root, path.join(directory, "frames.csv"), "timestamp output", { scope: SCOPE }), `id,atSec,sourcePtsSec,sourceFrameIndex,path,sha256\n${frames.map(frame => [frame.id, frame.atSec, frame.sourcePtsSec, frame.sourceFrameIndex, frame.path, frame.sha256].map(value => `"${String(value).replace(/"/g, '""')}"`).join(",")).join("\n")}\n`);
   const examplePath = resolveInside(root, path.join(directory, "observation-example.json"), "observation example output", { scope: SCOPE });
   fs.writeFileSync(examplePath, JSON.stringify({ instruction: "Template only. Replace every placeholder after inspecting the named window. Do not copy it as an observed fact. Cover each window per actual object; unknown or inferred entries require uncertainties. Motion needs at least two real frames. Geometry, material, lighting and motion are separate properties.", observation: { id: "replace-with-unique-id", target: "replace-with-visible-object", property: "motion.replace-with-one-property", startSec: segments[0].startSec, endSec: segments[0].endSec, startState: "replace-with-observed-start-state", endState: "replace-with-observed-end-state", frameIds: segments[0].frameIds.slice(0, 2), basis: "unknown", description: "replace-with-what-the-source-shows", uncertainties: ["replace-with-what-is-not-established"] } }, null, 2));
-  const report = { source: { path: source.relativePath, kind: "video", width: timeline.width, height: timeline.height, sha256: source.sha256 }, durationSec, nominalFps: media.fps, timeOriginSec: timeline.timeOriginSec, sampling: { startSec, endSec, sampleFps, maxFrames, requestedFrames, emittedFrames: frames.length, budgetLimited, strategy: "pts-nearest-interval", windowSec: 2, limitations: ["Overview is a sparse index; ordered windows remain sampled, not every source frame.", "Cuts and locally prominent pixel-change peaks are inspection candidates, not verified action boundaries.", `Candidate neighborhoods use actual source frames at up to ${contextFps}fps spanning up to 0.4s, clipped to the source interval; source cadence can reduce distinct samples.`, "Object identity, geometry, material, lighting, motion and sound require actual observation.", ...sequenceLimitations, ...motionMapLimitations, ...(budgetLimited ? ["The requested cadence, minimum window coverage or candidate sequence exceeds the available frame budget; narrow the interval and resample."] : []), ...(startSec > 0 || endSec < durationSec - EPS ? ["Only the named interval is sampled; the rest of the source remains unanalyzed."] : [])] }, frames, segments, motionMaps, candidateCutsSec, motionCandidates, observations: [], viewerPath: relative(root, viewerFile) };
+  const report = { source: { path: source.relativePath, kind: "video", width: timeline.width, height: timeline.height, sha256: source.sha256 }, durationSec, nominalFps: media.fps, timeOriginSec: timeline.timeOriginSec, sampling: { startSec, endSec, sampleFps, maxFrames, requestedFrames, emittedFrames: frames.length, budgetLimited, strategy: "pts-nearest-interval", windowSec: shotMode ? null : 2, ...(shotMode ? { segmentation: "shots", cutThreshold, minShotSec } : {}), limitations: [...(shotMode ? ["Overview shows one sampled frame per detected shot; shots are detected candidates, not confirmed shots, and remain sampled, not every source frame.", "Shot mode samples each shot's middle, first and last decoded frames before the regular cadence; motion-peak neighbourhoods are not added.", sound ? "Sound events are energy-flux onsets judged against the surrounding 1.5 s, with strength relative to the strongest; silences last at least 0.3 s under 3% of the 95th-percentile level. They are timing candidates, not identified sounds." : "The source has no audio; shots carry no sound events."] : ["Overview is a sparse index; ordered windows remain sampled, not every source frame.", "Cuts and locally prominent pixel-change peaks are inspection candidates, not verified action boundaries.", `Candidate neighborhoods use actual source frames at up to ${contextFps}fps spanning up to 0.4s, clipped to the source interval; source cadence can reduce distinct samples.`]), "Object identity, geometry, material, lighting, motion and sound require actual observation.", ...sequenceLimitations, ...motionMapLimitations, ...(budgetLimited ? ["The requested cadence, minimum window coverage or candidate sequence exceeds the available frame budget; narrow the interval and resample."] : []), ...(startSec > 0 || endSec < durationSec - EPS ? ["Only the named interval is sampled; the rest of the source remains unanalyzed."] : [])] }, frames, segments, motionMaps, candidateCutsSec, motionCandidates, observations: [], viewerPath: relative(root, viewerFile) };
   if (sha256(fs.readFileSync(source.path)) !== source.sha256) fail(SCOPE, "source changed during analysis; discard this incomplete sampling and rerun in a new directory");
   const reportFile = resolveInside(root, path.join(directory, "report.json"), "analysis report output", { scope: SCOPE }), temporary = resolveInside(root, `${reportFile}.${process.pid}.${process.hrtime.bigint()}.tmp`, "temporary report output", { scope: SCOPE });
   fs.writeFileSync(temporary, JSON.stringify(report, null, 2)); fs.renameSync(temporary, reportFile);
@@ -294,6 +340,23 @@ function observationInShot(observation, shot, target, property, frames) {
   return new Set(observation.frameIds.map(id => frames.get(id).atSec)).size >= (/^motion(?:\.|$)/.test(property) ? 2 : 1);
 }
 
+function validateShotFields(segment) {
+  const inRange = at => Number.isFinite(at) && at >= segment.startSec - EPS && at <= segment.endSec + EPS;
+  if (segment.motion !== undefined) {
+    assertKeys(segment.motion, ["meanShare", "peakShare"], ["meanShare", "peakShare"], `${segment.id}.motion`, SCOPE);
+    const { meanShare, peakShare } = segment.motion;
+    if (![meanShare, peakShare].every(share => Number.isFinite(share) && share >= 0 && share <= 1) || meanShare > peakShare + EPS) fail(SCOPE, `${segment.id}.motion must hold pixel shares with mean <= peak`);
+  }
+  if (segment.soundEvents !== undefined) {
+    if (!Array.isArray(segment.soundEvents)) fail(SCOPE, `${segment.id}.soundEvents must be an array`);
+    for (const onset of segment.soundEvents) { assertKeys(onset, ["atSec", "strength"], ["atSec", "strength"], `${segment.id} sound event`, SCOPE); if (!inRange(onset.atSec) || !(onset.strength >= 0 && onset.strength <= 1)) fail(SCOPE, `${segment.id} sound events must sit inside the shot with a strength from 0 to 1`); }
+  }
+  if (segment.silences !== undefined) {
+    if (!Array.isArray(segment.silences)) fail(SCOPE, `${segment.id}.silences must be an array`);
+    for (const quiet of segment.silences) { assertKeys(quiet, ["startSec", "endSec"], ["startSec", "endSec"], `${segment.id} silence`, SCOPE); if (!inRange(quiet.startSec) || !inRange(quiet.endSec) || quiet.startSec >= quiet.endSec) fail(SCOPE, `${segment.id} silences must be ordered intervals inside the shot`); }
+  }
+}
+
 function validateReport(root, report) {
   const required = ["source", "durationSec", "nominalFps", "timeOriginSec", "sampling", "frames", "segments", "observations"];
   assertKeys(report, required, [...required, "candidateCutsSec", "motionCandidates", "viewerPath", "motionMaps", "shots"], "report", SCOPE);
@@ -303,9 +366,16 @@ function validateReport(root, report) {
   positive(report.durationSec, "durationSec"); positive(report.nominalFps, "nominalFps");
   if (!Number.isFinite(report.timeOriginSec)) fail(SCOPE, "timeOriginSec must be finite");
   const sampleKeys = ["startSec", "endSec", "sampleFps", "maxFrames", "requestedFrames", "emittedFrames", "budgetLimited", "strategy", "windowSec", "limitations"];
-  assertKeys(report.sampling, sampleKeys, sampleKeys, "sampling", SCOPE);
+  assertKeys(report.sampling, sampleKeys, [...sampleKeys, "segmentation", "cutThreshold", "minShotSec"], "sampling", SCOPE);
   const sampling = report.sampling;
-  number(sampling.startSec, "sampling.startSec"); positive(sampling.endSec, "sampling.endSec"); positive(sampling.sampleFps, "sampling.sampleFps"); positive(sampling.windowSec, "sampling.windowSec");
+  const shotMode = sampling.segmentation !== undefined;
+  number(sampling.startSec, "sampling.startSec"); positive(sampling.endSec, "sampling.endSec"); positive(sampling.sampleFps, "sampling.sampleFps");
+  if (shotMode) {
+    if (sampling.segmentation !== "shots" || sampling.windowSec !== null || !(sampling.cutThreshold > 0 && sampling.cutThreshold < 1) || !(sampling.minShotSec > 0)) fail(SCOPE, "shot segmentation needs segmentation \"shots\", a null windowSec, a cutThreshold in (0, 1) and a positive minShotSec");
+  } else {
+    if (sampling.cutThreshold !== undefined || sampling.minShotSec !== undefined) fail(SCOPE, "cutThreshold and minShotSec belong to shot segmentation");
+    positive(sampling.windowSec, "sampling.windowSec");
+  }
   if (sampling.startSec >= sampling.endSec || sampling.endSec > report.durationSec + EPS || sampling.sampleFps > 60) fail(SCOPE, "sampling range/frequency is invalid");
   for (const key of ["maxFrames", "requestedFrames", "emittedFrames"]) if (!Number.isInteger(sampling[key]) || sampling[key] <= 0) fail(SCOPE, `sampling.${key} must be a positive integer`);
   if (typeof sampling.budgetLimited !== "boolean" || sampling.strategy !== "pts-nearest-interval" || sampling.maxFrames < 2 || sampling.maxFrames > 400 || sampling.emittedFrames > sampling.maxFrames) fail(SCOPE, "sampling budget/strategy is invalid");
@@ -324,7 +394,9 @@ function validateReport(root, report) {
   const segments = new Set(), segmentById = new Map();
   for (const [i, segment] of report.segments.entries()) {
     const keys = ["id", "startSec", "endSec", "reason", "frameIds"];
-    assertKeys(segment, keys, [...keys, "viewerPath"], `segments[${i}]`, SCOPE); assertString(segment.id, "segment.id", SCOPE); assertString(segment.reason, "segment.reason", SCOPE);
+    assertKeys(segment, keys, [...keys, "viewerPath", "motion", "soundEvents", "silences"], `segments[${i}]`, SCOPE); assertString(segment.id, "segment.id", SCOPE); assertString(segment.reason, "segment.reason", SCOPE);
+    if (segment.reason !== (shotMode ? "detected-shot" : segment.reason) || !shotMode && ["motion", "soundEvents", "silences"].some(key => segment[key] !== undefined)) fail(SCOPE, "shot fields belong to detected-shot segments of a shot-segmented report");
+    validateShotFields(segment);
     number(segment.startSec, "segment.startSec"); positive(segment.endSec, "segment.endSec"); assertStringArray(segment.frameIds, "segment.frameIds", SCOPE, { unique: true });
     if (segments.has(segment.id) || segment.startSec >= segment.endSec || Math.abs(segment.startSec - (i === 0 ? sampling.startSec : report.segments[i - 1].endSec)) > EPS || segment.endSec > sampling.endSec + EPS) fail(SCOPE, "segments must form contiguous windows inside sampling range");
     for (const id of segment.frameIds) { const frame = frames.get(id); if (!frame || frame.atSec < segment.startSec - EPS || frame.atSec > segment.endSec + EPS) fail(SCOPE, "segment references an absent or out-of-range frame"); }
@@ -430,7 +502,7 @@ function checkVideoAnalysis(rootInput, descriptor, source, options = {}) {
     ...(report.motionMaps?.some(map => map.segmentId === segment.id) ? { motionMap: { ...report.motionMaps.find(map => map.segmentId === segment.id), mimeType: "image/png" } } : {}),
     sourceRange: { startSec: 0, endSec: report.durationSec, timeOriginSec: report.timeOriginSec },
     targets: report.observations.filter(observation => observation.startSec < segment.endSec && observation.endSec > segment.startSec).map(({ target, property, basis }) => ({ target, property, basis })),
-    instruction: "Use the host's image viewing tool to inspect the actual PNG inputs in their time order; reading a file path, JSON or the HTML viewer is not evidence of seeing those pixels. This 2s sampling window is not a confirmed source shot. Record one visible target and one property per observation, with local start/end evidence. Keep camera motion separate from object motion; describe visible material changes before inferring their cause. If the interval is unclear, resample it into a new directory.",
+    instruction: (segment.reason === "detected-shot" ? "Use the host's image viewing tool to inspect the actual PNG inputs in their time order; reading a file path, JSON or the HTML viewer is not evidence of seeing those pixels. This detected shot is a candidate, not a confirmed source shot; its sound events are timing candidates." : "Use the host's image viewing tool to inspect the actual PNG inputs in their time order; reading a file path, JSON or the HTML viewer is not evidence of seeing those pixels. This 2s sampling window is not a confirmed source shot.") + " Record one visible target and one property per observation, with local start/end evidence. Keep camera motion separate from object motion; describe visible material changes before inferring their cause. If the interval is unclear, resample it into a new directory.",
     resample: { command: cliCommand(), args: ["--root", path.resolve(root), "reference", "analyze-video", "--path", report.source.path, "--start", String(segment.startSec), "--end", String(segment.endSec), "--fps", String(Math.min(60, Math.max(12, report.sampling.sampleFps * 2))), "--output", "<new-evidence-dir>"] },
   }));
   const unobservedProperties = [];
