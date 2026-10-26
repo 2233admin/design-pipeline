@@ -25,6 +25,14 @@ digests and source-frame indices bind the observations. Overview is an index: it
 motion. Ordered windows are sampled, not every source frame. Watch the source at full speed when
 your host supports it; report whether that actually happened.
 
+Add `--shots` when the work follows the reference shot by shot (homage, remake, MAD). Segments
+then follow detected cuts instead of 2 s windows (`--cut-threshold`, default 0.18; `--min-shot`,
+default 0.25 s, merges flashes into the earlier shot). Every shot gets its first, middle and last
+decoded frame before the regular cadence, the overview shows one labelled frame per shot, and each
+shot carries its pixel-change summary and, when the source has sound, its onsets (with relative
+strength) and silences. Detected shots are candidates: they do not fill the confirmed `shots`
+inventory. A shot the budget cannot cover is named in the limitations with its rerun.
+
 Add `--study` when sound, edit rhythm or construction also matter. It writes a supplementary
 `study.json`, an audio excerpt and spectrogram when the source has sound, and separate audio/visual
 grid candidates; without the flag the command is unchanged. Read them with the

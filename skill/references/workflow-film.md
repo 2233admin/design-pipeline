@@ -117,7 +117,9 @@ owner judges the material in the sample and review.
 For a local video first use `reference analyze-video --path <contained-video> --output <new-dir>`.
 Read its overview and ordered windows; author named target/property/start/end observations with
 real frame ids and uncertainties, then bind `videoAnalysis` in the existing reference evidence.
-Resample short or uncertain changes with `--start <sec> --end <sec> --fps 12`. For an existing
+Resample short or uncertain changes with `--start <sec> --end <sec> --fps 12`. When the film
+follows the reference shot by shot, add `--shots` and read every shot with its sound events before
+writing the storyboard. For an existing
 project use `project inspect` and connect observations to actual source evidence. The executable
 details and limits are in `reference-spec.md#video-content-and-project-analysis`.
 

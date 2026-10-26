@@ -481,6 +481,14 @@ function detectCuts(video, tools, threshold) {
 
 // Energy-flux onsets on an 8 kHz mono envelope; enough to test cut/accent alignment.
 function detectOnsets(video, tools) {
+  return soundEvents(video, tools).onsets.map((onset) => onset.atSec);
+}
+
+// The same onsets with a strength relative to the strongest one, plus silences: stretches of at
+// least 0.3 s whose RMS stays under 3% of the 95th-percentile RMS, a threshold never set below -60 dBFS.
+// local: judge each onset against the flux within 1.5 s around it instead of the whole file, so quiet
+// passages keep their own accents (reference shot breakdown); render checks keep the global threshold.
+function soundEvents(video, tools, { local = false } = {}) {
   const rate = 8000;
   const { stdout } = run(tools.ffmpeg, ["-hide_banner", "-nostats", "-i", video, "-vn", "-ac", "1", "-ar", String(rate), "-f", "s16le", "-"], { binary: true });
   const hop = 256;
@@ -495,16 +503,36 @@ function detectOnsets(video, tools) {
   const mean = flux.reduce((a, b) => a + b, 0) / (flux.length || 1);
   const sd = Math.sqrt(flux.reduce((a, b) => a + (b - mean) ** 2, 0) / (flux.length || 1));
   const threshold = mean + 2 * sd;
+  const sums = [0], squares = [0];
+  for (const value of flux) { sums.push(sums.at(-1) + value); squares.push(squares.at(-1) + value * value); }
+  const reach = Math.round(1.5 * rate / hop), fluxPeak = Math.max(0, ...flux);
+  const thresholdAt = (index) => {
+    if (!local) return threshold;
+    const from = Math.max(0, index - reach), to = Math.min(flux.length, index + reach + 1), n = to - from;
+    const localMean = (sums[to] - sums[from]) / n;
+    const localSd = Math.sqrt(Math.max(0, (squares[to] - squares[from]) / n - localMean * localMean));
+    return Math.max(localMean + 2 * localSd, 0.02 * fluxPeak);
+  };
   const onsets = [];
   const minGap = Math.round(0.08 * rate / hop);
   let lastIndex = -Infinity;
   for (let index = 1; index < flux.length - 1; index += 1) {
-    if (flux[index] > threshold && flux[index] >= flux[index - 1] && flux[index] >= flux[index + 1] && index - lastIndex >= minGap) {
-      onsets.push(Number(((index * hop) / rate).toFixed(3)));
+    if (flux[index] > thresholdAt(index) && flux[index] >= flux[index - 1] && flux[index] >= flux[index + 1] && index - lastIndex >= minGap) {
+      onsets.push({ atSec: Number(((index * hop) / rate).toFixed(3)), flux: flux[index] });
       lastIndex = index;
     }
   }
-  return onsets;
+  const peak = Math.max(0, ...onsets.map((onset) => onset.flux));
+  const sorted = Array.from(energy).sort((a, b) => a - b);
+  const quiet = Math.max(0.001, 0.03 * (sorted[Math.floor(sorted.length * 0.95)] ?? 0));
+  const silences = [];
+  const minQuiet = Math.round(0.3 * rate / hop);
+  for (let index = 0, start = -1; index <= frames; index += 1) {
+    if (index < frames && energy[index] < quiet) { if (start < 0) start = index; continue; }
+    if (start >= 0 && index - start >= minQuiet) silences.push({ startSec: Number(((start * hop) / rate).toFixed(3)), endSec: Number(((index * hop) / rate).toFixed(3)) });
+    start = -1;
+  }
+  return { onsets: onsets.map((onset) => ({ atSec: onset.atSec, strength: peak ? Number((onset.flux / peak).toFixed(3)) : 0 })), silences };
 }
 
 // Runtime-agnostic motion evidence: share of pixels that change between consecutive 10 fps
@@ -786,4 +814,4 @@ function evaluateFilmRender(board, video, options = {}) {
   };
 }
 
-module.exports = { BEAT_ROLES, CUE_KINDS, GRAMMARS, HANDOFFS, PRODUCT_PROMO_FORM, TRANSFORMATIONS, STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, instantReplacement, motionProfile, probe, productSourceAdmission, productSourceFiles, run, structureCut, structureSteps };
+module.exports = { BEAT_ROLES, CUE_KINDS, GRAMMARS, HANDOFFS, PRODUCT_PROMO_FORM, TRANSFORMATIONS, STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, soundEvents, instantReplacement, motionProfile, probe, productSourceAdmission, productSourceFiles, run, structureCut, structureSteps };
