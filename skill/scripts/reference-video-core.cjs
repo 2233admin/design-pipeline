@@ -249,14 +249,24 @@ function analyzeVideo(rootInput, options = {}) {
   const segments = [], motionMaps = [], motionMapLimitations = [];
   const parts = shotMode ? shots.map(shot => ({ id: shot.id, begin: shot.startSec, end: shot.endSec, reason: "detected-shot" })) : [];
   if (!shotMode) for (let begin = startSec; begin < endSec - EPS; begin += 2) parts.push({ id: `window-${String(parts.length + 1).padStart(3, "0")}`, begin, end: Math.min(begin + 2, endSec), reason: "ordered-window" });
-  const sound = shotMode && media.hasAudio ? soundEvents(source.path, tools, { local: true }) : null;
+  // Raw PCM loses the audio stream's start time; move events onto the report's video clock.
+  let sound = null;
+  if (shotMode && media.hasAudio) {
+    const events = soundEvents(source.path, tools, { local: true });
+    const audioStart = Number(JSON.parse(run(tools.ffprobe, ["-v", "error", "-select_streams", "a:0", "-show_entries", "stream=start_time", "-of", "json", source.path]).stdout).streams?.[0]?.start_time);
+    const offset = Number.isFinite(audioStart) ? audioStart - timeline.timeOriginSec : 0;
+    const shift = at => Number((at + offset).toFixed(3));
+    sound = { onsets: events.onsets.map(onset => ({ ...onset, atSec: shift(onset.atSec) })), silences: events.silences.map(quiet => ({ startSec: shift(quiet.startSec), endSec: shift(quiet.endSec) })) };
+    if (offset > EPS) sound.silences.unshift({ startSec: 0, endSec: Number(offset.toFixed(3)) });
+  }
   for (const { id, begin, end, reason } of parts) {
     const own = frames.filter(frame => frame.atSec >= begin - EPS && (frame.atSec < end - EPS || end === endSec && frame.atSec <= end + EPS));
     const file = resolveInside(root, path.join(windowDirectory, `${id}.html`), "window viewer output", { scope: SCOPE });
     const segment = { id, startSec: begin, endSec: end, reason, frameIds: own.map(frame => frame.id), viewerPath: relative(root, file) };
     if (shotMode) {
-      // Skip the first 0.1 s: that pair of 10 fps samples straddles the cut itself.
-      const rows = motion.filter(row => row.atSec > begin + .1 + EPS && row.atSec <= end + EPS);
+      // Keep only 10 fps sample pairs whose two frames both lie in the shot; a row is stamped with
+      // its later frame, so pairs straddling the incoming or outgoing cut drop out.
+      const rows = motion.filter(row => row.atSec - .1 >= begin - EPS && row.atSec < end - EPS);
       if (rows.length) segment.motion = { meanShare: Number((rows.reduce((sum, row) => sum + row.share, 0) / rows.length).toFixed(4)), peakShare: Number(Math.max(...rows.map(row => row.share)).toFixed(4)) };
       if (sound) {
         segment.soundEvents = sound.onsets.filter(onset => onset.atSec >= begin - EPS && onset.atSec < end - EPS);
@@ -288,7 +298,7 @@ function analyzeVideo(rootInput, options = {}) {
   }
   const viewerFile = resolveInside(root, path.join(directory, "index.html"), "overview output", { scope: SCOPE });
   const overview = shotMode
-    ? segments.filter(segment => segment.frameIds.length).map(segment => { const frame = frames.find(item => item.id === segment.frameIds[Math.floor((segment.frameIds.length - 1) / 2)]); return { ...frame, caption: `${segment.id} · ${segment.startSec.toFixed(2)}–${segment.endSec.toFixed(2)}s` }; })
+    ? segments.flatMap((segment, i) => { const middle = shotFrames[i].picks[0]; const frame = frames.find(item => middle && item.atSec === middle.atSec) || frames.find(item => item.id === segment.frameIds[0]); return frame ? [{ ...frame, caption: `${segment.id} · ${segment.startSec.toFixed(2)}–${segment.endSec.toFixed(2)}s` }] : []; })
     : evenly(frames, 16);
   viewer(root, viewerFile, shotMode ? "Video reference: detected shot overview" : "Video reference: ordered overview", overview, `<ol>${segments.map(segment => `<li><a href="windows/${escape(segment.id)}.html">${escape(segment.id)}: ${segment.startSec.toFixed(6)}–${segment.endSec.toFixed(6)}s, ${segment.frameIds.length} ordered samples</a></li>`).join("")}</ol>`);
   fs.writeFileSync(resolveInside(root, path.join(directory, "frames.csv"), "timestamp output", { scope: SCOPE }), `id,atSec,sourcePtsSec,sourceFrameIndex,path,sha256\n${frames.map(frame => [frame.id, frame.atSec, frame.sourcePtsSec, frame.sourceFrameIndex, frame.path, frame.sha256].map(value => `"${String(value).replace(/"/g, '""')}"`).join(",")).join("\n")}\n`);
@@ -450,6 +460,10 @@ function validateReport(root, report) {
   return report;
 }
 
+function shotArgs(sampling) {
+  return sampling.segmentation === "shots" ? ["--shots", "--cut-threshold", String(sampling.cutThreshold), "--min-shot", String(sampling.minShotSec)] : [];
+}
+
 function checkVideoAnalysis(rootInput, descriptor, source, options = {}) {
   const root = fs.realpathSync(rootInput);
   assertKeys(descriptor, ["path", "sha256"], ["path", "sha256"], "videoAnalysis", SCOPE); digest(descriptor.sha256, "videoAnalysis.sha256");
@@ -530,12 +544,12 @@ function checkVideoAnalysis(rootInput, descriptor, source, options = {}) {
     kind: "resample-budget", reportPath: descriptor.path, startSec: report.sampling.startSec, endSec: report.sampling.endSec,
     instruction: "This report is budget-limited even if its windows have observations. Reprepare this interval in a new directory with a larger bounded frame budget; inspect the retained limitations. If 400 frames still cannot cover the cadence and candidate sequences, reduce cadence or inspect shorter intervals. Preserve this report and refresh the adopted report binding after actual inspection.",
     limitations: report.sampling.limitations,
-    resample: { command: cliCommand(), args: ["--root", path.resolve(root), "reference", "analyze-video", "--path", report.source.path, "--start", String(report.sampling.startSec), "--end", String(report.sampling.endSec), "--fps", String(report.sampling.sampleFps), "--max-frames", "400", "--output", "<new-evidence-dir>"] },
+    resample: { command: cliCommand(), args: ["--root", path.resolve(root), "reference", "analyze-video", "--path", report.source.path, "--start", String(report.sampling.startSec), "--end", String(report.sampling.endSec), "--fps", String(report.sampling.sampleFps), "--max-frames", "400", ...shotArgs(report.sampling), "--output", "<new-evidence-dir>"] },
   });
   if (!coverage.fullSource) nextActions.push({
     kind: "prepare-full-source", reportPath: descriptor.path, startSec: 0, endSec: report.durationSec,
     instruction: "This report covers only a local interval. Prepare and observe the whole source before completing the reference workflow; retain this local report as detail evidence. A local ready status does not complete the whole-source requirement.",
-    resample: { command: cliCommand(), args: ["--root", path.resolve(root), "reference", "analyze-video", "--path", report.source.path, "--max-frames", "400", "--output", "<new-evidence-dir>"] },
+    resample: { command: cliCommand(), args: ["--root", path.resolve(root), "reference", "analyze-video", "--path", report.source.path, "--max-frames", "400", ...shotArgs(report.sampling), "--output", "<new-evidence-dir>"] },
   });
   const reasons = [...(unobservedSegments.length ? ["video-observations-incomplete"] : []), ...(inventoryMissing ? ["video-production-inventory-missing"] : []), ...(unobservedProperties.length ? ["video-production-properties-incomplete"] : []), ...(report.sampling.budgetLimited ? ["sampling-budget-limited"] : [])];
   return { ...base, status: reasons.length ? "pending" : "ready", reasons, unobservedSegments, unobservedProperties, nextActions, unknownObservations: report.observations.filter(observation => observation.basis === "unknown").map(observation => observation.id), warnings: [...report.sampling.limitations, ...(!coverage.fullSource ? ["Only the declared sampling interval is checked; this is not analysis of the whole source."] : [])] };

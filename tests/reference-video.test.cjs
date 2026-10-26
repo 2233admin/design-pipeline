@@ -336,7 +336,7 @@ test("shot mode segments at detected cuts, spends frames per shot and places sou
   assert.ok(tone.some(onset => Math.abs(onset.atSec - 1.3) <= .05 && onset.strength > 0), JSON.stringify(tone));
   assert.deepEqual(report.segments[0].soundEvents, []);
   assert.ok(report.segments[2].silences.some(quiet => quiet.startSec <= 2.05 && quiet.endSec >= 2.95), JSON.stringify(report.segments[2].silences));
-  assert.ok(report.segments.every(segment => segment.motion && segment.motion.meanShare <= segment.motion.peakShare));
+  assert.ok(report.segments.every(segment => segment.motion && segment.motion.peakShare === 0), "solid shots have no internal motion; the cut pairs on either side are not counted");
   const overview = fs.readFileSync(path.join(root, "shots", "index.html"), "utf8");
   for (const segment of report.segments) assert.match(overview, new RegExp(`${segment.id} · ${segment.startSec.toFixed(2)}–${segment.endSec.toFixed(2)}s`));
   const checked = checkVideoAnalysis(root, sampled.descriptor, report.source);
@@ -350,6 +350,21 @@ test("shot mode segments at detected cuts, spends frames per shot and places sou
   assert.equal(short.sampling.budgetLimited, true);
   for (const segment of short.segments) assert.ok(segment.frameIds.length >= 1, `${segment.id} keeps its middle frame`);
   assert.ok(short.sampling.limitations.some(line => /^Shot shot-00[23] .* required sampled frames/.test(line)), short.sampling.limitations.join("\n"));
+  assert.match(fs.readFileSync(path.join(root, "short", "index.html"), "utf8"), /alt="frame-\d+ at 1\.458\d*s"/, "the overview shows the prioritized middle frame of shot two");
+  const shortDescriptor = { path: "short/report.json", sha256: sha256(fs.readFileSync(path.join(root, "short", "report.json"))) };
+  const recovery = checkVideoAnalysis(root, shortDescriptor, short.source).nextActions.find(action => action.kind === "resample-budget");
+  const flags = recovery.resample.args.indexOf("--shots");
+  assert.deepEqual(recovery.resample.args.slice(flags, flags + 5), ["--shots", "--cut-threshold", "0.18", "--min-shot", "0.25"], "budget recovery keeps shot mode");
+
+  // Audio that starts 0.5 s after the first video frame: events move onto the video clock.
+  const delayed = spawnSync("ffmpeg", ["-v", "error",
+    "-f", "lavfi", "-i", "color=c=red:s=64x48:r=24:d=1", "-f", "lavfi", "-i", "color=c=white:s=64x48:r=24:d=1", "-f", "lavfi", "-i", "color=c=blue:s=64x48:r=24:d=1",
+    "-itsoffset", "0.5", "-f", "lavfi", "-i", "aevalsrc='if(between(t,0.8,1.3),0.5*sin(2*PI*440*t),0)':s=44100:d=2.5",
+    "-filter_complex", "[0:v][1:v][2:v]concat=n=3:v=1:a=0[v]", "-map", "[v]", "-map", "3:a", "-c:v", "ffv1", "-c:a", "pcm_s16le", path.join(root, "delayed.mkv")], { windowsHide: true, encoding: "utf8" });
+  assert.equal(delayed.status, 0, delayed.stderr);
+  const late = analyzeVideo(root, { path: "delayed.mkv", output: "delayed", shots: true }).report;
+  assert.ok(late.segments[1].soundEvents.some(onset => Math.abs(onset.atSec - 1.3) <= .05), JSON.stringify(late.segments[1].soundEvents));
+  assert.ok(late.segments[0].silences.some(quiet => quiet.startSec === 0), "the gap before the audio starts is a leading silence");
 
   const windows = analyzeVideo(root, { path: "input.mkv", output: "windows" }).report;
   assert.equal(windows.sampling.windowSec, 2);
