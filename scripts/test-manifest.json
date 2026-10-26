@@ -68,6 +68,7 @@
     "motion-foundation.test.cjs",
     "motion-verification.test.cjs",
     "full-motion-recipes.test.cjs",
+    "film-storyboard-values.test.cjs",
     "film-gates.test.cjs",
     "animation-craft.test.cjs",
     "film-timeline-eval.test.cjs",

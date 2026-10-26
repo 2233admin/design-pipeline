@@ -786,4 +786,4 @@ function evaluateFilmRender(board, video, options = {}) {
   };
 }
 
-module.exports = { PRODUCT_PROMO_FORM, STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, instantReplacement, motionProfile, probe, productSourceAdmission, productSourceFiles, run, structureCut, structureSteps };
+module.exports = { BEAT_ROLES, CUE_KINDS, GRAMMARS, HANDOFFS, PRODUCT_PROMO_FORM, TRANSFORMATIONS, STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, instantReplacement, motionProfile, probe, productSourceAdmission, productSourceFiles, run, structureCut, structureSteps };
