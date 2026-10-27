@@ -63,6 +63,13 @@ test("every other tracked path or content still fails, including look-alike loca
     "THIRD_PARTY_NOTICES.md.orig": `${name}\n`,
     "binary.bin": Buffer.concat([Buffer.from([0, 1, 2]), Buffer.from(` ${name.toUpperCase()} `)]),
   };
+  // The upper-case folder collides with the lower-case one on a case-insensitive checkout (Windows, default macOS).
+  const probe = fs.mkdtempSync(path.join(os.tmpdir(), "case-probe-"));
+  t.after(() => fs.rmSync(probe, { recursive: true, force: true }));
+  if (fs.existsSync(path.join(path.dirname(probe), path.basename(probe).toUpperCase()))) {
+    delete cases[`skill/vendor/${name.toUpperCase()}-design/x.md`];
+    t.diagnostic("case-insensitive filesystem: the upper-case folder case is not exercised");
+  }
   const dir = repository(t, cases);
   const result = formerNameHits(dir);
   assert.equal(result.ok, false);

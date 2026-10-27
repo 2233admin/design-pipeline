@@ -127,7 +127,9 @@ test("each installed system browser launches headless through puppeteer-core", {
   const args = typeof process.getuid === "function" && process.getuid() === 0 ? ["--no-sandbox"] : [];
   for (const { name, executable } of INSTALLED) {
     t.diagnostic(`launching ${name} (${executable})`);
-    const browser = await puppeteer.launch({ executablePath: executable, headless: true, args, timeout: 120_000 });
+    // Windows Chrome and Edge hang at startup when USERPROFILE points at an empty folder, which hermetic QA does.
+    const env = process.platform === "win32" ? { ...process.env, USERPROFILE: os.userInfo().homedir } : process.env;
+    const browser = await puppeteer.launch({ executablePath: executable, headless: true, args, env, timeout: 120_000 });
     try {
       const page = await browser.newPage();
       await page.setContent("<p id=ok>ok</p>");

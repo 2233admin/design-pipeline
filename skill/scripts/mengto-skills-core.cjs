@@ -173,7 +173,7 @@ function verifyMengToSnapshot(manifestFile = defaultManifest) {
     return `${relative.split(path.sep).join("/")}\0${hash}\n`;
   });
   const treeSha256 = crypto.createHash("sha256").update(entries.join(""), "utf8").digest("hex");
-  const issues = [...walked.issues];
+  const issues = walked.issues.map((issue) => issue.split(path.sep).join("/"));
   if (files.length !== loaded.manifest.snapshot.fileCount) issues.push(`file count ${files.length} != ${loaded.manifest.snapshot.fileCount}`);
   if (byteCount !== loaded.manifest.snapshot.byteCount) issues.push(`byte count ${byteCount} != ${loaded.manifest.snapshot.byteCount}`);
   if (treeSha256 !== loaded.manifest.snapshot.treeSha256) issues.push(`tree hash ${treeSha256} != ${loaded.manifest.snapshot.treeSha256}`);

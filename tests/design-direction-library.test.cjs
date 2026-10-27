@@ -305,7 +305,7 @@ test("the package carries the shipped text and none of the fetched binaries", (t
   const output = temporary(t);
   const built = spawnSync(process.execPath, [path.join(repoRoot, "scripts/package.cjs"), "--output-root", output], { cwd: repoRoot, encoding: "utf8", windowsHide: true, maxBuffer: 16 * 1024 * 1024 });
   assert.equal(built.status, 0, built.stderr || built.stdout);
-  const listing = spawnSync("tar", ["-tzf", path.join(output, "design-pipeline-skill.tgz")], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  const listing = spawnSync("tar", ["-tzf", "design-pipeline-skill.tgz"], { cwd: output, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
   assert.equal(listing.status, 0, listing.stderr);
   const entries = listing.stdout.split("\n").filter(Boolean);
   const prefix = `design-pipeline/vendor/${library.directory}/`;

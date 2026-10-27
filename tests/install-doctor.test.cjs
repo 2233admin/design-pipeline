@@ -52,7 +52,7 @@ test("the package archive root is a valid Claude Code plugin root", () => {
     assert.equal(packed.status, 0, packed.stderr || packed.stdout);
     const extracted = path.join(out, "extracted");
     fs.mkdirSync(extracted);
-    const untar = spawnSync("tar", ["-xzf", path.join(out, "dist/design-pipeline-skill.tgz"), "-C", extracted], { encoding: "utf8" });
+    const untar = spawnSync("tar", ["-xzf", "design-pipeline-skill.tgz", "-C", "../extracted"], { cwd: path.join(out, "dist"), encoding: "utf8" });
     assert.equal(untar.status, 0, untar.stderr);
 
     const pluginRoot = path.join(extracted, "design-pipeline");
