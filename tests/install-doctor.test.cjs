@@ -1,5 +1,8 @@
 "use strict";
 
+// GNU tar reads a drive letter as a remote host; --force-local keeps Windows paths local.
+const tarLocal = process.platform === "win32" ? ["--force-local"] : [];
+
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -52,7 +55,7 @@ test("the package archive root is a valid Claude Code plugin root", () => {
     assert.equal(packed.status, 0, packed.stderr || packed.stdout);
     const extracted = path.join(out, "extracted");
     fs.mkdirSync(extracted);
-    const untar = spawnSync("tar", ["-xzf", path.join(out, "dist/design-pipeline-skill.tgz"), "-C", extracted], { encoding: "utf8" });
+    const untar = spawnSync("tar", [...tarLocal, "-xzf", "dist/design-pipeline-skill.tgz", "-C", "extracted"], { encoding: "utf8", cwd: out });
     assert.equal(untar.status, 0, untar.stderr);
 
     const pluginRoot = path.join(extracted, "design-pipeline");

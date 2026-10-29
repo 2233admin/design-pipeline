@@ -8,6 +8,11 @@
   ],
   "required": [
     "references/ui-transition-rules.md",
+    "references/design-review-dimensions.md",
+    "references/craft-density-and-review-loop.md",
+    "references/creative-prompting.md",
+    "references/tweaks-variants.md",
+    "references/editable-pptx-html.md",
     "references/gepa.md",
     "tools/answer-me-with-html/README.md",
     "tools/answer-me-with-html/example.md",
