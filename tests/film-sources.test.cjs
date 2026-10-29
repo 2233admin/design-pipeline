@@ -1,5 +1,8 @@
 "use strict";
 
+// GNU tar reads a drive letter as a remote host; --force-local keeps Windows paths local.
+const tarLocal = process.platform === "win32" ? ["--force-local"] : [];
+
 const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
@@ -182,7 +185,7 @@ test("isolated release archive carries every film source blob without ambient so
       env: { ...process.env, PACKAGE_VERSION: "0.0.0-dev", RELEASE_MODE: "0", GITHUB_REF_NAME: "", SOURCE_DATE_EPOCH: "1791504000" },
     });
     assert.equal(packaged.status, 0, packaged.stderr || packaged.stdout);
-    const extracted = run("tar", ["-xzf", path.join(root, "design-pipeline-skill.tgz"), "-C", root, ...Object.keys(REVIEWED).map(name => `design-pipeline/vendor/${name}/`)], root);
+    const extracted = run("tar", [...tarLocal, "-xzf", "design-pipeline-skill.tgz", ...Object.keys(REVIEWED).map(name => `design-pipeline/vendor/${name}/`)], root);
     assert.equal(extracted.status, 0, extracted.stderr);
     for (const name of Object.keys(REVIEWED)) {
       const installed = path.join(root, "design-pipeline/vendor", name);
