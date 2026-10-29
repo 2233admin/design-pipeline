@@ -10,7 +10,7 @@
 - [ ] 2.1 `film-core.cjs`: validate `referenceAnalysis` shape (path, sha256) in the storyboard check.
 - [ ] 2.2 `reference-video-core.cjs` or a new helper in the film evidence path: cut pairing, per-shot motion, sound sync, with the tolerances in design.md.
 - [ ] 2.3 Frame pairs: decode reference source and render at the same times (FFmpeg), scale to the render size,
-  `compareComposition` per pair, `pairs/index.html` with the worst five first, 600-pair cap; register
+  `compareComposition` per pair, `pairs/index.html` with the worst five first, 1200-pair cap; register
   `--start`, `--end`, `--fps` for `verify film-render` in `KNOWN_OPTIONS`.
 - [ ] 2.4 `cli-core.cjs` `verify film-render`: run the comparison when `referenceAnalysis` is declared; keep exit codes (0 passed, 2 gate failed, 1 contract error).
 

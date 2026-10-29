@@ -20,8 +20,8 @@ field is a free-text description and is not machine-checked.
    decoded with FFmpeg at the same presentation times and scaled to the render's size; when the aspect
    ratios differ, frame pairs are `unmeasured` with the two sizes, and the other checks still run.
 6. Default times: every 0.5 s across the render, plus every render frame from 2 frames before to 2 frames
-   after each paired cut. `--start/--end/--fps` replace the grid for one range. A run is capped at 600
-   pairs; over the cap the report names the skipped range and the narrower command that covers it.
+   after each paired cut. `--start/--end/--fps` replace the grid for one range. A run is capped at 1200
+   pairs (a 100 s film with 90 cuts needs about 650 by default); over the cap the report names the skipped range and the narrower command that covers it.
 7. Each pair writes `pairs/t<seconds>.png` (reference left, render right) and a difference image via
    `compareComposition`; `pairs/index.html` shows all pairs in time order with the five largest mean
    differences first. Scores are evidence for ranking only: a correct beat two frames late scores high and

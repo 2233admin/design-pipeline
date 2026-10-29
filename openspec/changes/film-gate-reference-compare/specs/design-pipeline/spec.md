@@ -44,7 +44,7 @@ When a storyboard declares `referenceAnalysis` with a path and sha256, `verify f
 
 #### Scenario: Too many frame pairs
 
-- **WHEN** the requested times exceed 600 pairs
+- **WHEN** the requested times exceed 1200 pairs
 - **THEN** the report SHALL name the skipped range and a narrower `--start/--end/--fps` command that covers it
 
 #### Scenario: Analysis hash mismatch
