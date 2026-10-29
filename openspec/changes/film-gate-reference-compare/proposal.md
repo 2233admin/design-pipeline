@@ -17,9 +17,17 @@ analyze-video --shots`, #196).
   - cut alignment: rendered cuts paired with reference cuts, with offset in frames, plus missing and extra cuts;
   - per-shot motion: rendered and reference pixel change per shot, listing shots whose difference is largest;
   - sound-event sync: each reference sound event checked against a rendered visual change (brightness step,
-    cut, or motion peak) within a tolerance window.
+    cut, or motion peak) within a tolerance window;
+  - frame pairs: the rendered frame and the reference frame at the same time, side by side, on a fixed grid
+    and at every frame around each paired cut, with a difference score per time and the worst times
+    listed first. The scores rank where to look; they never pass or fail the gate.
+- `--start`, `--end` and `--fps` narrow the frame pairs to one range at a finer step (for example one
+  transition at the render frame rate) without changing the other three checks.
 - The result states structural difference from the reference. It claims no creative or visual acceptance.
 - Without `referenceAnalysis`, the gate behaves exactly as today.
+
+Frame pairs follow the verification loop of lovisdotio/motion2code (MIT): agents cannot watch a video, so
+every moment of a rebuild needs an image pair to look at. Concept only; no upstream script is vendored.
 
 ## Capabilities
 
@@ -31,6 +39,10 @@ analyze-video --shots`, #196).
 - `verify film-render`, its evidence directory and receipt lineage.
 - The `--shots` analysis from `reference-video-core.cjs` (per-shot motion, sound events, cut times).
 - `film check`'s storyboard validation for the new field.
+- The reference source bound by the analysis report (`source.path`, `source.sha256`) for frame pairs; no
+  second source field in the storyboard.
+- `compareComposition` from `skill/tools/visual-diagnostics/diagnostics.cjs` for each pair's difference
+  image and scores; FFmpeg decodes both videos at the same times.
 
 ## Impact
 
