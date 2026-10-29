@@ -14,7 +14,10 @@
 
 ## 3. Tier 2 (separate change)
 
-- [ ] 3.1 Tweaks system, editable PPTX export, brand-asset merge.
+- [x] 3.1a Tweaks concepts: `skill/references/tweaks-variants.md`, routed and registered.
+- [x] 3.1b Editable PPTX: HTML constraints only, `skill/references/editable-pptx-html.md`. The converter is not built; it needs a separate change and a PptxGenJS licence check.
+- [ ] 3.1c Brand-asset protocol merged into `brand-facts.md`: not started.
+- [ ] 3.1d PPTX converter and export command: separate change, not started.
 
 ## 4. Tier 3 and deferred
 

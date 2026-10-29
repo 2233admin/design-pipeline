@@ -379,6 +379,13 @@ workflow concepts from:
 The project does not vendor either upstream skill, their scripts, personal filesystem workflow,
 image generation, 58-site design library, visual theme, or mandatory direction/article shapes.
 
+Tier 1 of `internalize-design-reference-projects` adds the craft loop (reference DNA, craft density, the
+two-round render-critique-refine loop) and the creative-prompting method from `qiaomu-design` at reviewed
+commit `ccd9cecb5b1f1e994eebf7bd814f2f0c35fe3bea`, as concepts written in this repository's own wording
+(`codeCopied: false`): `skill/references/craft-density-and-review-loop.md` and
+`skill/references/creative-prompting.md`. Their sources (the Sakana AI String Seed of Thought research and
+Anshu Chimala's public Lenny's Newsletter article) are cited in those files; no text is reproduced.
+
 MIT License
 
 Copyright (c) 2026 joeseesun
@@ -782,6 +789,16 @@ the license, READMEs, the project `SKILL.md` (stored as `UPSTREAM-SKILL.md`), `r
 metadata) are not distributed in the package or in this repository: `sources fetch --bundle
 design-direction-library` downloads them from the pinned commit and checks each against the
 SHA-256 in `skill/vendor/huashu-design/manifest.json`.
+
+Tier 1 of `internalize-design-reference-projects` also adopts the review concepts from the upstream
+`references/critique-guide.md` at reviewed commit `4fc7bfdbd5ec3fa2d43ce7a6433de60976a5e4b1` (concept gate,
+six scoring dimensions, medium weighting, report shape) as `skill/references/design-review-dimensions.md`,
+written in this repository's own wording (`codeCopied: false`). The pinned bytes above are unchanged.
+
+Tier 2 adds the tweaks concepts (`skill/references/tweaks-variants.md`) and the editable-PPTX HTML constraints
+(`skill/references/editable-pptx-html.md`) from the same upstream at reviewed commit
+`4fc7bfdbd5ec3fa2d43ce7a6433de60976a5e4b1`, written in this repository's own wording (`codeCopied: false`).
+No converter, runtime or upstream script is vendored by this tier.
 
 The upstream project is MIT. Its complete license text follows; it is also retained at
 `skill/vendor/huashu-design/upstream/LICENSE`.

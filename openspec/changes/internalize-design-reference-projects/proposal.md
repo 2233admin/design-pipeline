@@ -1,10 +1,10 @@
 ## Why
 
 Two MIT design skills are the reference projects for this pipeline: `joeseesun/qiaomu-design` and
-`alchaincyf/huashu-design`. Part of each is already internalized: CJK typography, direction preview and
+the second reference project (see THIRD_PARTY_NOTICES.md). Part of each is already internalized: CJK typography, direction preview and
 plain-language contracts from qiaomu; the design direction library, Art Motion and the vendored upstream from
-huashu. Several parts have no counterpart in this repository: qiaomu's craft loop, creative prompting and
-style fitting room; huashu's five-dimension expert review, tweaks system, editable PPTX export and
+second reference project. Several parts have no counterpart in this repository: qiaomu's craft loop, creative prompting and
+style fitting room; second reference project's five-dimension expert review, tweaks system, editable PPTX export and
 sound-effect library. Without a change record these features stay outside the pipeline and get re-derived
 case by case.
 
