@@ -77,6 +77,9 @@ SHA-256 before the cache entry is installed. `designer-pipeline doctor` lists th
   designer-pipeline composition capture --composition <shipped root>/assets/style-specimens/web/01-editorial-brutalism.html --output <new-dir> --width 1440 --height 900
   ```
 
+  In a project without `puppeteer-core`, add `--puppeteer-module <absolute path to puppeteer-core>`
+  to the command, or the capture fails with `puppeteer-core not found`.
+
   Judge the screenshot, not the filename. A capture is evidence of what rendered, not of visual
   acceptance.
 - **Borrowing.** Adopt a technique into project-owned code and cite the entry in the project's

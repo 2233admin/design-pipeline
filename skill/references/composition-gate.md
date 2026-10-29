@@ -15,9 +15,11 @@ designer-pipeline verify composition --image qa/comp/screenshot.png --elements q
 ```
 
 `composition capture` loads a local HTML file or http(s) URL in a headless browser (the
-HyperFrames headless shell, else an installed Chrome, Edge or Chromium; see installation.md) and
-writes `screenshot.png` plus `elements.json` (visible text with box, size, weight and effective
-colors). `--seek` positions registered GSAP timelines first. Without
+HyperFrames headless shell, else an installed Chrome, Edge or Chromium; see installation.md). It
+needs `puppeteer-core` in the project or `--puppeteer-module <absolute path to puppeteer-core>`
+on the call; without either it fails with `puppeteer-core not found`. It writes `screenshot.png`
+plus `elements.json` (visible text with box, size, weight and effective colors).
+`--seek` positions registered GSAP timelines first. Without
 `--elements` the gate runs on pixels alone.
 
 Errors fail the gate: `blank-frame`, `low-contrast`, `text-contrast` (WCAG 4.5:1, 3:1 large),
