@@ -139,9 +139,9 @@ does not install or repair anything.
   installed Chrome, Edge or Chromium. A wrong explicit path fails instead of falling back. When
   none is found the error names `npx hyperframes browser ensure`, the same command `doctor`
   prints. Art Motion's `render-report.json` and interaction results record the browser and its
-  version. An existing HyperFrames project provides `puppeteer-core`. In any other project,
-  `composition capture` (and the other commands above) fail with `puppeteer-core not found` until
-  you either run `npm i puppeteer-core` in that project, or pass
+  version. An existing HyperFrames project provides `puppeteer-core`. If the project does not have
+  `puppeteer-core`, `composition capture` (and the other commands above) fail with
+  `puppeteer-core not found` until you either run `npm i puppeteer-core` in that project, or pass
   `--puppeteer-module <absolute path to puppeteer-core>` on each call (for example a checkout's
   `node_modules/puppeteer-core`). No global npm install is needed.
 - Font subsetting alone needs FontTools: invoke its script with scoped

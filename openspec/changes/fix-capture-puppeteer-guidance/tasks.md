@@ -3,7 +3,7 @@
 ## 1. Change records
 
 - [x] 1.1 proposal.md, design.md and the `design-pipeline` spec delta; tracked in 2233admin/design-pipeline#198.
-- [ ] 1.2 `npm exec -- openspec validate fix-capture-puppeteer-guidance --strict` and `npm run specs:check`.
+- [x] 1.2 `npm exec -- openspec validate fix-capture-puppeteer-guidance --strict` and `npm run specs:check`.
 
 ## 2. Behaviour
 

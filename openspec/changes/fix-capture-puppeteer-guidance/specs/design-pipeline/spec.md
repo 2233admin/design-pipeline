@@ -25,13 +25,13 @@ The concepts-stage instruction and the direction failure hints SHALL give captur
 
 #### Scenario: Thumbnail capture in a plain project
 
-- **WHEN** the agent follows the concepts instruction in a project without `puppeteer-core`
-- **THEN** the thumbnail capture command SHALL carry `--puppeteer-module` with the path `doctor` reported
+- **WHEN** the agent follows the concepts instruction in a project without `puppeteer-core`, and `doctor` reports a usable path
+- **THEN** the thumbnail capture command SHALL carry `--puppeteer-module` with that reported path
 
 #### Scenario: doctor finds no puppeteer-core
 
-- **WHEN** `doctor` reports `puppeteer-core` as missing
-- **THEN** the report SHALL say to run `npm i puppeteer-core` or pass an existing path, and the direction instructions SHALL NOT proceed to capture
+- **WHEN** `doctor` reports `puppeteer-core` as missing, so no usable path exists
+- **THEN** the agent SHALL stop before capture and show the remedy: run `npm i puppeteer-core` in the project, or pass an existing absolute path to `--puppeteer-module`; the direction instructions SHALL NOT proceed to capture
 
 #### Scenario: Stale path
 
