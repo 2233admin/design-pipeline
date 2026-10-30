@@ -1172,6 +1172,10 @@
     "scripts/workflows/ui.cjs",
     "vendor/design-direction-library/manifest.json",
     "vendor/design-direction-library/upstream/references/design-styles.md",
-    "vendor/design-direction-library/upstream/references/directions.md"
+    "vendor/design-direction-library/upstream/references/directions.md",
+    "references/mobile-web.md",
+    "references/worst-case-content.md",
+    "references/interface-defaults.md",
+    "references/timeline-deconstruction.md"
   ]
 }
