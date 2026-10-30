@@ -29,6 +29,11 @@
 - **WHEN** the captured file changed after `reduced-motion.json` was written
 - **THEN** `verify composition` SHALL reject the artifact as stale
 
+#### Scenario: Artifact from another capture
+
+- **WHEN** `--reduced-motion` names an artifact whose recorded screenshot hash differs from the `--image` being verified, even though its target file is unchanged
+- **THEN** `verify composition` SHALL reject the artifact as belonging to another capture
+
 #### Scenario: Loop period equal to a fixed sampling interval
 
 - **WHEN** a canvas loop repeats every 250 ms regardless of the preference

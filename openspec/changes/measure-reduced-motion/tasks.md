@@ -9,7 +9,7 @@
 
 - [ ] 2.1 `capture-composition.cjs`: boolean option parsing; `--reduced-motion` two-pass capture and `reduced-motion.json` (design.md 1-4).
 - [ ] 2.2 `references/reduced-motion.schema.json` and its validator; register in `package-resources.json`.
-- [ ] 2.3 `cli-core.cjs`: `composition capture --reduced-motion` (boolean) and `verify composition --reduced-motion <file>` (value) registered; the verify handler reads, validates and checks the target hash, then passes the measurement to the composition verifier.
+- [ ] 2.3 `cli-core.cjs`: `composition capture --reduced-motion` (boolean) and `verify composition --reduced-motion <file>` (value) registered; the verify handler reads, validates, checks the target hash and that `capture.sha256` equals the `--image` hash, then passes the measurement to the composition verifier.
 - [ ] 2.4 `composition-core.cjs`: `reduced-motion-still-moving` error with a `fix` naming the media query; opacity/colour reported only.
 
 ## 3. Tests and docs

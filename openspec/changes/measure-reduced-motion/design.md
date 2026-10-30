@@ -12,9 +12,14 @@
    periods. Changed share per consecutive pair via `motionMap` from `visual-diagnostics/diagnostics.cjs`; the aggregate is
    the maximum pair share. Threshold 0.5 %.
 4. Artifact `design-pipeline.reduced-motion.v1`: `target` (`{kind: "file", path, sha256}` or `{kind: "url", url}`),
-   `viewport`, `browser` (resolver identity), `capturedAt`, `passes.reduce` and `passes.noPreference` each with
+   `capture` (`{screenshot: "screenshot.png", sha256}`: the screenshot written by the same `composition capture`
+   run), `viewport`, `browser` (resolver identity), `capturedAt`, `passes.reduce` and `passes.noPreference` each with
    `animations[]` and `pixelChange{samples, maxShare}`. A JSON Schema is published beside the other evidence schemas.
-5. `capture-composition.cjs` today parses every option as a name/value pair; it gains boolean option parsing for
+5. Lineage: `verify composition --image <png> --reduced-motion <file>` rejects the artifact when `capture.sha256`
+   is not the sha256 of `--image`, or when the target file's current hash differs from `target.sha256`. The
+   composition gate has no policy digest or receipt of its own; the capture hash is its lineage, and the result
+   stays Component Conformance only.
+6. `capture-composition.cjs` today parses every option as a name/value pair; it gains boolean option parsing for
    `--reduced-motion`.
 
 ## Risks
