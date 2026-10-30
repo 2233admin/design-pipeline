@@ -1,0 +1,409 @@
+{
+  "schema": "design-pipeline.anti-slop-lint-map.v1",
+  "upstream": {
+    "repository": "https://github.com/Nutlope/hallmark",
+    "commit": "4f6a46c6dc325d40ab268c93e25c7b96676ebccd",
+    "file": "skills/hallmark/scripts/sloplint.mjs"
+  },
+  "principle": "hard only for broken behaviour, missing access or dishonest content; taste defaults are at most contextual; Hallmark's own tier does not decide the class",
+  "gates": {
+    "2a": {
+      "class": "contextual",
+      "rule": "template-pattern-density",
+      "reason": "the canonical generated gradient; allowed with a product reason"
+    },
+    "2b": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "7a": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory",
+      "reason": "Hallmark house rule on pure black and white"
+    },
+    "7b": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "22": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "23": {
+      "class": "contextual",
+      "rule": "cohesive-design-world",
+      "reason": "accent posture"
+    },
+    "29": {
+      "class": "contextual",
+      "rule": "decorative-effects-serve-purpose"
+    },
+    "65": {
+      "class": "contextual",
+      "rule": "template-pattern-density",
+      "reason": "the currently fashionable generated look"
+    },
+    "74": {
+      "class": "contextual",
+      "rule": "component-defaults-are-art-directed",
+      "reason": "framework default palette"
+    },
+    "1": {
+      "class": "contextual",
+      "rule": "component-defaults-are-art-directed",
+      "reason": "default display face"
+    },
+    "25": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory",
+      "reason": "measure advice; minimum text size is gate 75"
+    },
+    "37": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "38i": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "55a": {
+      "class": "hard",
+      "rule": "contrast-and-legibility",
+      "reason": "wrapped caps lines under 1.0 collide"
+    },
+    "55b": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "64": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "75": {
+      "class": "hard",
+      "rule": "contrast-and-legibility",
+      "reason": "text below legible size or leading"
+    },
+    "67": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory",
+      "reason": "Hallmark house rule"
+    },
+    "3": {
+      "class": "contextual",
+      "rule": "template-pattern-density"
+    },
+    "4": {
+      "class": "contextual",
+      "rule": "template-pattern-density"
+    },
+    "6a": {
+      "class": "hard",
+      "rule": "responsive-content-integrity",
+      "reason": "vh heroes jump under mobile browser chrome"
+    },
+    "6b": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "8": {
+      "class": "contextual",
+      "rule": "template-pattern-density"
+    },
+    "9": {
+      "class": "contextual",
+      "rule": "template-pattern-density"
+    },
+    "24a": {
+      "class": "excluded",
+      "reason": "token naming is checked by check-design-tokens against the project's own DESIGN.md"
+    },
+    "24b": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "34": {
+      "class": "hard",
+      "rule": "responsive-content-integrity",
+      "reason": "horizontal scroll"
+    },
+    "44a": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "44b": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory",
+      "reason": "fold composition is the owner's call"
+    },
+    "44c": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "44d": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "50": {
+      "class": "hard",
+      "rule": "responsive-content-integrity",
+      "reason": "grid and heading overflow"
+    },
+    "53": {
+      "class": "hard",
+      "rule": "controls-are-real-and-operable",
+      "reason": "tabs jump the page"
+    },
+    "56": {
+      "class": "hard",
+      "rule": "responsive-content-integrity",
+      "reason": "sticky heads cover each other"
+    },
+    "58": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory",
+      "reason": "Hallmark house rule on word density"
+    },
+    "59": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "71": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "72": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "77": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "78": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "79": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "80": {
+      "class": "contextual",
+      "rule": "decorative-effects-serve-purpose"
+    },
+    "81": {
+      "class": "contextual",
+      "rule": "content-specificity",
+      "reason": "empty picture"
+    },
+    "82": {
+      "class": "contextual",
+      "rule": "decorative-effects-serve-purpose"
+    },
+    "83": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "84": {
+      "class": "contextual",
+      "rule": "product-grounded-signature",
+      "reason": "mock of a reachable real product"
+    },
+    "85": {
+      "class": "contextual",
+      "rule": "template-pattern-density"
+    },
+    "19": {
+      "class": "contextual",
+      "rule": "content-specificity",
+      "reason": "placeholder names and buzzwords; verbatim client copy is accepted context"
+    },
+    "20": {
+      "class": "excluded",
+      "reason": "Hallmark's own CSS stamp"
+    },
+    "42": {
+      "class": "contextual",
+      "rule": "template-pattern-density"
+    },
+    "46a": {
+      "class": "hard",
+      "rule": "no-fabricated-proof",
+      "reason": "invented metrics, testimonials, logo walls"
+    },
+    "46b": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "47a": {
+      "class": "contextual",
+      "rule": "template-pattern-density",
+      "reason": "drawn browser chrome"
+    },
+    "47b": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "47c": {
+      "class": "contextual",
+      "rule": "product-grounded-signature",
+      "reason": "imitation product UI"
+    },
+    "54": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory",
+      "reason": "Hallmark house rule"
+    },
+    "63": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "66": {
+      "class": "contextual",
+      "rule": "decorative-effects-serve-purpose"
+    },
+    "68": {
+      "class": "contextual",
+      "rule": "content-specificity",
+      "reason": "wireframe page"
+    },
+    "69": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "70": {
+      "class": "hard",
+      "rule": "controls-are-real-and-operable",
+      "reason": "success shown with no request"
+    },
+    "10a": {
+      "class": "contextual",
+      "rule": "component-defaults-are-art-directed",
+      "reason": "transition: all and layout-property animation"
+    },
+    "10b": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "11": {
+      "class": "contextual",
+      "rule": "component-defaults-are-art-directed"
+    },
+    "12": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "15": {
+      "class": "hard",
+      "rule": "controls-are-real-and-operable",
+      "reason": "focus indicator delayed"
+    },
+    "16": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "17": {
+      "class": "hard",
+      "rule": "controls-are-real-and-operable",
+      "reason": "keyboard users wait on tooltips"
+    },
+    "18": {
+      "class": "hard",
+      "rule": "controls-are-real-and-operable",
+      "reason": "moving content without pause (WCAG 2.2.2)"
+    },
+    "26a": {
+      "class": "hard",
+      "rule": "controls-are-real-and-operable",
+      "reason": "missing or invisible focus"
+    },
+    "26b": {
+      "class": "contextual",
+      "rule": "component-defaults-are-art-directed"
+    },
+    "27": {
+      "class": "hard",
+      "rule": "reduced-motion-path",
+      "reason": "no reduced-motion fallback"
+    },
+    "28a": {
+      "class": "hard",
+      "rule": "content-available-without-motion",
+      "reason": "unmuted autoplay is blocked; lazy LCP delays content"
+    },
+    "28b": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "39a": {
+      "class": "hard",
+      "rule": "controls-are-real-and-operable",
+      "reason": "input states shift or lose focus"
+    },
+    "39b": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "62": {
+      "class": "hard",
+      "rule": "content-available-without-motion",
+      "reason": "content hidden until script runs"
+    },
+    "30a": {
+      "class": "contextual",
+      "rule": "component-defaults-are-art-directed"
+    },
+    "30b": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "33": {
+      "class": "hard",
+      "rule": "controls-are-real-and-operable",
+      "reason": "decorative graphics exposed to assistive tech unlabelled"
+    },
+    "76": {
+      "class": "hard",
+      "rule": "content-available-without-motion",
+      "reason": "broken image"
+    },
+    "73": {
+      "class": "hard",
+      "rule": "contrast-and-legibility",
+      "reason": "text covered"
+    },
+    "40": {
+      "class": "hard",
+      "rule": "contrast-and-legibility",
+      "reason": "contrast"
+    },
+    "41": {
+      "class": "hard",
+      "rule": "contrast-and-legibility",
+      "reason": "button text against its fill"
+    },
+    "48": {
+      "class": "excluded",
+      "reason": "token literals are checked by check-design-tokens against the project's own DESIGN.md"
+    },
+    "49a": {
+      "class": "contextual",
+      "rule": "component-defaults-are-art-directed",
+      "reason": "wrapping button label"
+    },
+    "49b": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory"
+    },
+    "32": {
+      "class": "excluded",
+      "reason": "repetition across builds is the appearance ledger's job"
+    },
+    "F*": {
+      "class": "preference",
+      "rule": "fashion-tell-advisory",
+      "reason": "Finish checks are craft notes, never blocking"
+    }
+  }
+}
