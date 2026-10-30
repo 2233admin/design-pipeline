@@ -242,6 +242,10 @@ function productSourceFiles(board) {
   return [source.run?.log?.path, ...source.captures.map((capture) => capture?.path)].filter((file) => typeof file === "string" && file.trim());
 }
 
+/**
+ * Validate the storyboard contract, including optional cut shapes.
+ * @throws {Error} If the contract is invalid, including reference settings without cuts.
+ */
 function validateShape(board) {
   assertKeys(board, ["schema", "id", "durationSec", "grammar", "benefit", "proofAction", "sound", "beats"], ["schema", "id", "durationSec", "fps", "grammar", "benefit", "proofAction", "reference", "sound", "beats", "endState", "rendering", "productSource", "cuts", "referenceCuts", "parityStrict"], "storyboard", SCOPE);
   if (board.endState !== undefined) assertEnum(board.endState, ["free", "rest", "loop"], "endState", SCOPE);
@@ -335,6 +339,13 @@ function validateShape(board) {
   else if (board.referenceCuts !== undefined || board.parityStrict !== undefined) fail(SCOPE, "referenceCuts and parityStrict need cuts");
 }
 
+/**
+ * Check a storyboard and return its status, findings, metrics, and any admission or parity result.
+ * Required product-source admission can stop further checks. options.projectRoot enables reference
+ * parity; missing reference reports produce findings, while parity mismatches warn unless strict.
+ * Creative acceptance is not assessed.
+ * @throws {Error} If the storyboard contract is invalid or reference loading or parsing fails.
+ */
 function checkStoryboard(board, options = {}) {
   validateShape(board);
   // A product-launch-video film that is not built from the admitted real product is not evaluated

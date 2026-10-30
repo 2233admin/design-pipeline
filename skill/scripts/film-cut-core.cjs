@@ -24,8 +24,11 @@ const CUT_KEYS = ["no", "startSec", "endSec", "size", "camera", "picture", "acti
 const text = (value) => typeof value === "string" && value.trim() !== "" && !PLACEHOLDER.test(value.trim());
 const energyOf = (meanShare) => (meanShare < 0.03 ? "still" : meanShare < 0.15 ? "low" : meanShare < 0.4 ? "mid" : "high");
 
-// Shape only: types and uniqueness. Vocabulary and description are findings so a seeded sheet
-// (empty picture) fails the gate with a repair instead of a contract error.
+/**
+ * Validate cut shapes, unique numbers, and the board's reference and strictness fields.
+ * Empty pictures and unknown vocabulary are left for checkCuts to report as findings.
+ * @throws {Error} If the cut list or those fields violate the contract.
+ */
 function validateCuts(cuts, board) {
   if (!Array.isArray(cuts) || cuts.length === 0) fail(SCOPE, "cuts must be a non-empty array");
   const numbers = new Set();
@@ -58,7 +61,11 @@ function validateCuts(cuts, board) {
   if (board.parityStrict !== undefined && typeof board.parityStrict !== "boolean") fail(SCOPE, "parityStrict must be true or false");
 }
 
-// add(code, message, subject, severity) pushes one finding; the caller decides fix text and severity.
+/**
+ * Report cut timing, beat span, vocabulary, and description findings through add.
+ * Timing boundaries tolerate 0.05 seconds; the cuts must already have valid shapes.
+ * add receives a code, message, and cut number and supplies the finding's fix and severity.
+ */
 function checkCuts(board, add) {
   const cuts = board.cuts;
   const beats = board.beats;
@@ -92,6 +99,11 @@ function checkCuts(board, add) {
   }
 }
 
+/**
+ * Load detected shots from the project-relative reference report.
+ * Returns an error description for a missing file or a report with no detected shots.
+ * @throws {Error} If the path escapes the project, reading fails, or JSON is invalid.
+ */
 function loadReference(board, projectRoot) {
   const file = path.resolve(projectRoot, board.referenceCuts);
   const rel = path.relative(path.resolve(projectRoot), file);
@@ -103,8 +115,14 @@ function loadReference(board, projectRoot) {
   return { shots };
 }
 
-// Parity findings are warnings unless the board sets parityStrict. Returns the summary stored in
-// the storyboard result under `parity`.
+/**
+ * Compare cuts with detected reference shots and report findings through add.
+ * Returns a compared summary, or a skipped summary without a project root. A missing report or
+ * one without detected shots returns an unreadable summary and emits a failing finding. Other
+ * parity findings warn unless parityStrict is true. Start drift beyond two frames and sound
+ * onsets without a declared sound within 0.1 seconds are reported; fps defaults to 30.
+ * @throws {Error} If the reference path escapes the project, reading fails, or JSON is invalid.
+ */
 function checkParity(board, add, projectRoot) {
   const severity = board.parityStrict === true ? undefined : "warn";
   if (!projectRoot) return { status: "skipped", reason: "no project root" };
@@ -163,6 +181,10 @@ function timeLabel(durationSec, fps) {
 const escapeHtml = (value) => String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const cell = (value) => escapeHtml(value).replace(/\n/g, "<br>");
 
+/**
+ * Return a printable HTML cut sheet, with thumbnail and design columns when present.
+ * Durations use the board's fps, or 30 when it is absent.
+ */
 function renderCutSheet(board) {
   const fps = board.fps || 30;
   const thumbs = board.cuts.some((cut) => cut.thumb);
@@ -194,8 +216,14 @@ ${rows.join("\n")}
 `;
 }
 
-// Cuts from a `--shots` analysis report. Descriptive fields stay empty; transition CT is the
-// detector's own claim (a detected hard cut), size and camera stay unset for the author.
+/**
+ * Return one cut per detected shot in a `--shots` analysis report. Pictures are empty, size and
+ * camera are unset, and transition CT reflects the detected hard cut. A final shot ending less
+ * than 0.25 seconds before the report duration is extended to that duration. If provided,
+ * options.thumbPath receives a selected report frame and its result becomes the thumbnail path.
+ * @throws {Error} If the board already has cuts or the report has no detected shots; errors from
+ * options.thumbPath also propagate.
+ */
 function seedCuts(board, report, options = {}) {
   if (board.cuts !== undefined) fail("film cut-sheet", "storyboard.json already has cuts; refusing to overwrite. Fix: delete cuts first if the analysis really should replace them", { code: "CUTS_EXIST" });
   const shots = (report.segments || []).filter((segment) => segment.reason === "detected-shot");
