@@ -8,7 +8,7 @@
 ## 2. Behaviour (after ui-review-binds-delivered-files)
 
 - [ ] 2.1 `flow.v1` schema and validator.
-- [ ] 2.2 `workflows/ui.cjs`: intake offers a flow; delivery command lists every screen and `flow.html`.
+- [ ] 2.2 `workflows/ui.cjs`: intake offers a flow. `workflow-core.cjs` `codeStages.work.action`: the ui deliver command lists every screen and `flow.html` as `--file`.
 - [ ] 2.3 `flow-core.cjs`: `flow.html` generator and `verify flow` (design.md 2, 4) using `capture-interaction.cjs` and the composition gate.
 - [ ] 2.4 CLI wiring and help.
 

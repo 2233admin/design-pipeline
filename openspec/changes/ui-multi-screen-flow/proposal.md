@@ -28,7 +28,7 @@ share one design system.
 
 ## Reuse
 
-- `capture-interaction.cjs` for clicking triggers, `verify composition` per screen, the ui intake playback and the
+- `capture-interaction.cjs` for clicking triggers; the ui deliver command built in `workflow-core.cjs`, `verify composition` per screen, the ui intake playback and the
   delivery binding. No new deliverable type; quick tier is unchanged (one screen).
 
 ## Dependencies
