@@ -33,6 +33,10 @@ jobs:
             if ($report -notmatch "(?m)^# $marker\r?$") { throw "Windows regression did not execute: $marker" }
           }
 
+      - name: Vendored snapshot and name-scope checks on a case-insensitive file system
+        shell: pwsh
+        run: node --test tests/upstream-path.test.cjs tests/reference-name-scope.test.cjs
+
       - name: Installed browsers without the HyperFrames download
         # No `hyperframes browser ensure` here: the resolver must find the runner's own Chrome and
         # Edge, and both must launch through puppeteer-core.

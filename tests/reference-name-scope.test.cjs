@@ -59,7 +59,8 @@ test("every other tracked path or content still fails, including look-alike loca
     [`skill/vendor/${name}-design.md`]: "clean\n",
     [`skill/vendor/other/${name}-design/x.md`]: "clean\n",
     [`docs/${name}-notes.md`]: "clean\n",
-    [`skill/vendor/${name.toUpperCase()}-design/x.md`]: "clean\n",
+    // A distinct folder: on a case-insensitive file system ${name}-design and its upper case are one folder.
+    [`skill/vendor/upper/${name.toUpperCase()}-design/x.md`]: "clean\n",
     "THIRD_PARTY_NOTICES.md.orig": `${name}\n`,
     "binary.bin": Buffer.concat([Buffer.from([0, 1, 2]), Buffer.from(` ${name.toUpperCase()} `)]),
   };

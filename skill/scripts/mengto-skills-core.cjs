@@ -162,15 +162,15 @@ function verifyMengToSnapshot(manifestFile = defaultManifest) {
     return { schema: "design-pipeline.mengto-skills-verification.v1", status: "blocked", issues: ["snapshot root is not a real directory"] };
   }
   // Walked files are stored names; the manifest and every hash use upstream names.
-  const walked = upstreamFiles(collectFiles(sourceRoot));
+  // Paths are POSIX from here on, so issues and hashes read the same on every platform.
+  const walked = upstreamFiles(collectFiles(sourceRoot).map((relative) => relative.split(path.sep).join("/")));
   const files = walked.files.sort();
-  const normalizedFiles = files.map((relative) => relative.split(path.sep).join("/"));
   const objectByPath = new Map(loaded.manifest.snapshot.objects.map((object) => [object.path, object]));
-  const byteCount = files.reduce((sum, relative) => sum + fs.statSync(path.join(sourceRoot, storedPath(relative))).size, 0);
+  const byteCount = files.reduce((sum, relative) => sum + fs.statSync(path.join(sourceRoot, ...storedPath(relative).split("/"))).size, 0);
   const entries = files.map((relative) => {
-    const content = fs.readFileSync(path.join(sourceRoot, storedPath(relative)));
+    const content = fs.readFileSync(path.join(sourceRoot, ...storedPath(relative).split("/")));
     const hash = crypto.createHash("sha256").update(content).digest("hex");
-    return `${relative.split(path.sep).join("/")}\0${hash}\n`;
+    return `${relative}\0${hash}\n`;
   });
   const treeSha256 = crypto.createHash("sha256").update(entries.join(""), "utf8").digest("hex");
   const issues = [...walked.issues];
@@ -178,8 +178,8 @@ function verifyMengToSnapshot(manifestFile = defaultManifest) {
   if (byteCount !== loaded.manifest.snapshot.byteCount) issues.push(`byte count ${byteCount} != ${loaded.manifest.snapshot.byteCount}`);
   if (treeSha256 !== loaded.manifest.snapshot.treeSha256) issues.push(`tree hash ${treeSha256} != ${loaded.manifest.snapshot.treeSha256}`);
   if (gitTreeId(loaded.manifest.snapshot.objects) !== loaded.manifest.source.gitTree) issues.push("Git object inventory does not match source.gitTree");
-  if (JSON.stringify(normalizedFiles) !== JSON.stringify([...objectByPath.keys()].sort())) issues.push("Git object inventory does not match bundled files");
-  for (const relative of normalizedFiles) {
+  if (JSON.stringify(files) !== JSON.stringify([...objectByPath.keys()].sort())) issues.push("Git object inventory does not match bundled files");
+  for (const relative of files) {
     const content = fs.readFileSync(path.join(sourceRoot, ...storedPath(relative).split("/")));
     const object = objectByPath.get(relative);
     if (!object) continue;
@@ -189,8 +189,8 @@ function verifyMengToSnapshot(manifestFile = defaultManifest) {
   const executableFiles = new Set(loaded.manifest.snapshot.executableFiles);
   const recordedExecutables = loaded.manifest.snapshot.objects.filter((object) => object.mode === "100755").map((object) => object.path).sort();
   if (JSON.stringify([...executableFiles].sort()) !== JSON.stringify(recordedExecutables)) issues.push("executable file metadata does not match Git object inventory");
-  for (const file of executableFiles) if (!normalizedFiles.includes(file)) issues.push(`missing executable source file: ${file}`);
-  const discoveredSkills = normalizedFiles
+  for (const file of executableFiles) if (!files.includes(file)) issues.push(`missing executable source file: ${file}`);
+  const discoveredSkills = files
     .filter((relative) => /^agent-skills\/[^/]+\/[^/]+\/SKILL\.md$/.test(relative))
     .sort();
   const declaredSkills = loaded.manifest.skills
