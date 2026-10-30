@@ -23,7 +23,7 @@ Distilled into project-owned references (concept credit in `THIRD_PARTY_NOTICES.
   borders, `scroll-padding` under sticky headers, hit-area expansion.
 - `references/motion-recipes` gains a timeline-deconstruction method from raphaelsalaja `deconstruct`: record a
   reference interaction's property timeline and state machine before rebuilding it.
-- Anti-slop: the rendered-page checks impeccable (`02523aec`, Apache-2.0) has and Hallmark lacks —
+- Anti-slop: the rendered-page checks that Impeccable (`02523aec`, Apache-2.0) has and Hallmark lacks —
   first-viewport column overflow, typographic stragglers, clipped overflow containers and browser surfaces (selection,
   caret, scrollbar, focus ring, tabular numerals) — become project-owned checks added to the gate map of
   `anti-slop-mechanical-lint`. Impeccable's DESIGN.md token checks are not added; `replicate-measured-extraction`
@@ -33,7 +33,9 @@ Distilled into project-owned references (concept credit in `THIRD_PARTY_NOTICES.
 
 Vendored at pinned commits:
 
-- MengTo/skills `web-design/html-demo` (`a45892d`, MIT): product demos drawn live in HTML as a pure function of t
+- MengTo/skills `web-design/html-demo` (`a45892d`, MIT), added to the existing `skill/vendor/mengto-skills/` bundle by
+  refreshing it to `a45892d` with `web-design/html-demo/**` in scope, its load-bearing files listed in
+  `skill/references/package-resources.json`: product demos drawn live in HTML as a pure function of t
   with a scripted cursor, scrub, freeze and reduced motion; routed for "show the product working" sections on web
   pages and as a product-film source. `media/html-reel` is referenced, not vendored (it depends on paid services).
 

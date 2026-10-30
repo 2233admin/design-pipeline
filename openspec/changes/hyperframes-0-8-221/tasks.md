@@ -12,6 +12,7 @@
 - [ ] 2.3 Shared seek helper (design.md 4) used by the three capture/probe paths.
 - [ ] 2.4 `film check` / `verify film-render`: run `hyperframes check --json`, map craft and audio findings (design.md 2); add `snapshot --review` output to evidence.
 - [ ] 2.5 Scaffold templates and golden cases: media treatment, `@font-face`, no `crossorigin`, `<template>` styles, `<audio id>`.
+- [ ] 2.6 Film evidence records `HYPERFRAMES_VERSION`; film gate input hashes include it (design.md 5).
 
 ## 3. Verification
 

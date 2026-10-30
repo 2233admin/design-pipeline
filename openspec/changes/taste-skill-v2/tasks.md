@@ -16,6 +16,7 @@
 - [ ] 3.2 `taste inspect` and `taste draw` CLI wrappers (design.md 2-3); flags registered; help.
 - [ ] 3.3 Style roulette: `taste draw` pool, `roulette/taste-draw` label and ledger entry.
 - [ ] 3.4 `assets.mjs` use recorded with licence and credit in the asset manifest.
+- [ ] 3.5 Inspect report and ledger entry record target digest and source commit; stale reports are labelled.
 
 ## 4. Verification
 

@@ -17,9 +17,9 @@
 
 - [ ] 3.1 Anti-slop render checks: first-viewport column overflow, stragglers, clipped overflow containers, browser surfaces (design.md 2); gate-map entries.
 - [ ] 3.2 Vendor ui-ux-pro-max `google-font-licenses.json` at `28b3b8d`; lookup in `references/fonts.md`.
-- [ ] 3.3 Vendor MengTo `web-design/html-demo` at `a45892d2fdadab75b31fb16abecc02f101b31c43`; manifest, notices, route rows (web section, product-film source).
+- [ ] 3.3 Refresh `skill/vendor/mengto-skills/` to `a45892d2fdadab75b31fb16abecc02f101b31c43` with `web-design/html-demo/**` in scope (not `media/html-reel`); manifest, notices, `package-resources.json`, route rows (web section, product-film source).
 - [ ] 3.4 `THIRD_PARTY_NOTICES.md` concept credits for every distillation.
 
 ## 4. Verification
 
-- [ ] 4.1 Tests for the spec scenarios; `npm run sources:check`; `npm test` green; CHANGELOG entry.
+- [ ] 4.1 Tests for the spec scenarios, each new test file registered in `scripts/test-manifest.json`; `npm run sources:check`; `npm test` green; CHANGELOG entry.

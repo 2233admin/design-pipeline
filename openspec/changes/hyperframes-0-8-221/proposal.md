@@ -26,6 +26,7 @@ Owner decision (2026-10-30): our product-film contract leads. HyperFrames is the
 - Scaffold templates and golden cases follow the new composition rules; `<audio>` elements get ids.
 - Seek paths in `film-capture-core.cjs`, `film-timeline-core.cjs` and `capture-composition.cjs` unwrap `__hfReal`
   and use the runtime's seek when present.
+- Film evidence records the runtime version and the film gate binds it, so evidence from 0.8.137 is stale after the bump.
 - Golden renders are re-baselined; frame comparisons, not byte hashes, decide whether a golden still passes.
 
 ## Capabilities

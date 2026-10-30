@@ -30,6 +30,10 @@ all of them.
   and six thumbnails.
   `lint.mjs` tells are recorded as advisory evidence; the hard mechanical lint stays the one in
   `anti-slop-mechanical-lint`, so the same defect is never gated twice.
+- Taste evidence is advisory and is not a receipt: no gate consumes it, so it adds no receipt schema. Each
+  `taste inspect` report records the target's sha256 (or URL and capture time) and the v2 source commit; a later
+  report is stale when either differs from the current target or the pinned commit, and is shown as stale rather than
+  reused. A `taste draw` ledger entry records the source commit with the draw.
 - `assets.mjs` is offered only when the project has no supplied imagery, and every fetched photo keeps its licence and
   credit line in the project's asset manifest.
 
