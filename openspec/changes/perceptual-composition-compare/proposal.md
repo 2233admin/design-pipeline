@@ -3,8 +3,7 @@
 `composition compare` reports the share of pixels whose maximum channel changed. Font anti-aliasing,
 sub-pixel layout and image resampling change many pixels that no one can see, so a faithful replication and a
 visibly wrong one can get similar numbers, and page and frame comparisons point reviewers at noise. The
-frame pairs proposed for `verify film-render` (#202) and the page comparisons reuse this function, so they inherit
-the same weakness.
+frame pairs proposed for `verify film-render` (#202) reuse this function, so they inherit the same weakness.
 
 ## What Changes
 
@@ -22,8 +21,9 @@ the same weakness.
 
 ## Reuse
 
-- `compareComposition` in `skill/tools/visual-diagnostics/diagnostics.cjs`, its report and viewer. Every caller
-  (composition compare, film frame pairs, page comparison) gets the new metrics without changes.
+- `compareComposition` in `skill/tools/visual-diagnostics/diagnostics.cjs`, its report and viewer. Its callers
+  (`composition compare` and the film frame pairs) get the new metrics without changes.
+- Owner page comparison (`workflows/page-compare.cjs`) compares element fingerprints, not pixels, and is unchanged.
 
 ## Impact
 

@@ -2,7 +2,7 @@
 
 ### Requirement: Reduced motion is measured, not only declared
 
-`composition capture --reduced-motion` SHALL capture the page under `prefers-reduced-motion: reduce` and `no-preference`, recording running animations and frame-to-frame pixel change one to two seconds after load. `verify composition --reduced-motion` SHALL fail when the reduce pass still moves; opacity and colour changes SHALL be reported without failing.
+`composition capture --reduced-motion` SHALL capture the page under `prefers-reduced-motion: reduce` and `no-preference`, recording running animations and frame-to-frame pixel change one to two seconds after load. `verify composition --image <png> --reduced-motion <file>` SHALL reject an artifact whose target has changed and SHALL fail when the reduce pass still moves; opacity and colour changes SHALL be reported without failing.
 
 #### Scenario: Infinite animation ignores the preference
 
@@ -23,6 +23,16 @@
 
 - **WHEN** under reduce the page only changes opacity
 - **THEN** the gate SHALL pass and report the opacity animation
+
+#### Scenario: Stale artifact
+
+- **WHEN** the captured file changed after `reduced-motion.json` was written
+- **THEN** `verify composition` SHALL reject the artifact as stale
+
+#### Scenario: Loop period equal to a fixed sampling interval
+
+- **WHEN** a canvas loop repeats every 250 ms regardless of the preference
+- **THEN** the reduce pass SHALL still record pixel change above 0.5 %
 
 #### Scenario: Static page
 

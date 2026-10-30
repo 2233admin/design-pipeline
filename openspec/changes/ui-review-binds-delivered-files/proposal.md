@@ -14,8 +14,8 @@ rule that every tier ends with the owner accepting the actual deliverable.
   digest in replicate mode, unchanged).
 - `next` recomputes the hashes. When a reviewed file changed or disappeared after the owner accepted, the workflow
   returns to the final review with the existing "accepted an earlier version" wording, listing the changed files.
-- The command `next` returns for ui delivery carries `--file` with the project's `index.html` when it exists,
-  as a placeholder the agent must confirm.
+- The deliver command `next` returns for ui (built in `workflow-core.cjs`) carries `--file` with the project's
+  `index.html` when it exists, as a placeholder the agent must confirm.
 - **BREAKING:** ui delivery without `--file` is refused with `INPUT_MISSING`. No migration for old state files:
   their delivery has no file hashes and is asked again.
 
@@ -30,5 +30,5 @@ rule that every tier ends with the owner accepting the actual deliverable.
 
 ## Impact
 
-- `workflow-core.cjs` (deliver stage for ui), `workflows/shared.cjs`, `cli-core.cjs` (`--file` repeatable on
-  `decide`), the ui `next` action text, docs and tests.
+- `workflow-core.cjs` (deliver stage, ui completion path and deliver command), `workflows/shared.cjs`, `cli-core.cjs`
+  (`decide` handler passes `--file`), docs and tests.

@@ -7,10 +7,10 @@
 
 ## 2. Behaviour
 
-- [ ] 2.1 `workflow-core.cjs` deliver stage: require and hash `--file` for ui; write `deliveredFiles` and `deliveryInputHashes`.
-- [ ] 2.2 `workflows/shared.cjs`: `reviewInputHashes` and `deliveryRecorded` for ui; the earlier-version message lists changed files.
-- [ ] 2.3 `cli-core.cjs`: repeatable `--file` on `decide`; help text.
-- [ ] 2.4 `workflows/ui.cjs`: the returned deliver command carries `--file index.html` when it exists.
+- [ ] 2.1 `cli-core.cjs` `decide` handler: pass `optionList(parsed, "--file")` to `workflow.decide`.
+- [ ] 2.2 `workflow-core.cjs` deliver stage: require and hash `--file` for ui; write `deliveredFiles` and `deliveryInputHashes` (design.md 1, 4).
+- [ ] 2.3 `workflows/shared.cjs`: `reviewInputHashes` reads current file hashes for ui; `deliveryRecorded` handles ui; the earlier-version message lists changed files (design.md 2).
+- [ ] 2.4 `workflow-core.cjs` `codeStages`: ui completion uses `deliveryRecorded`; the work action's deliver command carries `--file index.html` when present (design.md 3, 5).
 
 ## 3. Tests and docs
 

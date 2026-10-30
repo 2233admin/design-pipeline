@@ -7,13 +7,14 @@
 
 ## 2. Behaviour
 
-- [ ] 2.1 `capture-composition.cjs`: `--reduced-motion` two-pass capture and `reduced-motion.json` (design.md 1-3).
-- [ ] 2.2 `composition-core.cjs`: `--reduced-motion` input to `verify composition`, `reduced-motion-still-moving` error with a `fix` naming the media query.
-- [ ] 2.3 `cli-core.cjs`: register the flags in `KNOWN_OPTIONS`/`BOOLEAN_OPTIONS` and help.
+- [ ] 2.1 `capture-composition.cjs`: boolean option parsing; `--reduced-motion` two-pass capture and `reduced-motion.json` (design.md 1-4).
+- [ ] 2.2 `references/reduced-motion.schema.json` and its validator; register in `package-resources.json`.
+- [ ] 2.3 `cli-core.cjs`: `composition capture --reduced-motion` (boolean) and `verify composition --reduced-motion <file>` (value) registered; the verify handler reads, validates and checks the target hash, then passes the measurement to the composition verifier.
+- [ ] 2.4 `composition-core.cjs`: `reduced-motion-still-moving` error with a `fix` naming the media query; opacity/colour reported only.
 
 ## 3. Tests and docs
 
-- [ ] 3.1 Browser tests for each scenario; register in `scripts/test-manifest.json`.
+- [ ] 3.1 Browser tests for each scenario, plus end-to-end CLI invocations of both commands; register in `scripts/test-manifest.json`.
 - [ ] 3.2 `references/motion-foundation.md` and the ui-transition rules: point the reduced-motion fallback at this check.
 - [ ] 3.3 CHANGELOG entry.
 

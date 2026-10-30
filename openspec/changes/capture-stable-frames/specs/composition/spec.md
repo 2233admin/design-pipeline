@@ -2,7 +2,7 @@
 
 ### Requirement: Captures settle before measurement
 
-Composition and web evidence captures SHALL pause CSS and Web Animations, hide the text caret and wait for fonts before measuring, then repeat screenshots until two consecutive ones are identical, up to five attempts. The capture SHALL record whether it stabilised. An unstable capture SHALL still be written and SHALL be reported, not silently accepted.
+Composition captures and `evidence refs` SHALL pause CSS and Web Animations, hide the text caret and wait for fonts before measuring, then repeat screenshots until two consecutive ones are identical, up to five attempts. The capture SHALL record whether it stabilised. An unstable capture SHALL still be written and SHALL be reported, not silently accepted.
 
 #### Scenario: CSS animation is frozen
 
@@ -23,7 +23,12 @@ Composition and web evidence captures SHALL pause CSS and Web Animations, hide t
 #### Scenario: Seeked frames are unchanged
 
 - **WHEN** `composition capture --seek 2` captures a HyperFrames composition
-- **THEN** the screenshot SHALL show the timeline at 2 s, the same as before this change
+- **THEN** the screenshot SHALL show the timeline at 2 s and the capture SHALL record `stabilization`
+
+#### Scenario: Refs from the earlier method
+
+- **WHEN** `refs.json` was written before this change
+- **THEN** it SHALL be treated as stale and recaptured, not compared with new fingerprints
 
 #### Scenario: Older capture
 

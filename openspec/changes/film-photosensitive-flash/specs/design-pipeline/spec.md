@@ -24,6 +24,16 @@
 - **WHEN** a render fades from black to white over one second and back over one second
 - **THEN** the render SHALL NOT receive a `photosensitive-flash` finding
 
+#### Scenario: One-frame flashes at high frame rate
+
+- **WHEN** a 120 fps render has single-frame full-frame white flashes five times in one second
+- **THEN** the gate SHALL fail with `photosensitive-flash`
+
+#### Scenario: Held frames between transitions
+
+- **WHEN** a render goes white, holds for three frames, returns to black, and repeats four times in one second
+- **THEN** each white-and-back SHALL count as one flash and the gate SHALL fail
+
 #### Scenario: Passing render still reports
 
 - **WHEN** a render has no failing window
