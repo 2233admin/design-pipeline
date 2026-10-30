@@ -122,3 +122,149 @@ bounded timing/easing, handled interruption, and respected reduced motion.
   or dependency.
 - Do not install external repositories, duplicate the four distilled upstream motion skill files, or
   add a second animation runtime without distinct ownership and a documented reason.
+
+
+## 5. Compositor cost
+
+Source: Distilled from emilkowalski/skills animation-performance at a81dbca (MIT); wording and selection are this repository's.
+
+Every frame has a budget: about 16.7 ms at 60 Hz and about 8 ms at 120 Hz. Plan for the smaller number
+and for a mid-range phone, not the developer laptop. A single layout pass on a busy page can cost
+many frames.
+
+### Property tiers
+
+A changed property enters the render pipeline at one of three points.
+
+| Tier | Typical properties | Cost |
+| --- | --- | --- |
+| Composite only | `transform`, `opacity` | Cheapest. No re-measure, no redraw. |
+| Paint, then composite | `box-shadow`, `border-radius`, `color`, `background` | Redraws the element each frame. |
+| Layout, paint, composite | `width`, `height`, `padding`, `margin`, `top`, `left`, `border-width` | Re-measures neighbours too. Most expensive. |
+
+`filter`, `clip-path` and `background-color` are accelerated in some engines and not others. Test them
+in the target browsers before relying on them.
+
+Swap down a tier when the picture is the same:
+
+| Instead of | Animate |
+| --- | --- |
+| `width`, `height`, `padding` | `scale()` |
+| `top`, `left`, `margin` | `translate()` |
+| `display` or `visibility` swap | `opacity`, keeping the hide: `visibility: hidden` (or `inert`) after the fade-out, removed before the fade-in |
+| `box-shadow` | `filter: drop-shadow()`, or crossfade a shadow layer |
+
+Reason: a layout animation can look fine on a small element and regress on a slow device. A transform
+version cannot. `opacity: 0` alone is not hidden: the element stays focusable and still takes pointer input, so a
+faded menu or dialog keeps its hidden-state mechanism and only the fade moves to `opacity`. A sidebar that animates `margin-left` also re-lays-out the content beside it every frame.
+
+### Rules
+
+- List exact properties in `transition`. Never write `transition: all`.
+- Name the cause of every performance fix. "Added will-change, feels smoother" is not a diagnosis.
+- Animated `blur()` should stay small. Use 2 to 5px to soften a crossfade and keep it under 20px.
+- Do not animate custom properties that children inherit. Changing one on a parent restyles every
+  descendant each frame. Set `transform` on the moving element instead.
+- Do not drive hand-written animation through component state. Write to `style.transform` on a ref.
+- Percentage transforms are fine for elements of unknown size. Correctness beats a best-effort
+  optimisation.
+- Motion that plays while the page is busy (route changes, hydration, data fetch) belongs in CSS or
+  WAAPI. A main-thread script loop stalls with the page.
+
+```css
+.panel { transition: transform 200ms var(--ease-out), opacity 200ms var(--ease-out); }
+```
+
+### will-change
+
+Browsers promote an element that animates `transform` or `opacity` anyway. `will-change` therefore adds
+nothing on the common path.
+
+- Add it only after you see a one pixel shift at the start or end of motion, or a measured drop.
+- Put it on the animating element only. Never on `*`, on large containers or on many siblings.
+- Every promoted layer costs GPU memory. A full-screen layer costs far more than a small one.
+- It earns its place on an expensive paint, such as a large blurred element. Keep that layer small.
+- Remove it when the motion is finished if the element is long-lived and idle.
+
+```css
+.drawer { will-change: transform; } /* only after the shift is observed */
+```
+
+### Measuring
+
+Do not judge by feel on a fast machine.
+
+1. Record in the browser Performance panel while the motion plays. Look for long tasks and frames that
+   miss the budget, and for "Recalculate style" or "Layout" blocks inside the animation.
+2. Use the Animations panel to slow motion down and inspect it.
+3. Where available, read Long Animation Frames (the `long-animation-frame` entry type) to find which
+   script or style work made a frame late. Treat it as a pointer, not a verdict, and check support.
+4. Repeat on a real mid-range phone over remote debugging. Desktop CPU throttling models a slow CPU, not
+   a weak GPU or low memory.
+5. Record the trace or note in the review evidence. Mark each finding as verified from a recording or
+   inferred from code.
+
+## 6. Subtract pass
+
+Source: Distilled from emilkowalski/skills remove-animations at a81dbca (MIT); wording and selection are this repository's.
+
+Run this before adding motion, and again on any surface that already animates. The burden of proof is on
+the animation. "It is already there" and "it looks nice" are not defences. The pass only removes or
+shrinks motion. It does not change curves or add new effects.
+
+### Decision tree
+
+```
+Triggered by keyboard (shortcut, command palette, focus jump, arrow keys)?
+  yes -> DELETE.
+High frequency (core navigation, tab switches, list rows, in-app route changes, 100+ a day)?
+  yes -> DELETE.
+Functional data the user reads or acts on (charts, tables, numbers, dashboards)?
+  yes -> DELETE, unless it shows a real change in value after a user action.
+Can you name one purpose (feedback, spatial continuity, state, avoiding a jarring jump, explanation)?
+  no  -> rare first-time moment (onboarding, empty state, success)?
+           yes -> KEEP, within a small delight budget.
+           no  -> DELETE (pure decoration).
+  yes -> seen tens of times a day (hover, toggles, expansion)?
+           yes -> REDUCE.
+           no  -> over budget (UI over 300 ms, or slide/scale where a fade says the same)?
+                    yes -> REDUCE.   no -> KEEP.
+```
+
+Marketing pages get more room for one hero entrance and for explanation. Repeated scroll reveals on every
+section still fail. They hold content back from people who scroll fast.
+
+### Reduce, do not redesign
+
+| Today | Reduce to |
+| --- | --- |
+| Hover scale, lift or shadow growth | Colour or opacity change, 150 ms or less |
+| Slide or scale entrance on a frequent surface | Opacity only, about 150 ms, ease-out |
+| UI motion over 300 ms | 200 to 250 ms, same curve |
+| Stagger over 80 ms per item or 300 ms total | 30 ms per item at most, or fade the group once |
+| Infinite loop on a persistent element | Run once, or keep the static end state |
+
+If the reduced version no longer carries its purpose, delete it.
+
+### Hazards to check before deleting
+
+- Hidden start states. `opacity: 0` in a keyframe with `fill-mode: forwards`, an `initial` prop or a
+  reveal class left behind makes the element invisible forever. Remove the start state with the motion.
+- Code that waits for motion: `transitionend`, `onAnimationEnd`, `onExitComplete`, timers sized to a
+  duration. Remove the wait too.
+- Exit animations that delay unmount. When the exit goes, cleanup that ran after it must run on close.
+- Layout animations masking a jump. If removal exposes a shift, keep the motion and log the shift.
+- Focus moved after an animation must move at once.
+- Tests that wait for animation classes or durations.
+- Documented decisions. If a comment explains why a motion exists, keep it and note it.
+
+### Cleanup and report
+
+- Delete orphaned `@keyframes`, animation utilities, empty presence wrappers, unused variant objects and
+  unused motion imports. Grep each removed name to confirm no references remain.
+- Propose, do not perform, dropping a motion dependency that is no longer imported.
+- Record for each candidate the branch that decided it. Also list two to five animations kept and the
+  purpose that kept them, so the pass is not read as "delete everything".
+- List animations that stay but are badly built (curve, origin, interruptibility) for the review in
+  section 3. Do not fix them in this pass.
+- Say what needs a human on a real device, such as hover feel and perceived speed.

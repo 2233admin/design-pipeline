@@ -21,6 +21,10 @@ by the visual problem; using a helper does not create a film project or select a
 | Font subsets, glyph coverage, matte/sprite preparation, synthesis | [Asset/audio tools](art-motion/assets-audio.md) | Maintained tools with explicit inputs and fresh outputs |
 | Multi-world travel, interaction pauses and style boundaries | [Scroll helper](art-motion/scroll.md) | Caller-owned world, subject and camera callbacks |
 | Style recipes, cue-driven clips, exact-frame/alpha export, audiovisual reference breakdown | [Art Motion](art-motion/README.md) | 35 style studies, 8 clip grammars, full method routing |
+| Phone and tablet web: viewport units, safe areas, input zoom, touch targets, hover gating | [Mobile web](../references/mobile-web.md) | Project-owned rules with checks to run on a real device |
+| Stress a component with hostile content, counts, containers and environments | [Worst-case content](../references/worst-case-content.md) | Scenario ids that map to component-matrix states |
+| Small defaults every screen should get right (surfaces, truncation, forms, waiting) | [Interface defaults](../references/interface-defaults.md) | Rules not already in Good CSS or the UI craft sources |
+| Rebuild a reference interaction's motion | [Timeline deconstruction](../references/timeline-deconstruction.md) | State machine and per-property track before code; feeds MOTION.md and frame pairs |
 | Poses, spacing, acting, audiovisual phrasing | [Animation thinking](../references/animation-thinking.md) | Existing choreography and motion study |
 | Explicit product film or short motion loop | [Built-in film methods](../references/film-methods.md) | Complete Cinetic/product-film sources, real component provenance, selected recipes and configurable motion primitives through existing film tools |
 | Reusable motion case structures | [Prompt Motion template library](../references/prompt-motion/README.md) | Offline `film templates` search/detail; indexed sources, curated inputs/rules and authored adaptation limits |
