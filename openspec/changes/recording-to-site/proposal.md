@@ -11,7 +11,7 @@ to a real control; this change does the same inside our existing reference and i
 ## What Changes
 
 - Web or ui replicate with a `video` reference: `reference.md` SHALL contain a `## Recorded behaviours` table, one
-  row per observed behaviour: id (`rb-1`…), time range, what changes on screen, the real control that produces it
+  row per observed behaviour: `id` (`rb-1`…), `time`, what changes on screen, the real control that produces it
   (role and element), and its keyboard path. The extract step blocks with `recorded-behaviours-missing` when the
   table is absent or empty; a row without a control or keyboard path is listed with its fix.
 - The interaction-state coverage gate accepts the recorded ids: each matrix entry may name

@@ -2,7 +2,7 @@
 
 ### Requirement: A recorded interface reference becomes real controls
 
-In web or ui replicate mode with a `video` reference, the observed behaviours of the recording SHALL be listed in `reference.md` under `## Recorded behaviours`, each with a real control and a keyboard path, and every listed behaviour SHALL be covered by a passing interaction-state entry before delivery. Projects without a video reference SHALL be unaffected.
+In web or ui replicate mode with a `video` reference, the observed behaviours of the recording SHALL be listed in `reference.md` under `## Recorded behaviours`, a table with the columns `id`, `time`, `change`, `control` and `keyboard`, where each `id` matches `rb-[0-9]+` and is unique, and each row has a real control and a keyboard path, and every listed behaviour SHALL be covered by a passing interaction-state entry before delivery. Projects without a video reference SHALL be unaffected.
 
 #### Scenario: Table missing
 
