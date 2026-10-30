@@ -38,7 +38,7 @@ changed only in churn, but several now ship advice upstream has corrected or rem
   that release's commit. Moving to a newer release is a separate change.
 
 Unchanged after review: ibelick/ui-skills, emilkowalski/skills and shadcn vendored scope (additive only), gepa
-(vendored scope identical), ff-tracking, huashu-design, playwright-cli, ui-ux-pro-max, and nine bundles with no
+(vendored scope identical), ff-tracking, the design direction library bundle, playwright-cli, ui-ux-pro-max, and nine bundles with no
 upstream commits.
 
 ## Capabilities
