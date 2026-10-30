@@ -3,7 +3,9 @@
 1. Delivery stores `state.decisions.deliveredFiles: {"<project-relative path>": "sha256:…"}` sorted by path, and
    `deliveryInputHashes = {files: deliveredFiles, extraction?}` like the other deliverables.
 2. `reviewInputHashes(state, root)` for ui reads every listed file on each call and returns its current hashes (a
-   missing file hashes as `missing`), so a comparison with the stored `deliveryInputHashes` sees edits.
+   missing file hashes as `missing`), so a comparison with the stored `deliveryInputHashes` sees edits. A helper
+   `changedDeliveredFiles(state, root)` returns the paths whose current hash differs; the ui review action receives
+   that list for its earlier-version message.
 3. The ui completion path (`codeStages` in `workflow-core.cjs`) uses `deliveryRecorded(state, root)` instead of the
    presence of `decisions.delivered`; a changed or missing file makes the delivery unrecorded and the final review asks
    again, naming each changed path.

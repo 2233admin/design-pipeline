@@ -6,13 +6,13 @@
 
 #### Scenario: Strobe fails
 
-- **WHEN** a render alternates full-frame black and white five times per second for two seconds
+- **WHEN** a render shows five complete black-white-black flashes per second (ten transitions) for two seconds
 - **THEN** the gate SHALL fail with `photosensitive-flash`, naming the window start time, the flash count and the kind `general`
 
 #### Scenario: Red flicker fails
 
-- **WHEN** a render alternates saturated red and dark grey four times per second over half the frame
-- **THEN** the gate SHALL fail with `photosensitive-flash` of kind `red`
+- **WHEN** a render shows four complete saturated-red to dark-grey flashes per second over half the frame
+- **THEN** the gate SHALL fail with `photosensitive-flash` listing kind `red`; general and red flashes are counted independently and the finding lists every kind that exceeds the limit
 
 #### Scenario: Small flashing area passes
 

@@ -7,7 +7,7 @@
 
 ## 2. Behaviour
 
-- [ ] 2.1 Vendor pixelmatch (pinned release, unmodified source and LICENSE) into `skill/vendor/pixelmatch/`; `THIRD_PARTY_NOTICES.md`; `package-resources.json`.
+- [ ] 2.1 Vendor pixelmatch (pinned release, unmodified source and LICENSE) into `skill/vendor/pixelmatch/`; `THIRD_PARTY_NOTICES.md`; add `vendor/pixelmatch/index.js` and `vendor/pixelmatch/LICENSE` (paths relative to `skill/`) to `required` in `skill/references/package-resources.json`.
 - [ ] 2.2 `diagnostics.cjs`: SSIM, pixelmatch call, new metrics, `metricsMethod`, `difference-perceptual.png`, viewer section.
 
 ## 3. Tests and docs

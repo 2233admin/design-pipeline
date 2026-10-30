@@ -8,7 +8,7 @@
 ## 2. Behaviour
 
 - [ ] 2.1 `film-core.cjs`: native-rate streamed decode with timestamps, stateful per-pixel detector, summed-area field window, WCAG 2.2 red definition, one-second counting (design.md 1-6).
-- [ ] 2.2 `evaluateFilmRender`: `photosensitive-flash` error finding with a `fix` ("lower the contrast or slow the alternation to at most 3 per second, or shrink the flashing area"), and the `photosensitivity` report section.
+- [ ] 2.2 `evaluateFilmRender`: `photosensitive-flash` error finding with a `fix` ("no one-second window may contain more than three flashes: lower the contrast, space the flashes out, or shrink the flashing area"), and the `photosensitivity` report section.
 
 ## 3. Tests and docs
 

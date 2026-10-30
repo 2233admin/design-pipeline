@@ -17,7 +17,7 @@ pipeline's output that no gate measures, so a green film gate today claims more 
 - The method follows the WCAG 2.3.1 definitions and the WCAG 2.2 working definition of red flash
   (relative-luminance pairs of opposing changes, 10 % of maximum luminance, darker state below 0.80; saturated red
   with a CIE 1976 UCS chromaticity difference above 0.2) and the 25 %-of-10°-field area
-  approximated as 341×256 px at 1024×768, scaled to the render size. Implemented in this repository from the
+  approximated as 341×256 px at 1024×768, scaled to the render size. To be implemented in this repository from the
   public definitions; no analyzer is vendored or required.
 - The report states that this is an automated approximation and not a certified Harding/PEAT result.
 

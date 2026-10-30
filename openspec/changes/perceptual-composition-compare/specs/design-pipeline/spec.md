@@ -12,7 +12,7 @@
 #### Scenario: Moved block
 
 - **WHEN** a solid block is moved 40 px in the candidate
-- **THEN** `perceptualChangedFraction` SHALL count the moved area and `difference-perceptual.png` SHALL mark it red
+- **THEN** `perceptualChangedFraction` SHALL equal the union of the vacated and destination pixels divided by the image area, and `difference-perceptual.png` SHALL mark them red
 
 #### Scenario: Identical images
 

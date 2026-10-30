@@ -6,8 +6,8 @@ Composition captures and `evidence refs` SHALL pause CSS and Web Animations, hid
 
 #### Scenario: CSS animation is frozen
 
-- **WHEN** a page runs an infinite CSS rotation and is captured twice
-- **THEN** both captures SHALL produce identical screenshots with `stabilization.stable: true`
+- **WHEN** a page runs an infinite CSS rotation and is captured once
+- **THEN** the capture's consecutive screenshots SHALL be identical and it SHALL record `stabilization.stable: true`; separate captures may freeze at different phases
 
 #### Scenario: Script-driven motion is reported
 
