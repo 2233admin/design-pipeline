@@ -45,7 +45,11 @@ One row per element, property and transition. Times are milliseconds from the ev
 | `idle` to `pressed` | button | scale | 1 | 0.96 | 0 | 120 | `cubic-bezier(.23,1,.32,1)` | retarget | measured |
 | `pressed` to `copied` | copy icon | opacity | 1 | 0 | 0 | 150 | ease-out | retarget | measured |
 | `pressed` to `copied` | check icon | scale | 0.25 | 1 | 40 | 300 | spring bounce 0 | restart | instrumented |
-| `pressed` to `copied` | check icon | blur | 4px | 0 | 40 | 300 | spring bounce 0 | restart | unverified |
+| `pressed` to `copied` | check icon | blur | 4px | 0 | 40 | 300 | spring bounce 0 | restart | inferred |
+
+Evidence uses only the classes in `motion-foundation.md`. The blur row is read off a recording and not yet confirmed
+by instrumentation is `inferred` and carries a separate `pending` flag until it is measured; `pending` is not an
+evidence class.
 
 Two rows that share a delay and duration can be grouped, but never merged into one property.
 

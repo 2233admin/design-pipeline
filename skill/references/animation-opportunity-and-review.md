@@ -151,11 +151,12 @@ Swap down a tier when the picture is the same:
 | --- | --- |
 | `width`, `height`, `padding` | `scale()` |
 | `top`, `left`, `margin` | `translate()` |
-| `display` or `visibility` swap | `opacity` |
+| `display` or `visibility` swap | `opacity`, keeping the hide: `visibility: hidden` (or `inert`) after the fade-out, removed before the fade-in |
 | `box-shadow` | `filter: drop-shadow()`, or crossfade a shadow layer |
 
 Reason: a layout animation can look fine on a small element and regress on a slow device. A transform
-version cannot. A sidebar that animates `margin-left` also re-lays-out the content beside it every frame.
+version cannot. `opacity: 0` alone is not hidden: the element stays focusable and still takes pointer input, so a
+faded menu or dialog keeps its hidden-state mechanism and only the fade moves to `opacity`. A sidebar that animates `margin-left` also re-lays-out the content beside it every frame.
 
 ### Rules
 

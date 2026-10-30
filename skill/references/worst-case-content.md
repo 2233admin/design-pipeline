@@ -118,7 +118,7 @@ Cue: the project supports the mode. These are viewing modes, not content.
 | `reduced-motion` | Maps to the existing `reduced-motion` state |
 | `no-js-or-slow-network` | Only where the product promises it |
 
-## Matrix entry example
+## `states` fragment example
 
 ```json
 {
@@ -130,4 +130,6 @@ Cue: the project supports the mode. These are viewing modes, not content.
 }
 ```
 
-Non-gate ids such as `rtl-text` are extra declarations in the entry; the gate still requires every id in `APPLICABLE_STATES` to be declared.
+This is only the `states` fragment of a matrix entry, not a complete entry: the gate also requires `default`,
+every `APPLICABLE_STATES` id, `inputs`, both `mobile` and `desktop` viewports and `reducedMotion`
+(`checkInteractionStateCoverage` in `gate-core.cjs`). Non-gate ids such as `rtl-text` are extra declarations in the entry; the gate still requires every id in `APPLICABLE_STATES` to be declared.

@@ -92,8 +92,10 @@ html, body { overscroll-behavior: none; }        /* app shell only */
 
 - Use `none` on the root and `contain` on inner scrollers. `contain` keeps the area's own bounce but
   stops the page behind it from moving.
-- Never call `preventDefault()` in a `touchmove` listener for this. It blocks scrolling and makes the
-  listener non-passive.
+- Use `overscroll-behavior` for this, not a `touchmove` listener that calls `preventDefault()`. Passive is
+  fixed when the listener is registered; a passive listener cannot cancel scrolling, and a non-passive one
+  makes every scroll wait for script. Register `{ passive: false }` only for a custom gesture that must
+  cancel the scroll, and only on the element that owns the gesture.
 - Root bounce policy: see `good-css.md`, no-rubber-band-bounce-on-desktop.
 
 ## 6. Safe-area insets

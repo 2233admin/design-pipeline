@@ -8,6 +8,10 @@
 4. Seek, in one shared helper, keeping the layout probe's order and completion semantics: call `window.__player.seek`
    if present, else `window.__hf.seek`, else the timeline's own `seek(time, false)` on `t.__hfReal || t`; then await
    `window.__hfWaitForSeekCompletion()` when the runtime provides it, before sampling.
+   `__hfReal` is the runtime's own contract: in 0.8.221 a registered timeline may be a proxy (`__hfIsProxy: true`) that
+   queues `to`/`from`/`fromTo` calls and exposes the real GSAP timeline as `__hfReal`; the runtime itself resolves
+   `t.__hfReal ?? t` (`dist/hyperframe.runtime.iife.js`). A test fixture registers such a proxy and asserts that the
+   helper seeks the real timeline with `suppressEvents` false; without a proxy the supplied timeline is used.
 5. Lineage: film evidence records the HyperFrames version that produced it; the version is part of the film gate's
    input hashes, so a version change makes earlier render evidence stale and `next` asks for a new check.
 
