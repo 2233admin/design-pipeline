@@ -7,7 +7,12 @@ For a film storyboard that declares `referenceAnalysis`, the pipeline SHALL prov
 #### Scenario: Compare page written
 
 - **WHEN** `film compare` runs on a project whose storyboard declares `referenceAnalysis` and whose reference source matches its recorded sha256
-- **THEN** it SHALL write `evidence/compare/index.html`, which opens from disk without a server, and `evidence/compare/compare.json` with the sha256 of the reference source, the analysis and the draft
+- **THEN** it SHALL write `evidence/compare/index.html`, which opens from disk without a server, and `evidence/compare/compare.json` with the sha256 of the reference source, the analysis, the draft and the marker report (null when absent)
+
+#### Scenario: Frame rate missing or mismatched
+
+- **WHEN** `storyboard.fps` is absent, or the draft render has a variable frame rate or an encoded rate different from `storyboard.fps`
+- **THEN** `film compare` SHALL exit 1 with a fix naming the field or the re-render, and SHALL NOT write a page
 
 #### Scenario: Frame stepping stays in sync
 
@@ -32,14 +37,19 @@ For a film storyboard that declares `referenceAnalysis`, the pipeline SHALL prov
 #### Scenario: Proof video
 
 - **WHEN** `film proof` runs
-- **THEN** it SHALL write `renders/side-by-side.mp4` with the reference left and the render right, the render's length and audio, and a sidecar recording both input hashes
+- **THEN** it SHALL write `renders/side-by-side.mp4` with the reference left and the render right, the render's length and audio, the shorter input holding its last frame, and a sidecar recording both input hashes
 
 #### Scenario: Review waits for a current page
 
-- **WHEN** a replicate film with `referenceAnalysis` reaches the owner review and the compare page is missing or its recorded hashes differ from the current files
+- **WHEN** a replicate film with `referenceAnalysis` reaches the owner review and the compare page is missing or any of its recorded hashes differs from the current files
 - **THEN** `next` SHALL return a `run` step for `film compare` instead of the review ask
 
 #### Scenario: Review ask names the page
 
 - **WHEN** the compare page is current
-- **THEN** the review ask SHALL name the compare page and, when current, the proof video, and SHALL say that frame citations from the page may be quoted in the verdict
+- **THEN** the review ask SHALL name the compare page and SHALL say that frame citations from the page may be quoted in the verdict
+
+#### Scenario: Proof video stale or missing
+
+- **WHEN** the compare page is current and the proof sidecar is missing or its hashes differ from the current reference or draft
+- **THEN** the review ask SHALL NOT name the proof file and SHALL give the `film proof` command instead

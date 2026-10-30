@@ -6,7 +6,7 @@ In web or ui replicate mode with a `video` reference, the observed behaviours of
 
 #### Scenario: Table missing
 
-- **WHEN** a web replicate project with a `video` reference leaves the extract step and `reference.md` has no `## Recorded behaviours` table or an empty one
+- **WHEN** a web or ui replicate project with a `video` reference leaves the extract step and `reference.md` has no `## Recorded behaviours` table or an empty one
 - **THEN** `next` SHALL block with `recorded-behaviours-missing` and a fix naming the heading and columns
 
 #### Scenario: Row without a control
@@ -18,6 +18,11 @@ In web or ui replicate mode with a `video` reference, the observed behaviours of
 
 - **WHEN** coverage runs with the recorded ids and an id is named by no matrix entry, or only by an entry with blockers
 - **THEN** the result SHALL be blocked with `RECORDED_BEHAVIOUR_UNCOVERED` naming the id
+
+#### Scenario: Table broken after extract
+
+- **WHEN** a web or ui replicate project with a `video` reference reaches delivery and its table is absent or invalid
+- **THEN** delivery SHALL block with `recorded-behaviours-missing` and SHALL NOT run coverage without the ids
 
 #### Scenario: Unknown id in the matrix
 

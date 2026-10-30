@@ -8,7 +8,7 @@
 ## 2. Behaviour
 
 - [ ] 2.1 `workflows/replicate.cjs`: parse the table (design.md 2); `recorded-behaviours-missing` and per-row findings at the extract step for web and ui with a `video` reference.
-- [ ] 2.2 `gate-core.cjs`: optional `recordedBehaviours` input (design.md 3); pass the ids at the web and ui delivery call sites.
+- [ ] 2.2 `gate-core.cjs`: optional `recordedBehaviours` input (design.md 3); `recordedBehaviours(root)` helper; pass the ids at every web and ui delivery call site and block on its `error`.
 
 ## 3. Tests and docs
 
