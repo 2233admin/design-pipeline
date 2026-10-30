@@ -847,3 +847,17 @@ The 1,787,292-byte font's SHA-256 is
 It supplies a Latin variable-axis capability sample; CJK content keeps system-font semantics.
 No font, code or asset was copied from Motion Reference, and no licence for that site's
 implementations or assets is asserted.
+
+## Concept distillations (2026-10-30)
+
+Project-owned references written in this repository's words; no upstream text is copied.
+
+- `skill/references/mobile-web.md` and the compositor-cost and subtract-pass sections of
+  `skill/references/animation-opportunity-and-review.md`: from https://github.com/emilkowalski/skills
+  (`mobile-native`, `animation-performance`, `remove-animations`) at `a81dbca07f2217b7103e510c0f13f8d5b017afc9`, MIT,
+  Copyright (c) 2026 Emil Kowalski.
+- `skill/references/worst-case-content.md`: from https://github.com/jakubkrehel/skills (`break`) at
+  `592aedc44d7d5b3e29740984252902f3e5402a1c`, MIT, Copyright (c) 2026 Jakub Krehel.
+- `skill/references/interface-defaults.md` and `skill/references/timeline-deconstruction.md`: from
+  https://github.com/raphaelsalaja/skill (`defaults`, `deconstruct`) at `5e989857664e5fb5f2b1b4b319edf3a8b076048f`,
+  MIT, Copyright (c) 2026 Raphael Salaja.
