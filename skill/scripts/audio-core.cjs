@@ -2,7 +2,8 @@
 
 // Audio gate: measures a film's soundtrack (audio file or video with audio) with ffmpeg and
 // checks delivery loudness (EBU R128 integrated LUFS), true peak, clipping, unexpected silence,
-// abrupt endings, music entry/exit against the storyboard's sound cues, and recorded licensing.
+// abrupt endings, music entry/exit against the storyboard's sound cues, whether hit cues (impact,
+// accent, downbeat) carry a sound onset on their frame, and recorded licensing.
 // Every finding carries a concrete fix, often the ffmpeg command that repairs it. Musical taste,
 // mix balance and whether the score suits the film remain creative review.
 
@@ -25,6 +26,18 @@ const WINDOW = 0.05;
 const ACTIVE_DB = -45;
 const SILENCE_DB = -50;
 const SILENCE_MIN_SEC = 0.75;
+// Cue sync, after earshot's timeline: offset = sound onset minus the cue (negative = early), on the
+// frame within one frame, heard within 100 ms, and the share of the film's time that random cue
+// times would also find an onset within 100 ms of ("chance"); matches only mean something above it.
+const SYNC_KINDS = ["impact", "accent", "downbeat"];
+const SYNC_WINDOW_SEC = 0.1;
+const SYNC_RATE = 16000;
+const SYNC_WINDOW = 512; // 32 ms: shorter windows read the ripple of a low note as onsets
+const SYNC_STEP = 128; // 8 ms
+const SYNC_MIN_GAP_SEC = 0.05;
+const SYNC_FLOOR = 0.3; // summed log-energy rise of both bands, about 3 dB: below it is ripple, not an attack
+const SYNC_CHANCE_MAX = 0.5;
+const SYNC_MIN_CUES = 3;
 
 const FIX = {
   "audio-missing": "The file has no audio stream. Add the score to the composition (<audio data-start data-duration>) and re-render, or set sound.mode to silent with a reason.",
@@ -35,6 +48,10 @@ const FIX = {
   "abrupt-end": "Audio is still loud at the last frame. Fade out the last 0.5-1.5 s (`{master}`, or afade=t=out:st={start}:d=1) or end on a resolved hit.",
   "entry-late": "Music starts later than the storyboard's entry cue. Move the audio element's data-start or trim leading silence (atrim/silenceremove) so sound arrives on the cue.",
   "exit-early": "Music ends before the storyboard's exit cue. Extend the track, loop a section, or move the exit cue to where the music actually ends.",
+  "impact-unsounded": "No sound onset within 100 ms of this impact cue. Place the hit's attack on the cue frame; if it is there, it is buried: raise it 3-10 dB over the music around it (earshot's kit.gain_db sets that from the bed) or duck the music for 0.3-0.5 s before it. Change the cue's kind only if the moment is meant to be soft.",
+  "cue-unsounded": "No sound onset within 100 ms of this cue. Put an audible attack on it (a tick, a pop, the music's downbeat); if one is there, it is buried under the music: raise it 3-10 dB over the bed. Remove the cue if the moment is meant to pass without sound.",
+  "cue-off-frame": "The nearest sound onset is {offsetMs} ms from the cue (negative = early), more than one frame. Shift that sound by {shiftMs} ms (its data-start, or the cue time if the picture moved) so the attack lands on the frame. If the cue's own sound is quieter than the music, the onset found may be the music's: raise the effect over the bed instead.",
+  "sync-at-chance": "Onsets are so dense that random times land within 100 ms of one {chancePct}% of the time, so the cue matches prove nothing. Check the effects stem on its own: `{verifyStem}`.",
   "license-unrecorded": "Record each sound asset in storyboard sound.assets with id, license and commercialUse, so reuse rights can be checked.",
   "license-noncommercial": "This asset's license forbids commercial use but the film is commercial. Replace it with user-owned or commercially licensed audio, or set sound.usage to the actual non-commercial use.",
 };
@@ -110,6 +127,81 @@ function silences(db, floorDb, minSec) {
   return spans;
 }
 
+// Onsets for hit timing: the rise of log energy in 32 ms windows every 8 ms, summed over the full
+// band and a high band (first difference), so a bright tick on a sustained pad counts as well as a
+// low hit; each peak is judged against the 1.5 s around it. Reported at the start of the step that rose.
+function hitOnsets(file, tools) {
+  const { stdout } = run(tools, ["-hide_banner", "-nostats", "-i", file, "-vn", "-ac", "1", "-ar", String(SYNC_RATE), "-f", "s16le", "-"], true);
+  const samples = Math.floor(stdout.length / 2);
+  const frames = samples >= SYNC_WINDOW ? Math.floor((samples - SYNC_WINDOW) / SYNC_STEP) + 1 : 0;
+  const x = new Float64Array(samples);
+  for (let i = 0; i < samples; i += 1) x[i] = stdout.readInt16LE(i * 2) / 32768;
+  const level = (v) => Math.log1p(1000 * v);
+  const odf = new Float64Array(frames);
+  let prevFull = 0;
+  let prevHigh = 0;
+  for (let f = 0; f < frames; f += 1) {
+    let full = 0;
+    let high = 0;
+    for (let i = f * SYNC_STEP; i < f * SYNC_STEP + SYNC_WINDOW; i += 1) { full += x[i] * x[i]; const d = x[i] - (i > 0 ? x[i - 1] : 0); high += d * d; }
+    const lf = level(Math.sqrt(full / SYNC_WINDOW));
+    const lh = level(Math.sqrt(high / SYNC_WINDOW));
+    odf[f] = Math.max(0, lf - prevFull) + Math.max(0, lh - prevHigh); // before the file: silence
+    prevFull = lf;
+    prevHigh = lh;
+  }
+  const sums = [0];
+  const squares = [0];
+  for (const v of odf) { sums.push(sums.at(-1) + v); squares.push(squares.at(-1) + v * v); }
+  const reach = Math.round((1.5 * SYNC_RATE) / SYNC_STEP);
+  const minGap = Math.round((SYNC_MIN_GAP_SEC * SYNC_RATE) / SYNC_STEP);
+  const at = (f) => (f === 0 ? 0 : (f * SYNC_STEP + SYNC_WINDOW - SYNC_STEP) / SYNC_RATE);
+  const picked = [];
+  for (let f = 0; f < frames; f += 1) {
+    if (!(odf[f] >= (odf[f - 1] ?? 0) && odf[f] >= (odf[f + 1] ?? 0) && odf[f] > SYNC_FLOOR)) continue;
+    const from = Math.max(0, f - reach);
+    const to = Math.min(frames, f + reach + 1);
+    const n = to - from;
+    const mean = (sums[to] - sums[from]) / n;
+    const sd = Math.sqrt(Math.max(0, (squares[to] - squares[from]) / n - mean * mean));
+    if (odf[f] <= mean + 2 * sd) continue;
+    const last = picked.at(-1);
+    if (last && f - last.f < minGap) { if (odf[f] > last.v) picked[picked.length - 1] = { f, v: odf[f] }; continue; }
+    picked.push({ f, v: odf[f] });
+  }
+  return picked.map((p) => Number(at(p.f).toFixed(3)));
+}
+
+// Each hit cue against the nearest measured onset. Returns per-cue rows and the chance baseline.
+function cueSync(file, tools, cues, fps, span) {
+  const onsets = hitOnsets(file, tools);
+  const frameSec = 1 / fps;
+  const rows = cues.map((cue) => {
+    let nearest = null;
+    for (const at of onsets) if (nearest === null || Math.abs(at - cue.atSec) < Math.abs(nearest - cue.atSec)) nearest = at;
+    const offsetSec = nearest === null ? null : nearest - cue.atSec;
+    const heard = offsetSec !== null && Math.abs(offsetSec) <= SYNC_WINDOW_SEC;
+    const onFrame = heard && Math.abs(offsetSec) <= frameSec + 1e-6;
+    return { id: cue.id, kind: cue.kind, atSec: cue.atSec, offsetMs: heard ? Math.round(offsetSec * 1000) : null, status: onFrame ? "on-frame" : heard ? "off-frame" : "unsounded" };
+  });
+  // Chance: the share of the audible span within the window of some onset (union of intervals).
+  let covered = 0;
+  let reach = span.start;
+  for (const at of onsets) {
+    const from = Math.max(reach, at - SYNC_WINDOW_SEC, span.start);
+    const to = Math.min(at + SYNC_WINDOW_SEC, span.end);
+    if (to > from) covered += to - from;
+    reach = Math.max(reach, to);
+  }
+  const length = span.end - span.start;
+  const chance = length > 0 ? covered / length : 0;
+  const heard = rows.filter((row) => row.status !== "unsounded").length;
+  return {
+    rows,
+    summary: { cues: rows.length, onFrame: rows.filter((row) => row.status === "on-frame").length, heard, hitRate: rows.length ? Number((heard / rows.length).toFixed(3)) : null, chance: Number(chance.toFixed(3)), onsets: onsets.length, fps },
+  };
+}
+
 function checkAudio(file, options = {}) {
   const tools = { ffmpeg: options.ffmpeg || "ffmpeg", ffprobe: options.ffprobe || "ffprobe" };
   const targetName = options.target || "web";
@@ -155,11 +247,23 @@ function checkAudio(file, options = {}) {
   }
   if (tailDb > -30) add("abrupt-end", "warn", `last 100 ms still at ${tailDb.toFixed(1)} dBFS`, { start: Math.max(0, env.durationSec - 1).toFixed(2) });
 
+  let sync = null;
   if (sound) {
     const entry = (sound.cues || []).find((cue) => cue.kind === "entry");
     const exit = (sound.cues || []).find((cue) => cue.kind === "exit");
     if (entry && firstActive !== null && firstActive > entry.atSec + 0.3) add("entry-late", "error", `audio becomes audible at ${firstActive.toFixed(2)}s, entry cue is ${entry.atSec}s`);
     if (exit && lastActive !== null && lastActive < exit.atSec - 0.5) add("exit-early", "warn", `audio fades out at ${lastActive.toFixed(2)}s, exit cue is ${exit.atSec}s`);
+    const hitCues = (sound.cues || []).filter((cue) => SYNC_KINDS.includes(cue.kind));
+    if (hitCues.length && firstActive !== null) {
+      sync = cueSync(file, tools, hitCues, Number(board.fps) > 0 ? Number(board.fps) : 30, { start: firstActive, end: lastActive });
+      for (const row of sync.rows) {
+        if (row.status === "unsounded") add(row.kind === "impact" ? "impact-unsounded" : "cue-unsounded", row.kind === "impact" ? "error" : "warn", `${row.kind} cue ${row.id} at ${row.atSec}s has no sound onset within ${SYNC_WINDOW_SEC * 1000} ms`);
+        if (row.status === "off-frame") add("cue-off-frame", "warn", `${row.kind} cue ${row.id} at ${row.atSec}s: nearest onset ${row.offsetMs > 0 ? "+" : ""}${row.offsetMs} ms, more than one frame at ${sync.summary.fps} fps`, { offsetMs: row.offsetMs, shiftMs: -row.offsetMs });
+      }
+      if (sync.rows.length >= SYNC_MIN_CUES && sync.summary.chance >= SYNC_CHANCE_MAX) {
+        add("sync-at-chance", "warn", `${sync.summary.heard}/${sync.summary.cues} hit cues hear an onset, but random times would ${Math.round(sync.summary.chance * 100)}% of the time`, { chancePct: Math.round(sync.summary.chance * 100), verifyStem: `${cliCommand()} verify audio --audio <effects-stem.wav> --storyboard <storyboard.json>` });
+      }
+    }
     if (sound.mode === "scored") {
       const assets = sound.assets || [];
       if (!assets.length) add("license-unrecorded", "warn", "sound.assets records no license for the score");
@@ -183,6 +287,7 @@ function checkAudio(file, options = {}) {
       firstAudibleSec: firstActive === null ? null : Number(firstActive.toFixed(2)),
       lastAudibleSec: lastActive === null ? null : Number(lastActive.toFixed(2)),
       tailDbfs: Number.isFinite(tailDb) ? Number(tailDb.toFixed(1)) : null,
+      ...(sync ? { cueSync: { ...sync.summary, rows: sync.rows } } : {}),
     },
     creativeAcceptance: "not-assessed",
   };
