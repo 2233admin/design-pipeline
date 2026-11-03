@@ -267,8 +267,27 @@ until `productSource` is admitted; the run log, captures and bound job plan are 
 The gates sample beats and text, not every frame, and never grant acceptance. Before asking,
 review the checked draft frame by frame: `ffmpeg -i out.mp4 -vf fps=1 evidence/second-%03d.png`,
 open every frame at full size and look for text overlap, clipping, empty transitional frames,
-edge crowding, too-small text and wrong values. Fix, re-render and rerun `film check`; write the
-frame and creative review in `qa.md`. Then show the draft video, `evidence/contact-sheet.png` and
+edge crowding, too-small text and wrong values. Then look at the frames a viewer judges the film by,
+each named in `qa.md`:
+
+- **First frame** (`t = 0`): finished and readable at thumbnail size, saying what the film is and
+  whose; never black and never the start of an entrance (a half-typed line fails). By the third
+  second there is a reason to keep watching.
+- **Fullest moment of each beat**: just before its last line ends (the beat's end less about 0.3 s),
+  when most has built up and nothing has left. One subject is plainly the subject.
+- **Last frame**: the point or the next step, complete and held, nothing half faded.
+- **Contact strip**: one small frame every few seconds, read in order. A run of near-identical frames
+  is a stretch where viewers leave; a run of bare cuts between unrelated frames reads as a
+  slideshow.
+- **Vertical films for a feed**: keep words and faces out of the top 15%, the bottom 25% and the
+  right-hand strip, where the app draws its own controls; the film still makes its point muted.
+
+The test over all of them: a stranger who sees the film once, at the size it will be seen, could
+say its point from the frames and lines alone. A problem with the film rather than a frame (the
+point does not come through, the peak is buried) means rethinking a scene, not nudging a layout.
+After three rounds on one problem without it going away, stop and name it in the review. Fix,
+re-render and rerun `film check`; write the frame and creative review in `qa.md`. (The frame list
+distils `motion-director`'s review guide from `JimLiu/baoyu-design`, MIT.) Then show the draft video, `evidence/contact-sheet.png` and
 a one-paragraph gate summary. The owner accepts, or rejects with one sentence
 (`decide --stage review --verdict accept|reject`). A rejection becomes a rule that every later
 `next` returns until the owner accepts a draft, and reopens the check. Every tier asks; quick

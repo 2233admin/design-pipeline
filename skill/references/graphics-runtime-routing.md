@@ -42,6 +42,10 @@ selecting it. XY is alpha and project-installed-only: pin the target project's v
 required export and accessibility surfaces, and preserve an accepted chart runtime when it already
 satisfies the contract.
 
+Whatever the `vector-data` runtime, a dashboard or chart page follows the composition rules in
+`xy-charting.md#dashboard-and-chart-composition` (one decision, headline figures, a shape for the
+job, measured layout, states that keep their place).
+
 ## Families
 
 | Family | Typical route | Primary fit |

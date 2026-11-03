@@ -64,6 +64,47 @@ Record in change `design.md`:
 Use change `motion.md` only when chart transitions or streaming motion carry meaning. XY implements
 the motion semantics; its animation API does not redefine the project `MOTION.md` language.
 
+## Dashboard And Chart Composition
+
+These rules hold for any `vector-data` route (XY, SVG/D3, ECharts, Chart.js), not only XY. They feed
+the Design Contract above and the owner's review; none is a gate.
+
+- **One decision.** A dashboard serves one decision. Under a one-line title, one sentence of
+  takeaway, computed from the data, says what the numbers mean for that decision.
+- **Headline figures.** At most about six in a row. The first is the one nearest the outcome
+  (orders, not visits). Each shows its change from the previous period, signed, with the period
+  named, coloured by whether the change is good. Every card names its time window ("Last 28 days").
+  Figures that are stages of one process are a funnel or a ratio, not separate tiles.
+- **A shape for the job.** Pick one before laying out cards:
+  - *Scorecard* (weekly check-in): four to six cards, each latest value, change, small trend and
+    target; only a missed target turns red.
+  - *Board* (kept open to watch health): one status line naming what is over its limit, the same
+    metric per member as small charts on one shared scale, recent incidents in a table; only a
+    breach takes the danger colour, and nothing moves.
+  - *Experiment* (ship or not): the primary metric's lift as the big number, a sentence on whether
+    its 95% interval crosses zero, every metric's interval against a zero line.
+  - *Funnel* (where people drop off): each step as a bar from one left edge, the previous period as
+    a thin bar beneath, the share lost between steps, the biggest loss in the danger colour.
+  - *Table* (many rows to scan): one sortable, searchable table, an in-cell bar on one shared scale,
+    secondary columns that hide when narrow.
+  - *Review* or *analysis* (read once): the finding in a sentence around one number, then one chart
+    per heading that says what it shows; one accent series, the rest muted.
+- **Marks.** Counts per day, week or month are bars; rates, running totals and several series over
+  time are straight-segment lines, because a smoothed curve shows values the data does not have.
+  A breakdown table keeps its parent's columns in the same order. Label a line at its end with name
+  and latest value instead of a legend when there are few lines. Define a metric in plain words where
+  it first appears.
+- **Measured layout.** Chart margins come from the widest tick and end label as drawn, not a guessed
+  constant; thin ticks or move end labels apart when labels meet. Give every chart box an explicit
+  height: a responsive chart inside a parent with no resolved height can grow without bound (Chart.js
+  with `maintainAspectRatio: false` loops on its resize observer).
+- **States keep their place.** Loading, empty, failed and refreshing states keep the chart box's
+  drawn height, so nothing below moves. A failed source shows one short line in place; empty values
+  stay blank rather than printing "No data"; a refreshing card dims and keeps its last values.
+  These are the `loading`, `empty` and `error` rows of the component state matrix.
+- **Honest data.** Rows that were made up, estimated or recalled are labelled as sample data on the
+  page, with how they were made; anything left out is named on the page with the reason.
+
 ## Runtime And Security Boundaries
 
 - Notebook display, native PNG/SVG, and standalone HTML can run offline after compatible wheels are
@@ -110,3 +151,10 @@ Official sources:
 - Documentation: https://reflex.dev/docs/xy/
 - Capability matrix: https://github.com/reflex-dev/xy/blob/main/spec/api/capability-matrix.md
 - Alpha limits: https://github.com/reflex-dev/xy/blob/main/docs/api-reference/limitations-and-alpha-status.md
+
+Provenance: Dashboard And Chart Composition distils the dashboard design defaults of the claude.ai
+Dashboard artifact type, as published in `JimLiu/baoyu-design`
+(`skills/claude-dashboard/artifact-type/reference/design-defaults.md`, Anthropic material, no licence
+granted), and the chart-container rule of `nexu-io/open-design` `skills/data-report` (Apache-2.0).
+Mechanisms only, in this repository's words; see
+`openspec/changes/distill-claude-design-methods/design.md`. `codeCopied: false`.

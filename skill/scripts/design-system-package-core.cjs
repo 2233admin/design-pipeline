@@ -497,6 +497,63 @@ function projectBrandFindings(projectRoot, options = {}) {
   return brandFindings({ projectRoot, systemDir, designText: readText(designFile), tokens });
 }
 
+// ---- Role tokens and the cover ----------------------------------------------------------------
+// Findings `{file, code, severity, message, fix}`. Distilled from the Design System artifact's craft
+// rules (openspec/changes/distill-claude-design-methods): a fill's `on-…` colour and a focus ring
+// are measured, and the cover stays shapes in one fixed layout. Taste rules stay in the guide.
+
+const ON_TOKEN = /^on-(.+)$/;
+const FOCUS_TOKEN = /(?:^|[-_])focus(?:[-_]|$)/i;
+
+function roleTokenFindings(tokens) {
+  const out = [];
+  const color = tokens && typeof tokens === "object" ? tokens.color : null;
+  if (!color || !Array.isArray(color.tokens)) return out;
+  const names = new Set(color.tokens.filter((t) => t && typeof t.name === "string").map((t) => t.name));
+  const pairs = (Array.isArray(tokens.contrast) ? tokens.contrast : []).filter((p) => p && typeof p.text === "string" && Array.isArray(p.on));
+  const add = (code, message, fix) => out.push({ file: "tokens.json", code, severity: "error", message, fix });
+  for (const name of names) {
+    const own = pairs.filter((p) => p.text === name);
+    const on = ON_TOKEN.exec(name);
+    if (on) {
+      const ground = on[1];
+      const grounds = names.has(ground) ? [ground] : null;
+      if (!own.length || (grounds && !own.some((p) => p.on.includes(ground)))) {
+        add("on-token-unmeasured", `${name} names the colour drawn on ${ground}, but no contrast entry measures it there`,
+          `add {"text": "${name}", "on": ["${grounds ? ground : "<each fill it sits on>"}"], "min": 4.5} to contrast (3 for marks or text 24px and up)`);
+      }
+    } else if (FOCUS_TOKEN.test(name)) {
+      if (!own.length) {
+        add("focus-ring-unmeasured", `${name} is a focus ring colour, but no contrast entry measures it on the surfaces it lands on`,
+          `add {"text": "${name}", "on": ["<every surface a focused control sits on>"], "min": 3} to contrast`);
+      } else if (own.some((p) => p.min !== undefined && Number(p.min) < 3)) {
+        add("focus-ring-floor", `${name} is measured with a minimum below 3:1`, `set "min" to 3 or more on every contrast entry for ${name}`);
+      }
+    }
+  }
+  return out;
+}
+
+const COVER_RULES = [
+  ["cover-picture", /<(?:img|picture|video|canvas|image)\b/i, "the cover shows a picture; it is name, colour blocks and one pattern",
+    "remove the picture and draw the blocks and pattern as inline SVG shapes bound to tokens"],
+  ["cover-gradient", /gradient\s*\(|<(?:linear|radial)Gradient\b/i, "the cover uses a gradient",
+    "fill every block with a solid colour token"],
+  ["cover-motion", /@keyframes|\banimation(?:-name)?\s*:|\btransition\s*:|<animate/i, "the cover moves",
+    "remove the animation and transition; the cover is still"],
+  ["cover-responsive", /@media|@container|\d(?:vw|vh|cqw|cqi)\b/i, "the cover has a responsive layout",
+    "lay it out once at 960px wide with no media or container queries and no viewport units; the host scales it"],
+];
+
+function coverFindings(dir) {
+  const file = path.join(dir, "components", "Cover", "preview.html");
+  if (!fs.existsSync(file)) return [];
+  const html = readText(file).replace(/<!--[\s\S]*?-->/g, "");
+  return COVER_RULES.filter(([, pattern]) => pattern.test(html)).map(([code, , message, fix]) => ({
+    file: "components/Cover/preview.html", code, severity: "error", message, fix,
+  }));
+}
+
 function resolveSystemDir(projectRoot, raw) {
   const dir = path.resolve(projectRoot, raw || DEFAULT_DIR);
   if (!pathIsInside(projectRoot, dir)) throw new Error("--system-dir resolves outside --project-root");
@@ -527,10 +584,11 @@ function checkDesignSystemPackage(options = {}) {
   }
   checkReadme(dir, findings);
   const components = checkComponents(dir, findings);
-  if (tokens && !findings.some((f) => f.file === "tokens.json") && fs.existsSync(designFile)) {
+  if (tokens &&!findings.some((f) => f.file === "tokens.json") && fs.existsSync(designFile)) {
     checkDesignMdDrift(readText(designFile), tokens, findings);
   }
   if (fs.existsSync(designFile)) findings.push(...brandFindings({ projectRoot, systemDir: rel, designText: readText(designFile), tokens }));
+  findings.push(...roleTokenFindings(tokens), ...coverFindings(dir));
   return {
     schema: SCHEMA,
     status: findings.length ? "invalid" : "ready",

@@ -8,7 +8,9 @@ This contract adapts the visible-comparison mechanism reviewed from
 [`joeseesun/qiaomu-design`](https://github.com/joeseesun/qiaomu-design) revision
 `39dac8238a6ba44a4e39c1f0f6ca641224b01879`. It keeps Design Pipeline's autonomous, resumable
 artifact lifecycle: a user may select a direction when present, while an unattended run may select
-one only after recording the same preview evidence and an explicit rationale.
+one only after recording the same preview evidence and an explicit rationale. The presentation
+rules (no rigged vote, stable names, decision fidelity) distil Claude Design's canvas craft as
+published in `JimLiu/baoyu-design`; see `openspec/changes/distill-claude-design-methods/design.md`.
 
 ## Applicability
 
@@ -75,6 +77,17 @@ captures with their card summaries and the thumbnail board; the other three card
 the owner may promote. `decide --by owner` keeps the exact words, the chosen ids and any mix
 (`--mix part=id`) as structured fields; an explicit taste statement (`--taste "<as said>"`) becomes a
 rule scoped as the owner said it.
+
+How the versions are put to the owner:
+
+- **No rigged vote.** Each version gets the same treatment in the message: its honest motivation and
+  its main trade-off, side by side. A set where only the favourite has a case made for it is not a
+  choice. The motivation and trade-off go in the reply, not on the version's canvas.
+- **Stable names.** A version keeps its id and name (`dir-2`, "Warm editorial") across every turn;
+  never renumber or rename versions or alternates after the owner has seen them.
+- **Decision fidelity is not delivery fidelity.** A version only needs enough fidelity to decide the
+  direction; polish waits for the chosen one. After the choice, the decision stays settled unless
+  the owner reopens it.
 
 The `ui` standard and full flow opens with a playback that restates the need, audience, scene, tone
 and what the owner did not say, and ends with "I'll make several real directions for you to see".

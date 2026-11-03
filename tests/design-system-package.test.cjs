@@ -243,3 +243,52 @@ test("design-md-tokens stays inside the project", () => {
   assert.notEqual(out.status, 0);
   assert.match(out.stdout + out.stderr, /outside --project-root/);
 });
+
+function withColors(extra, contrast) {
+  const value = tokens();
+  value.color.tokens.push(...extra);
+  value.contrast.push(...contrast);
+  return JSON.stringify(value, null, 1);
+}
+
+test("an on- colour and a focus ring must be measured, each finding with its fix", () => {
+  const extra = [
+    { name: "accent", value: { light: "#8a3b12", dark: "#f0a070" }, usage: "Primary fills." },
+    { name: "on-accent", value: { light: "#ffffff", dark: "#1d1a16" }, usage: "Text on accent." },
+    { name: "focus-ring", value: { light: "#1f1c17", dark: "#f3ece3" }, usage: "Focus outline on paper." },
+  ];
+  const unmeasured = checkDesignSystemPackage({ projectRoot: writePackage({ "tokens.json": withColors(extra, []) }) });
+  const codes = unmeasured.findings.map((f) => f.code);
+  assert.ok(codes.includes("on-token-unmeasured"), messages(unmeasured));
+  assert.ok(codes.includes("focus-ring-unmeasured"), messages(unmeasured));
+  assert.ok(unmeasured.findings.filter((f) => f.code).every((f) => f.fix && f.severity === "error"));
+
+  const wrongGround = checkDesignSystemPackage({ projectRoot: writePackage({ "tokens.json": withColors(extra, [{ text: "on-accent", on: ["paper"], min: 4.5 }]) }) });
+  assert.ok(wrongGround.findings.some((f) => f.code === "on-token-unmeasured"), "on-accent must be measured on accent");
+
+  const lowFloor = checkDesignSystemPackage({ projectRoot: writePackage({ "tokens.json": withColors(extra, [
+    { text: "on-accent", on: ["accent"], min: 4.5 },
+    { text: "focus-ring", on: ["paper"], min: 2 },
+  ]) }) });
+  assert.deepEqual(lowFloor.findings.map((f) => f.code), ["focus-ring-floor"], messages(lowFloor));
+
+  const measured = checkDesignSystemPackage({ projectRoot: writePackage({ "tokens.json": withColors(extra, [
+    { text: "on-accent", on: ["accent"], min: 4.5 },
+    { text: "focus-ring", on: ["paper"], min: 3 },
+  ]) }) });
+  assert.equal(measured.status, "ready", messages(measured));
+});
+
+test("the cover is still, solid shapes in one fixed layout; a derivation comment may name anything", () => {
+  const cover = (body) => `<!-- @dsCard height=288 -->\n<!doctype html>\n<html><head><style>${body}</style></head><body><!-- blocks: img gradient animation @media --><svg><rect class="b"/></svg><h1>Ledger</h1></body></html>\n`;
+  const clean = checkDesignSystemPackage({ projectRoot: writePackage({ "components/Cover/preview.html": cover(".b{fill:var(--ink)}") }) });
+  assert.equal(clean.status, "ready", messages(clean));
+  const busy = checkDesignSystemPackage({
+    projectRoot: writePackage({
+      "components/Cover/preview.html": cover(".b{background:linear-gradient(red,blue);animation:spin 2s}@media (max-width:600px){h1{font-size:10vw}}").replace("<svg>", '<img src="mark.png"><svg>'),
+    }),
+  });
+  const codes = busy.findings.map((f) => f.code).sort();
+  assert.deepEqual(codes, ["cover-gradient", "cover-motion", "cover-picture", "cover-responsive"], messages(busy));
+  assert.ok(busy.findings.every((f) => f.fix));
+});
