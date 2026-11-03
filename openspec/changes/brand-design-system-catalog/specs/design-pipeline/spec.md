@@ -17,7 +17,8 @@ The package SHALL carry the brand design-system manifest (sources, revisions, Gi
 #### Scenario: A cached or shipped file changes
 
 - **WHEN** a fetched or shipped file no longer matches the manifest
-- **THEN** verification SHALL report `blocked` and search and inspect SHALL refuse with the folder to remove and the fetch command
+- **THEN** verification SHALL report `blocked`, `designmd search --kind design-system` and `inspect` of a system SHALL refuse with the folder to remove and the fetch command
+- **AND** `designmd search` without `--kind` SHALL still return the examples, with a `catalogs` entry of status `blocked`, its issues and that fix
 
 ### Requirement: designmd search covers the brand design systems
 
@@ -35,10 +36,17 @@ The package SHALL carry the brand design-system manifest (sources, revisions, Gi
 - **THEN** the result SHALL include that system with `admission: reference-only` and `executableReady: false`
 - **AND** the pipeline SHALL NOT install its files or front matter as a product `DESIGN.md`
 
+#### Scenario: Ranking examples and systems together
+
+- **WHEN** a query matches a bundled example and a system equally, for example the name `stripe`, or the query is empty
+- **THEN** examples and systems SHALL be scored by the same name and text weights and equal scores SHALL list the example first
+- **AND** every result entry SHALL carry the inspiration-only instruction
+
 #### Scenario: Normalised tokens
 
 - **WHEN** a system is inspected
-- **THEN** colours from `var()`, `rgb()`, `oklch()` and `color-mix()` SHALL be hex, the overlay SHALL win over `tokens.css`, and unsupported values SHALL be listed in `omittedTokens`
+- **THEN** colours from `var()` (with its fallback when the variable is undefined), `rgb()`, `oklch()` and opaque `color-mix()` SHALL be hex, the overlay SHALL win over `tokens.css`, and unsupported or translucent values SHALL be listed in `omittedTokens`
+- **AND** the front matter SHALL start with a comment marking it inspiration-only and naming its source
 
 ### Requirement: The brand catalog import is explicit, deduplicated and reproducible
 

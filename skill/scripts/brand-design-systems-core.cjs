@@ -148,13 +148,21 @@ function rootDeclarations(css) {
   return declarations;
 }
 
+// A declaration's value with whole-value var() aliases followed; an undefined alias uses its
+// fallback (`var(--x, fallback)`), as CSS does.
 function resolveValue(declarations, name, seen = new Set()) {
   const value = declarations.get(name);
   if (value === undefined || seen.has(name)) return undefined;
-  const alias = value.match(/^var\(\s*--([A-Za-z0-9_-]+)\s*(?:,[^)]*)?\)$/);
-  if (!alias) return value;
   seen.add(name);
-  return resolveValue(declarations, alias[1], seen);
+  return followAlias(declarations, value, seen);
+}
+
+function followAlias(declarations, value, seen = new Set()) {
+  const alias = String(value).match(/^var\(\s*--([A-Za-z0-9_-]+)\s*(?:,\s*(.*))?\)$/);
+  if (!alias) return value;
+  const resolved = declarations.has(alias[1]) ? resolveValue(declarations, alias[1], seen) : undefined;
+  if (resolved !== undefined) return resolved;
+  return alias[2] !== undefined && alias[2].trim() ? followAlias(declarations, alias[2].trim(), seen) : undefined;
 }
 
 const hex2 = (number) => Math.round(Math.max(0, Math.min(255, number))).toString(16).padStart(2, "0");
@@ -198,8 +206,10 @@ function parseColor(value, declarations, depth = 0) {
   if (typeof value !== "string" || depth > 8) return null;
   const text = value.trim().toLowerCase();
   if (NAMED[text]) return { rgb: NAMED[text], alpha: 1 };
-  const alias = text.match(/^var\(\s*--([a-z0-9_-]+)\s*(?:,[^)]*)?\)$/);
-  if (alias) return declarations ? parseColor(resolveValue(declarations, alias[1]), declarations, depth + 1) : null;
+  if (/^var\(/.test(text)) {
+    const resolved = declarations ? followAlias(declarations, text) : undefined;
+    return resolved === undefined || resolved === text ? null : parseColor(resolved, declarations, depth + 1);
+  }
   let match = text.match(/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/);
   if (match) {
     const digits = match[1].length <= 4 ? [...match[1]].map((digit) => digit + digit).join("") : match[1];
@@ -233,7 +243,8 @@ function parseColor(value, declarations, depth = 0) {
     else if (p1 === null) p1 = 1 - p2;
     else if (p2 === null) p2 = 1 - p1;
     const total = p1 + p2;
-    if (!(total > 0)) return null;
+    // Percentages summing under 100% make the mix translucent; that is not an opaque token colour.
+    if (!(total > 0) || total < 0.9999) return null;
     const space = match[1] === "oklab" ? [rgbToOklab, oklabToRgb] : [(rgb) => rgb, (rgb) => rgb];
     const [a, b] = parts.map((part) => space[0](part.color.rgb));
     return { rgb: space[1](a.map((value, index) => (value * p1 + b[index] * p2) / total)), alpha: 1 };
@@ -352,8 +363,8 @@ function paletteSignature(tokens) {
 const quote = (value) => JSON.stringify(String(value));
 
 // The normalised Google-format front matter. Inspiration-only: never a product DESIGN.md.
-function frontMatter(system, tokens) {
-  const lines = ["---", "version: alpha", `name: ${quote(system.name)}`, `description: ${quote(system.description)}`];
+function frontMatter(system, tokens, source = null) {
+  const lines = ["---", `# inspiration-only: ${system.name}${source ? ` from ${source}` : ""}, not a product DESIGN.md`, "version: alpha", `name: ${quote(system.name)}`, `description: ${quote(system.description)}`];
   if (Object.keys(tokens.colors).length) lines.push("colors:", ...Object.entries(tokens.colors).map(([name, value]) => `  ${name}: ${quote(value)}`));
   if (Object.keys(tokens.typography).length) {
     lines.push("typography:");
@@ -420,39 +431,51 @@ function describe(loaded, root, system) {
       admission: "reference-only",
       status: "reference-only",
       executableReady: false,
+      instruction: INSTRUCTION,
     },
     tokens,
   };
 }
 
-// Scores every system against the query with the dimabraven example formula (whole phrase 100,
-// else 4 per token in the text) plus weight for name, category and description matches.
+const INSTRUCTION = "Inspiration-only: study it and synthesise a product DESIGN.md; never install it, or its front matter, as the product's DESIGN.md.";
+
+// One score for examples and systems alike: the whole phrase in the text 100, else 4 per token;
+// then +200 when the phrase is the name or id, +8 per token found as a word in the head (id, name,
+// category, description, palette signature). An empty query scores every entry 1.
+function scoreEntry(phrase, head, content, exact) {
+  if (!phrase) return 1;
+  const tokens = phrase.split(" ").filter((token) => token.length > 1);
+  const haystack = `${head} ${content}`;
+  let score = haystack.includes(phrase) ? 100 : tokens.reduce((sum, token) => sum + (haystack.includes(token) ? 4 : 0), 0);
+  if (score > 0) {
+    if (exact.some((value) => normalize(value) === phrase)) score += 200;
+    score += tokens.reduce((sum, token) => sum + (` ${head} `.includes(` ${token} `) ? 8 : 0), 0);
+  }
+  return score;
+}
+
+// Equal scores rank bundled examples before catalog systems, then by id.
+function compareScored(left, right) {
+  return right.score - left.score || (left.entry.kind === KIND) - (right.entry.kind === KIND) || left.entry.id.localeCompare(right.entry.id);
+}
+
 function searchBrandDesignSystems({ query = "", limit = 20, ...options } = {}) {
   const { manifestFile, verification } = readyCatalog(options);
   requireReady(verification);
   const loaded = loadManifest(manifestFile);
   const root = verification.fetched.root;
   const phrase = normalize(query);
-  const tokens = phrase.split(" ").filter((token) => token.length > 1);
   const scored = [];
   for (const system of loaded.manifest.systems) {
     const { entry } = describe(loaded, root, system);
     const head = normalize(`${system.id} ${system.name} ${system.category} ${system.description} ${entry.palette.signature}`);
-    const haystack = `${head} ${normalize(fs.readFileSync(entry.contentPath, "utf8"))}`;
-    let score = 1;
-    if (phrase) {
-      score = haystack.includes(phrase) ? 100 : tokens.reduce((sum, token) => sum + (haystack.includes(token) ? 4 : 0), 0);
-      if (score > 0) {
-        if (normalize(system.name) === phrase || system.id === phrase) score += 200;
-        score += tokens.reduce((sum, token) => sum + (` ${head} `.includes(` ${token} `) ? 8 : 0), 0);
-      }
-    }
+    const score = scoreEntry(phrase, head, normalize(fs.readFileSync(entry.contentPath, "utf8")), [system.name, system.id]);
     if (score > 0) scored.push({ score, entry });
   }
   return {
     bundle: loaded.manifest.bundle,
     systems: loaded.manifest.systems.length,
-    results: scored.sort((left, right) => right.score - left.score || left.entry.id.localeCompare(right.entry.id)).slice(0, limit),
+    results: scored.sort(compareScored).slice(0, limit),
   };
 }
 
@@ -469,16 +492,18 @@ function inspectBrandDesignSystem(id, options = {}) {
     entry,
     admission: "reference-only",
     executableReady: false,
-    frontMatter: frontMatter(system, tokens),
+    frontMatter: frontMatter(system, tokens, entry.source),
     tokens: { colors: tokens.colors, typography: tokens.typography, rounded: tokens.rounded, spacing: tokens.spacing },
     omittedTokens: tokens.omitted,
-    instruction: "Inspiration-only: compare its tokens and read its DESIGN.md, then synthesise a product DESIGN.md; never install this system as the product's DESIGN.md.",
+    instruction: INSTRUCTION,
   };
 }
 
 module.exports = {
   ID_PREFIX,
+  INSTRUCTION,
   KIND,
+  compareScored,
   findManifest,
   frontMatter,
   hexColor,
@@ -488,6 +513,7 @@ module.exports = {
   paletteSignature,
   rootDeclarations,
   schema,
+  scoreEntry,
   searchBrandDesignSystems,
   verifyBrandDesignSystems,
 };

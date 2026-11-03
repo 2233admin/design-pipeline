@@ -20,7 +20,8 @@ designer-pipeline sources fetch --bundle brand-design-systems
 
 Until then `designmd search` returns the examples plus a `catalogs` entry naming that command, and
 `--kind design-system` or an `inspect` of a system fails `TOOL_MISSING`. `doctor` lists the
-download under `downloads`.
+download under `downloads`. If the downloaded copy stops verifying, plain search still returns the
+examples and reports the catalog `blocked` with the fix (remove the named folder, fetch again).
 
 The GitHub examples are inspiration-only. They must not replace a product `DESIGN.md`, and the
 pipeline does not wrap `npx designmd-cli install`.

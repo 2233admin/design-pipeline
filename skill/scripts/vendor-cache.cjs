@@ -63,6 +63,8 @@ function partialBundles(vendorDirectory = VENDOR) {
     if (!entry.isDirectory()) continue;
     const manifestFile = path.join(vendorDirectory, entry.name, "manifest.json");
     if (!fs.existsSync(manifestFile)) continue;
+    // The schema is sniffed from the first 256 bytes, so every partial manifest must write `schema`
+    // first (both importers do); a manifest that moves it later is not found as a partial bundle.
     const descriptor = fs.openSync(manifestFile, "r");
     const head = Buffer.alloc(256);
     const read = fs.readSync(descriptor, head, 0, head.length, 0);

@@ -50,10 +50,18 @@
   `color-mix(in oklab|srgb)`, `oklch()` and `rgb()` become hex; anything else is listed in
   `omittedTokens`. Two upstream DESIGN.md files already have front matter; the entry says so.
 - Extend `designmd search`, not a new command. Without `--kind` it returns examples and systems
-  ranked together (dimabraven scoring plus weight for name, category and description); before the
-  fetch it returns the examples and a `catalogs` entry with the fetch command, so existing searches
-  never fail. `--kind design-system` and `inspect` of a system fail `TOOL_MISSING` before the fetch.
-  A cache that no longer verifies is refused (`SOURCE_CHANGED`, naming the folder to remove).
+  ranked together by one score (whole phrase or tokens in the text, plus weight for a name or id
+  match and for words in the head), ties listing examples first; before the fetch it returns the
+  examples and a `catalogs` entry with the fetch command, so existing searches never fail.
+  `--kind design-system` and `inspect` of a system fail `TOOL_MISSING` before the fetch. A cache
+  that no longer verifies is refused there (`SOURCE_CHANGED`, naming the folder to remove); a plain
+  search degrades to the examples and reports the catalog `blocked` with its issues and fix.
+- Inspiration-only is carried by every search entry (`instruction`) and by the first line of the
+  normalised front matter (a YAML comment naming the system and source), not by a gate.
+- `color-mix()` whose percentages sum under 100% is translucent and omitted; `var(--x, fallback)`
+  with `--x` undefined uses the fallback.
+- Partial bundles are still found by sniffing the schema in the first 256 bytes of the manifest
+  (both importers write `schema` first); `vendor-cache.cjs` says so.
 - Two records in the component source catalog (`downloaded-implementation`, guide `design-md.md`)
   keep every vendored source discoverable.
 

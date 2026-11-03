@@ -38,7 +38,7 @@ const TOKENS = (accent, bg, fg) => `/* fixture */\n:root {\n  --bg: ${bg};\n  --
 
 // A two-pack catalog in the real manifest shape: one licence shipped per pack, two systems fetched,
 // one of them corrected by an overlay from the second pack. Served by an injected fetch (no network).
-function fixture(t, { tamperManifest = null } = {}) {
+function fixture(t, { tamperManifest = null, competitors = false } = {}) {
   const dir = temporary(t);
   const root = path.join(dir, "vendor", "catalog");
   const shippedFiles = { "alpha/LICENSE": "Apache License\n", "beta/LICENSE": "MIT License\n" };
@@ -51,6 +51,15 @@ function fixture(t, { tamperManifest = null } = {}) {
     "alpha/systems/night/tokens.css": TOKENS("#5e6ad2", "#08090a", "#f7f8f8"),
     "beta/local/coral/tokens.override.css": "/* generated */\n:root {\n  --accent: #ff385c;\n}\n",
   };
+  // Systems that compete with the bundled linear and stripe examples on name and content.
+  const competing = [["stripe", "Stripe"], ["linear-app", "Linear"]];
+  if (competitors) {
+    for (const [id, name] of competing) {
+      fetchedFiles[`alpha/systems/${id}/manifest.json`] = JSON.stringify({ id, name });
+      fetchedFiles[`alpha/systems/${id}/DESIGN.md`] = `# ${name}\n\n> Category: Fintech\n> Inspired by Stripe and Linear.\n`;
+      fetchedFiles[`alpha/systems/${id}/tokens.css`] = TOKENS("#635bff", "#ffffff", "#0a2540");
+    }
+  }
   const section = (files, rootName) => {
     const objects = Object.entries(files).map(([file, body]) => {
       const content = Buffer.from(body);
@@ -75,6 +84,7 @@ function fixture(t, { tamperManifest = null } = {}) {
     systems: [
       { id: "coral", name: "Coral Travel", category: "E-Commerce", description: "Warm coral marketplace with photography-led cards.", pack: "alpha", dir: "alpha/systems/coral", files: ["manifest.json", "DESIGN.md", "tokens.css"], corrections: { dir: "beta/local/coral", files: ["tokens.override.css"], decision: { color: "design", type: "tokens", reason: "placeholder accent" } } },
       { id: "night", name: "Night Terminal", category: "Developer Tools", description: "Keyboard-first dark console.", pack: "alpha", dir: "alpha/systems/night", files: ["manifest.json", "DESIGN.md", "tokens.css"] },
+      ...(competitors ? competing.map(([id, name]) => ({ id, name, category: "Fintech", description: `Inspired by Stripe and Linear.`, pack: "alpha", dir: `alpha/systems/${id}`, files: ["manifest.json", "DESIGN.md", "tokens.css"] })) : []),
     ],
     boundary: { mode: "reference-material", admission: "reference-only", productDesignMd: false },
   };
@@ -202,10 +212,24 @@ test("after a fetch, designmd search returns catalog systems with category, pale
 
   const inspected = inspectDesignMdSource("design-md:design-system:coral", undefined, small.catalog);
   assert.equal(inspected.admission, "reference-only");
-  assert.match(inspected.frontMatter, /^---\nversion: alpha\nname: "Coral Travel"\n/);
+  assert.match(inspected.frontMatter, /^---\n# inspiration-only: Coral Travel from https:\/\/github\.com\/example\/alpha, not a product DESIGN\.md\nversion: alpha\nname: "Coral Travel"\n/);
+  assert.equal(inspected.entry.instruction, brand.INSTRUCTION);
   assert.match(inspected.frontMatter, /\n {2}primary: "#ff385c"\n/);
-  assert.match(inspected.instruction, /never install this system as the product's DESIGN\.md/);
+  assert.match(inspected.instruction, /never install it, or its front matter, as the product's DESIGN\.md/);
   assert.throws(() => inspectDesignMdSource("design-md:design-system:absent", undefined, small.catalog), (error) => error.code === "ENTRY_NOT_FOUND");
+});
+
+test("examples and systems share one ranking; ties and an empty query put the examples first", async (t) => {
+  const small = fixture(t, { competitors: true });
+  await fetchBundle("brand-design-systems", { manifestFile: small.manifestFile, fetch: small.served().fetch, env: small.env });
+  const ids = (query, limit = 20) => searchDesignMdSource({ query, limit, catalog: small.catalog }).results.map((entry) => entry.id);
+  assert.deepEqual(ids("linear").slice(0, 2), ["design-md:example:linear", "design-md:design-system:linear-app"]);
+  assert.deepEqual(ids("stripe").slice(0, 2), ["design-md:example:stripe", "design-md:design-system:stripe"]);
+  const empty = ids("", 6);
+  assert.deepEqual(empty.slice(0, 4), ["design-md:example:linear", "design-md:example:minimal-saas", "design-md:example:stripe", "design-md:example:vercel"]);
+  assert.equal(empty.length, 6);
+  // Every entry, example or system, carries the inspiration-only instruction.
+  for (const entry of searchDesignMdSource({ query: "", catalog: small.catalog }).results) assert.match(entry.instruction, /^Inspiration-only: .*never install it/, entry.id);
 });
 
 test("a tampered cache or manifest is refused", async (t) => {
@@ -216,8 +240,16 @@ test("a tampered cache or manifest is refused", async (t) => {
   assert.equal(verification.status, "blocked");
   assert.match(verification.issues.join("\n"), /fetched: size mismatch alpha\/systems\/night\/DESIGN\.md/);
   const refused = (error) => error.code === "SOURCE_CHANGED" && /remove .* and run designer-pipeline sources fetch --bundle brand-design-systems/.test(error.message);
-  assert.throws(() => searchDesignMdSource({ query: "coral", catalog: small.catalog }), refused);
+  assert.throws(() => searchDesignMdSource({ query: "coral", kind: "design-system", catalog: small.catalog }), refused);
   assert.throws(() => inspectDesignMdSource("design-md:design-system:coral", undefined, small.catalog), refused);
+  // Without --kind the examples still search and the catalog is reported blocked with its fix.
+  const degraded = searchDesignMdSource({ query: "keyboard-first", catalog: small.catalog });
+  assert.equal(degraded.results[0].id, "design-md:example:linear");
+  assert.ok(degraded.results.every((entry) => entry.kind === "example"));
+  assert.equal(degraded.catalogs.length, 1);
+  assert.equal(degraded.catalogs[0].status, "blocked");
+  assert.match(degraded.catalogs[0].issues.join("\n"), /alpha\/systems\/night\/DESIGN\.md/);
+  assert.match(degraded.catalogs[0].fix, /^remove .* and run designer-pipeline sources fetch --bundle brand-design-systems$/);
 
   // A manifest whose recorded SHA-256 differs from the served bytes installs nothing.
   const wrong = fixture(t, { tamperManifest: "alpha/systems/coral/tokens.css" });
@@ -268,8 +300,17 @@ test("tokens.css normalises to Google DESIGN.md token groups, overlay first, det
   assert.equal(brand.hexColor("rgba(0, 0, 0, 0.5)"), "#00000080");
   assert.equal(brand.hexColor("color-mix(in srgb, #000000, #ffffff)"), "#808080");
   assert.equal(brand.hexColor("hsl(0 100% 50%)"), null);
+  // Percentages under 100% make a translucent mix: omitted, not a wrong opaque colour.
+  assert.equal(brand.hexColor("color-mix(in oklab, #ff0000 30%, #0000ff 30%)"), null);
+  assert.equal(brand.hexColor("color-mix(in srgb, #000000 60%, #ffffff 60%)"), "#808080");
+  const mixed = brand.normalizeTokens(":root {\n  --accent: color-mix(in oklab, #ff0000 20%, #ffffff 20%);\n  --bg: var(--paper, #fafafa);\n  --fg: var(--ink, var(--also-missing, rgb(10, 20, 30)));\n  --surface: var(--bg, #000000);\n}\n");
+  assert.equal(mixed.colors.primary, undefined);
+  assert.ok(mixed.omitted.includes("--accent"));
+  assert.equal(mixed.colors.background, "#fafafa", "an undefined var() uses its fallback");
+  assert.equal(mixed.colors["on-surface"], "#0a141e", "nested fallbacks resolve");
+  assert.equal(mixed.colors.surface, "#fafafa", "a defined var() wins over its fallback");
   const yaml = brand.frontMatter({ name: "X", description: "Y" }, first);
-  assert.match(yaml, /^---\nversion: alpha\nname: "X"\ndescription: "Y"\ncolors:\n {2}primary: "#ff385c"\n/);
+  assert.match(yaml, /^---\n# inspiration-only: X, not a product DESIGN\.md\nversion: alpha\nname: "X"\ndescription: "Y"\ncolors:\n {2}primary: "#ff385c"\n/);
   assert.match(yaml, /\ntypography:\n {2}body:\n/);
   assert.match(yaml, /\nrounded:\n {2}sm: 0px\n {2}full: 9999px\nspacing:\n {2}space-1: 4px\n/);
   assert.match(yaml, /\n---\n$/);

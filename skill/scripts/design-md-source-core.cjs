@@ -185,8 +185,8 @@ function searchDesignMdSource({ query = "", kind = null, limit = 20, manifestFil
   const scored = kind === brandSystems.KIND ? [] : loaded.manifest.examples
     .map((example) => {
       const content = fs.readFileSync(path.join(loaded.root, example.path), "utf8");
-      const haystack = normalize(`${example.id} ${example.slug} ${example.name} ${example.description} ${content}`);
-      const score = !phrase ? 1 : haystack.includes(phrase) ? 100 : phrase.split(" ").filter((token) => token.length > 1).reduce((sum, token) => sum + (haystack.includes(token) ? 4 : 0), 0);
+      const head = normalize(`${example.id} ${example.slug} ${example.name} ${example.description}`);
+      const score = brandSystems.scoreEntry(phrase, head, normalize(content), [example.name, example.slug]);
       return {
         score,
         entry: {
@@ -194,6 +194,7 @@ function searchDesignMdSource({ query = "", kind = null, limit = 20, manifestFil
           status: "reference-only",
           contentPath: path.join(loaded.root, example.path),
           executableReady: false,
+          instruction: brandSystems.INSTRUCTION,
         },
       };
     })
@@ -201,16 +202,26 @@ function searchDesignMdSource({ query = "", kind = null, limit = 20, manifestFil
   const catalogs = [];
   if (kind !== "example") {
     const state = brandSystems.verifyBrandDesignSystems(catalog.manifestFile || brandSystems.findManifest(), catalog);
-    if (kind === brandSystems.KIND || state.status !== "missing") {
+    if (kind === brandSystems.KIND || state.status === "ready") {
+      // --kind design-system fails here (TOOL_MISSING before the fetch, SOURCE_CHANGED when blocked).
       const found = brandSystems.searchBrandDesignSystems({ query, limit: parsedLimit, ...catalog, verification: state });
       scored.push(...found.results);
       catalogs.push({ bundle: found.bundle, status: "ready", systems: found.systems });
-    } else {
+    } else if (state.status === "missing") {
       catalogs.push({ bundle: state.bundle, status: "missing", systems: state.systems, fetch: state.fetch });
+    } else {
+      // A catalog that no longer verifies never breaks the example search; it is reported instead.
+      const where = state.fetched?.root;
+      catalogs.push({
+        bundle: state.bundle || "brand-design-systems",
+        status: "blocked",
+        issues: state.issues,
+        fix: where ? `remove ${where} and run ${state.fetch}` : "reinstall the package",
+      });
     }
   }
   const results = scored
-    .sort((left, right) => right.score - left.score || left.entry.id.localeCompare(right.entry.id))
+    .sort(brandSystems.compareScored)
     .slice(0, parsedLimit)
     .map(({ entry }) => entry);
   return {
