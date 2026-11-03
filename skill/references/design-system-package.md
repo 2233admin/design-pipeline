@@ -88,7 +88,9 @@ not from a standard kit.
 - `preview.html`: line 1 is the marker `<!-- @dsCard group="<Group>" height=<px> -->`, then a small
   HTML document rendering the component in its main states with real content. The preview frame
   supplies `tokens.css` (compiled from tokens.json) and `components/bundle.css`; use their custom
-  properties and type-style classes, never raw values. No `iframe`, `frame`, `object`, `embed`,
+  properties and type-style classes, never raw values (`design-system check` reports a `var(--x)`
+  that is neither a token nor a custom property declared in `bundle.css`, raw colour values and
+  font stacks outside custom-property declarations, and lists unused tokens in `tokenUse`). No `iframe`, `frame`, `object`, `embed`,
   `portal` or `noscript`. Remote scripts only from pinned CDN versions.
 - `bundle.css` holds the component styles once; the product loads the same file.
 

@@ -156,7 +156,7 @@ test("a fully evidenced target can pass with documented contextual decisions", (
     rationale:
       rule.severity === "hard"
         ? undefined
-        : "The choice is deliberate, cohesive, and grounded in the product brief.",
+        : `For ${rule.id}: the choice is deliberate and grounded in the product brief.`,
   }));
   const evidencePath = path.join(root, "complete.json");
   fs.writeFileSync(
@@ -417,4 +417,22 @@ test("rejects unknown rubric and evidence properties declared invalid by the sch
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, current.message);
   }
+});
+
+test("waiver rationales must explain this target: not too short, not copied across rules", () => {
+  const root = makeRoot();
+  const rubricData = JSON.parse(fs.readFileSync(rubric, "utf8"));
+  const contextual = rubricData.rules.filter((rule) => rule.severity !== "hard").map((rule) => rule.id);
+  const write = (name, observations) => {
+    const file = path.join(root, name);
+    fs.writeFileSync(file, `${JSON.stringify({ schema: "design-pipeline.anti-slop-evidence.v1", target: { id: "waiver-target", surface: "marketing" }, observations })}\n`);
+    return file;
+  };
+  const short = runReview(root, write("short.json", [{ ruleId: contextual[0], outcome: "accepted-context", evidence: ["Seen on the page."], rationale: "It fits." }]));
+  assert.notEqual(short.status, 0);
+  assert.match(short.stderr, /rationale is too short to explain this target: write at least 24 characters/);
+  const copied = "The look follows the brand book the client supplied.";
+  const reused = runReview(root, write("reused.json", contextual.slice(0, 2).map((ruleId) => ({ ruleId, outcome: "accepted-context", evidence: ["Seen on the page."], rationale: copied }))));
+  assert.notEqual(reused.status, 0);
+  assert.match(reused.stderr, new RegExp(`same rationale is copied onto ${contextual[0]}, ${contextual[1]}`));
 });

@@ -39,6 +39,10 @@ const EXCEPTION_POLICIES = {
   preference: "preference-only",
 };
 
+// A waiver must say why this target differs, after hallmark's gates.md: a reason under 24
+// characters, or one copied word for word onto several rules, explains nothing.
+const MIN_RATIONALE = 24;
+
 function fail(message) {
   throw new Error(message);
 }
@@ -337,6 +341,14 @@ function validateObservation(observation, rulesById, ids) {
   if (rule.severity === "hard" && observation.outcome === "accepted-context") {
     fail(`hard rule ${rule.id} cannot use accepted-context`);
   }
+  if (
+    ["accepted-context", "not-applicable"].includes(observation.outcome) &&
+    observation.rationale.trim().length < MIN_RATIONALE
+  ) {
+    fail(
+      `observation ${observation.ruleId} rationale is too short to explain this target: write at least ${MIN_RATIONALE} characters naming the product reason`,
+    );
+  }
 }
 
 function validateEvidence(evidence, rulesById) {
@@ -351,6 +363,19 @@ function validateEvidence(evidence, rulesById) {
   const ids = new Set();
   for (const observation of evidence.observations) {
     validateObservation(observation, rulesById, ids);
+  }
+  const byRationale = new Map();
+  for (const observation of evidence.observations) {
+    if (typeof observation.rationale !== "string") continue;
+    const key = observation.rationale.trim().replace(/\s+/g, " ").toLowerCase();
+    byRationale.set(key, [...(byRationale.get(key) || []), observation.ruleId]);
+  }
+  for (const ruleIds of byRationale.values()) {
+    if (ruleIds.length > 1) {
+      fail(
+        `the same rationale is copied onto ${ruleIds.join(", ")}: write the reason each rule is accepted on this target`,
+      );
+    }
   }
   return new Map(evidence.observations.map((item) => [item.ruleId, item]));
 }

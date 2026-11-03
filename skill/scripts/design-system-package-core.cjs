@@ -236,6 +236,53 @@ function checkComponents(dir, findings) {
   return components.sort();
 }
 
+// ---- token use: previews and bundle.css style with tokens, never raw values ---------------------
+// After open-design's components manifest (Apache-2.0): every var(--x) must be declared (tokens.json
+// via tokens.css, or a local custom property), and colours and font families come from tokens.
+
+const RAW_COLOR = /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|oklch|oklab|lab|lch)\(/gi;
+
+function cssOf(file, html) {
+  const text = readText(file);
+  if (!html) return text;
+  const blocks = [...text.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]);
+  const inline = [...text.matchAll(/\sstyle\s*=\s*"([^"]*)"/gi), ...text.matchAll(/\sstyle\s*=\s*'([^']*)'/gi)].map((m) => `x{${m[1]}}`);
+  return [...blocks, ...inline].join("\n");
+}
+
+function checkTokenUse(dir, tokens, findings) {
+  const declared = new Set([...compileTokensCss(tokens).matchAll(/--([\w-]+)\s*:/g)].map((m) => m[1]));
+  const files = [];
+  const bundle = path.join(dir, "components", "bundle.css");
+  if (fs.existsSync(bundle)) files.push({ rel: "components/bundle.css", css: cssOf(bundle, false) });
+  const root = path.join(dir, "components");
+  if (fs.existsSync(root)) {
+    for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+      const preview = path.join(root, entry.name, "preview.html");
+      if (entry.isDirectory() && fs.existsSync(preview)) files.push({ rel: `components/${entry.name}/preview.html`, css: cssOf(preview, true) });
+    }
+  }
+  const local = new Set(files.flatMap(({ css }) => [...css.matchAll(/--([\w-]+)\s*:/g)].map((m) => m[1])));
+  const referenced = new Set();
+  for (const { rel, css } of files) {
+    const clean = css.replace(/\/\*[\s\S]*?\*\//g, "");
+    const undeclared = new Set();
+    for (const m of clean.matchAll(/var\(\s*--([\w-]+)/g)) {
+      referenced.add(m[1]);
+      if (!declared.has(m[1]) && !local.has(m[1])) undeclared.add(m[1]);
+    }
+    for (const name of undeclared) findings.push({ file: rel, message: `var(--${name}) is not a token: add it to tokens.json, declare it in bundle.css, or use an existing token` });
+    // Raw colours and font stacks outside custom-property declarations.
+    const values = clean.replace(/--[\w-]+\s*:[^;{}]*;?/g, "");
+    const colors = [...new Set((values.match(RAW_COLOR) || []).map((v) => v.toLowerCase()))];
+    if (colors.length) findings.push({ file: rel, message: `raw colour values ${colors.slice(0, 5).join(", ")}${colors.length > 5 ? " ..." : ""}: use the colour tokens (var(--<name>)) so a token change reaches every component` });
+    const fonts = [...values.matchAll(/font-family\s*:\s*([^;}]+)/gi)].map((m) => m[1].trim()).filter((v) => !/^var\(--font-/.test(v) && !/^(inherit|initial|unset)$/i.test(v));
+    if (fonts.length) findings.push({ file: rel, message: `font-family ${fonts[0]} is not a token: use var(--font-<family>) or a type-style class` });
+  }
+  const unused = [...declared].filter((name) => !referenced.has(name)).sort();
+  return { declared: declared.size, referenced: referenced.size, unused };
+}
+
 // ---- tokens.json -> CSS and DESIGN.md front matter -------------------------------------------
 
 function firstTheme(tokens) {
@@ -527,6 +574,8 @@ function checkDesignSystemPackage(options = {}) {
   }
   checkReadme(dir, findings);
   const components = checkComponents(dir, findings);
+  const tokensValid = tokens && !findings.some((f) => f.file === "tokens.json");
+  const tokenUse = tokensValid ? checkTokenUse(dir, tokens, findings) : null;
   if (tokens && !findings.some((f) => f.file === "tokens.json") && fs.existsSync(designFile)) {
     checkDesignMdDrift(readText(designFile), tokens, findings);
   }
@@ -538,6 +587,7 @@ function checkDesignSystemPackage(options = {}) {
     systemDir: rel,
     components,
     contrast,
+    ...(tokenUse ? { tokenUse } : {}),
     findings,
     ...(tokens ? { tokensSha256: sha256Text(readText(path.join(dir, "tokens.json"))) } : {}),
   };

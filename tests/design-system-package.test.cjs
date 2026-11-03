@@ -243,3 +243,24 @@ test("design-md-tokens stays inside the project", () => {
   assert.notEqual(out.status, 0);
   assert.match(out.stdout + out.stderr, /outside --project-root/);
 });
+
+test("previews and bundle.css style with tokens: undeclared var(), raw colours and raw font stacks are findings", () => {
+  const ready = checkDesignSystemPackage({ projectRoot: writePackage() });
+  assert.equal(ready.status, "ready", JSON.stringify(ready.findings));
+  assert.ok(ready.tokenUse.declared >= 5, JSON.stringify(ready.tokenUse));
+  assert.ok(ready.tokenUse.unused.includes("paper"), JSON.stringify(ready.tokenUse));
+  assert.ok(!ready.tokenUse.unused.includes("ink"));
+  const bad = checkDesignSystemPackage({
+    projectRoot: writePackage({
+      "components/bundle.css": ".entry { color: var(--ink); --row-rule: #d8d2c4; border-bottom: 1px solid var(--row-rule); }\n.note { color: var(--accent); }\n",
+      "components/Entry/preview.html": PREVIEW.replace("<head>", '<head><style>#root { background: #ffffff; font-family: "Inter", sans-serif; }</style>').replace('class="body"', 'class="body" style="color: rgba(0,0,0,.6)"'),
+    }),
+  });
+  const messages = bad.findings.map((f) => `${f.file}: ${f.message}`);
+  assert.ok(messages.some((m) => /bundle\.css: var\(--accent\) is not a token/.test(m)), messages.join("\n"));
+  assert.ok(!messages.some((m) => /--row-rule/.test(m)), "a custom property declared in bundle.css is local, not an error");
+  assert.ok(!messages.some((m) => /bundle\.css: raw colour/.test(m)), "a colour inside a custom-property declaration is a local token");
+  assert.ok(messages.some((m) => /Entry\/preview\.html: raw colour values #ffffff, rgba\(/.test(m)), messages.join("\n"));
+  assert.ok(messages.some((m) => /Entry\/preview\.html: font-family "Inter", sans-serif is not a token/.test(m)), messages.join("\n"));
+  assert.equal(bad.status, "invalid");
+});
