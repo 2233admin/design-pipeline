@@ -331,9 +331,29 @@ Keep primary and reference evidence isolated. Store copied assets in the target 
 - Capture full-page reference screenshots at every viewport.
 - Wait for fonts and the declared page-ready condition.
 - Record rendering environment and dynamic regions.
+- Measure first, then judge. Run the deterministic extraction for each target before reading the
+  page yourself:
+
+  ```bash
+  designer-pipeline reference extract --root <project> \
+    --url <target url, exactly as in website-cloning.json> \
+    --output <change-root>/targets/<target-id>/research --target-id <target-id>
+  ```
+
+  It writes `extraction.json` (computed-style colours clustered below CIEDE2000 15 and tiered by
+  share of their group: 25% dominant, 5% accent, a saturated colour never below accent; type sizes
+  and spacing clustered to 0.5 px; CSS custom properties), `palette-evidence.json` with the
+  DOM/computed-style source `ready`, the raster-media source and the evidence `pending`, and
+  `design-md-draft.md` with draft DESIGN.md front-matter tokens. Values the page does not support
+  are written as `(low confidence)`, never guessed; cookie banners and fixed overlays are removed
+  before measuring. A challenge, WAF or captcha page exits 1 with `REFERENCE_BLOCKED` and writes
+  nothing: choose another page or record the gap.
 - Inventory fonts, colors, spacing, radii, shadows, breakpoints, metadata, and all asset layers.
-- Extract DOM/computed-style colors and screenshot/raster-media colors as two separate sources.
-- Write `palette-evidence.json`, then map the measured roles and values into `design-tokens.md`.
+- Extract DOM/computed-style colors and screenshot/raster-media colors as two separate sources:
+  the extraction is the DOM source; measure the raster-media palette from the screenshots yourself.
+- Judge the drafted roles against the reference, complete `palette-evidence.json` (raster-media
+  colours and regions, both sources and the evidence `ready`), then map the measured roles and
+  values into `design-tokens.md`.
 - Keep every evidence path relative to the target `research/` directory, backed by an existing
   file, and contained there after symlinks or Windows directory junctions are resolved.
 - Record source regions, coverage ranges, luminance hierarchy, saturation posture, and temperature
