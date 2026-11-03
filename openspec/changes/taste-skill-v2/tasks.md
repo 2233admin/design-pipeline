@@ -23,5 +23,5 @@
 
 ## 5. Follow-ups (separate issues)
 
-- [ ] 5.1 Vendor Leonxlnx/taste-skill-classics and Leonxlnx/imagegen-skills if their methods are wanted again.
-- [ ] 5.2 `taste inspect` / `taste draw` CLI wrappers, `roulette/taste-draw` pool and stale-report tracking.
+- [ ] 5.1 Vendor Leonxlnx/taste-skill-classics and Leonxlnx/imagegen-skills if their methods are wanted again (#255).
+- [ ] 5.2 `taste inspect` / `taste draw` CLI wrappers, `roulette/taste-draw` pool and stale-report tracking (#256).

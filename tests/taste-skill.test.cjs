@@ -104,6 +104,24 @@ test("the one taste-skill entry, its references, library and optional tools rema
   }
 });
 
+test("taste-skill importer reads a folded description to the end of its block and refuses other block scalars", () => {
+  const { foldedDescription } = require("../scripts/import-taste-skill.cjs");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-taste-folded-"));
+  try {
+    const entry = (frontmatterText) => {
+      const file = path.join(root, `${crypto.randomUUID()}.md`);
+      fs.writeFileSync(file, `---\n${frontmatterText}\n---\n\n# body\n`);
+      return file;
+    };
+    assert.equal(foldedDescription(entry("name: x\ndescription: >-\n  first line\n  second line\n\n  after a blank line\n  last\nlicense: MIT"), "fallback"), "first line second line\nafter a blank line last");
+    assert.equal(foldedDescription(entry("name: x\ndescription: >\n  one\n  two\n"), "fallback"), "one two");
+    assert.equal(foldedDescription(entry("name: x\ndescription: plain text"), "plain text"), "plain text");
+    assert.throws(() => foldedDescription(entry("name: x\ndescription: |\n  literal\n"), "fallback"), /unsupported description block scalar \|/);
+    assert.throws(() => foldedDescription(entry("name: x\ndescription: >-\nlicense: MIT"), "fallback"), /empty description block/);
+    assert.equal(foldedDescription(path.join(sourceRoot, "skills/taste-skill/UPSTREAM-SKILL.md"), "fallback"), manifest.skills[0].description);
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
+
 test("taste-skill import rejects unreviewed, dirty, incomplete and invalid-date sources without replacing the snapshot", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-taste-import-"));
   try {

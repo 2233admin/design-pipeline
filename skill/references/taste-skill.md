@@ -155,8 +155,10 @@ Run them as `node <skill>/vendor/taste-skill/upstream/skills/taste-skill/scripts
 where `<skill>` is the installed `design-pipeline` folder. Pass `--out` under the project's ignored
 `.design-pipeline/` (for example `draw.mjs ... --out .design-pipeline/taste` and
 `inspect.mjs <url> --out .design-pipeline/taste/inspect`, so the inspector finds the dealt
-`direction.json`). `draw.mjs` keeps a draw history in `~/.taste-skill/history.json`; set
-`TASTE_SKILL_HISTORY` to keep it inside the project. If `inspect.mjs` cannot find a browser, set
+`direction.json`). `lint.mjs` detects app mode only from `.taste-skill/direction.json`, so with
+draw output under `.design-pipeline/taste` pass `--app` to `lint.mjs` (and to `inspect.mjs` when it
+is not given the draw's folder) for app screens. `draw.mjs` keeps a draw history in
+`~/.taste-skill/history.json`; set `TASTE_SKILL_HISTORY` to keep it inside the project. If `inspect.mjs` cannot find a browser, set
 `CHROME_PATH` to the one `designer-pipeline doctor` reports.
 
 - **Draw:** with an open direction, the three-source preview decides first. Use a draw when the

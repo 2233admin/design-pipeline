@@ -22,11 +22,27 @@ const reviewedTools = ["draw.mjs", "inspect.mjs", "lint.mjs", "assets.mjs", "sce
 
 // The reviewed entry's description is a folded YAML block scalar (`description: >-`), which the shared
 // frontmatter reader returns as its indicator. Read the folded text here instead; the shared helper's
-// bytes are pinned by another bundle's build provenance.
+// bytes are pinned by another bundle's build provenance. The block runs until the first non-blank line
+// that is not indented; blank lines inside it are paragraph breaks, kept as "\n" as YAML folding does.
+// A literal (`|`) or keep (`+`) block is not expected here and fails instead of being guessed.
 function foldedDescription(file, fallback) {
   const block = fs.readFileSync(file, "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  const match = block?.[1].match(/^description:[ \t]*>-?[ \t]*\r?\n((?:[ \t]+\S[^\r\n]*\r?\n?)+)/m);
-  return match ? match[1].split(/\r?\n/).map(line => line.trim()).filter(Boolean).join(" ") : fallback;
+  if (!block) return fallback;
+  const lines = block[1].split(/\r?\n/);
+  const start = lines.findIndex(line => /^description:/.test(line));
+  if (start < 0) return fallback;
+  const indicator = lines[start].replace(/^description:/, "").trim();
+  if (!/^[>|][-+]?$/.test(indicator)) return fallback;
+  if (indicator !== ">" && indicator !== ">-") fail(`unsupported description block scalar ${indicator}: ${file}`);
+  const body = [];
+  for (const line of lines.slice(start + 1)) {
+    if (line.trim() && !/^[ \t]/.test(line)) break;
+    body.push(line.trim());
+  }
+  while (body.length && !body.at(-1)) body.pop();
+  const text = body.join("\n").split(/\n{2,}/).map(paragraph => paragraph.split("\n").join(" ")).join("\n").trim();
+  if (!text) fail(`empty description block: ${file}`);
+  return text;
 }
 
 function parseArgs(argv) {
@@ -106,7 +122,7 @@ function importSnapshot(source, reviewedAt) {
   return manifest;
 }
 
-try {
+if (require.main === module) try {
   const options = parseArgs(process.argv.slice(2));
   if (options.help) process.stdout.write("Usage: node scripts/import-taste-skill.cjs --source <clean-reviewed-checkout> --reviewed-at YYYY-MM-DD\n");
   else {
@@ -117,3 +133,5 @@ try {
   process.stderr.write(`FAIL ${error.message}\n`);
   process.exitCode = 1;
 }
+
+module.exports = { foldedDescription };
