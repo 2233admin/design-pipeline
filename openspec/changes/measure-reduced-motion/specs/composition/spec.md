@@ -2,7 +2,7 @@
 
 ### Requirement: Reduced motion is measured, not only declared
 
-`composition capture --reduced-motion` SHALL capture the page under `prefers-reduced-motion: reduce` and `no-preference`, recording running animations and frame-to-frame pixel change one to two seconds after load. `verify composition --image <png> --reduced-motion <file>` SHALL reject an artifact whose target has changed and SHALL fail when the reduce pass still moves; opacity and colour changes SHALL be reported without failing.
+`composition capture --reduced-motion` SHALL capture the page under `prefers-reduced-motion: reduce` and `no-preference`, recording running animations by the `STILL_MOVING` definition of `audit.reduced-motion` and frame-to-frame pixel change one to two seconds after load. `verify composition --image <png> --reduced-motion <file>` SHALL reject a changed target and SHALL fail when the reduce pass still moves; opacity and colour changes SHALL be reported without failing.
 
 #### Scenario: Infinite animation ignores the preference
 
@@ -38,6 +38,12 @@
 
 - **WHEN** a canvas loop repeats every 250 ms regardless of the preference
 - **THEN** the reduce pass SHALL still record pixel change above 0.5 %
+
+#### Scenario: One definition of still moving
+
+- **WHEN** a spinner with `role="status"` keeps turning under reduce
+- **THEN** the composition gate SHALL judge it as `audit.reduced-motion` does, as exempt essential motion
+- **AND** the animation inventory SHALL come from the `interaction-audit.cjs` reduce pass, not a second implementation.
 
 #### Scenario: Static page
 

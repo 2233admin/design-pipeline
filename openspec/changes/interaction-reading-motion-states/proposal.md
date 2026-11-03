@@ -23,13 +23,18 @@ actual, fix) and coverage statuses:
   `minLineHeight` (1.3), `normal` measured from the font.
 - `audit.heading-levels` (required): no heading more than one level below the one before it.
 - `audit.reduced-motion` (required): each viewport also loads the page with
-  `prefers-reduced-motion: reduce` and reads it one second after load; content visible without the
-  preference but hidden under it by opacity 0, `visibility` or a transform out of view fails, and so
-  does a running animation or transition that moves anything but opacity or color.
-- `audit.state-contrast` (required): after the resting audit, `:hover`, `:focus-visible` and
-  `:active` are forced on every control with CDP `CSS.forcePseudoState`; text a state changes meets
-  the text-contrast floors, and each focusable control shows a `:focus-visible` indicator of at
-  least `contrastFocus` (3:1) against what it sits on.
+  `prefers-reduced-motion: reduce`; both loads are read one second after load; content visible
+  without the preference at that moment but hidden under it by opacity 0, `visibility`, or a
+  transform or clip out of view fails, and so does a running animation or transition that moves
+  anything but opacity or color, except on loading indicators (`role="status"`, `progressbar`,
+  `alert`, `aria-busy="true"`).
+- `audit.state-contrast` (required): after the resting audit, `:hover` and `:focus-visible` are
+  forced on every control with CDP `CSS.forcePseudoState`; text whose colors a state changes meets
+  the text-contrast floors (a state it cannot measure is listed, not failed), and each focusable
+  control shows a `:focus-visible` indicator of at least `contrastFocus` (3:1) against what it sits
+  on.
+- The pending change `measure-reduced-motion` is amended to reuse `audit.reduced-motion`'s
+  "still moving" definition instead of keeping its own.
 
 New probe inputs, copied from DESIGN.md like the others: `thresholds.maxLineCh`,
 `thresholds.minLineHeight`, `thresholds.contrastFocus` and `declare.bodyText`.
@@ -47,9 +52,10 @@ New probe inputs, copied from DESIGN.md like the others: `thresholds.maxLineCh`,
 
 ## Impact
 
-- Every audit probe now loads each viewport twice and forces three states: about one second and one
+- Every audit probe now loads each viewport twice and forces two states: about two seconds and one
   extra load per viewport.
 - Pages that pass today can fail the three required codes after this change: a skipped heading level,
   content lost or motion still running under reduced motion, a state below contrast or a missing
-  focus indicator. Each is a real defect with a one-line fix in the finding. The two reading checks
+  focus indicator. The 3:1 focus rule fails stock Tailwind `ring-blue-500/50` and Bootstrap 5 focus
+  styles. Each is a real defect with a one-line fix in the finding. The two reading checks
   are optional and change nothing until `bodyText` is declared.

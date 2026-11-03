@@ -216,7 +216,7 @@ async function finishTransitions() {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 
-// :hover, :focus-visible and :active forced on every control through the DevTools protocol (a real
+// :hover and :focus-visible forced on every control through the DevTools protocol (a real
 // pointer or Tab reaches one element at a time), after the resting styles were read. Each state is
 // cleared before the next, and the sum of the state checks is the row's audit.state-contrast.
 async function recordStates(page, options, assertLocalTarget) {
@@ -244,9 +244,9 @@ async function recordStates(page, options, assertLocalTarget) {
   }
 }
 
-// Per declared viewport at device scale 1: a load with prefers-reduced-motion: reduce, read once
-// short fades have ended, then a fresh load without the preference for the full audit (which
-// compares the two) and the state passes. Each viewport keeps the requests of both its loads, and
+// Per declared viewport at device scale 1: a load with prefers-reduced-motion: reduce, then a fresh
+// load without the preference for the full audit (which compares the two) and the state passes.
+// Both loads are read REDUCED_MOTION_SETTLE_MS after the fonts and two frames. Each viewport keeps the requests of both its loads, and
 // the probe's whole log also holds what the page requested while the document viewport was
 // restored for the probes that follow; the audit fails any the gate cannot hash with the
 // verifier's external-request finding.
@@ -264,12 +264,15 @@ async function recordAudit(page, probe, url, recordedRequests, timeoutMs, assert
       await page.evaluate(settleForAudit);
       await sleep(REDUCED_MOTION_SETTLE_MS);
       assertLocalTarget();
-      const reduced = await page.evaluate(auditPage, options, auditPass("reduced-motion", { settleMs: REDUCED_MOTION_SETTLE_MS }));
+      const reduced = await page.evaluate(auditPage, options, auditPass("reduced-motion"));
       assertLocalTarget();
       await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "no-preference" }]);
       await page.goto(url, { waitUntil: "networkidle0", timeout: timeoutMs });
       assertLocalTarget();
       await page.evaluate(settleForAudit);
+      // The same moment as the reduce reading, so script timers (a preloader, a toast, a rotator)
+      // stand at the same point in both and only the preference differs.
+      await sleep(REDUCED_MOTION_SETTLE_MS);
       assertLocalTarget();
       const result = await page.evaluate(auditPage, options, auditPass("audit", { reducedMotion: reduced.contractErrors.length ? null : { hidden: reduced.hidden, moving: reduced.moving, animations: reduced.animations } }));
       assertLocalTarget();

@@ -29,8 +29,9 @@ page as source text, so it stays self-contained. Each audit row must report exac
    also carries the control selector, so the page and the driver's DOM query share one string. Per
    viewport the driver runs: `reduced-motion` on a load with `prefers-reduced-motion: reduce`
    (emulated before navigation, read after the fonts, two frames and `REDUCED_MOTION_SETTLE_MS` =
-   1000 ms); `audit` on a fresh load with `no-preference`, at the same moment as before this change,
-   with the reduce snapshot; then `rest` and one `state` pass per state. The full audit emits
+   1000 ms); `audit` on a fresh load with `no-preference`, read after the same 1000 ms so script
+   timers (a preloader, a toast, a rotator) stand at the same point in both loads, with the reduce
+   snapshot; then `rest` and one `state` pass per state. The full audit emits
    `audit.state-contrast` as `null`; the driver replaces it with `combineStateChecks` of the state
    passes, and a summary that still finds `null` rejects the row as incomplete.
 
@@ -43,22 +44,30 @@ page as source text, so it stays self-contained. Each audit row must report exac
 5. **Reduced motion.** Content is an element with its own non-blank text node or a replaced element
    (`img`, `svg`, `video`, `canvas`, `iframe`, `object`, `embed`), not decorative and not clipped
    screen-reader text. Hidden means opacity 0 on it or an ancestor, a `visibility` other than
-   `visible`, or a transform on it or an ancestor that leaves every rect outside the page, outside its
-   clipping ancestors or under 1px. `display: none` is not counted: removing an element is a choice.
+   `visible`, or every rect outside the page, outside its clipping ancestors or under 1px (the cause
+   is the transform on it or an ancestor when there is one, else the clipping ancestor). `display: none` is not counted: removing an element is a choice.
    The reduce pass lists hidden content with its cause; the full audit fails a cause when one of its
    elements is visible and not hidden by the same test without the preference (so a closed menu or a
    carousel slide out of its frame, hidden in both, is not a loss), once per cause with a count.
    Motion: `document.getAnimations()` still `running` one second after load on a visible target, whose
    animated properties (keyframe keys, or the transition's property) include one outside the
-   opacity and color set. The finding names the CSS animation, transition or script animation and
-   whether it loops or how long it has left.
+   opacity and color set. Animations on or inside `role="status"`, `role="progressbar"`,
+   `role="alert"` or `aria-busy="true"` are essential motion (WCAG 2.3.3: spinners, progress bars,
+   skeletons in a busy region) and exempt; an auto-advancing carousel announces no such role and is
+   still judged. The finding names the CSS animation, transition or script animation and whether it
+   loops or how long it has left. The fix for lost content says to skip the entrance and show the
+   final state the animation ends in, never to force an element visible: a preloader or a dismissed
+   toast ends hidden.
 
 6. **States.** Forced through a CDP session: `DOM.querySelectorAll` with the control selector, then
-   `CSS.forcePseudoState` on every match at once; `:hover`, `:focus` + `:focus-visible`, and
-   `:hover` + `:active` (a press happens under the pointer). After forcing and after clearing, every
+   `CSS.forcePseudoState` on every match at once; `:hover`, then `:focus` + `:focus-visible`.
+   `:active` is not forced: it lasts only as long as a press, and an unstyled link's `:active` is the
+   browser's activelink red (`#ff0000`, 3.99:1 on white), so every plain link would fail for a color
+   no page chose. After forcing and after clearing, every
    finite animation is finished (`Animation.finish()`), so a state is read at rest. The `rest` pass
-   records each control's focus styles and, for each text in a control, its color and resolved
-   background; a state pass measures only text whose pair changed (so a resting failure is reported
+   records each control's focus styles and, for each text in a control, a key of colors only: its
+   text color and the computed background color of it and every ancestor. A state pass measures only
+   text whose key changed, so a hover that only filters, fades, lifts or scales is not measured again (so a resting failure is reported
    once, by `audit.text-contrast`) with the same `measureContrast`, recorded under
    `audit.state-contrast` with the state named. Focus indicator, per focusable control
    (`tabIndex >= 0`, not disabled), against its resting styles: a changed outline (`outline-style:
@@ -66,7 +75,12 @@ page as source text, so it stays self-contained. Each audit row must report exac
    outside the control, by offset), a new box-shadow layer (inset against the control, outer against
    what is behind it), a changed border (against what is behind), or a background change (new against
    resting). Translucent colors are composited over that background. No indicator fails; the best
-   below `contrastFocus` fails; an unreadable background is `indeterminate`.
+   below `contrastFocus` fails. A state whose contrast cannot be measured (a filter, translucency or
+   a gradient on a changed color, or a focus indicator over such a surface) is listed under
+   `notMeasured` in the check's coverage and does not fail the required check: the resting audit
+   already judged that surface, and failing a hover for its `filter: brightness()` would fail common
+   pages for nothing measurable. The 3:1 indicator rule stays strict: stock Tailwind
+   `ring-blue-500/50` (1.84:1 on white) and Bootstrap 5's form focus (`#86b7fe`, 2.05:1) fail.
 
 ## Sources
 
@@ -90,9 +104,12 @@ keeps moving.
 
 That open change (not implemented) adds a reduce pass to `composition capture` with pixel sampling,
 judged by `verify composition`. This change measures the web page inside `verify interaction`, the
-gate a web project already passes; it does not touch the composition path. Both judge "still moving"
-the same way (running animations beyond opacity and color); if both land, the composition change
-should reuse this definition rather than keep a second one.
+gate a web project already passes; it does not touch the composition path. To keep one definition of
+"still moving", this PR amends that change's proposal, design, spec and tasks: its animation
+inventory and moving test reuse `audit.reduced-motion`'s (running Web Animations one second after
+load whose properties go beyond opacity and color, loading indicators exempt), taken from
+`interaction-audit.cjs` rather than written again; only its pixel-change sampling and artifact stay
+its own.
 
 ## Risks
 

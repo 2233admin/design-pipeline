@@ -24,7 +24,7 @@ The audit probe SHALL fail declared running text (`declare.bodyText`) whose wide
 
 ### Requirement: Interaction audit measures reduced motion
 
-At each viewport the audit SHALL also load the page with `prefers-reduced-motion: reduce` and read it one second after load. `audit.reduced-motion` SHALL fail content visible without the preference but hidden under it by opacity 0, `visibility` or a transform out of view, and any running animation that moves anything other than opacity or color. It SHALL always run.
+At each viewport the audit SHALL also load the page with `prefers-reduced-motion: reduce`, reading both loads one second after load. `audit.reduced-motion` SHALL fail content visible without the preference at that moment but hidden under it, and any running animation moving more than opacity or color, except on loading indicators. It SHALL always run.
 
 #### Scenario: Content is lost under reduced motion
 
@@ -36,17 +36,35 @@ At each viewport the audit SHALL also load the page with `prefers-reduced-motion
 
 - **WHEN** an infinite or longer than one second transform animation still runs with the preference set
 - **THEN** `audit.reduced-motion` SHALL fail naming the animation and its moving properties
-- **AND** an opacity or color animation, or a reduce rendering that keeps only a fade, SHALL pass.
+- **AND** an opacity or color animation, or a reduce rendering that keeps only a fade, SHALL pass
+- **AND** motion on or inside `role="status"`, `role="progressbar"`, `role="alert"` or `aria-busy="true"` SHALL pass, while an auto-advancing carousel SHALL fail.
+
+#### Scenario: Script timers run the same in both renderings
+
+- **WHEN** a preloader or toast is dismissed by a timer, or a rotator crossfades, the same way with or without the preference
+- **THEN** `audit.reduced-motion` SHALL NOT fail it, because both loads are read at the same moment
+- **AND** a finding's fix SHALL say to show the final state and skip the entrance, never to force the element visible.
 
 ### Requirement: Interaction audit measures state contrast
 
-After the resting audit, the audit SHALL force `:hover`, `:focus-visible` and `:active` on every control through the DevTools protocol. `audit.state-contrast` SHALL fail state-changed text below the text-contrast floors, and a focusable control whose `:focus-visible` shows no outline, ring, border or background change of at least `thresholds.contrastFocus` (default 3:1). It SHALL always run.
+After the resting audit, the audit SHALL force `:hover` and `:focus-visible` on every control through the DevTools protocol. `audit.state-contrast` SHALL fail text whose colors a state changes below the text-contrast floors, and a focusable control without a `:focus-visible` indicator of at least `thresholds.contrastFocus` (default 3:1). It SHALL always run.
 
 #### Scenario: A state drops contrast
 
-- **WHEN** a button's hover text or pressed background falls below 4.5:1
+- **WHEN** a button's hover text color or background color falls below 4.5:1
 - **THEN** `audit.state-contrast` SHALL fail naming the state, the ratio and both colors
-- **AND** text a state leaves unchanged SHALL be judged only by `audit.text-contrast`.
+- **AND** text whose colors a state leaves unchanged (a hover that only filters, fades, lifts or scales) SHALL be judged only by `audit.text-contrast`.
+
+#### Scenario: A state cannot be measured
+
+- **WHEN** a state changes a color and also applies a filter or translucency
+- **THEN** the coverage SHALL list it under `notMeasured` with the reason
+- **AND** it SHALL NOT fail the check.
+
+#### Scenario: Presses are not judged
+
+- **WHEN** a link has the browser's default `:active` color
+- **THEN** `audit.state-contrast` SHALL NOT report it, because `:active` is not forced.
 
 #### Scenario: Focus is invisible or faint
 

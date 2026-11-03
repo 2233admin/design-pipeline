@@ -111,8 +111,12 @@ test("the audit contract has 22 codes, eight optional checks and the documented 
   assert.deepEqual([minFontPx, minTargetPx, minControlGapPx, minControlInsetPx, minLayoutGapPx, contrastNormal, contrastLarge, contrastFocus, maxLineCh, minLineHeight], [12, 24, 8, 8, 8, 4.5, 3, 3, 80, 1.3]);
   assert.deepEqual([...fontSizes], []);
   assert.deepEqual({ ...tolerances }, { alignmentPx: 1, radiusPx: 1, boundsPx: 1, fontSizePx: 0.1, digitWidthPx: 0.5, lineCh: 0.1, lineHeight: 0.005 });
-  assert.deepEqual(Object.keys(audit.STATE_PSEUDO_CLASSES), ["hover", "focus-visible", "active"]);
+  assert.deepEqual(Object.keys(audit.STATE_PSEUDO_CLASSES), ["hover", "focus-visible"], ":active is not measured");
   assert.equal(audit.REDUCED_MOTION_SETTLE_MS, 1000);
+  assert.equal(audit.STILL_MOVING.settleMs, 1000);
+  assert.equal(audit.STILL_MOVING.essential, '[role="status"], [role="progressbar"], [role="alert"], [aria-busy="true"]');
+  assert.ok(audit.STILL_MOVING.fades.includes("opacity") && !audit.STILL_MOVING.fades.includes("transform") && !audit.STILL_MOVING.fades.includes("background-position"));
+  assert.deepEqual(audit.auditPass("reduced-motion").stillMoving, { ...audit.STILL_MOVING, fades: [...audit.STILL_MOVING.fades] }, "the page receives the one definition");
   assert.throws(() => audit.auditPass("snapshot"), /unknown audit pass snapshot/);
   assert.throws(() => audit.auditPass("state", { state: "visited" }), /unknown state visited/);
   assert.equal(audit.auditPass("rest").control, audit.CONTROL_SELECTOR, "the page and the driver's DOM query share one control selector");
@@ -121,9 +125,9 @@ test("the audit contract has 22 codes, eight optional checks and the documented 
 test("the state passes sum into one audit.state-contrast check and a row without them is incomplete", (t) => {
   const part = (checked, failed = []) => ({ declared: true, checked, failedCount: failed.length, indeterminateCount: 0, failed, indeterminate: [] });
   const finding = { code: "audit.state-contrast", selector: "button", expected: "at least 4.5:1", actual: "2.1:1 (#6b8cf0 on #1d4ed8) in :hover", message: "text contrast in :hover is 2.1:1, below 4.5:1", fix: "Keep the text readable in this state." };
-  const combined = audit.combineStateChecks([part(3, [finding]), part(4), part(3)]);
-  assert.deepEqual([combined.checked, combined.failedCount, combined.failed.length], [10, 1, 1]);
-  assert.throws(() => audit.combineStateChecks([part(1), part(1)]), /one result per state/);
+  const combined = audit.combineStateChecks([part(3, [finding]), { ...part(4), notMeasured: [{ selector: ".f", actual: "not measurable in :hover: .f applies a filter" }] }]);
+  assert.deepEqual([combined.checked, combined.failedCount, combined.failed.length, combined.notMeasured.length], [7, 1, 1, 1]);
+  assert.throws(() => audit.combineStateChecks([part(1)]), /one result per state/);
   const project = tmp(t);
   const viewport = { width: 1280, height: 800 };
   const checks = Object.fromEntries(audit.AUDIT_CODES.map((code) => [code, part(1)]));
@@ -507,7 +511,7 @@ test("reduced motion: content hidden or motion still running under prefers-reduc
   assert.match(found[1].actual, /^visibility: hidden on #pop /);
   assert.match(found[2].actual, /^transform .* on #slide moves it out of view /);
   assert.match(found[3].actual, /^animation drift still moves transform in an infinite loop, 1000ms after load$/);
-  assert.match(found[0].fix, /prefers-reduced-motion: reduce\) set opacity: 1/);
+  assert.match(found[0].fix, /skip the entrance and show the element in the final state/);
   assert.match(found[3].fix, /animation: none/);
 
   // The repaired page: reduce keeps a fade (or nothing) and every end state visible.
@@ -517,7 +521,7 @@ test("reduced motion: content hidden or motion still running under prefers-reduc
   assert.equal(statusAt(clean, "audit.reduced-motion"), "passed");
 });
 
-test("state contrast: pale hover text, a missing or faint focus indicator fail; readable states and the browser ring pass", { skip: tools.skip }, async (t) => {
+test("state contrast: pale hover text, a missing or faint focus indicator fail; readable states, the browser ring and presses pass", { skip: tools.skip }, async (t) => {
   const style = `
 button { min-height: 40px; padding: 0 16px; border: 0; background: #1d4ed8; color: #fff; font: inherit; margin-right: 12px; transition: color 300ms; }
 #pale:hover { color: #6b8cf0; }
@@ -531,15 +535,13 @@ a:hover { color: #1e3a8a; }`;
   const html = page(style, `<p><button id="pale">Pale</button><button id="pressed">Pressed</button><button id="bare">Bare</button><button id="faint">Faint</button></p><p><button id="ring">Ring</button><button id="good">Good</button><button id="native">Native</button> <a href="#top" id="link">Read more</a></p>`);
   const result = await measure(t, "states", [{ id: "states", kind: "audit", thresholds: { fonts: ["sans-serif"] } }], { html });
   const found = findingsOf(result, "audit.state-contrast");
-  // A press is forced with :hover, as a pointer makes it, so the pale hover text fails :active too.
+  // :active is not measured, so the pale pressed background of #pressed is not a finding.
   assert.deepEqual(found.map((finding) => [finding.selector, finding.actual]), [
     ["#pale", "2.11:1 (#6b8cf0 on #1d4ed8) in :hover"],
     ["#bare", "no outline, ring, border or background change in :focus-visible"],
     ["#faint", "outline 1.26:1 (#e4e4e7 on #ffffff)"],
-    ["#pale", "2.11:1 (#6b8cf0 on #1d4ed8) in :active"],
-    ["#pressed", "1.8:1 (#ffffff on #93c5fd) in :active"],
   ]);
-  assert.match(found[0].fix, /:hover, :focus-visible or :active/);
+  assert.match(found[0].fix, /:hover or :focus-visible text/);
   assert.match(found[1].fix, /outline: 2px solid/);
   assert.equal(found[1].expected, "a :focus-visible indicator (outline, ring, border or background change) at least 3:1 against what it sits on");
   assert.equal(findingsOf(result, "audit.text-contrast").length, 0, "the resting page passes; only the states fail");
@@ -550,6 +552,56 @@ a:hover { color: #1e3a8a; }`;
   // A focus floor raised in DESIGN.md: the navy ring (10.35:1 on white) passes 3:1 but not 12:1.
   const strict = await measure(t, "states-strict", [{ id: "states", kind: "audit", thresholds: { fonts: ["sans-serif"], contrastFocus: 12 } }], { html: page(style, `<p><button id="ring">Ring</button></p>`) });
   assert.deepEqual(findingsOf(strict, "audit.state-contrast").map((finding) => [finding.selector, finding.actual]), [["#ring", "ring (box-shadow) 10.35:1 (#1e3a8a on #ffffff)"]]);
+});
+
+// The review pages of PR #252, kept as fixtures: each was a false or missing result before its fix.
+const reviewPage = (name) => fs.readFileSync(path.join(fixtures, `review-${name}.html`), "utf8");
+const reviewProbe = { id: "review", kind: "audit", viewports: [{ width: 1280, height: 800 }], thresholds: { fonts: ["Arial", "Liberation Sans"] } };
+
+test("state contrast re-measures only color changes; a changed color it cannot measure is listed as not measured and passes", { skip: tools.skip }, async (t) => {
+  // st3: hovers that filter, fade, lift, scale or blur keep every color, so nothing is re-measured.
+  const result = await measure(t, "review-st3", [reviewProbe], { html: reviewPage("st3") });
+  assert.deepEqual(findingsOf(result, "audit.state-contrast"), [], "no :active activelink red on the plain link, no indeterminate hover");
+  const check = (row) => row.probes[0].coverage[0].checks.find((item) => item.code === "audit.state-contrast");
+  assert.equal(check(result).status, "passed");
+  assert.equal(check(result).notMeasured, undefined);
+  // A hover that changes the background and also filters or fades cannot be measured: it is listed
+  // in the check's details and the required check still passes.
+  const html = reviewPage("st3").replace(".f:hover{filter:brightness(1.1)}", ".f:hover{filter:brightness(1.1);background:#1e40af}").replace(".o:hover{opacity:.85}", ".o:hover{opacity:.85;color:#e0e7ff}");
+  const mixed = await measure(t, "review-st3-color", [reviewProbe], { html });
+  assert.deepEqual(findingsOf(mixed, "audit.state-contrast"), []);
+  assert.equal(check(mixed).status, "passed");
+  assert.deepEqual(check(mixed).notMeasured, [
+    { selector: "body > button:nth-of-type(1)", actual: "not measurable in :hover: body > button:nth-of-type(1) applies a filter" },
+    { selector: "body > button:nth-of-type(2)", actual: "not measurable in :hover: body > button:nth-of-type(2) is translucent (opacity 0.85)" },
+  ]);
+});
+
+test("state contrast: Tailwind's ring-blue-500/50 and Bootstrap's focus border fail 3:1; a link's :active red is not judged", { skip: tools.skip }, async (t) => {
+  const result = await measure(t, "review-st2", [reviewProbe], { html: reviewPage("st2") });
+  assert.deepEqual(findingsOf(result, "audit.state-contrast").map((finding) => [finding.selector, finding.actual]), [
+    ["body > p:nth-of-type(2) > input:nth-of-type(1)", "ring (box-shadow) 1.84:1 (#9dc1fb on #ffffff)"],
+    ["body > p:nth-of-type(2) > input:nth-of-type(3)", "border 2.05:1 (#86b7fe on #ffffff)"],
+  ]);
+  assert.ok(result.findings.every((finding) => !/:active/.test(finding.actual)));
+});
+
+test("reduced motion: spinners and busy regions are essential motion, a carousel is not; both renderings are read at the same moment", { skip: tools.skip }, async (t) => {
+  // rm4: the role=status spinner is exempt; the aria-hidden skeleton outside a busy region and the
+  // auto-advancing carousel are still moving; the carousel's clipped slides are hidden in both.
+  const motion = await measure(t, "review-rm4", [reviewProbe], { html: reviewPage("rm4") });
+  const moving = findingsOf(motion, "audit.reduced-motion");
+  assert.deepEqual(moving.map((finding) => [finding.selector, finding.actual.split(" still")[0]]), [["body > div:nth-of-type(1)", "animation sh"], ["body > div:nth-of-type(2) > div:nth-of-type(1)", "animation slide"]]);
+  assert.match(moving[0].fix, /aria-busy="true"/);
+  const busy = await measure(t, "review-rm4-busy", [reviewProbe], { html: reviewPage("rm4").replace('<div class="sk" aria-hidden="true"></div>', '<div aria-busy="true"><div class="sk" aria-hidden="true"></div></div>') });
+  assert.deepEqual(findingsOf(busy, "audit.reduced-motion").map((finding) => finding.actual.split(" still")[0]), ["animation slide"]);
+  // rm5 (a preloader and a toast dismissed by timers) and rm6 (an 800ms crossfade rotator) behave the
+  // same with or without the preference, and are read at the same moment in both loads.
+  for (const name of ["rm5", "rm6"]) {
+    const result = await measure(t, `review-${name}`, [reviewProbe], { html: reviewPage(name) });
+    assert.deepEqual(findingsOf(result, "audit.reduced-motion"), [], name);
+    assert.equal(statusAt(result, "audit.reduced-motion"), "passed", name);
+  }
 });
 
 test("an inline link is exempt from target size only beside text in its own inline formatting context", { skip: tools.skip }, async (t) => {

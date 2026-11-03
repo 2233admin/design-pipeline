@@ -146,19 +146,29 @@ const NOT_DECLARED_HINT = Object.freeze({
 });
 
 // The interactive elements: target size and spacing measure them, and the state pass forces
-// :hover, :focus-visible and :active on them through the DevTools protocol. One string serves the
+// :hover and :focus-visible on them through the DevTools protocol. One string serves the
 // page (passed in with every pass) and the driver's DOM query, so the two cannot drift.
 const CONTROL_SELECTOR = 'a[href], button, input:not([type="hidden"]), select, textarea, summary, [role="button"], [role="link"], [role="checkbox"], [role="radio"], [role="switch"], [role="tab"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="option"], [role="slider"], [role="combobox"]';
-// The pseudo-classes forced for each measured state. A press happens under the pointer, and a
-// keyboard focus matches :focus as well as :focus-visible.
+// The pseudo-classes forced for each measured state; a keyboard focus matches :focus as well as
+// :focus-visible. :active is not measured: it lasts as long as a press, and an unstyled link's
+// :active is the browser's own activelink red (#ff0000, 3.99:1 on white), which no page chose.
 const STATE_PSEUDO_CLASSES = Object.freeze({
   hover: Object.freeze(["hover"]),
   "focus-visible": Object.freeze(["focus", "focus-visible"]),
-  active: Object.freeze(["hover", "active"]),
 });
-// The reduce pass waits this long after load, so a short entrance fade has ended before it looks.
+// Both renderings are read this long after load (fonts and two frames first), so a short entrance
+// fade has ended and script timers such as a preloader or a toast have run in both.
 const REDUCED_MOTION_SETTLE_MS = 1000;
 const PASS_KINDS = ["audit", "reduced-motion", "rest", "state"];
+// The one definition of "still moving" under reduced motion: a running Web Animation whose animated
+// properties include one outside `fades` (fades and color changes are what reduced motion keeps),
+// on a target that is not on or inside `essential` (loading indicators: WCAG 2.3.3 essential motion),
+// read `settleMs` after load. Any other reduced-motion measurement reuses this object.
+const STILL_MOVING = Object.freeze({
+  settleMs: REDUCED_MOTION_SETTLE_MS,
+  essential: '[role="status"], [role="progressbar"], [role="alert"], [aria-busy="true"]',
+  fades: Object.freeze(["opacity", "fill-opacity", "stroke-opacity", "visibility", "color", "background-color", "border-color", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "border-block-start-color", "border-block-end-color", "border-inline-start-color", "border-inline-end-color", "outline-color", "text-decoration-color", "caret-color", "column-rule-color", "accent-color", "fill", "stroke", "stop-color", "flood-color", "lighting-color"]),
+});
 
 // ---------- probe contract ----------
 
@@ -283,17 +293,17 @@ function auditOptions(probe) {
 function auditPass(kind, extra = {}) {
   if (!PASS_KINDS.includes(kind)) fail(SCOPE, `unknown audit pass ${String(kind)}; allowed: ${PASS_KINDS.join(", ")}`);
   if (kind === "state" && !Object.hasOwn(STATE_PSEUDO_CLASSES, extra.state)) fail(SCOPE, `unknown state ${String(extra.state)}; allowed: ${Object.keys(STATE_PSEUDO_CLASSES).join(", ")}`);
-  return { kind, control: CONTROL_SELECTOR, ...extra };
+  return { kind, control: CONTROL_SELECTOR, ...(kind === "reduced-motion" ? { stillMoving: { essential: STILL_MOVING.essential, fades: [...STILL_MOVING.fades], settleMs: STILL_MOVING.settleMs } } : {}), ...extra };
 }
 
 // The state passes each return their audit.state-contrast check; the audit row holds their sum.
 function combineStateChecks(parts) {
   if (!Array.isArray(parts) || parts.length !== Object.keys(STATE_PSEUDO_CLASSES).length) fail(SCOPE, `audit.state-contrast needs one result per state (${Object.keys(STATE_PSEUDO_CLASSES).join(", ")})`);
-  const combined = { declared: true, checked: 0, failedCount: 0, indeterminateCount: 0, failed: [], indeterminate: [] };
+  const combined = { declared: true, checked: 0, failedCount: 0, indeterminateCount: 0, failed: [], indeterminate: [], notMeasured: [] };
   for (const part of parts) {
     readCheck(part, "audit.state-contrast", "state pass");
     for (const key of ["checked", "failedCount", "indeterminateCount"]) combined[key] += part[key];
-    for (const key of ["failed", "indeterminate"]) combined[key].push(...part[key].slice(0, MAX_STATE_ITEMS - combined[key].length));
+    for (const key of ["failed", "indeterminate", "notMeasured"]) combined[key].push(...(part[key] || []).slice(0, MAX_STATE_ITEMS - combined[key].length));
   }
   return combined;
 }
@@ -350,12 +360,11 @@ function auditPage(options, pass) {
     lineLength: "Cap the measure of running text: set max-width (for example 65ch) on the text block or its column, so lines stay at or below thresholds.maxLineCh.",
     lineHeight: "Set line-height on running text to at least thresholds.minLineHeight (unitless, for example 1.5); keep tight leading for headings and labels only.",
     headingLevel: "Use the next heading level after the previous heading (one deeper at most) and set the size you wanted with a class: heading levels follow the outline, not the type scale.",
-    reducedHidden: "Make the end state the resting state: inside @media (prefers-reduced-motion: reduce) set opacity: 1, visibility: visible and transform: none on this element, instead of only removing its animation or transition.",
-    reducedMoving: "Inside @media (prefers-reduced-motion: reduce), stop this animation (animation: none, or a transition of opacity or color only) or replace the movement with a fade; for a script animation, check matchMedia('(prefers-reduced-motion: reduce)') before starting it.",
-    stateContrast: "Keep the text readable in this state: change the :hover, :focus-visible or :active text or background color so it meets the same contrast as the resting state.",
+    reducedHidden: "Under @media (prefers-reduced-motion: reduce), skip the entrance and show the element in the final state the animation ends in (where it would have come to rest, fully opaque and visible) instead of only removing the animation, which leaves its hidden start state behind.",
+    reducedMoving: "Inside @media (prefers-reduced-motion: reduce), stop this animation (animation: none, or a transition of opacity or color only) or replace the movement with a fade; for a script animation, check matchMedia('(prefers-reduced-motion: reduce)') before starting it. A loading indicator is exempt once it says so: role=\"status\" or role=\"progressbar\" on it, or aria-busy=\"true\" on the region it fills.",
+    stateContrast: "Keep the text readable in this state: change the :hover or :focus-visible text or background color so it meets the same contrast as the resting state.",
     focusMissing: "Give the control a visible :focus-visible indicator, for example outline: 2px solid <a color at least thresholds.contrastFocus:1 against the background beside it>; outline-offset: 2px. Never remove the outline without a replacement.",
     focusContrast: "Raise the contrast of the :focus-visible indicator against the background it sits on: change the outline, ring or border color, or move the ring off the control with outline-offset.",
-    focusUnresolved: "Put the control on a measurable solid background, or draw the :focus-visible indicator as an outline over an opaque surface, so its contrast can be measured.",
   };
   const { thresholds, declare } = options;
   const tolerance = thresholds.tolerances;
@@ -477,6 +486,12 @@ function auditPage(options, pass) {
     if (list.length < MAX_ITEMS) list.push({ code, selector, expected: item.expected, actual: item.actual, message: item.message, fix: item.fix, ...(item.related ? { related: selectorOf(item.related) } : {}) });
   };
   const failed = (code, el, item) => record(code, "failed", el, item);
+  // A state the page draws with a filter, translucency or a gradient cannot be measured; it is listed
+  // in the check's details and does not fail it (the resting audit already judged that surface).
+  const notMeasured = (code, el, actual, selector = null) => {
+    const list = (checks[code].notMeasured ||= []);
+    if (list.length < MAX_ITEMS) list.push({ selector: selector || selectorOf(el), actual });
+  };
   const unresolved = (code, el, item) => record(code, "indeterminate", el, item);
   // A declared selector that matches nothing is a failure, so a typo cannot pass as "nothing to check".
   const noMatch = (code, selector, field) => failed(code, null, {
@@ -826,7 +841,7 @@ function auditPage(options, pass) {
     checks[code].checked += 1;
     const need = required(style);
     const expected = `at least ${need}:1`;
-    const unsure = (reason) => unresolved(code, el, { selector, expected, actual: `not measurable${when}: ${reason}`, message: `the contrast of ${selector}${when} cannot be measured: ${reason}`, fix: FIX.contrastUnresolved });
+    const unsure = (reason) => (as.soft ? notMeasured(code, el, `not measurable${when}: ${reason}`, selector) : unresolved(code, el, { selector, expected, actual: `not measurable${when}: ${reason}`, message: `the contrast of ${selector}${when} cannot be measured: ${reason}`, fix: FIX.contrastUnresolved }));
     if (effects) return unsure(effects);
     if (!color) return unsure(`its text color could not be read`);
     if (color.a === 0) return unsure("its text color is transparent");
@@ -915,7 +930,6 @@ function auditPage(options, pass) {
       return { cause, reason: `visibility: ${styleOf(el).visibility} on ${selectorOf(cause)}` };
     }
     const mover = transformedBy(el);
-    if (!mover) return null;
     const width = Math.max(root.scrollWidth, innerWidth);
     const height = Math.max(root.scrollHeight, innerHeight);
     const { clips } = contextFor(el);
@@ -925,7 +939,10 @@ function auditPage(options, pass) {
       const painted = clippedRect(rect, clips, el, true);
       return painted.left >= painted.right || painted.top >= painted.bottom;
     });
-    return gone ? { cause: mover, reason: `transform ${styleOf(mover).transform === "none" ? "(translate, rotate or scale)" : styleOf(mover).transform} on ${selectorOf(mover)} moves it out of view` } : null;
+    if (!gone) return null;
+    if (mover) return { cause: mover, reason: `transform ${styleOf(mover).transform === "none" ? "(translate, rotate or scale)" : styleOf(mover).transform} on ${selectorOf(mover)} moves it out of view` };
+    const clip = clips.find((item) => item.element !== document.body && item.element !== root);
+    return { cause: clip ? clip.element : el, reason: clip ? `it lies outside the clipping area of ${selectorOf(clip.element)}` : "it lies outside the page or has no size" };
   };
   // Content: elements that paint their own text, and media. SVG parts belong to their svg.
   const contentRects = (el) => {
@@ -942,8 +959,8 @@ function auditPage(options, pass) {
     }
     return rects;
   };
-  // Properties whose animation is a fade or a color change: what reduced motion keeps.
-  const FADES = new Set(["opacity", "fill-opacity", "stroke-opacity", "visibility", "color", "background-color", "border-color", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "border-block-start-color", "border-block-end-color", "border-inline-start-color", "border-inline-end-color", "outline-color", "text-decoration-color", "caret-color", "column-rule-color", "accent-color", "fill", "stroke", "stop-color", "flood-color", "lighting-color"]);
+  const ESSENTIAL_MOTION = pass.stillMoving?.essential;
+  const FADES = new Set(pass.stillMoving?.fades || []);
   if (pass.kind === "reduced-motion") {
     const hidden = [];
     for (const el of everything) {
@@ -960,6 +977,9 @@ function auditPage(options, pass) {
       const target = effect?.target;
       if (animation.playState !== "running" || !(target instanceof Element) || !visible(target)) continue;
       animations += 1;
+      // Essential motion (WCAG 2.3.3): a spinner, progress bar or skeleton that says it reports a
+      // loading state. An auto-advancing carousel says no such thing and is still judged.
+      if (target.closest(ESSENTIAL_MOTION)) continue;
       const transition = typeof CSSTransition !== "undefined" && animation instanceof CSSTransition;
       const css = typeof CSSAnimation !== "undefined" && animation instanceof CSSAnimation;
       const properties = transition ? [animation.transitionProperty] : [...new Set(effect.getKeyframes().flatMap((frame) => Object.keys(frame))
@@ -970,7 +990,7 @@ function auditPage(options, pass) {
       const timing = effect.getComputedTiming();
       const name = transition ? `transition of ${animation.transitionProperty}` : css ? `animation ${animation.animationName}` : `script animation ${animation.id || "(no id)"}`;
       const duration = timing.endTime === Infinity ? "in an infinite loop" : `for ${Math.round(timing.endTime - timing.localTime)}ms more`;
-      if (moving.length < MAX_ITEMS) moving.push({ selector: `${selectorOf(target)}${effect.pseudoElement || ""}`, actual: `${name} still moves ${moves.join(", ")} ${duration}, ${pass.settleMs}ms after load` });
+      if (moving.length < MAX_ITEMS) moving.push({ selector: `${selectorOf(target)}${effect.pseudoElement || ""}`, actual: `${name} still moves ${moves.join(", ")} ${duration}, ${pass.stillMoving.settleMs}ms after load` });
     }
     return { viewport, contractErrors: [], hidden, moving, animations };
   }
@@ -978,9 +998,12 @@ function auditPage(options, pass) {
     const stateCheck = checks["audit.state-contrast"];
     const controlsInState = elements.filter((el) => el.matches(CONTROL) && !el.closest(':disabled, [aria-disabled="true"]'));
     const texts = [...new Set(controlsInState.flatMap((control) => elements.filter((el) => control.contains(el) && !decorative(el) && textRectsOf(el).length)))];
+    // Colors only: the text color and the background colors of the text and every ancestor. A
+    // state that only lifts, scales, filters or fades a control leaves this key as it was.
     const textKey = (el) => {
-      const background = resolveBackground(el, textRectsOf(el));
-      return `${textColorOf(el, styleOf(el))}|${background.color ? hex(background.color) : background.reason}`;
+      const backgrounds = [];
+      for (let node = el; node; node = node.parentElement) backgrounds.push(styleOf(node).backgroundColor);
+      return `${textColorOf(el, styleOf(el))}|${backgrounds.join("|")}`;
     };
     const SIDES = ["Top", "Right", "Bottom", "Left"];
     const focusStyle = (el) => {
@@ -1010,7 +1033,7 @@ function auditPage(options, pass) {
         continue;
       }
       const style = styleOf(el);
-      measureContrast(el, selector, parseColor(textColorOf(el, style)), style, textRectsOf(el), textEffects(style), null, { code: "audit.state-contrast", when, fix: FIX.stateContrast });
+      measureContrast(el, selector, parseColor(textColorOf(el, style)), style, textRectsOf(el), textEffects(style), null, { code: "audit.state-contrast", when, fix: FIX.stateContrast, soft: true });
     }
     if (pass.state === "focus-visible") {
       const need = thresholds.contrastFocus;
@@ -1068,7 +1091,7 @@ function auditPage(options, pass) {
         if (measured.some((result) => result.ratio >= need)) continue;
         const unsure = results.filter((result) => result.reason);
         if (!results.length) failed("audit.state-contrast", control, { expected, actual: "no outline, ring, border or background change in :focus-visible", message: "the control shows no visible focus indicator", fix: FIX.focusMissing });
-        else if (unsure.length) unresolved("audit.state-contrast", control, { expected, actual: `not measurable: ${unsure.map((result) => `${result.kind}: ${result.reason}`).join("; ")}`, message: "the contrast of the focus indicator cannot be measured", fix: FIX.focusUnresolved });
+        else if (unsure.length) notMeasured("audit.state-contrast", control, `focus indicator not measurable: ${unsure.map((result) => `${result.kind}: ${result.reason}`).join("; ")}`);
         else {
           const best = measured.reduce((a, b) => (b.ratio > a.ratio ? b : a));
           failed("audit.state-contrast", control, { expected, actual: `${best.kind} ${Math.floor(best.ratio * 100) / 100}:1 (${best.detail})`, message: `the focus indicator reaches ${Math.floor(best.ratio * 100) / 100}:1, below ${need}:1`, fix: FIX.focusContrast });
@@ -1532,6 +1555,7 @@ function summarizeAudit(probeId, viewportResults, project, requests = []) {
       return {
         code, status, checked: check.checked, failed: check.failedCount, indeterminate: check.indeterminateCount,
         ...(status === "not-declared" ? { hint: NOT_DECLARED_HINT[code] } : {}),
+        ...(Array.isArray(check.notMeasured) && check.notMeasured.length ? { notMeasured: check.notMeasured.map(({ selector, actual }) => ({ selector, actual })) } : {}),
       };
     });
     coverage.push({ viewport, elements: result.elements, checks });
@@ -1550,4 +1574,4 @@ function summarizeAudit(probeId, viewportResults, project, requests = []) {
   return { status, coverage, findings, contractErrors };
 }
 
-module.exports = { AUDIT_CODES, OPTIONAL_CODES, AUDIT_DEFAULTS, EXTERNAL_FIX, CONTROL_SELECTOR, STATE_PSEUDO_CLASSES, REDUCED_MOTION_SETTLE_MS, validateAuditProbe, auditOptions, auditViewports, auditPass, auditPage, bindable, combineStateChecks, summarizeAudit };
+module.exports = { AUDIT_CODES, OPTIONAL_CODES, AUDIT_DEFAULTS, EXTERNAL_FIX, CONTROL_SELECTOR, STATE_PSEUDO_CLASSES, REDUCED_MOTION_SETTLE_MS, STILL_MOVING, validateAuditProbe, auditOptions, auditViewports, auditPass, auditPage, bindable, combineStateChecks, summarizeAudit };
