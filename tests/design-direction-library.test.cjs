@@ -16,7 +16,7 @@ const { BUNDLES, WHOLE_BUNDLES, fetchBundle, partialBundles, upstreamRoot } = re
 const { storedPath } = require("../skill/scripts/upstream-path.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
-const [library] = partialBundles();
+const library = partialBundles().find((entry) => entry.schema === "design-pipeline.direction-library-source.v1");
 const bundle = library.bundle;
 const vendorRoot = path.dirname(library.manifestFile);
 const shippedRoot = path.join(vendorRoot, "upstream");

@@ -446,6 +446,41 @@ Catalog search does not install those files as a product DESIGN.md and does not 
 `designmd-cli`. The upstream LICENSE is retained at
 `skill/vendor/design-md/upstream/LICENSE`.
 
+## nexu-io/open-design and feimacode/open-design-agent-kit (brand design systems)
+
+The brand design-system catalog is assembled from two reviewed sources. The package and this
+repository carry only `skill/vendor/brand-design-systems/manifest.json` and the licence and
+attribution texts under `skill/vendor/brand-design-systems/upstream/`; `sources fetch --bundle
+brand-design-systems` downloads the 1,144 system files (9,263,650 bytes) from the pinned commits and
+checks each by size, Git blob id and the SHA-256 recorded in the manifest.
+
+- https://github.com/nexu-io/open-design, reviewed commit
+  `5a0c47777975ddb91d09c1c16b423a3ef74bf572` (reviewed 2026-11-04), Git tree
+  `0fc60c4ad669d1f14c4ea12ec59acf96bdbeecdf`, Apache License 2.0
+  (`upstream/open-design/LICENSE`). 152 English design-system packages from `design-systems/<id>/`:
+  `manifest.json`, `DESIGN.md`, `USAGE.md`, `tokens.css`, `components.html` and
+  `source/token-contract.report.json` where present; translations, previews and generated token
+  exports are not taken. Per-system provenance is in each `manifest.json`; the upstream
+  attribution (`upstream/open-design/design-systems/README.md`) credits VoltAgent/awesome-design-md
+  (MIT), bergside/awesome-design-skills, tw93/kami (MIT) and Tom-Opencart/tom-modern-html-style-rule
+  (MIT) for upstream-derived systems.
+- https://github.com/feimacode/open-design-agent-kit, reviewed commit
+  `927d4b6e6a29d8bfebdccadb4bb4a1b2a6438e73` (reviewed 2026-11-04), Git tree
+  `1b7ae070ec44786afdb17e6c0898fe57fd2cbfa2`, MIT, Copyright (c) 2026 Iven Xu
+  (`upstream/open-design-agent-kit/LICENSE`). Its 46 own packages
+  (`packages/content/local/design-systems/<id>/`) and its correction overlays
+  (`tokens.override.css`, `DESIGN.sections.md`) for 57 open-design systems. The 30 systems adapted
+  from Meliwat/awesome-ios-design-md keep that project's MIT notice, Copyright (c) 2026 Muhammed
+  Eliwat (`upstream/open-design-agent-kit/packages/content/local/notices/LICENSE-awesome-ios-design-md.txt`).
+  Its generated `claude-design-systems/` folders repeat the same 198 systems in another format and
+  are not taken.
+
+Systems are deduplicated by id (the richer package wins; none collided at these revisions).
+Brand-referencing systems are aesthetic studies of public products, not official assets of those
+brands; the owner accepted the trademark and licensing risk of absorbing them as learning material
+(#253). Every system is inspiration-only: search and inspect never install one as a product
+DESIGN.md, and nothing from either source is executed.
+
 ## iart-ai motion skills
 
 The bundled motion-skill library is a byte-preserved snapshot of the MIT-licensed
