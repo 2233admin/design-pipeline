@@ -11,7 +11,7 @@ const { fileURLToPath, pathToFileURL } = require("node:url");
 const { fail } = require("./contract-utils.cjs");
 const { resolvePuppeteer } = require("./film-capture-core.cjs");
 const { browserIdentity, resolveBrowser } = require("./browser-locate.cjs");
-const { auditOptions, auditPage } = require("./interaction-audit.cjs");
+const { CONTROL_SELECTOR, REDUCED_MOTION_SETTLE_MS, STATE_PSEUDO_CLASSES, auditOptions, auditPage, auditPass, combineStateChecks } = require("./interaction-audit.cjs");
 
 const SCOPE = "interaction capture";
 const CAPTURE_SCHEMA = "design-pipeline.interaction-capture.v1";
@@ -206,10 +206,50 @@ async function settleForAudit() {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 
-// One fresh navigation per declared viewport at device scale 1, then the in-page audit. Each
-// viewport keeps the requests of its own load, and the probe's whole log also holds what the page
-// requested while the document viewport was restored for the probes that follow; the audit fails
-// any the gate cannot hash with the verifier's external-request finding.
+// Runs in the page between state passes: every finite animation or transition the forced state
+// started jumps to its end, so a state is measured as it rests rather than halfway there.
+async function finishTransitions() {
+  for (const animation of document.getAnimations()) {
+    if (animation.effect?.getComputedTiming().endTime === Infinity) continue;
+    try { animation.finish(); } catch { /* an animation that cannot finish keeps running; the state is still measured */ }
+  }
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+// :hover, :focus-visible and :active forced on every control through the DevTools protocol (a real
+// pointer or Tab reaches one element at a time), after the resting styles were read. Each state is
+// cleared before the next, and the sum of the state checks is the row's audit.state-contrast.
+async function recordStates(page, options, assertLocalTarget) {
+  const session = await page.createCDPSession();
+  try {
+    await session.send("DOM.enable");
+    await session.send("CSS.enable");
+    const { root } = await session.send("DOM.getDocument", { depth: 0 });
+    const { nodeIds } = await session.send("DOM.querySelectorAll", { nodeId: root.nodeId, selector: CONTROL_SELECTOR });
+    const force = (classes) => Promise.all(nodeIds.map((nodeId) => session.send("CSS.forcePseudoState", { nodeId, forcedPseudoClasses: [...classes] })));
+    const rest = await page.evaluate(auditPage, options, auditPass("rest"));
+    assertLocalTarget();
+    const parts = [];
+    for (const [state, classes] of Object.entries(STATE_PSEUDO_CLASSES)) {
+      await force(classes);
+      await page.evaluate(finishTransitions);
+      parts.push(await page.evaluate(auditPage, options, auditPass("state", { state, rest: { controls: rest.controls, texts: rest.texts } })));
+      assertLocalTarget();
+      await force([]);
+      await page.evaluate(finishTransitions);
+    }
+    return combineStateChecks(parts);
+  } finally {
+    await session.detach().catch(() => {});
+  }
+}
+
+// Per declared viewport at device scale 1: a load with prefers-reduced-motion: reduce, read once
+// short fades have ended, then a fresh load without the preference for the full audit (which
+// compares the two) and the state passes. Each viewport keeps the requests of both its loads, and
+// the probe's whole log also holds what the page requested while the document viewport was
+// restored for the probes that follow; the audit fails any the gate cannot hash with the
+// verifier's external-request finding.
 async function recordAudit(page, probe, url, recordedRequests, timeoutMs, assertLocalTarget, restore) {
   const mark = recordedRequests.length;
   const options = auditOptions(probe);
@@ -218,15 +258,26 @@ async function recordAudit(page, probe, url, recordedRequests, timeoutMs, assert
     for (const viewport of probe.viewports) {
       const viewportMark = recordedRequests.length;
       await page.setViewport({ width: viewport.width, height: viewport.height, deviceScaleFactor: 1 });
+      await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "reduce" }]);
+      await page.goto(url, { waitUntil: "networkidle0", timeout: timeoutMs });
+      assertLocalTarget();
+      await page.evaluate(settleForAudit);
+      await sleep(REDUCED_MOTION_SETTLE_MS);
+      assertLocalTarget();
+      const reduced = await page.evaluate(auditPage, options, auditPass("reduced-motion", { settleMs: REDUCED_MOTION_SETTLE_MS }));
+      assertLocalTarget();
+      await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "no-preference" }]);
       await page.goto(url, { waitUntil: "networkidle0", timeout: timeoutMs });
       assertLocalTarget();
       await page.evaluate(settleForAudit);
       assertLocalTarget();
-      const result = await page.evaluate(auditPage, options);
+      const result = await page.evaluate(auditPage, options, auditPass("audit", { reducedMotion: reduced.contractErrors.length ? null : { hidden: reduced.hidden, moving: reduced.moving, animations: reduced.animations } }));
       assertLocalTarget();
+      if (!result.contractErrors.length) result.checks["audit.state-contrast"] = await recordStates(page, options, assertLocalTarget);
       viewports.push({ viewport: { width: viewport.width, height: viewport.height }, result, requests: recordedRequests.slice(viewportMark) });
     }
   } finally {
+    await page.emulateMediaFeatures();
     await page.setViewport(restore);
   }
   return { id: probe.id, kind: "audit", viewports, requests: recordedRequests.slice(mark) };

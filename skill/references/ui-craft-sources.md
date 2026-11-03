@@ -47,11 +47,19 @@ A token may raise a floor, never lower it below the WCAG values (24px targets, 4
 | `audit.layout-gap` | Visible children of declared stacks are at least `minLayoutGapPx` apart edge to edge, diagonals included | 8px | `declare.stacks`; `spacing` → `thresholds.minLayoutGapPx` | LA `layout-gap`; `ID/better-layout/grouping-and-alignment.md` (group with space) |
 | `audit.layout-alignment` | Items of a declared group share the start, center or end edge | 1px | `declare.alignGroups` | LA `layout-alignment`; `ID/better-layout/grouping-and-alignment.md` (shared edges) |
 | `audit.nested-radius` | Inner radius equals `max(0, outer - inset)` for declared pairs with even insets | 1px | `radius` tokens; `declare.radiusPairs` | LA `nested-radius`; `ID/better-ui/surfaces.md`, `MI/surfaces.md` |
+| `audit.line-length` | The widest rendered line of declared running text, divided by the width of `0` in its font (1ch), is at most `maxLineCh` | 80ch | `typography` measure → `thresholds.maxLineCh`; `declare.bodyText` | [reading sources](#reading-motion-and-state-sources); `ID/better-typography/spacing-and-sizing.md` |
+| `audit.line-height` | Declared running text has a line-height of at least `minLineHeight` times its font size (`normal` is measured from the font) | 1.3 | `typography` leading → `thresholds.minLineHeight`; `declare.bodyText` | [reading sources](#reading-motion-and-state-sources) |
+| `audit.heading-levels` | In document order, no heading (`h1`-`h6`, `role="heading"` with `aria-level`, screen-reader-only ones included; `hidden`, `display: none` and `aria-hidden` ones excluded) is more than one level below the heading before it | none | none | [reading sources](#reading-motion-and-state-sources); `FA` |
+| `audit.reduced-motion` | Loaded with `prefers-reduced-motion: reduce` and read 1s after load: no content (text or media) visible without the preference is hidden by opacity 0, `visibility` or a transform that moves it out of view or to zero size, and no running animation or transition moves anything but opacity or color | 1s | none | [motion sources](#reading-motion-and-state-sources); `FA`, `ID/better-accessibility/motion-and-zoom.md` |
+| `audit.state-contrast` | With `:hover`, `:focus-visible` and `:active` forced on every control (CDP `CSS.forcePseudoState`; `:active` with `:hover`), text the state changes meets the text-contrast floors, and each focusable control shows a `:focus-visible` outline, ring, border or background change of at least `contrastFocus` against what it sits on (the browser's two-tone `outline-style: auto` ring passes) | 3:1 | `colors` roles; stricter → `thresholds.contrastFocus`, `contrastNormal`, `contrastLarge` | [state sources](#reading-motion-and-state-sources); `FA`, `ID/better-accessibility/focus-and-keyboard.md` |
 
 `audit.font-family` and every check without a `declare` input always run; `thresholds.fonts` is
 required. The optional selector checks are `audit.tabular-numbers` (declared numbers, plus inferred
 numeric cells), `audit.content-overflow`, `audit.control-inset`, `audit.layout-gap`,
-`audit.layout-alignment` and `audit.nested-radius`. A declared selector that matches nothing is a
+`audit.layout-alignment`, `audit.nested-radius`, and `audit.line-length` and `audit.line-height`
+(running text is a role only the author knows: labels, captions, table cells and hero lines are
+not). `audit.heading-levels`, `audit.reduced-motion` and `audit.state-contrast` need no declaration
+and always run. A declared selector that matches nothing is a
 failed finding.
 
 The audit also classifies every request the page made at any viewport. A CDN or dev-server URL, or
@@ -84,12 +92,12 @@ finding status, removed signals) in [interface-discipline.md](interface-discipli
 | UC-03 | Timing uses project motion tokens and stays in budget (see [Precedence](#precedence)); exits are faster than entrances; similar elements share timing; ease-out to enter and exit, ease-in-out to move on screen, linear only for constant-rate fills. | `EM`, `12P`, `MI/animations.md`, [motion gate](animation-opportunity-and-review.md) |
 | UC-04 | Motion never blocks input: rapid toggles retarget instead of queueing, controls stay operable mid-animation, and controls at their default state do not animate on mount. | `EM`, `MI/animations.md`, `ID/better-ui/animations.md` |
 | UC-05 | Trigger-anchored surfaces grow from their trigger and modals from center; scale entrances start at 0.9 or more, never 0; exits are softer, with a small offset. | `EM`, `MI/animations.md`, `ID/better-ui/animations.md` |
-| UC-06 | Reduced motion reduces, not removes: no non-essential movement, parallax, autoplay, smooth scroll or auto-rotation; spinners and state changes stay; anything moving over 5s can be paused. | `FA`, `ID/better-accessibility/motion-and-zoom.md`, `MI/animations.md` |
+| UC-06 | Reduced motion reduces, not removes: no non-essential movement, parallax, autoplay, smooth scroll or auto-rotation; spinners and state changes stay; anything moving over 5s can be paused. `audit.reduced-motion` measures lost content and CSS or Web Animations still moving; script-driven motion and pausing stay a review. | `FA`, `ID/better-accessibility/motion-and-zoom.md`, `MI/animations.md` |
 | UC-07 | Changed motion is replayed slowed to about 10% through every state, then under rapid repeat, keyboard, reduced motion, mobile width, slow device and interruption. | `MI/UPSTREAM-SKILL.md`, `ID/better-ui/UPSTREAM-SKILL.md`, [motion gate](animation-opportunity-and-review.md) |
-| UC-08 | Every control and pointer path works from the keyboard in visual order, with one consistent visible focus indicator that overflow and motion never hide; no positive `tabindex`. | `FA`, `ID/better-accessibility/focus-and-keyboard.md` |
+| UC-08 | Every control and pointer path works from the keyboard in visual order, with one consistent visible focus indicator that overflow and motion never hide; no positive `tabindex`. `audit.state-contrast` measures that the indicator exists and its contrast. | `FA`, `ID/better-accessibility/focus-and-keyboard.md` |
 | UC-09 | Composite widgets (tabs, menus, toolbars, listboxes, comboboxes) are one Tab stop with their arrow-key model; an ARIA widget role is fully implemented or not used. | `ID/better-accessibility/semantics-and-aria.md`, `ID/better-accessibility/focus-and-keyboard.md` |
 | UC-10 | Dialogs take focus on open and return it to the opener; a modal traps focus over an inert page; Escape closes the newest layer first; toasts never take focus; a route change moves focus to the new view. | `FA`, `ID/better-accessibility/focus-and-keyboard.md`, `ID/better-accessibility/screen-readers.md` |
-| UC-11 | Native elements first (`button` acts, `a href` navigates); every control has a name containing its visible text; decorative icons are hidden; one `main`, unskipped headings and `lang` set. | `FA`, `ID/better-accessibility/semantics-and-aria.md`, `ID/better-accessibility/screen-readers.md` |
+| UC-11 | Native elements first (`button` acts, `a href` navigates); every control has a name containing its visible text; decorative icons are hidden; one `main`, unskipped headings (measured by `audit.heading-levels`) and `lang` set. | `FA`, `ID/better-accessibility/semantics-and-aria.md`, `ID/better-accessibility/screen-readers.md` |
 | UC-12 | Fields keep a visible programmatic label (a placeholder is not one); hints show before the mistake; errors are text beside the linked field and submit focuses the first one; correct `autocomplete`, `type` and `inputmode`; paste allowed; mobile inputs ≥16px. | `FA`, `ID/better-accessibility/forms.md`, `SC/forms.md` |
 | UC-13 | Alt text states what an image adds or names a functional image's action; decorative images are silent. | `ID/better-accessibility/screen-readers.md` |
 | UC-14 | Buttons start with a verb that names the real action; no bare OK or Yes on consequential actions. | `ID/better-writing/UPSTREAM-SKILL.md` |
@@ -230,6 +238,25 @@ as CommonJS in `scripts/interaction-audit.cjs` with its notice. It is adapted, n
 lintapple file, policy file, CLI, Playwright helper or axe-core dependency ships. Changes: thresholds
 come from probe inputs, selectors replace `data-ui-*` markers, the target floor is 24px instead of
 15px, tabular digits are measured, and the `copy` rule and axe-backed rules are not ported.
+
+### Reading, motion and state sources
+
+`audit.line-length`, `audit.line-height`, `audit.heading-levels`, `audit.reduced-motion` and
+`audit.state-contrast` are this project's own code in `scripts/interaction-audit.cjs`; no upstream
+file is vendored or copied. Their rules follow
+[Nutlope/hallmark](https://github.com/Nutlope/hallmark) `skills/hallmark/scripts/sloplint-render.mjs`
+(running-prose measure; MIT) and [pbakaus/impeccable](https://github.com/pbakaus/impeccable) rules
+`line-length`, `tight-leading` and `skipped-heading` (Apache-2.0) for reading, and
+[plugin87/ux-ui-agent-skills](https://github.com/plugin87/ux-ui-agent-skills)
+`scripts/verify_reduced_motion.mjs` (render twice, content lost under reduce, motion still running)
+and `scripts/verify_states.mjs` (contrast per interaction state; MIT) for motion and states.
+Revisions read: hallmark `4f6a46c6dc325d40ab268c93e25c7b96676ebccd`, impeccable
+`9fadc41729c38fd47d7ae622b501558653f9d2e9`, ux-ui-agent-skills
+`def84a70fadc3490d80901295a4f1951fdb2cc69`. Changes from them: the state pass forces pseudo-classes
+through the DevTools protocol instead of focusing one element at a time, only text a state changes
+is measured again, the browser's `outline-style: auto` ring counts as an indicator, and reduced
+motion compares the two renderings element by element instead of declaring a missing media query a
+failure.
 
 ## Maintaining the snapshots
 
