@@ -8,24 +8,26 @@ const { canonicalTree, copyTrackedFiles, fail, frontmatter, inspectCheckout } = 
 
 const destination = path.resolve(__dirname, "../skill/vendor/taste-skill");
 const repository = "https://github.com/Leonxlnx/taste-skill";
-const reviewedRevision = "b482f7a970abb98c4108d4a9f761e458c64cefc8";
-const reviewedGitTree = "2589404b7fd08979aafbeb8074d4bc416fe428a3";
-const reviewedTreeSha256 = "5c05edf236140ec2152a02c95f079911ce4636dd1b15089ad9292be9d0b5a40a";
+const reviewedRevision = "12af471f627f866411b4bd785b19646d3672784c";
+const reviewedGitTree = "db698c9093437ee7daea871f70b48d06a838038e";
+const reviewedTreeSha256 = "e12cc2e63faba012ac716039de7cdd26da29cf1b2b48e065eca81aec910fc91e";
+// Upstream v2.1.3 made the repository one skill. The classic styles now live in
+// Leonxlnx/taste-skill-classics and the image-generation skills in Leonxlnx/imagegen-skills.
 const reviewedSkills = new Map([
-  ["brandkit", "brandkit"],
-  ["brutalist-skill", "industrial-brutalist-ui"],
-  ["gpt-tasteskill", "gpt-taste"],
-  ["image-to-code-skill", "image-to-code"],
-  ["imagegen-frontend-mobile", "imagegen-frontend-mobile"],
-  ["imagegen-frontend-web", "imagegen-frontend-web"],
-  ["minimalist-skill", "minimalist-ui"],
-  ["output-skill", "full-output-enforcement"],
-  ["redesign-skill", "redesign-existing-projects"],
-  ["soft-skill", "high-end-visual-design"],
-  ["stitch-skill", "stitch-design-taste"],
-  ["taste-skill-v1", "design-taste-frontend-v1"],
   ["taste-skill", "design-taste-frontend"],
 ]);
+const reviewedFileCount = 72;
+const reviewedByteCount = 3093372;
+const reviewedTools = ["draw.mjs", "inspect.mjs", "lint.mjs", "assets.mjs", "scenes.mjs"].map(file => `skills/taste-skill/scripts/${file}`);
+
+// The reviewed entry's description is a folded YAML block scalar (`description: >-`), which the shared
+// frontmatter reader returns as its indicator. Read the folded text here instead; the shared helper's
+// bytes are pinned by another bundle's build provenance.
+function foldedDescription(file, fallback) {
+  const block = fs.readFileSync(file, "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  const match = block?.[1].match(/^description:[ \t]*>-?[ \t]*\r?\n((?:[ \t]+\S[^\r\n]*\r?\n?)+)/m);
+  return match ? match[1].split(/\r?\n/).map(line => line.trim()).filter(Boolean).join(" ") : fallback;
+}
 
 function parseArgs(argv) {
   const options = {};
@@ -44,7 +46,7 @@ function parseArgs(argv) {
 }
 
 function importSnapshot(source, reviewedAt) {
-  for (const file of ["LICENSE", "README.md", ...[...reviewedSkills.keys()].map(directory => `skills/${directory}/SKILL.md`)]) {
+  for (const file of ["LICENSE", "README.md", ...[...reviewedSkills.keys()].map(directory => `skills/${directory}/SKILL.md`), ...reviewedTools]) {
     if (!fs.existsSync(path.join(source, file))) fail(`source is not a complete Leonxlnx/taste-skill checkout: missing ${file}`);
   }
   const checkout = inspectCheckout(source);
@@ -55,7 +57,9 @@ function importSnapshot(source, reviewedAt) {
   const files = checkout.indexEntries.map(entry => entry.path);
   const byteCount = checkout.indexEntries.reduce((sum, entry) => sum + entry.size, 0);
   const skillFiles = files.filter(file => /^skills\/[^/]+\/SKILL\.md$/.test(file));
-  if (files.length !== 62 || byteCount !== 4824721 || skillFiles.length !== 13) fail("reviewed source inventory does not match 62 files, 4824721 bytes and 13 skills");
+  if (files.length !== reviewedFileCount || byteCount !== reviewedByteCount || skillFiles.length !== reviewedSkills.size) {
+    fail(`reviewed source inventory does not match ${reviewedFileCount} files, ${reviewedByteCount} bytes and ${reviewedSkills.size} skill`);
+  }
 
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   const backup = `${destination}.backup-${process.pid}`;
@@ -71,11 +75,13 @@ function importSnapshot(source, reviewedAt) {
     if (treeSha256 !== reviewedTreeSha256) fail("source content does not match reviewed Taste-Skill tree hash");
     const skills = skillFiles.map(file => {
       const directory = file.split("/")[1];
-      const metadata = frontmatter(path.join(upstream, storedPath(file)));
-      if (reviewedSkills.get(directory) !== metadata.name || !metadata.description.trim()) fail(`frontmatter does not match reviewed Taste-Skill entry: ${file}`);
-      return { name: metadata.name, directory, path: `upstream/${file}`, description: metadata.description };
+      const entry = path.join(upstream, storedPath(file));
+      const metadata = frontmatter(entry);
+      const description = foldedDescription(entry, metadata.description);
+      if (reviewedSkills.get(directory) !== metadata.name || !description.trim() || /^[>|]/.test(description)) fail(`frontmatter does not match reviewed Taste-Skill entry: ${file}`);
+      return { name: metadata.name, directory, path: `upstream/${file}`, description };
     });
-    if (new Set(skills.map(skill => skill.name)).size !== 13) fail("reviewed Taste-Skill names must be unique");
+    if (new Set(skills.map(skill => skill.name)).size !== reviewedSkills.size) fail("reviewed Taste-Skill names must be unique");
     manifest = {
       schema: "design-pipeline.taste-skill-source.v1",
       source: { repository, revision: checkout.revision, gitTree: checkout.gitTree, committedAt: checkout.committedAt, license: "MIT", reviewedAt, scope: ["**"] },

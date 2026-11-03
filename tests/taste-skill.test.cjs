@@ -17,20 +17,12 @@ const vendorRoot = path.join(repoRoot, "skill/vendor/taste-skill");
 const sourceRoot = path.join(vendorRoot, "upstream");
 const manifest = JSON.parse(fs.readFileSync(path.join(vendorRoot, "manifest.json"), "utf8"));
 const reviewedSkills = [
-  ["brandkit", "brandkit"],
-  ["brutalist-skill", "industrial-brutalist-ui"],
-  ["gpt-tasteskill", "gpt-taste"],
-  ["image-to-code-skill", "image-to-code"],
-  ["imagegen-frontend-mobile", "imagegen-frontend-mobile"],
-  ["imagegen-frontend-web", "imagegen-frontend-web"],
-  ["minimalist-skill", "minimalist-ui"],
-  ["output-skill", "full-output-enforcement"],
-  ["redesign-skill", "redesign-existing-projects"],
-  ["soft-skill", "high-end-visual-design"],
-  ["stitch-skill", "stitch-design-taste"],
-  ["taste-skill-v1", "design-taste-frontend-v1"],
   ["taste-skill", "design-taste-frontend"],
 ];
+const skillRoot = "skills/taste-skill";
+const tools = ["draw.mjs", "inspect.mjs", "lint.mjs", "assets.mjs", "scenes.mjs"];
+const routes = ["New site", "Redesign", "App screens", "Critique"];
+const departed = ["minimalist-ui", "industrial-brutalist-ui", "high-end-visual-design", "gpt-taste", "design-taste-frontend-v1", "stitch-design-taste", "redesign-existing-projects", "image-to-code", "imagegen-frontend-web", "imagegen-frontend-mobile", "brandkit", "full-output-enforcement"];
 const read = (file) => fs.readFileSync(path.join(sourceRoot, file), "utf8");
 
 function run(command, args, cwd, env = {}) {
@@ -46,30 +38,30 @@ function run(command, args, cwd, env = {}) {
 test("taste-skill preserves the complete reviewed Git blobs, tree and license", () => {
   assert.equal(manifest.schema, "design-pipeline.taste-skill-source.v1");
   assert.equal(manifest.source.repository, "https://github.com/Leonxlnx/taste-skill");
-  assert.equal(manifest.source.revision, "b482f7a970abb98c4108d4a9f761e458c64cefc8");
-  assert.equal(manifest.source.gitTree, "2589404b7fd08979aafbeb8074d4bc416fe428a3");
+  assert.equal(manifest.source.revision, "12af471f627f866411b4bd785b19646d3672784c");
+  assert.equal(manifest.source.gitTree, "db698c9093437ee7daea871f70b48d06a838038e");
   assert.equal(manifest.source.license, "MIT");
   assert.deepEqual(manifest.source.scope, ["**"]);
   assert.equal(manifest.snapshot.root, "upstream");
   const files = upstreamFilesIn(sourceRoot);
-  assert.equal(files.length, 62);
+  assert.equal(files.length, 72);
   assert.equal(manifest.snapshot.fileCount, files.length);
   assert.deepEqual(manifest.snapshot.objects.map((object) => object.path).sort(), files);
   assert.equal(new Set(manifest.snapshot.objects.map((object) => object.path)).size, files.length);
   let bytes = 0;
   for (const object of manifest.snapshot.objects) {
-    assert.equal(object.mode, "100644", object.path);
+    assert.equal(object.mode, object.path === "install.sh" ? "100755" : "100644", object.path);
     const content = fs.readFileSync(path.join(sourceRoot, storedPath(object.path)));
     bytes += content.length;
     assert.equal(object.size, content.length, object.path);
     assert.equal(object.oid, crypto.createHash("sha1").update(`blob ${content.length}\0`).update(content).digest("hex"), object.path);
   }
-  assert.equal(bytes, 4824721);
+  assert.equal(bytes, 3093372);
   assert.equal(manifest.snapshot.byteCount, bytes);
   assert.equal(gitTreeId(manifest.snapshot.objects), manifest.source.gitTree);
-  assert.equal(manifest.snapshot.treeSha256, "5c05edf236140ec2152a02c95f079911ce4636dd1b15089ad9292be9d0b5a40a");
+  assert.equal(manifest.snapshot.treeSha256, "e12cc2e63faba012ac716039de7cdd26da29cf1b2b48e065eca81aec910fc91e");
   assert.equal(canonicalTree(sourceRoot, files), manifest.snapshot.treeSha256);
-  assert.deepEqual(manifest.snapshot.executableFiles, []);
+  assert.deepEqual(manifest.snapshot.executableFiles, ["install.sh"]);
   assert.deepEqual(manifest.licenses, [{ path: "upstream/LICENSE", license: "MIT", copyright: "Copyright (c) 2026 Leonxlnx" }]);
   assert.match(read("LICENSE"), /^MIT License/);
   assert.ok(read("LICENSE").includes(manifest.licenses[0].copyright));
@@ -85,36 +77,30 @@ test("taste-skill preserves the complete reviewed Git blobs, tree and license", 
   }
 });
 
-test("all thirteen taste-skill frontmatters and supporting Stitch and research files remain local", () => {
-  assert.deepEqual(manifest.skills.map(({ directory, name }) => [directory, name]).sort(), [...reviewedSkills].sort());
-  assert.equal(new Set(manifest.skills.map((skill) => skill.name)).size, 13);
-  assert.deepEqual(upstreamFilesIn(path.join(sourceRoot, "skills")).filter((file) => file.endsWith("/SKILL.md")), reviewedSkills.map(([directory]) => `${directory}/SKILL.md`).sort());
+test("the one taste-skill entry, its references, library and optional tools remain local", () => {
+  assert.deepEqual(manifest.skills.map(({ directory, name }) => [directory, name]), reviewedSkills);
+  assert.deepEqual(upstreamFilesIn(path.join(sourceRoot, "skills")).filter((file) => file.endsWith("/SKILL.md")), ["taste-skill/SKILL.md"]);
   for (const skill of manifest.skills) {
     assert.equal(skill.path, `upstream/skills/${skill.directory}/SKILL.md`);
     const metadata = frontmatter(path.join(vendorRoot, storedPath(skill.path)));
     assert.equal(metadata.name, skill.name);
-    assert.equal(metadata.description, skill.description);
-    assert.ok(metadata.description.trim(), skill.name);
+    assert.equal(metadata.description, ">-");
+    assert.match(skill.description, /^tasteskill v2, the anti-slop frontend skill\. Art direction for websites,[\s\S]* with their own run and rules\.$/);
+    assert.ok(read(`${skillRoot}/SKILL.md`.replace("SKILL.md", "UPSTREAM-SKILL.md")).replace(/\s+/g, " ").includes(skill.description));
   }
   const supporting = [
-    "skills/stitch-skill/DESIGN.md",
-    "skills/llms.txt",
-    "research/README.md",
-    "research/laziness/README.md",
-    "research/laziness/root-causes/cognitive-shortcuts.md",
-    "research/laziness/root-causes/output-limits.md",
-    "research/laziness/root-causes/rlhf-and-compute.md",
-    "research/laziness/root-causes/training-data-bias.md",
-    "research/laziness/findings/empirical-results.md",
-    "research/laziness/findings/references.md",
-    "research/laziness/remediation/architectural-patterns.md",
-    "research/laziness/remediation/parameter-tuning.md",
-    "research/laziness/remediation/prompt-engineering.md",
-    "research/laziness/remediation/reference-prompts.md",
+    ...["app-screens", "colour", "copy", "critique", "imagery", "layout", "motion", "research", "scenes", "tells", "type"].map((name) => `${skillRoot}/references/${name}.md`),
+    ...["app", "directions", "heroes", "motions", "palettes", "photos", "sections", "sites", "type"].map((name) => `${skillRoot}/library/${name}.json`),
+    ...tools.map((file) => `${skillRoot}/scripts/${file}`),
+    `${skillRoot}/assets/base.css`,
+    `${skillRoot}/assets/scenes/stage.js`,
   ];
   for (const file of supporting) {
     assert.ok(manifest.snapshot.objects.some((object) => object.path === file), file);
     assert.ok(read(file).trim(), file);
+  }
+  for (const file of ["skills/taste-skill-v1/SKILL.md", "skills/output-skill/SKILL.md", "research/laziness/README.md", "skill.sh"]) {
+    assert.equal(manifest.snapshot.objects.some((object) => object.path === file), false, file);
   }
 });
 
@@ -137,7 +123,10 @@ test("taste-skill import rejects unreviewed, dirty, incomplete and invalid-date 
     const git = (args) => { const result = run("git", args, source); assert.equal(result.status, 0, result.stderr); };
     git(["init", "--quiet"]);
     git(["config", "core.autocrlf", "false"]);
+    // Stored copies are not executable; the index carries the reviewed mode instead.
+    git(["config", "core.fileMode", "false"]);
     git(["add", "--force", "."]);
+    for (const file of manifest.snapshot.executableFiles) git(["update-index", "--chmod=+x", file]);
     const commit = () => git(["-c", "user.name=Taste Test", "-c", "user.email=taste-test@example.invalid", "commit", "--quiet", "-m", "fixture"]);
     commit();
     assert.equal(run("git", ["rev-parse", "HEAD^{tree}"], source).stdout.trim(), manifest.source.gitTree);
@@ -155,13 +144,15 @@ test("taste-skill import rejects unreviewed, dirty, incomplete and invalid-date 
     fs.writeFileSync(path.join(source, "LICENSE"), "wrong license\n");
     git(["add", "."]); commit();
     rejects(/LICENSE does not match reviewed/);
-    fs.rmSync(path.join(source, "skills/taste-skill-v1/SKILL.md"));
-    rejects(/missing skills\/taste-skill-v1\/SKILL\.md/);
+    fs.rmSync(path.join(source, "skills/taste-skill/scripts/inspect.mjs"));
+    rejects(/missing skills\/taste-skill\/scripts\/inspect\.mjs/);
+    fs.rmSync(path.join(source, "skills/taste-skill/SKILL.md"));
+    rejects(/missing skills\/taste-skill\/SKILL\.md/);
     rejects(/valid YYYY-MM-DD/, ["--reviewed-at", "2026-02-30"]);
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
 
-test("taste-skill guide reaches all thirteen local sources and states adaptation and acceptance boundaries", () => {
+test("taste-skill guide routes new site, redesign, app screens and critique and keeps tools advisory", () => {
   const guidePath = path.join(repoRoot, "skill/references/taste-skill.md");
   const guide = fs.readFileSync(guidePath, "utf8");
   const surface = require("./helpers/skill-surface.cjs").readSkillSurface();
@@ -173,23 +164,35 @@ test("taste-skill guide reaches all thirteen local sources and states adaptation
     assert.ok(relative && !path.isAbsolute(relative) && relative !== ".." && !relative.startsWith(`..${path.sep}`), target);
     assert.ok(fs.statSync(file).isFile(), target);
   }
-  const headings = [...guide.matchAll(/^### ([^\r\n]+)$/gm)];
-  assert.deepEqual(headings.map((heading) => heading[1]).sort(), reviewedSkills.map(([, name]) => name).sort());
-  for (const [directory, name] of reviewedSkills) {
-    const index = headings.findIndex((heading) => heading[1] === name);
-    const section = guide.slice(headings[index].index, headings[index + 1]?.index || guide.length);
-    const sourceLink = `../vendor/taste-skill/upstream/skills/${directory}/UPSTREAM-SKILL.md`;
-    assert.ok(localLinks.includes(sourceLink), directory);
-    assert.ok(section.includes(sourceLink), name);
-    assert.match(section, /\*\*Trigger:\*\*/);
-    assert.match(section, /\*\*Output and stage checks:\*\*/);
-    assert.match(section, /Stage [0-6]/);
+  const vendorLink = (file) => `../vendor/taste-skill/upstream/${skillRoot}/${file}`;
+  assert.ok(localLinks.includes(vendorLink("UPSTREAM-SKILL.md")));
+  for (const file of ["references/app-screens.md", "references/critique.md", "references/tells.md", ...tools.map((tool) => `scripts/${tool}`)]) {
+    assert.ok(localLinks.includes(vendorLink(file)), file);
   }
-  assert.match(guide, /v2[\s\S]*experimental/i);
+  const headings = [...guide.matchAll(/^### ([^\r\n]+)$/gm)];
+  assert.deepEqual(headings.map((heading) => heading[1]), routes);
+  for (const [index, heading] of headings.entries()) {
+    const section = guide.slice(heading.index, headings[index + 1]?.index || guide.indexOf("\n## ", heading.index));
+    assert.match(section, /\*\*Trigger:\*\*/, heading[1]);
+    assert.match(section, /\*\*Output and stage checks:\*\*/, heading[1]);
+    assert.match(section, /Stage [0-6]/, heading[1]);
+  }
+  assert.match(guide, /12af471f627f866411b4bd785b19646d3672784c/);
+  assert.doesNotMatch(guide, /thirteen|experimental/i);
+  assert.match(guide, /taste[\s\S]*advisory/i);
+  assert.match(guide, /never fail a design-pipeline stage, gate or delivery/);
   assert.match(guide, /Component\s+Conformance/);
   assert.match(guide, /Visual\s+Acceptance/);
-  assert.match(guide, /image[- ]only|images only/i);
-  assert.match(guide, /provider/i);
+  const leftSection = guide.slice(guide.indexOf("## Methods that left this bundle"), guide.indexOf("## Verification and availability"));
+  for (const name of departed) {
+    assert.ok(leftSection.includes(`\`${name}\``), name);
+    assert.doesNotMatch(guide, new RegExp(`\\(#${name}\\)`), name);
+  }
+  assert.doesNotMatch(guide.replace(leftSection, ""), /taste-skill-classics|imagegen-skills/);
+  for (const reference of ["capability-routing.md", "companion-skills.md", "feature-routes.md", "pipeline-reference.md", "stages.md", "qa-checklist.md", "workflow-web.md"]) {
+    const text = fs.readFileSync(path.join(repoRoot, "skill/references", reference), "utf8");
+    assert.doesNotMatch(text, /thirteen|Taste suite|taste-skill\.md#(?:design-taste-frontend|image-to-code|imagegen|brandkit|stitch|full-output|redesign-existing|gpt-taste|minimalist|industrial|high-end)/i, reference);
+  }
 });
 
 test("a relocated full pipeline needs no ambient Taste skills and fails its core check when a bundled skill is missing", () => {
@@ -227,14 +230,14 @@ test("a relocated full pipeline needs no ambient Taste skills and fails its core
     }
     const requested = report.groups.flatMap((group) => group.missing);
     for (const [, name] of reviewedSkills) assert.equal(requested.includes(name), false, name);
-    fs.rmSync(path.join(installed, "vendor/taste-skill/upstream/skills/taste-skill-v1/UPSTREAM-SKILL.md"));
+    fs.rmSync(path.join(installed, "vendor/taste-skill/upstream/skills/taste-skill/scripts/inspect.mjs"));
     const broken = check();
     assert.equal(broken.status, 1, broken.stderr || broken.stdout);
     const brokenReport = JSON.parse(broken.stdout);
     assert.equal(brokenReport.result, "FAIL");
     const core = brokenReport.groups.find((group) => group.name === "Core pipeline");
     assert.equal(core.status, "FAIL");
-    assert.ok(core.missingResources.includes("design-pipeline/vendor/taste-skill/upstream/skills/taste-skill-v1/UPSTREAM-SKILL.md"));
+    assert.ok(core.missingResources.includes("design-pipeline/vendor/taste-skill/upstream/skills/taste-skill/scripts/inspect.mjs"));
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
 
@@ -278,9 +281,9 @@ test("the existing source-check test fails for changed, missing or added Taste b
     const missing = path.join(copiedSource, "skills/taste-skill/UPSTREAM-SKILL.md");
     const missingBytes = fs.readFileSync(missing);
     fs.rmSync(missing);
-    rejects(/61 !== 62/);
+    rejects(/71 !== 72/);
     fs.writeFileSync(missing, missingBytes);
     fs.writeFileSync(path.join(copiedSource, "unreviewed.txt"), "added blob\n");
-    rejects(/63 !== 62/);
+    rejects(/73 !== 72/);
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });

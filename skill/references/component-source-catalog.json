@@ -6333,7 +6333,7 @@
       "aliases": [
         "https://github.com/Leonxlnx/taste-skill",
         "https://github.com/leonxlnx/taste-skill",
-        "https://github.com/Leonxlnx/taste-skill/tree/b482f7a970abb98c4108d4a9f761e458c64cefc8"
+        "https://github.com/Leonxlnx/taste-skill/tree/12af471f627f866411b4bd785b19646d3672784c"
       ],
       "localPaths": {
         "guide": "references/taste-skill.md",
@@ -6344,16 +6344,16 @@
         "source": "taste-skill",
         "license": "MIT",
         "url": "https://github.com/leonxlnx/taste-skill",
-        "revision": "b482f7a970abb98c4108d4a9f761e458c64cefc8",
-        "gitTree": "2589404b7fd08979aafbeb8074d4bc416fe428a3",
-        "contentHash": "5c05edf236140ec2152a02c95f079911ce4636dd1b15089ad9292be9d0b5a40a",
+        "revision": "12af471f627f866411b4bd785b19646d3672784c",
+        "gitTree": "db698c9093437ee7daea871f70b48d06a838038e",
+        "contentHash": "e12cc2e63faba012ac716039de7cdd26da29cf1b2b48e065eca81aec910fc91e",
         "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
       },
       "license": {
         "state": "verified",
         "id": "MIT",
         "evidence": [
-          "https://github.com/Leonxlnx/taste-skill/blob/b482f7a970abb98c4108d4a9f761e458c64cefc8/LICENSE"
+          "https://github.com/Leonxlnx/taste-skill/blob/12af471f627f866411b4bd785b19646d3672784c/LICENSE"
         ]
       },
       "adoptionBoundary": {

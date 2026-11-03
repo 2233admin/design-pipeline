@@ -578,18 +578,26 @@ The package does not install upstream dependencies, activate its plugin or run i
 
 The complete byte-preserved source snapshot under `skill/vendor/taste-skill/upstream/` is from
 https://github.com/Leonxlnx/taste-skill at reviewed commit
-`b482f7a970abb98c4108d4a9f761e458c64cefc8` (reviewed 2026-10-08).
-All 62 tracked files are retained, including the thirteen skill entries, Stitch design example,
-research notes, example images, artwork and inert plugin, installer and sponsor-script metadata.
+`12af471f627f866411b4bd785b19646d3672784c` (v2.1.5, reviewed 2026-11-03).
+All 72 tracked files are retained: the one skill entry `design-taste-frontend` with its references,
+direction library, scripts, CSS/JS assets and evals, the README, changelog, upstream tests, example
+screenshots, sponsor artwork and inert plugin, CI and installer metadata. No tracked files from this
+reviewed tree are excluded.
 
 The upstream repository is MIT, Copyright (c) 2026 Leonxlnx. The complete original license is
 `skill/vendor/taste-skill/upstream/LICENSE`. Original credits and links remain in the source.
-Example and sponsor artwork is preserved as source context, not a default project asset library
-or a claim of trademark rights. Research claims remain upstream claims, not our benchmark results.
+The example screenshots in `examples/v2/` show third-party photographs and films credited in
+`examples/v2/CREDITS.md` under their own licences (CC BY, CC BY-SA, public domain); they are source
+context, not a default project asset library. Library photographs are links to Lorem Picsum/Unsplash
+images under the Unsplash licence and fonts are links to Google Fonts and Fontshare; none of those
+files is bundled. Sponsor artwork carries no claim of trademark rights. Research claims remain
+upstream claims, not our benchmark results.
 
-`skill/references/taste-skill.md` adapts each capability into the existing project workflow.
-The package does not run upstream scripts, activate its plugin, install its dependencies or supply
-an image model. Image-only workflows use a separately available host image-generation provider.
+`skill/references/taste-skill.md` adapts the skill's routes into the existing project workflow.
+The package does not run upstream scripts, activate its plugin, install dependencies or supply an
+image model. Agents may run the upstream scripts in a target project as optional advisory tools;
+pictures fetched by `assets.mjs` keep their own licences and credits in that project.
+Leonxlnx/taste-skill-classics and Leonxlnx/imagegen-skills are not bundled.
 
 ## Leonxlnx/cinetic
 

@@ -6,7 +6,7 @@ README 只列能做什么；这里是每项能力的说明与命令。所有命�
 
 CSS 写作和审查内置 [Good CSS](../skill/references/good-css.md)：完整保留已审核上游的 47 个实践、8 类指南和全部示例素材，逐项说明项目适配与验证条件。[离线示例工具](../skill/tools/good-css/README.md) 只需 Node.js，不依赖额外安装的 skill。
 
-视觉设计内置 [Taste-Skill 的全部 13 项能力](../skill/references/taste-skill.md)：前端方向、截图还原、旧项目改造、风格设计、完整交付、Stitch、网页/移动端生图和品牌视觉。根据任务选择对应指南，完整原文随工具发布；无需另装 Taste 技能。生图仍使用宿主提供的图像生成工具。
+视觉设计内置 [tasteskill v2.1.5](../skill/references/taste-skill.md)：新网站、旧站改造、应用界面（仪表盘、后台、设置）和成品评审四条路线，完整原文随工具发布，无需另装 Taste 技能。附带的 `draw.mjs`、`inspect.mjs`、`lint.mjs`、`assets.mjs` 可由 Agent 在目标项目中按需运行；其中关于审美的检查结果只作参考，不是本流程的门禁。经典风格与生图技能已移出上游，不再随包发布。
 
 设计方向参考库（[design-direction-library](../skill/references/design-direction-library.md)）收录已审核的 MIT 上游：84 种风格库、84 张 HTML 样张、三方向方法、品牌资产协议、评审指南和内容准则。文本与 HTML 随包发布，样张图片、音频等二进制按需用 `designer-pipeline sources fetch --bundle design-direction-library` 下载并逐文件校验 SHA-256；上游脚本只作只读参考，从不执行。它只是参考资料，不改变任何流程或门禁，后续由 #154 #155 #156 #157 逐项接入。
 

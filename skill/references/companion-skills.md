@@ -13,7 +13,7 @@ coverage is reachable here:
 | GSAP and Anime.js implementation | `capability-routing.md`; local iart playbook and maintained Anime.js path |
 | PixiJS, Phaser and graphics/runtime selection | `pixijs-rendering.md`, `phaser-v4.md`, `graphics-runtime-routing.md` |
 | Layout, typography, color, interaction and design systems | `interface-discipline.md`, `impeccable-contract.md`, `prism-system.md` |
-| New websites, existing-project redesign, taste, style, reference-to-code and image/brand concepts | [Built-in Taste suite](taste-skill.md); thirteen complete local methods with task and output boundaries |
+| New websites, existing-project redesign, app screens and critique of a render | [Built-in Taste skill](taste-skill.md); one complete local skill with four routes and optional advisory tools |
 | Additional drawing, material and animation techniques | `art-motion.md`, `mengto-skills.md`, `iart-motion-skills.md`; adapt the selected source |
 
 The last row exposes source methods, not a claim that every recipe is a tested callable helper.
@@ -77,7 +77,7 @@ shadcn controls, or `gifenc` automatic project dependencies.
 | `frontend-design` | `anthropics/skills` | Strong visual direction, composition, non-generic first impression |
 | `web-design-guidelines` | `vercel-labs/agent-skills` | Production web UI rules, responsive layout, accessibility |
 | `ui-ux-pro-max` | `nextlevelbuilder/ui-ux-pro-max-skill` | UX heuristics, searchable style/color/type system, repeatable choices |
-| `design-taste-frontend` | Built-in pinned `Leonxlnx/taste-skill` | [Local v2 experimental method](taste-skill.md#design-taste-frontend); no companion installation |
+| `design-taste-frontend` | Built-in pinned `Leonxlnx/taste-skill` | [Local tasteskill v2.1.5](taste-skill.md#choose-the-route); no companion installation |
 | `emil-design-eng` | Built-in pinned `emilkowalski/skills` | [Local design-engineering source](ui-craft-sources.md#emil-design-eng); no companion installation |
 
 ## Motion / Animation Set
@@ -154,29 +154,24 @@ Note: `next-best-practices` is no longer distributed by Vercel as a standalone s
 4. `ui-ux-pro-max`
 5. `apple-design` — when the surface should feel Apple-like or use fluid system UI motion
 
-## Built-In Taste-Skill Suite
+## Built-In Taste Skill
 
-All thirteen complete source entries are shipped in the core package. Start with
-[taste-skill.md](taste-skill.md) to select one primary method and read its local original source.
-The default is v2 experimental; choose v1 explicitly for compatibility. This is source and
-guidance availability, not a bundled image model or automatic Visual Acceptance. The existing
-`visual-direction-review` profile checks the built-in entry rather than an ambient Taste install.
+The complete pinned `design-taste-frontend` (tasteskill v2.1.5) ships in the core package. Start
+with [taste-skill.md](taste-skill.md) to choose the route and read the local original source. This is
+source and guidance availability, not a bundled image model or automatic Visual Acceptance. The
+existing `visual-direction-review` profile checks the built-in entry rather than an ambient Taste
+install.
 
-| Skill | Source | Pipeline role |
+| Route | Source | Pipeline role |
 | --- | --- | --- |
-| `design-taste-frontend` | [Local selection/source](taste-skill.md#design-taste-frontend) | V2 experimental: brief-led landing, portfolio and redesign implementation |
-| `design-taste-frontend-v1` | [Local selection/source](taste-skill.md#design-taste-frontend-v1) | Explicit original v1 compatibility |
-| `gpt-taste` | [Local selection/source](taste-skill.md#gpt-taste) | Motion-rich AIDA marketing, variation plan, bento and GSAP methods |
-| `minimalist-ui` | [Local selection/source](taste-skill.md#minimalist-ui) | Editorial minimalism applied to an approved direction |
-| `industrial-brutalist-ui` | [Local selection/source](taste-skill.md#industrial-brutalist-ui) | Swiss-industrial or tactical telemetry style |
-| `high-end-visual-design` | [Local selection/source](taste-skill.md#high-end-visual-design) | Soft/luxury surfaces, nested radii and tactile polish |
-| `stitch-design-taste` | [Local selection/source](taste-skill.md#stitch-design-taste) | Semantic design rules; convert the example into a product foundation |
-| `redesign-existing-projects` | [Local selection/source](taste-skill.md#redesign-existing-projects) | Audit-first targeted improvements preserving current behavior and stack |
-| `image-to-code` | [Local selection/source](taste-skill.md#image-to-code) | Extract selected/user references and verify a real frontend |
-| `imagegen-frontend-web` | [Local selection/source](taste-skill.md#imagegen-frontend-web) | Images only: separate horizontal web section comps |
-| `imagegen-frontend-mobile` | [Local selection/source](taste-skill.md#imagegen-frontend-mobile) | Images only: coherent mobile screens and flows |
-| `brandkit` | [Local selection/source](taste-skill.md#brandkit) | Images only: strategic identity/brand boards |
-| `full-output-enforcement` | [Local selection/source](taste-skill.md#full-output-enforcement) | Complete the requested files and artifacts without omitted-code placeholders |
+| New site | [Local route](taste-skill.md#new-site) | Inventory, argument, idea, copy deck, house rules and the build run for a page |
+| Redesign | [Local route](taste-skill.md#redesign) | Before/after restyle or redesign in the current stack and content |
+| App screens | [Local route](taste-skill.md#app-screens) | Dashboards, admin, settings and other work screens by `app-screens.md` |
+| Critique | [Local route](taste-skill.md#critique) | Weighted score, caps and ranked fixes on screenshots of the real render |
+
+Upstream moved the classic styles to Leonxlnx/taste-skill-classics and the image-generation skills
+to Leonxlnx/imagegen-skills; neither is packaged. [taste-skill.md](taste-skill.md#methods-that-left-this-bundle)
+names the pipeline route for each former method.
 
 ## UI/UX Pro Max Extension Set
 
