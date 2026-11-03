@@ -150,16 +150,22 @@ test("hit cues are timed against measured onsets: on the frame, off the frame, u
     const sync = onCue.metrics.cueSync;
     assert.deepEqual([sync.cues, sync.onFrame, sync.heard], [3, 3, 3], JSON.stringify(sync));
     assert.ok(sync.chance < 0.2, JSON.stringify(sync));
+    assert.ok(sync.chanceOnFrame > 0 && sync.chanceOnFrame < sync.chance, JSON.stringify(sync));
     for (const code of ["impact-unsounded", "cue-unsounded", "cue-off-frame", "sync-at-chance"]) assert.ok(!codes(onCue).includes(code), code);
     // A cue 60 ms before its hit (two frames at 30 fps) is off the frame; an impact on nothing fails.
     const off = checkAudio(file, { storyboard: scored([{ id: "a", atSec: 2.34, kind: "accent" }, { id: "i", atSec: 7, kind: "impact" }, { id: "d", atSec: 3.5, kind: "downbeat" }]) });
     const row = (id) => off.metrics.cueSync.rows.find((r) => r.id === id);
     assert.equal(row("a").status, "off-frame");
     assert.ok(Math.abs(row("a").offsetMs - 60) <= 10, JSON.stringify(row("a")));
-    assert.match(off.findings.find((f) => f.code === "cue-off-frame").fix, /Shift that sound by -\d+ ms/);
+    // 60 ms is far enough that the onset may be the music's: rule out a buried effect before shifting.
+    assert.match(off.findings.find((f) => f.code === "cue-off-frame").fix, /First rule out that the effect is buried \(quieter than the music; the onset found may be the music's\).*shift that sound by -\d+ ms/);
     assert.equal(off.findings.find((f) => f.code === "impact-unsounded").severity, "error");
     assert.equal(off.findings.find((f) => f.code === "cue-unsounded").severity, "warn");
     assert.equal(off.status, "failed");
+    // 40 ms early: still off the frame, and the fix is the shift alone.
+    const near = checkAudio(file, { storyboard: scored([{ id: "a", atSec: 2.36, kind: "accent" }]) }).findings.find((f) => f.code === "cue-off-frame");
+    assert.match(near.fix, /more than one frame\. Shift that sound by -\d+ ms/);
+    assert.doesNotMatch(near.fix, /buried/);
     // A downbeat on the very first sample is found at 0.
     const first = tone(dir, "first.wav", [hit(0), hit(4)].join("+"), 6);
     assert.equal(checkAudio(first, { storyboard: scored([{ id: "d0", atSec: 0, kind: "downbeat" }]) }).metrics.cueSync.rows[0].status, "on-frame");
@@ -178,8 +184,26 @@ test("dense onsets make cue matches meaningless and say so", { skip }, () => {
     const finding = result.findings.find((f) => f.code === "sync-at-chance");
     assert.ok(finding, JSON.stringify(result.findings));
     assert.match(finding.fix, /verify audio --audio <effects-stem\.wav>/);
-    // Fewer than three hit cues: chance is reported but not judged.
-    assert.ok(!codes(checkAudio(file, { storyboard: scored([{ id: "a", atSec: 2, kind: "accent" }]) })).includes("sync-at-chance"));
+    // One hit cue is enough to warn; at chance an off-frame cue gets no shift, since the onset may be the bed's.
+    const one = checkAudio(file, { storyboard: scored([{ id: "a", atSec: 2.06, kind: "accent" }]) });
+    assert.ok(codes(one).includes("sync-at-chance"), JSON.stringify(one.findings));
+    const offFrame = one.findings.find((f) => f.code === "cue-off-frame");
+    assert.ok(offFrame, JSON.stringify(one.metrics.cueSync.rows));
+    assert.doesNotMatch(offFrame.fix, /hift that sound by/);
+    assert.match(offFrame.fix, /effects stem on its own/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("audio with nothing audible leaves every hit cue unsounded", { skip }, () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "audio-"));
+  try {
+    const file = tone(dir, "hiss.wav", "0.002*(random(0)*2-1)", 8);
+    const result = checkAudio(file, { storyboard: scored([{ id: "i", atSec: 3, kind: "impact" }, { id: "a", atSec: 5, kind: "accent" }]) });
+    assert.equal(result.metrics.firstAudibleSec, null);
+    assert.deepEqual(result.metrics.cueSync.rows.map((row) => row.status), ["unsounded", "unsounded"]);
+    assert.equal(result.findings.find((f) => f.code === "impact-unsounded").severity, "error");
+    assert.ok(codes(result).includes("cue-unsounded"));
+    assert.equal(result.status, "failed");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 

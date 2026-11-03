@@ -23,15 +23,26 @@ measured in the file: the rise of level in 32 ms windows every 8 ms, in the full
 high band, so a bright tick over a sustained pad counts as well as a low hit; each rise is judged
 against the 1.5 s around it. The offset is sound minus picture, negative = early, as in earshot's
 timeline. Within one frame (`fps`, default 30) the cue is on the frame; within 100 ms it is
-`cue-off-frame` (warn, the fix says how many ms to shift); nothing within 100 ms is
-`impact-unsounded` (error) or `cue-unsounded` (warn) for an accent or downbeat. `metrics.cueSync`
-lists every cue and `chance`: the share of the film's audible time within 100 ms of some onset,
-which is what random cue times would score. With three or more hit cues and `chance` of 0.5 or
-more, the matches prove nothing (a busy drum track hits every cue) and `sync-at-chance` asks you to
-check the effects stem on its own. An effect quieter than the music around it is not found: that is
-the finding (it is buried), not a detector miss; ride effects 3-10 dB over the bed. `riser`, `voiceover`, `entry`, `exit` and `silence` are not timed
-as hits. `film score`'s `cue-off-grid` checks the score's own notes from the pattern; this check
-measures what reached the delivered mix.
+`cue-off-frame` (warn); nothing within 100 ms is `impact-unsounded` (error) or `cue-unsounded`
+(warn) for an accent or downbeat. A file with audio but nothing audible leaves every hit cue
+unsounded.
+
+`metrics.cueSync` lists every cue, `chance` (the share of the film's audible time within 100 ms
+of some onset, which is what random cue times would score) and `chanceOnFrame` (the same share
+within one frame). With `chance` of 0.5 or more, even for a single hit cue, the matches prove
+nothing (a busy drum track hits every cue): `sync-at-chance` asks you to check the effects stem
+on its own, and `cue-off-frame` then prescribes no shift, because the onset found may be the
+bed's. Below that, the `cue-off-frame` fix gives the shift in ms; from 50 ms off it first asks
+you to rule out a buried effect, whose nearest onset may be the music's.
+
+An effect quieter than the music around it is not found: that is the finding (it is buried), not
+a detector miss; ride effects 3-10 dB over the bed. A cue that lands on the bed's own beat counts
+as sounded, which is intended when the cue is the music's downbeat; for an effect meant to sit
+on that beat, only `chanceOnFrame` and the effects stem tell the two apart.
+
+`riser`, `voiceover`, `entry`, `exit` and `silence` are not timed as hits. `film score`'s
+`cue-off-grid` checks the score's own notes from the pattern; this check measures what reached
+the delivered mix.
 
 Record licensing in the storyboard: `sound.usage` (commercial by default for promotional films)
 and `sound.assets: [{ id, license, commercialUse, file?, source? }]`.

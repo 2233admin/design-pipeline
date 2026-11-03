@@ -13,17 +13,23 @@ The pipeline SHALL fail a scored film without audio, loudness off target, true p
 
 #### Scenario: Hit cues are timed against the mix
 - **WHEN** the storyboard declares `impact`, `accent` or `downbeat` cues
-- **THEN** the result SHALL list each cue's offset (onset minus cue) and the chance baseline in `metrics.cueSync`
+- **THEN** the result SHALL list each cue's offset (onset minus cue), the chance baseline and `chanceOnFrame` (the share of audible time within one frame of an onset) in `metrics.cueSync`
 - **AND** a cue within one frame SHALL raise no finding, and one within 100 ms SHALL warn `cue-off-frame` with the shift in ms
+- **AND** when the offset is 50 ms or more, the fix SHALL first ask to rule out that the effect is buried under the music before giving the shift
 
 #### Scenario: A hit cue has no sound
 - **WHEN** no onset lies within 100 ms of a hit cue
 - **THEN** an impact cue SHALL fail with `impact-unsounded`
 - **AND** an accent or downbeat cue SHALL warn with `cue-unsounded`
 
+#### Scenario: The file has audio but nothing audible
+- **WHEN** the file has an audio stream but no window reaches the audible level and the storyboard declares hit cues
+- **THEN** every hit cue SHALL be unsounded, an impact cue SHALL fail with `impact-unsounded`, and `metrics.cueSync` SHALL still be reported
+
 #### Scenario: Onsets are too dense to prove sync
-- **WHEN** three or more hit cues are timed and random times would land within 100 ms of an onset at least half the time
+- **WHEN** at least one hit cue is timed and random times would land within 100 ms of an onset at least half the time
 - **THEN** the pipeline SHALL warn `sync-at-chance` and point to checking the effects stem alone
+- **AND** a `cue-off-frame` fix SHALL NOT prescribe a shift in ms, because the onset may be the bed's, and SHALL point to checking the effects stem alone
 
 #### Scenario: Audio gate reports its result
 - **WHEN** the audio delivery gate completes

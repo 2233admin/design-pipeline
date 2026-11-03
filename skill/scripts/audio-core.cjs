@@ -29,6 +29,7 @@ const SILENCE_MIN_SEC = 0.75;
 // Cue sync, after earshot's timeline: offset = sound onset minus the cue (negative = early), on the
 // frame within one frame, heard within 100 ms, and the share of the film's time that random cue
 // times would also find an onset within 100 ms of ("chance"); matches only mean something above it.
+// "chanceOnFrame" is the same share within one frame of an onset.
 const SYNC_KINDS = ["impact", "accent", "downbeat"];
 const SYNC_WINDOW_SEC = 0.1;
 const SYNC_RATE = 16000;
@@ -37,7 +38,7 @@ const SYNC_STEP = 128; // 8 ms
 const SYNC_MIN_GAP_SEC = 0.05;
 const SYNC_FLOOR = 0.3; // summed log-energy rise of both bands, about 3 dB: below it is ripple, not an attack
 const SYNC_CHANCE_MAX = 0.5;
-const SYNC_MIN_CUES = 3;
+const SYNC_BURIED_MS = 50; // an offset this large is more likely another sound's onset than a late effect
 
 const FIX = {
   "audio-missing": "The file has no audio stream. Add the score to the composition (<audio data-start data-duration>) and re-render, or set sound.mode to silent with a reason.",
@@ -50,7 +51,7 @@ const FIX = {
   "exit-early": "Music ends before the storyboard's exit cue. Extend the track, loop a section, or move the exit cue to where the music actually ends.",
   "impact-unsounded": "No sound onset within 100 ms of this impact cue. Place the hit's attack on the cue frame; if it is there, it is buried: raise it 3-10 dB over the music around it (earshot's kit.gain_db sets that from the bed) or duck the music for 0.3-0.5 s before it. Change the cue's kind only if the moment is meant to be soft.",
   "cue-unsounded": "No sound onset within 100 ms of this cue. Put an audible attack on it (a tick, a pop, the music's downbeat); if one is there, it is buried under the music: raise it 3-10 dB over the bed. Remove the cue if the moment is meant to pass without sound.",
-  "cue-off-frame": "The nearest sound onset is {offsetMs} ms from the cue (negative = early), more than one frame. Shift that sound by {shiftMs} ms (its data-start, or the cue time if the picture moved) so the attack lands on the frame. If the cue's own sound is quieter than the music, the onset found may be the music's: raise the effect over the bed instead.",
+  "cue-off-frame": "The nearest sound onset is {offsetMs} ms from the cue (negative = early), more than one frame. {action}",
   "sync-at-chance": "Onsets are so dense that random times land within 100 ms of one {chancePct}% of the time, so the cue matches prove nothing. Check the effects stem on its own: `{verifyStem}`.",
   "license-unrecorded": "Record each sound asset in storyboard sound.assets with id, license and commercialUse, so reuse rights can be checked.",
   "license-noncommercial": "This asset's license forbids commercial use but the film is commercial. Replace it with user-owned or commercially licensed audio, or set sound.usage to the actual non-commercial use.",
@@ -172,9 +173,32 @@ function hitOnsets(file, tools) {
   return picked.map((p) => Number(at(p.f).toFixed(3)));
 }
 
-// Each hit cue against the nearest measured onset. Returns per-cue rows and the chance baseline.
+// The fix action for cue-off-frame: at chance the onset may be the bed's, so no shift is prescribed.
+function offFrameAction(offsetMs, atChance) {
+  if (atChance) return "Onsets are dense enough that this one may be the music's, so do not shift by it: check the effects stem on its own and time the cue from that.";
+  const shift = `Shift that sound by ${-offsetMs} ms (its data-start, or the cue time if the picture moved) so the attack lands on the frame.`;
+  if (Math.abs(offsetMs) >= SYNC_BURIED_MS) return `First rule out that the effect is buried (quieter than the music; the onset found may be the music's): if so, raise it 3-10 dB over the bed. Otherwise ${shift[0].toLowerCase()}${shift.slice(1)}`;
+  return shift;
+}
+
+// Share of the span [start, end] within reach seconds of some onset (union of intervals).
+function coverage(onsets, span, reach) {
+  let covered = 0;
+  let edge = span.start;
+  for (const at of onsets) {
+    const from = Math.max(edge, at - reach, span.start);
+    const to = Math.min(at + reach, span.end);
+    if (to > from) covered += to - from;
+    edge = Math.max(edge, to);
+  }
+  const length = span.end - span.start;
+  return length > 0 ? covered / length : 0;
+}
+
+// Each hit cue against the nearest measured onset. Returns per-cue rows and the chance baselines.
+// span is null when nothing in the file is audible: then there are no onsets and every cue is unsounded.
 function cueSync(file, tools, cues, fps, span) {
-  const onsets = hitOnsets(file, tools);
+  const onsets = span ? hitOnsets(file, tools) : [];
   const frameSec = 1 / fps;
   const rows = cues.map((cue) => {
     let nearest = null;
@@ -184,21 +208,13 @@ function cueSync(file, tools, cues, fps, span) {
     const onFrame = heard && Math.abs(offsetSec) <= frameSec + 1e-6;
     return { id: cue.id, kind: cue.kind, atSec: cue.atSec, offsetMs: heard ? Math.round(offsetSec * 1000) : null, status: onFrame ? "on-frame" : heard ? "off-frame" : "unsounded" };
   });
-  // Chance: the share of the audible span within the window of some onset (union of intervals).
-  let covered = 0;
-  let reach = span.start;
-  for (const at of onsets) {
-    const from = Math.max(reach, at - SYNC_WINDOW_SEC, span.start);
-    const to = Math.min(at + SYNC_WINDOW_SEC, span.end);
-    if (to > from) covered += to - from;
-    reach = Math.max(reach, to);
-  }
-  const length = span.end - span.start;
-  const chance = length > 0 ? covered / length : 0;
+  // Chance: the share of the audible span within the window (or one frame) of some onset.
+  const chance = span ? coverage(onsets, span, SYNC_WINDOW_SEC) : 0;
+  const chanceOnFrame = span ? coverage(onsets, span, frameSec) : 0;
   const heard = rows.filter((row) => row.status !== "unsounded").length;
   return {
     rows,
-    summary: { cues: rows.length, onFrame: rows.filter((row) => row.status === "on-frame").length, heard, hitRate: rows.length ? Number((heard / rows.length).toFixed(3)) : null, chance: Number(chance.toFixed(3)), onsets: onsets.length, fps },
+    summary: { cues: rows.length, onFrame: rows.filter((row) => row.status === "on-frame").length, heard, hitRate: rows.length ? Number((heard / rows.length).toFixed(3)) : null, chance: Number(chance.toFixed(3)), chanceOnFrame: Number(chanceOnFrame.toFixed(3)), onsets: onsets.length, fps },
   };
 }
 
@@ -254,13 +270,14 @@ function checkAudio(file, options = {}) {
     if (entry && firstActive !== null && firstActive > entry.atSec + 0.3) add("entry-late", "error", `audio becomes audible at ${firstActive.toFixed(2)}s, entry cue is ${entry.atSec}s`);
     if (exit && lastActive !== null && lastActive < exit.atSec - 0.5) add("exit-early", "warn", `audio fades out at ${lastActive.toFixed(2)}s, exit cue is ${exit.atSec}s`);
     const hitCues = (sound.cues || []).filter((cue) => SYNC_KINDS.includes(cue.kind));
-    if (hitCues.length && firstActive !== null) {
-      sync = cueSync(file, tools, hitCues, Number(board.fps) > 0 ? Number(board.fps) : 30, { start: firstActive, end: lastActive });
+    if (hitCues.length) {
+      sync = cueSync(file, tools, hitCues, Number(board.fps) > 0 ? Number(board.fps) : 30, firstActive === null ? null : { start: firstActive, end: lastActive });
+      const atChance = sync.summary.chance >= SYNC_CHANCE_MAX;
       for (const row of sync.rows) {
         if (row.status === "unsounded") add(row.kind === "impact" ? "impact-unsounded" : "cue-unsounded", row.kind === "impact" ? "error" : "warn", `${row.kind} cue ${row.id} at ${row.atSec}s has no sound onset within ${SYNC_WINDOW_SEC * 1000} ms`);
-        if (row.status === "off-frame") add("cue-off-frame", "warn", `${row.kind} cue ${row.id} at ${row.atSec}s: nearest onset ${row.offsetMs > 0 ? "+" : ""}${row.offsetMs} ms, more than one frame at ${sync.summary.fps} fps`, { offsetMs: row.offsetMs, shiftMs: -row.offsetMs });
+        if (row.status === "off-frame") add("cue-off-frame", "warn", `${row.kind} cue ${row.id} at ${row.atSec}s: nearest onset ${row.offsetMs > 0 ? "+" : ""}${row.offsetMs} ms, more than one frame at ${sync.summary.fps} fps`, { offsetMs: row.offsetMs, action: offFrameAction(row.offsetMs, atChance) });
       }
-      if (sync.rows.length >= SYNC_MIN_CUES && sync.summary.chance >= SYNC_CHANCE_MAX) {
+      if (atChance) {
         add("sync-at-chance", "warn", `${sync.summary.heard}/${sync.summary.cues} hit cues hear an onset, but random times would ${Math.round(sync.summary.chance * 100)}% of the time`, { chancePct: Math.round(sync.summary.chance * 100), verifyStem: `${cliCommand()} verify audio --audio <effects-stem.wav> --storyboard <storyboard.json>` });
       }
     }

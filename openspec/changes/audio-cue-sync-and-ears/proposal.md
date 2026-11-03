@@ -16,8 +16,8 @@ measured onsets, and a skill that forbids describing audio without a reading.
 
 - `verify audio` (and `film check`, which runs it) times every `impact`, `accent` and `downbeat`
   cue against onsets measured in the file. New findings: `impact-unsounded` (error), `cue-unsounded`
-  and `cue-off-frame` (warn), `sync-at-chance` (warn, three or more hit cues and chance >= 0.5).
-  New metric `cueSync`: counts, chance, onsets, fps and one row per cue with its offset.
+  and `cue-off-frame` (warn), `sync-at-chance` (warn, any timed hit cue and chance >= 0.5).
+  New metric `cueSync`: counts, chance, chanceOnFrame, onsets, fps and one row per cue with its offset.
 - earshot's `earshot` and `real-sound` skills become the optional "Listening and film sound"
   companion group, so `doctor` lists them with an install line and a fallback.
 - `audio-gate.md` gains "Hit cues", "You cannot hear" and the earshot route; `workflow-film.md`,
