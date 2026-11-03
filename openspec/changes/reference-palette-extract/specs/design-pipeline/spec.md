@@ -21,8 +21,28 @@
 
 #### Scenario: Overlays are not measured
 
-- **WHEN** a fixed cookie banner is open on the page
+- **WHEN** a fixed cookie banner, or a fixed element of any name covering most of the viewport on top of the page, is open
 - **THEN** it SHALL be removed before measuring and listed as dismissed, and its colours SHALL not appear in the palette
+
+#### Scenario: Covered canvas
+
+- **WHEN** a full-bleed gradient hero covers the page and no background is set on html or body
+- **THEN** the gradient stops SHALL outrank the white canvas, which SHALL not be dominant
+
+#### Scenario: Near surfaces merged
+
+- **WHEN** two background colours between CIEDE2000 3 and 15 apart merge, such as #16161d on #0b0b0f
+- **THEN** the extraction SHALL record the merge and list it as low confidence
+
+#### Scenario: Error status
+
+- **WHEN** the URL answers HTTP 404 with a designed page
+- **THEN** the command SHALL exit 1 with `REFERENCE_HTTP_STATUS` and the status, and write nothing
+
+#### Scenario: Client-rendered page
+
+- **WHEN** the page renders its content two seconds after load
+- **THEN** the extraction SHALL measure the rendered content, and a page that never renders SHALL fail with `REFERENCE_EMPTY`
 
 #### Scenario: Existing evidence is kept
 
@@ -31,7 +51,7 @@
 
 ### Requirement: Block pages are refused as reference evidence
 
-A bot-challenge, WAF or captcha page SHALL be refused with `REFERENCE_BLOCKED` (exit 1) by `reference extract` and `evidence capture`, and by `evidence refs` when the page carries a vendor's challenge or block markers. A refused capture SHALL write no evidence.
+A bot-challenge, WAF or captcha page SHALL be refused with `REFERENCE_BLOCKED` (exit 1) by `reference extract` and `evidence capture`, and by `evidence refs` when the page carries a vendor's challenge or block markers. A refused capture SHALL write no evidence. A vendor script, CDN asset or text about captchas SHALL NOT alone make a page a block page.
 
 #### Scenario: Access denied
 
@@ -47,3 +67,8 @@ A bot-challenge, WAF or captcha page SHALL be refused with `REFERENCE_BLOCKED` (
 
 - **WHEN** a capture adapter's saved DOM or the project's index.html carries Cloudflare block markers
 - **THEN** `evidence capture` and `evidence refs` SHALL exit 1 with `REFERENCE_BLOCKED` and keep no capture
+
+#### Scenario: Real pages are not block pages
+
+- **WHEN** a real page loads Cloudflare's injected `/cdn-cgi/challenge-platform/` script, a `cdnjs.cloudflare.com` asset, or is an article about captchas and access-denied pages
+- **THEN** `reference extract` and `evidence capture` SHALL accept it

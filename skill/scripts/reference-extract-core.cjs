@@ -18,12 +18,17 @@ const PALETTE_SCHEMA = "design-pipeline.palette-evidence.v1";
 const EXTRACTION_SCHEMA = "design-pipeline.reference-extraction.v1";
 const LOW = "(low confidence)";
 const CLUSTER_DELTA_E = 15;
+// A merge this far apart (CIEDE2000 3 to 15) may be a designed surface step, not rendering noise
+// (sub-pixel and anti-aliasing noise stays under 2; a dark card on a dark page measured 4.1).
+const NEAR_MERGE = 3;
 const DOMINANT_SHARE = 0.25;
 const ACCENT_SHARE = 0.05;
 const SATURATED = 0.5;
 const GROUP_LIMITS = { background: 6, text: 4, border: 3 };
 const NAVIGATION_TIMEOUT_MS = 45000;
 const CHALLENGE_WAIT_MS = 15000;
+const CONTENT_WAIT_MS = 15000;
+const STABLE_MS = 500;
 const FILES = { extraction: "extraction.json", palette: "palette-evidence.json", draft: "design-md-draft.md" };
 
 // --- colour math -------------------------------------------------------------------------------------
@@ -133,29 +138,59 @@ const roundPx = (value) => Math.round(value * 2) / 2;
 
 // --- in-page work (serialized into the page; everything it needs is defined inside) ------------------
 
-// Removes fixed or sticky cookie, consent and GDPR banners and fixed high overlays and modals, so they
-// are not measured as the page. Returns what it removed.
+// Removes what covers the page instead of being it: by geometry, any fixed element that covers 60% of
+// the viewport or more and is on top (it is what the viewport shows at most sample points);
+// by name, as an extra, fixed or sticky cookie, consent and GDPR banners and fixed high overlays and
+// modals of any size. Returns what it removed.
 function dismissOverlays() {
   const removed = [];
   const describe = (el) => `${el.localName}${el.id ? `#${el.id}` : ""}${typeof el.className === "string" && el.className.trim() ? `.${el.className.trim().split(/\s+/)[0]}` : ""}`.slice(0, 80);
+  const remove = (el) => {
+    if (!el.isConnected) return;
+    removed.push(describe(el));
+    el.remove();
+  };
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const points = [[0.5, 0.5], [0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]].map(([x, y]) => [x * width, y * height]);
+  // Sticky elements are left to the name rules: a full-height sticky section is usually content.
+  const pinned = [...document.querySelectorAll("body *")].filter((el) => getComputedStyle(el).position === "fixed");
+  for (const el of pinned) {
+    if (!el.isConnected) continue;
+    const box = el.getBoundingClientRect();
+    const covered = Math.max(0, Math.min(box.right, width) - Math.max(box.left, 0)) * Math.max(0, Math.min(box.bottom, height) - Math.max(box.top, 0));
+    if (covered < 0.6 * width * height) continue;
+    const onTop = points.filter(([x, y]) => {
+      const hit = document.elementFromPoint(x, y);
+      return hit && (hit === el || el.contains(hit));
+    }).length;
+    if (onTop >= 3) remove(el);
+  }
   const banner = '[class*="cookie" i],[id*="cookie" i],[class*="consent" i],[id*="consent" i],[class*="gdpr" i],[id*="gdpr" i],[class*="banner" i],[id*="onetrust" i],[class*="cc-"],[id*="cc-"]';
   for (const el of document.querySelectorAll(banner)) {
     if (!el.isConnected) continue;
     const position = getComputedStyle(el).position;
-    if (position === "fixed" || position === "sticky") {
-      removed.push(describe(el));
-      el.remove();
-    }
+    if (position === "fixed" || position === "sticky") remove(el);
   }
   for (const el of document.querySelectorAll('[class*="overlay" i],[class*="modal" i],[role="dialog"][aria-modal="true"]')) {
     if (!el.isConnected) continue;
     const style = getComputedStyle(el);
-    if (style.position === "fixed" && (Number.parseFloat(style.zIndex) > 100 || el.matches('[aria-modal="true"]'))) {
-      removed.push(describe(el));
-      el.remove();
-    }
+    if (style.position === "fixed" && (Number.parseFloat(style.zIndex) > 100 || el.matches('[aria-modal="true"]'))) remove(el);
   }
+  // A modal usually locks scrolling; unlock it so the walk reaches the whole page.
+  for (const el of [document.documentElement, document.body]) if (el && getComputedStyle(el).overflowY === "hidden") el.style.setProperty("overflow", "visible", "important");
   return removed;
+}
+
+// What the page shows: its visible text length and visible media and control count.
+function contentSize() {
+  const text = (document.body?.innerText || "").replace(/\s+/g, " ").trim().length;
+  let elements = 0;
+  for (const el of document.querySelectorAll("img,svg,video,canvas,picture,input,button,iframe")) {
+    const box = el.getBoundingClientRect();
+    if (box.width > 0 && box.height > 0) elements += 1;
+  }
+  return { text, elements, nodes: document.getElementsByTagName("*").length };
 }
 
 async function fontsReady(ms) {
@@ -238,6 +273,22 @@ function measureStyles(elementLimit) {
   const type = {};
   const spacing = {};
   const viewportArea = Math.max(1, window.innerWidth * window.innerHeight);
+  // The root painters (canvas, html and body backgrounds) are weighted by the area no opaque element
+  // covers, on a 32 px grid over the document, so a full-bleed hero is not outvoted by a white canvas.
+  const CELL = 32;
+  const docWidth = Math.max(document.documentElement.scrollWidth, window.innerWidth);
+  const docHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight);
+  const columns = Math.ceil(docWidth / CELL);
+  const rows = Math.ceil(docHeight / CELL);
+  const coverage = new Uint8Array(columns * rows);
+  const cover = (box) => {
+    const left = Math.max(0, Math.floor((box.left + window.scrollX) / CELL));
+    const right = Math.min(columns - 1, Math.ceil((box.right + window.scrollX) / CELL) - 1);
+    const top = Math.max(0, Math.floor((box.top + window.scrollY) / CELL));
+    const bottom = Math.min(rows - 1, Math.ceil((box.bottom + window.scrollY) / CELL) - 1);
+    for (let row = top; row <= bottom; row += 1) coverage.fill(1, row * columns + left, row * columns + right + 1);
+  };
+  const roots = [];
   let measured = 0;
   const elements = document.querySelectorAll("html, body, body *");
   for (const el of elements) {
@@ -250,7 +301,13 @@ function measureStyles(elementLimit) {
     measured += 1;
     const area = box.width * box.height;
     const share = Math.min(area / viewportArea, 1);
-    add("background", style.backgroundColor, 1 + share * 25, el, area);
+    const isRoot = el === document.documentElement || el === document.body;
+    if (isRoot) roots.push({ el, value: style.backgroundColor });
+    else {
+      add("background", style.backgroundColor, 1 + share * 25, el, area);
+      const fill = rgba(style.backgroundColor);
+      if ((fill && fill[3] >= 0.99) || (style.backgroundImage && style.backgroundImage !== "none")) cover(box);
+    }
     for (const stop of stops(style.backgroundImage)) add("background", stop, 1 + share * 10, el, area);
     const ownText = [...el.childNodes].some((node) => node.nodeType === 3 && node.textContent.trim());
     if (ownText) add("text", style.color, 1, el, area);
@@ -281,10 +338,16 @@ function measureStyles(elementLimit) {
   const rootBg = rgba(getComputedStyle(document.documentElement).backgroundColor);
   const bodyBg = document.body ? rgba(getComputedStyle(document.body).backgroundColor) : null;
   const pageBackground = rootBg && rootBg[3] > 0 ? rootBg : bodyBg && bodyBg[3] > 0 ? bodyBg : [255, 255, 255, 1];
+  let open = 0;
+  for (const cell of coverage) if (!cell) open += 1;
+  const uncoveredArea = open * CELL * CELL;
+  const rootWeight = 1 + Math.min(uncoveredArea / viewportArea, 1) * 25;
+  const uncovered = Math.round((open / Math.max(1, coverage.length)) * 1000) / 1000;
+  for (const root of roots) add("background", root.value, rootWeight, root.el, Number.MAX_SAFE_INTEGER);
   if (!(rootBg && rootBg[3] > 0) && !(bodyBg && bodyBg[3] > 0)) {
     const key = "255,255,255,1";
     const entry = colors.background[key] || (colors.background[key] = { rgba: [255, 255, 255, 1], weight: 0, count: 0, region: null, area: -1 });
-    entry.weight += 26;
+    entry.weight += rootWeight;
     entry.count += 1;
     entry.region = "page canvas (no background set)";
     entry.area = Number.MAX_SAFE_INTEGER;
@@ -313,6 +376,7 @@ function measureStyles(elementLimit) {
     bodyTextLength: (document.body?.innerText || "").replace(/\s+/g, " ").trim().length,
     elementsMeasured: measured,
     elementLimitReached: measured >= elementLimit,
+    uncoveredShare: uncovered,
     pageBackground,
     colors,
     fonts,
@@ -334,6 +398,29 @@ function validateUrl(raw) {
 
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 
+// Waits until the page shows text or media and its content size has not changed for STABLE_MS; a page
+// that shows nothing by the deadline fails, so an unrendered app shell is never measured.
+async function waitForContent(page, url, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  let last = null;
+  let since = Date.now();
+  for (;;) {
+    const size = await page.evaluate(contentSize).catch(() => null);
+    const key = size ? `${size.text}:${size.elements}:${size.nodes}` : null;
+    if (key !== last) {
+      last = key;
+      since = Date.now();
+    }
+    const shows = size && (size.text > 0 || size.elements > 0);
+    if (shows && Date.now() - since >= STABLE_MS) return size;
+    if (Date.now() >= deadline) {
+      if (shows) return size;
+      fail(SCOPE, `${url} rendered no visible text or media within ${Math.round(timeoutMs / 1000)} s, so there is nothing to measure. Fix: check the page renders in a browser without signing in; if it needs a login or a click first, use a screenshot of it as an image reference`, { code: "REFERENCE_EMPTY" });
+    }
+    await sleep(100);
+  }
+}
+
 async function extractReference(url, options = {}) {
   validateUrl(url);
   const { browserIdentity, resolveBrowser } = require("./browser-locate.cjs");
@@ -352,13 +439,17 @@ async function extractReference(url, options = {}) {
   try {
     const page = await browser.newPage();
     await page.setViewport(viewport);
-    let response;
+    // The status of the latest main-document response: a challenge that clears navigates again.
+    let status = null;
+    page.on("response", (response) => {
+      if (response.request().isNavigationRequest() && response.frame() === page.mainFrame()) status = response.status();
+    });
     try {
-      response = await page.goto(url, { waitUntil: "load", timeout: options.navigationTimeoutMs || NAVIGATION_TIMEOUT_MS });
+      const response = await page.goto(url, { waitUntil: "load", timeout: options.navigationTimeoutMs || NAVIGATION_TIMEOUT_MS });
+      if (status === null && response) status = response.status();
     } catch (error) {
       fail(SCOPE, `could not load ${url}: ${error.message}. Fix: check the address opens in a browser from this machine, then run reference extract again`, { code: "REFERENCE_UNREACHABLE" });
     }
-    const status = response ? response.status() : null;
     await page.waitForNetworkIdle({ idleTime: 500, timeout: 5000 }).catch(() => {});
     let signals = await page.evaluate(collectBlockSignals);
     let verdict = detectBlockPage({ ...signals, status });
@@ -374,11 +465,21 @@ async function extractReference(url, options = {}) {
       }
     }
     if (verdict.blocked) refuseBlockPage(SCOPE, url, verdict);
+    // An error status is not the reference, however designed its error page is.
+    if (status !== null && status >= 400) {
+      fail(SCOPE, `the URL returned HTTP ${status}; a reference must be the real page, not an error page, so nothing was measured. Fix: open the address in a browser, copy the address of the page you mean (it answers 200), then run reference extract again`, { code: "REFERENCE_HTTP_STATUS", httpStatus: status });
+    }
+    // A client-rendered page paints after load: wait until it shows content and stops changing.
+    await waitForContent(page, url, options.contentWaitMs ?? CONTENT_WAIT_MS);
+    signals = await page.evaluate(collectBlockSignals);
+    verdict = detectBlockPage({ ...signals, status });
+    if (verdict.blocked) refuseBlockPage(SCOPE, url, verdict);
     const dismissed = await page.evaluate(dismissOverlays);
     await settle(page);
     const fontStatus = await page.evaluate(fontsReady, 5000);
     // Banners that appear on scroll are dismissed too, before anything is measured.
     dismissed.push(...await page.evaluate(dismissOverlays));
+    await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: "instant" }));
     const measured = await page.evaluate(measureStyles, options.elementLimit || 20000);
     const after = detectBlockPage({ ...signals, status, backgrounds: Object.keys(measured.colors.background), fonts: Object.keys(measured.fonts.all) });
     if (after.blocked) refuseBlockPage(SCOPE, url, after);
@@ -402,12 +503,18 @@ async function extractReference(url, options = {}) {
 
 // Merges colours closer than CIEDE2000 15. Heaviest first, so each cluster is named by its heaviest member.
 function clusterColors(entries, threshold = CLUSTER_DELTA_E) {
-  const sorted = [...entries].sort((a, b) => b.weight - a.weight || a.hex.localeCompare(b.hex));
+  // Ties keep document order (a gradient's first stop before its later ones).
+  const sorted = entries.map((entry, index) => ({ entry, index })).sort((a, b) => b.entry.weight - a.entry.weight || a.index - b.index).map(({ entry }) => entry);
   const clusters = [];
   for (const entry of sorted) {
     const rgb = fromHex(entry.hex);
-    const home = clusters.find((cluster) => deltaE2000(rgb, cluster.rgb) < threshold);
+    let distance = null;
+    const home = clusters.find((cluster) => {
+      distance = deltaE2000(rgb, cluster.rgb);
+      return distance < threshold;
+    });
     if (home) {
+      if (distance >= NEAR_MERGE && entry.hex !== home.hex) home.near.push({ hex: entry.hex, deltaE: round(distance, 1) });
       home.weight += entry.weight;
       home.count += entry.count;
       if (!home.members.includes(entry.hex)) home.members.push(entry.hex);
@@ -416,7 +523,7 @@ function clusterColors(entries, threshold = CLUSTER_DELTA_E) {
         home.region = entry.region;
       }
     } else {
-      clusters.push({ hex: entry.hex, rgb, weight: entry.weight, count: entry.count, members: [entry.hex], region: entry.region, area: entry.area });
+      clusters.push({ hex: entry.hex, rgb, weight: entry.weight, count: entry.count, members: [entry.hex], near: [], region: entry.region, area: entry.area });
     }
   }
   return clusters;
@@ -447,7 +554,7 @@ function analyzePalette(measurement) {
     groups[group] = clusters.map((cluster) => {
       const share = cluster.weight / total;
       const vars = [...new Set(cluster.members.flatMap((hex) => varsByHex.get(hex) || []))].sort();
-      return { hex: cluster.hex, share: round(share, 4), tier: tierOf(share, cluster.rgb), count: cluster.count, weight: round(cluster.weight), members: cluster.members, region: cluster.region, vars };
+      return { hex: cluster.hex, share: round(share, 4), tier: tierOf(share, cluster.rgb), count: cluster.count, weight: round(cluster.weight), members: cluster.members, ...(cluster.near.length ? { nearMerges: cluster.near } : {}), region: cluster.region, vars };
     });
   }
   return groups;
@@ -469,7 +576,16 @@ function pickRoles(groups) {
   const [text, ...otherTexts] = groups.text;
   if (text) roles.push({ role: "text", group: "text", ...text });
   else low.push("text: no rendered text colour was measured");
-  const muted = otherTexts.find((item) => neutral(item) && item.tier !== "incidental");
+  // Muted text sits between the text colour and the background, never on the far side of the text
+  // (white button labels on a light page are not muted text).
+  const lumBg = background ? luminance(fromHex(background.hex)) : null;
+  const contrast = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  const between = (item) => {
+    if (lumBg === null || !text) return true;
+    const lum = luminance(fromHex(item.hex));
+    return Math.abs(lum - lumBg) < Math.abs(luminance(fromHex(text.hex)) - lumBg) && contrast(lum, lumBg) >= 2;
+  };
+  const muted = otherTexts.find((item) => neutral(item) && item.tier !== "incidental" && between(item));
   if (muted) roles.push({ role: "text-muted", group: "text", ...muted });
   const border = groups.border.find(neutral) || groups.border[0];
   if (border) roles.push({ role: "border", group: "border", ...border });
@@ -577,7 +693,8 @@ function analyzeMeasurement(measurement) {
   const { roles, low: roleLow } = pickRoles(palette);
   const type = analyzeType(measurement);
   const spacing = analyzeSpacing(measurement);
-  return { palette, roles, type, spacing, lowConfidence: [...roleLow, ...type.low, ...spacing.low] };
+  const mergeLow = palette.background.filter((item) => item.nearMerges).map((item) => `background surfaces: ${item.nearMerges.map((near) => `${near.hex} (CIEDE2000 ${near.deltaE})`).join(", ")} merged into ${item.hex}; on a dark or tinted site this may be a designed surface step, so check the raw members in extraction.json before dropping it`);
+  return { palette, roles, type, spacing, lowConfidence: [...roleLow, ...mergeLow, ...type.low, ...spacing.low] };
 }
 
 // --- outputs ------------------------------------------------------------------------------------------
@@ -724,7 +841,8 @@ function extractionRecord({ url, targetId, measurement, analysis }) {
     elementsMeasured: measurement.elementsMeasured,
     elementLimitReached: measurement.elementLimitReached,
     overlaysDismissed: measurement.overlaysDismissed,
-    method: { clusterDeltaE2000: CLUSTER_DELTA_E, dominantShare: DOMINANT_SHARE, accentShare: ACCENT_SHARE, saturatedFloor: SATURATED, sizeClusterPx: 0.5 },
+    uncoveredShare: measurement.uncoveredShare,
+    method: { clusterDeltaE2000: CLUSTER_DELTA_E, nearMergeDeltaE2000: NEAR_MERGE, dominantShare: DOMINANT_SHARE, accentShare: ACCENT_SHARE, saturatedFloor: SATURATED, sizeClusterPx: 0.5 },
     palette: analysis.palette,
     roles: analysis.roles.map(({ role, group, hex, share, tier }) => ({ role, group, hex, share, tier })),
     type: { scale: analysis.type.scale, body: analysis.type.body, families: analysis.type.families },

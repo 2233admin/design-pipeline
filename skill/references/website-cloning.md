@@ -345,9 +345,15 @@ Keep primary and reference evidence isolated. Store copied assets in the target 
   and spacing clustered to 0.5 px; CSS custom properties), `palette-evidence.json` with the
   DOM/computed-style source `ready`, the raster-media source and the evidence `pending`, and
   `design-md-draft.md` with draft DESIGN.md front-matter tokens. Values the page does not support
-  are written as `(low confidence)`, never guessed; cookie banners and fixed overlays are removed
-  before measuring. A challenge, WAF or captcha page exits 1 with `REFERENCE_BLOCKED` and writes
-  nothing: choose another page or record the gap.
+  are written as `(low confidence)`, never guessed; cookie banners and fixed overlays covering most
+  of the viewport are removed before measuring, and a client-rendered page is measured once its
+  content has rendered and stopped changing. It exits 1 and writes nothing for a challenge, WAF or
+  captcha page (`REFERENCE_BLOCKED`), an HTTP 4xx/5xx answer (`REFERENCE_HTTP_STATUS`) or a page
+  that renders nothing (`REFERENCE_EMPTY`): choose another page or record the gap.
+  Known limitation: colours closer than CIEDE2000 15 merge, so a dark site's card surface (for
+  example `#16161d` on `#0b0b0f`) can disappear into the page colour. Every such merge from 3 up is
+  listed under `(low confidence)` with both colours; check the cluster's `members` and
+  `nearMerges` in `extraction.json` before you drop a surface step.
 - Inventory fonts, colors, spacing, radii, shadows, breakpoints, metadata, and all asset layers.
 - Extract DOM/computed-style colors and screenshot/raster-media colors as two separate sources:
   the extraction is the DOM source; measure the raster-media palette from the screenshots yourself.

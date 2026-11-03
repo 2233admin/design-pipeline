@@ -39,19 +39,21 @@ function missingTool() {
 const skip = missingTool();
 const puppeteerPath = () => PUPPETEER_MODULE || path.dirname(require.resolve("puppeteer-core/package.json", { paths: [repoRoot] }));
 
-// blocked.html answers 403, as a WAF does; every other fixture answers 200.
+// blocked.html answers 403, as a WAF does, /designed404 answers 404 with a designed page; every other
+// fixture answers 200.
 let server;
 let origin;
 test.before(async () => {
   server = http.createServer((request, response) => {
-    const name = path.basename(new URL(request.url, "http://localhost").pathname);
+    const requested = path.basename(new URL(request.url, "http://localhost").pathname);
+    const name = requested === "designed404" ? "designed-404.html" : requested;
     const file = path.join(FIXTURES, name);
     if (!name.endsWith(".html") || !fs.existsSync(file)) {
       response.writeHead(404, { "content-type": "text/plain" });
       response.end("not found");
       return;
     }
-    response.writeHead(name === "blocked.html" ? 403 : 200, { "content-type": "text/html; charset=utf-8" });
+    response.writeHead(name === "blocked.html" ? 403 : name === "designed-404.html" ? 404 : 200, { "content-type": "text/html; charset=utf-8" });
     response.end(fs.readFileSync(file));
   });
   await new Promise((done) => server.listen(0, "127.0.0.1", done));
@@ -79,6 +81,7 @@ test("palette tiers, CIEDE2000 clustering, type and spacing come from computed s
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(result.output.status, "extracted");
   assert.equal(result.output.creativeAcceptance, "not-assessed");
+  assert.equal(result.output.httpStatus, 200);
   const extraction = JSON.parse(readOut(root, "extraction.json"));
   assert.equal(extraction.schema, "design-pipeline.reference-extraction.v1");
   assert.equal(extraction.httpStatus, 200);
@@ -225,15 +228,95 @@ test("block-page detection: vendor markers alone, wording only with a second sig
   const cloudflare = detectBlockPage(signalsFromHtml(fs.readFileSync(path.join(FIXTURES, "cloudflare.html"), "utf8")));
   assert.deepEqual([cloudflare.blocked, cloudflare.vendor, cloudflare.kind], [true, "cloudflare", "block"]);
   assert.deepEqual(detectBlockPage({ title: "Pricing", text: "x".repeat(500), html: '<div class="cf-challenge-running">' }).kind, "challenge");
+  assert.deepEqual(detectBlockPage({ title: "Just a moment...", text: "", html: '<form id="challenge-form"></form>' }).kind, "challenge");
+  assert.equal(detectBlockPage({ title: "Just a moment...", text: "Checking your browser", html: '<script src="/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page/v1"></script>' }).blocked, true);
   assert.equal(detectBlockPage({ title: "Access Denied", text: "short", status: 200 }).blocked, true);
   // One signal is not enough: a minimal landing page, or a long page that merely says "forbidden".
   assert.equal(detectBlockPage({ title: "Studio", text: "Hello.", status: 200 }).blocked, false);
   assert.equal(detectBlockPage({ title: "Forbidden fruit recipes", text: "x".repeat(500), status: 200 }).blocked, false);
-  assert.equal(detectBlockPage({ title: "Sign in", text: "Sign in", html: '<div class="g-recaptcha"></div>' }).blocked, true);
+  // A sign-in page with a captcha widget is a page, not a challenge; with a challenge title it is one.
+  assert.equal(detectBlockPage({ title: "Sign in", text: "Sign in", html: '<div class="g-recaptcha"></div>' }).blocked, false);
+  assert.equal(detectBlockPage({ title: "Attention Required!", text: "Please complete the security check", html: '<div class="h-captcha"></div>' }).blocked, true);
   // A project's own designed 403 page is judged by vendor markers only.
   assert.equal(detectBlockPage({ title: "Access Denied", text: "short", status: 403 }, { vendorOnly: true }).blocked, false);
   assert.equal(detectBlockPage({ title: "Bare", text: "x".repeat(500), backgrounds: ["255,255,255,1"], fonts: ["Times New Roman"] }).blocked, false);
-  assert.equal(detectBlockPage({ title: "Bare", text: "short", backgrounds: ["255,255,255,1"], fonts: ["Times New Roman"] }).blocked, true);
+  // Thin text and a bare look are true of real minimal pages: without a block title they never block.
+  assert.equal(detectBlockPage({ title: "Bare", text: "short", backgrounds: ["255,255,255,1"], fonts: ["Times New Roman"] }).blocked, false);
+  assert.equal(detectBlockPage({ title: "Forbidden", text: "x".repeat(500), backgrounds: ["255,255,255,1"], fonts: ["Times New Roman"] }).blocked, true);
+});
+
+test("real pages that load Cloudflare scripts or talk about captchas are not block pages", () => {
+  // The four false positives the review found: a real site with Cloudflare's injected challenge-platform
+  // script, a post that loads a cdnjs asset and says "just a moment", and two articles about captchas.
+  for (const fixture of ["cf-real.html", "cdnjs.html", "article.html", "article-long.html"]) {
+    const verdict = detectBlockPage({ ...signalsFromHtml(fs.readFileSync(path.join(FIXTURES, fixture), "utf8")), status: 200 });
+    assert.equal(verdict.blocked, false, `${fixture}: ${verdict.signals.join("; ")}`);
+  }
+  for (const fixture of ["cloudflare.html", "challenge.html"]) assert.equal(detectBlockPage(signalsFromHtml(fs.readFileSync(path.join(FIXTURES, fixture), "utf8"))).blocked, true, fixture);
+});
+
+test("the false-positive pages are measured in the browser and kept by evidence capture", { skip }, async () => {
+  for (const fixture of ["cf-real.html", "cdnjs.html", "article.html", "article-long.html"]) {
+    const root = tempRoot();
+    const result = await extract(root, fixture);
+    assert.equal(result.status, 0, `${fixture}: ${result.stdout}`);
+  }
+  const root = tempRoot();
+  const capture = spawnSync(process.execPath, [cli, "evidence", "capture", "--root", root, "--project-root", root, "--adapter-path", fakeAdapter(root, fs.readFileSync(path.join(FIXTURES, "cf-real.html"), "utf8")), "--output-root", "captured", "--url", "https://example.com", "--json"], { encoding: "utf8" });
+  assert.equal(capture.status, 0, capture.stdout);
+});
+
+test("an HTTP error status is refused with REFERENCE_HTTP_STATUS, a designed error page included", { skip }, async () => {
+  const root = tempRoot();
+  const result = await runAsync(["reference", "extract", "--root", root, "--url", `${origin}/designed404`, "--output", "out", "--puppeteer-module", puppeteerPath(), "--json"]);
+  assert.equal(result.status, 1, result.stdout);
+  assert.equal(result.output.error.code, "REFERENCE_HTTP_STATUS");
+  assert.equal(result.output.error.details.httpStatus, 404);
+  assert.match(result.output.error.message, /the URL returned HTTP 404; a reference must be the real page/);
+  assert.equal(fs.existsSync(path.join(root, "out")), false);
+});
+
+test("a client-rendered page is measured once it has rendered; one that never renders is refused", { skip }, async () => {
+  const root = tempRoot();
+  const result = await extract(root, "spa.html");
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const roles = Object.fromEntries(result.output.roles.map((item) => [item.role, item.hex]));
+  assert.equal(roles.background, "#fafafa");
+  assert.equal(roles.text, "#0a2540");
+  assert.equal(roles.primary, "#635bff");
+  assert.ok(result.output.typeScale.some((item) => item.size === "48px"));
+  const empty = await extract(tempRoot(), "empty-spa.html");
+  assert.equal(empty.status, 1, empty.stdout);
+  assert.equal(empty.output.error.code, "REFERENCE_EMPTY");
+});
+
+test("a full-viewport fixed overlay is dismissed by geometry whatever it is called", { skip }, async () => {
+  const root = tempRoot();
+  const result = await extract(root, "cookie-modal.html");
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.deepEqual(result.output.overlaysDismissed, ["div#privacy-modal.x"]);
+  assert.doesNotMatch(readOut(root, "extraction.json"), /#112233/);
+  assert.equal(result.output.roles.find((item) => item.role === "background").hex, "#ffffff");
+});
+
+test("a full-bleed gradient hero outweighs the white canvas it covers", { skip }, async () => {
+  const root = tempRoot();
+  const result = await extract(root, "gradient.html");
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const extraction = JSON.parse(readOut(root, "extraction.json"));
+  assert.equal(extraction.palette.background[0].hex, "#ff0080");
+  const white = extraction.palette.background.find((item) => item.hex === "#ffffff");
+  assert.notEqual(white.tier, "dominant");
+  assert.equal(extraction.uncoveredShare, 0);
+});
+
+test("dark surfaces merged within CIEDE2000 15 are reported as low confidence", { skip }, async () => {
+  const root = tempRoot();
+  const result = await extract(root, "dark.html");
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const extraction = JSON.parse(readOut(root, "extraction.json"));
+  assert.deepEqual(extraction.palette.background[0].nearMerges, [{ hex: "#16161d", deltaE: 4.1 }]);
+  assert.ok(result.output.lowConfidence.some((item) => /^background surfaces: #16161d \(CIEDE2000 4\.1\) merged into #0b0b0f/.test(item)));
 });
 
 test("CIEDE2000 matches the published reference pairs and tiers follow share", () => {

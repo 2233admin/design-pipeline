@@ -422,7 +422,7 @@ function publicHelp() {
     "  change init|resume|advance|migrate|repair",
     "  foundation check [--kind design|motion|all] | direction check | direction draw --medium web|ppt|info|app [--second 0-59] [--pool <numbers>] [--east-pool <numbers>]   (the roulette: S % count + 1 in the medium's section and S % 12 + 1 in east, past styles the ledger's last three deliveries used) | playground check | reference check|resolve | reconstruction check | scene check",
     "  reference analyze-video --path <video> --output <new-dir> [--project-root <dir>] [--start sec --end sec --fps 12 --max-frames 400] [--study] [--shots [--cut-threshold 0.18] [--min-shot 0.25]]   (decoded timed windows; observations pending; --study adds study.json with audio and cut-grid candidates; --shots segments by detected shot with per-shot frames, motion and sound events)",
-    "  reference extract --url <http(s) page> --output <dir> [--target-id <id>] [--width 1440 --height 900] [--replace]   (deterministic palette, type scale and spacing from computed styles: extraction.json, palette-evidence.json (status pending; DOM source ready, raster pending) and design-md-draft.md; a challenge or block page exits 1 REFERENCE_BLOCKED)",
+    "  reference extract --url <http(s) page> --output <dir> [--target-id <id>] [--width 1440 --height 900] [--replace]   (deterministic palette, type scale and spacing from computed styles: extraction.json, palette-evidence.json (status pending; DOM source ready, raster pending) and design-md-draft.md; a challenge or block page exits 1 REFERENCE_BLOCKED, an HTTP 4xx/5xx page REFERENCE_HTTP_STATUS, a page that renders nothing REFERENCE_EMPTY)",
     "  project inspect [--project-root <dir>] [--scope <relative-dir>] [--query <brief>] [--write --output project-analysis.json]   (read-only source evidence)",
     "  runtime-review build --change-root <dir> --manifest <file> [--root <workspace>] [--json]",
     "  runtime-review check --change-root <dir> --artifact <review.json> [--root <workspace>] [--json]",
@@ -506,7 +506,7 @@ function publicHelp() {
 // status to success, because a status this wrapper does not understand is not evidence of success.
 const KERNEL_EXIT_CODES = [0, 2, 3];
 // Kernel error codes a caller keeps instead of KERNEL_FAILED.
-const PROPAGATED_KERNEL_CODES = new Set(["REFERENCE_BLOCKED", "REFERENCE_UNREACHABLE"]);
+const PROPAGATED_KERNEL_CODES = new Set(["REFERENCE_BLOCKED", "REFERENCE_UNREACHABLE", "REFERENCE_HTTP_STATUS", "REFERENCE_EMPTY"]);
 const KERNEL_STATUS_LABELS = { 2: "blocked", 3: "fidelity-limited" };
 
 function kernelStatusLabel(exitCode, successLabel) {
@@ -924,6 +924,8 @@ function referenceExtractCommand(parsed, root) {
     result: {
       status: "extracted",
       url,
+      finalUrl: measurement.finalUrl,
+      httpStatus: measurement.httpStatus,
       targetId,
       files: Object.fromEntries(Object.entries(files).map(([key, file]) => [key, rel(file)])),
       roles: palette.semanticRoles.map(({ role, sourceColor }) => ({ role, hex: sourceColor })),

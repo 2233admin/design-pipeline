@@ -14,19 +14,45 @@ Ported decisions:
    text, border colour per element with a visible border.
 2. `:root`/`html` custom properties read through `document.styleSheets[].cssRules`, recursing into grouping
    rules; cross-origin sheets are counted as unreadable.
-3. `document.fonts.ready` raced against 5 s; cookie, consent, GDPR and banner elements that are fixed or sticky,
-   and fixed overlays or modals above z-index 100, are removed before measuring (again after the scroll walk).
+3. `document.fonts.ready` raced against 5 s. Overlays are removed before measuring (again after the scroll walk)
+   by geometry first: any `position: fixed` element covering 60% of the viewport or more that is what the
+   viewport shows at three of five sample points (`elementFromPoint`). brandmd's name rules stay as an extra:
+   fixed or sticky cookie, consent, GDPR and banner elements, and fixed overlays or modals above z-index 100.
+   Sticky elements are never removed by geometry, because a full-height sticky section is usually content.
 4. Scroll with `behavior: "instant"`: `page-refs-core.cjs` `settle` already does this, so it is reused.
-5. Block-page detection (brandmd `extract.js` lines 16-66): vendor markers decide alone; challenge phrases
-   count only with a Cloudflare footprint; otherwise two of block title, HTTP 401/403/429, under 200 characters
-   of text, captcha widget, bare page (at most two backgrounds and only fallback fonts). A JavaScript challenge
-   is polled for up to 15 s before it is refused. brandmd only warns on a likely block page; we refuse.
+5. Block-page detection (brandmd `extract.js` lines 16-66), narrowed after review so that a real page is never
+   refused for what it loads or what it talks about:
+   - Decides alone: an element whose id or class only a vendor's challenge or block page renders (`cf-chl-*`,
+     `challenge-form`, `cf-browser-verification`, `cf-challenge-running`, `cf-error-details`, `px-captcha`),
+     read from attributes, never from text or script URLs; or vendor block text (`Cloudflare Ray ID`,
+     `Incapsula incident ID`) on a page with under 300 characters of visible text.
+   - A challenge phrase ("just a moment", "verifying you are human", ...) counts only in the title, or in a
+     body under 300 characters, and only with a challenge footprint (`/cdn-cgi/challenge-platform/`,
+     `_cf_chl_opt`, `captcha-delivery.com`, ...) or a captcha widget container (`cf-turnstile`,
+     `g-recaptcha`, `h-captcha`). A footprint alone never blocks: Cloudflare injects `challenge-platform`
+     into ordinary pages, and a `cdnjs.cloudflare.com` asset is no footprint at all.
+   - Otherwise a block title (anchored at the start: "Access Denied", "Forbidden", "403", ...) plus one of
+     HTTP 401/403/429, under 200 characters of text, or a bare page (at most two backgrounds, only fallback
+     fonts).
+   A JavaScript challenge is polled for up to 15 s before it is refused. brandmd only warns on a likely block
+   page; we refuse.
+6a. HTTP status: `reference extract` tracks the latest main-document response (a challenge that clears
+   navigates again) and refuses 4xx/5xx with `REFERENCE_HTTP_STATUS`, a designed error page included; the
+   status is in the result.
+6b. Client-rendered pages: before the block check and the walk, the page must show visible text or media
+   and keep the same text length, media count and node count for 500 ms; a page that shows nothing within
+   15 s fails with `REFERENCE_EMPTY`.
 6. Colours closer than CIEDE2000 15 merge, heaviest first. Tiers by share within its group (background, text,
    border): >= 25% dominant, >= 5% accent, else incidental; HSL saturation above 0.5 is never below accent.
 7. Font sizes, line heights and spacing cluster to 0.5 px; spacing keeps px scalars in (0, 200]; a base grid of
    8 then 4 px is claimed only at >= 80% coverage.
 8. `(low confidence)` instead of guessing: a font needs two elements, the primary colour needs a saturated,
    mid-light measured colour, a role the page lacks is not invented.
+
+Root painters: the canvas, `html` and `body` backgrounds are weighted `1 + 25 * min(uncoveredArea / viewport, 1)`,
+where the uncovered area is measured on a 32 px grid over the document after marking every box with an opaque
+background colour or a background image. A full-bleed gradient or photo hero is therefore not outvoted by a
+white canvas nobody sees; `uncoveredShare` is recorded in `extraction.json`.
 
 Our differences: translucent colours are composited over the page background before clustering (the schema
 needs six-digit hex); text colours count only elements with their own text; a per-size font family needs two
@@ -53,15 +79,24 @@ website-cloning target URL exactly.
 
 ## Relation to replicate-measured-extraction
 
-That pending change reserves `reference extract` and `extraction.json` and plans vendored design-extract
-extractors, motion, radii, shadows, DTCG output and `token-not-measured` matching. This change implements the
-same action for palette, type scale and spacing without vendoring; that change should extend this action and
-file rather than add a second extractor.
+That pending change planned `reference extract` and `extraction.json` with vendored design-extract extractors.
+This change implements the action for palette, type scale and spacing; that change is edited in the same pull
+request so its items are MODIFIED extensions of this action (more fields in the same files, `--path`, a DTCG
+file, `token-not-measured`), with this collector as the only page walk. Archive this change first.
 
 ## Exit codes
 
 0 extracted; 1 usage, unreachable page (`REFERENCE_UNREACHABLE`), refused block page (`REFERENCE_BLOCKED`),
-missing browser or puppeteer-core. `runKernel` keeps these two codes from the kernel instead of `KERNEL_FAILED`.
+HTTP 4xx/5xx (`REFERENCE_HTTP_STATUS`), nothing rendered (`REFERENCE_EMPTY`), missing browser or puppeteer-core.
+`runKernel` keeps these four codes from the kernel instead of `KERNEL_FAILED`.
+
+## Known limitation: near surfaces merge
+
+Clustering below CIEDE2000 15 (brandmd's constant) merges designed surface steps on dark or tinted sites: a
+`#16161d` card on a `#0b0b0f` page is CIEDE2000 4.1 apart and becomes one colour. The constant is kept, so the
+tiers stay comparable with the source method, but every background merge from 3 up to 15 is recorded as
+`nearMerges` on the cluster and listed under `(low confidence)` naming both colours; anti-aliasing and sub-pixel
+noise stays under 2. The agent reads the raw members before dropping a step.
 
 ## Risks
 
