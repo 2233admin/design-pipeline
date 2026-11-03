@@ -503,7 +503,9 @@ function projectBrandFindings(projectRoot, options = {}) {
 // are measured, and the cover stays shapes in one fixed layout. Taste rules stay in the guide.
 
 const ON_TOKEN = /^on-(.+)$/;
-const FOCUS_TOKEN = /(?:^|[-_])focus(?:[-_]|$)/i;
+// Focus-ring colours by convention: `focus-ring` or `focus-outline`, optionally with kebab-case
+// suffixes for a theme or state (`focus-ring-inverse`). `focus-bg` and other fills do not match.
+const FOCUS_TOKEN = /^focus-(?:ring|outline)(?:-[a-z0-9]+)*$/;
 
 function roleTokenFindings(tokens) {
   const out = [];
@@ -512,6 +514,7 @@ function roleTokenFindings(tokens) {
   const names = new Set(color.tokens.filter((t) => t && typeof t.name === "string").map((t) => t.name));
   const pairs = (Array.isArray(tokens.contrast) ? tokens.contrast : []).filter((p) => p && typeof p.text === "string" && Array.isArray(p.on));
   const add = (code, message, fix) => out.push({ file: "tokens.json", code, severity: "error", message, fix });
+  const below = (own, floor) => own.some((p) => p.min !== undefined && !(Number(p.min) >= floor));
   for (const name of names) {
     const own = pairs.filter((p) => p.text === name);
     const on = ON_TOKEN.exec(name);
@@ -520,13 +523,15 @@ function roleTokenFindings(tokens) {
       const grounds = names.has(ground) ? [ground] : null;
       if (!own.length || (grounds && !own.some((p) => p.on.includes(ground)))) {
         add("on-token-unmeasured", `${name} names the colour drawn on ${ground}, but no contrast entry measures it there`,
-          `add {"text": "${name}", "on": ["${grounds ? ground : "<each fill it sits on>"}"], "min": 4.5} to contrast (3 for marks or text 24px and up)`);
+          `add {"text": "${name}", "on": ["${grounds ? ground : "<each fill it sits on>"}"], "min": 4.5} to contrast (3 only for marks or text 24px and up)`);
+      } else if (below(own, 3)) {
+        add("on-token-floor", `${name} is measured with a minimum below 3:1`, `set "min" to 4.5 for body text (3 at least, for marks or text 24px and up) on every contrast entry for ${name}`);
       }
     } else if (FOCUS_TOKEN.test(name)) {
       if (!own.length) {
         add("focus-ring-unmeasured", `${name} is a focus ring colour, but no contrast entry measures it on the surfaces it lands on`,
           `add {"text": "${name}", "on": ["<every surface a focused control sits on>"], "min": 3} to contrast`);
-      } else if (own.some((p) => p.min !== undefined && Number(p.min) < 3)) {
+      } else if (below(own, 3)) {
         add("focus-ring-floor", `${name} is measured with a minimum below 3:1`, `set "min" to 3 or more on every contrast entry for ${name}`);
       }
     }
@@ -534,23 +539,95 @@ function roleTokenFindings(tokens) {
   return out;
 }
 
-const COVER_RULES = [
-  ["cover-picture", /<(?:img|picture|video|canvas|image)\b/i, "the cover shows a picture; it is name, colour blocks and one pattern",
-    "remove the picture and draw the blocks and pattern as inline SVG shapes bound to tokens"],
-  ["cover-gradient", /gradient\s*\(|<(?:linear|radial)Gradient\b/i, "the cover uses a gradient",
-    "fill every block with a solid colour token"],
-  ["cover-motion", /@keyframes|\banimation(?:-name)?\s*:|\btransition\s*:|<animate/i, "the cover moves",
-    "remove the animation and transition; the cover is still"],
-  ["cover-responsive", /@media|@container|\d(?:vw|vh|cqw|cqi)\b/i, "the cover has a responsive layout",
-    "lay it out once at 960px wide with no media or container queries and no viewport units; the host scales it"],
-];
+// A small CSS walker: enough to find rules, their declarations and the at-rules around them.
+function cssBlocks(css, parents = []) {
+  const blocks = [];
+  let pos = 0;
+  while (pos < css.length) {
+    const open = css.indexOf("{", pos);
+    if (open < 0) break;
+    const prelude = css.slice(pos, open).split(";").pop().trim();
+    let depth = 1;
+    let i = open + 1;
+    for (; i < css.length && depth; i += 1) {
+      if (css[i] === "{") depth += 1;
+      else if (css[i] === "}") depth -= 1;
+    }
+    const inner = css.slice(open + 1, depth ? css.length : i - 1);
+    if (/^@(?:-\w+-)?keyframes\b/i.test(prelude)) blocks.push({ prelude, parents, keyframes: true, declarations: [] });
+    else if (/^@(?:media|container|supports|layer|scope)\b/i.test(prelude)) blocks.push(...cssBlocks(inner, [...parents, prelude]));
+    else blocks.push({ prelude, parents, declarations: declarations(inner) });
+    pos = i;
+  }
+  return blocks;
+}
 
+function declarations(text) {
+  return text.split(";").map((d) => {
+    const colon = d.indexOf(":");
+    return colon < 0 ? null : { property: d.slice(0, colon).trim().toLowerCase(), value: d.slice(colon + 1).trim() };
+  }).filter((d) => d && d.property);
+}
+
+const stripCssComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, "");
+const GRADIENT_VALUE = /(?:^|[^\w-])(?:-(?:webkit|moz|o)-)?(?:repeating-)?(?:linear|radial|conic)-gradient\(/i;
+const VIEWPORT_VALUE = /(?:^|[^\w.#-])-?(?:\d+\.?\d*|\.\d+)(?:vw|vh|svh|dvh|lvh|svw|dvw|lvw|vmin|vmax)(?![\w-])/i;
+// Size features make a layout responsive; prefers-color-scheme and other preference queries do not.
+const SIZE_QUERY = /\b(?:(?:min|max)-)?(?:width|height|aspect-ratio|device-width|device-height|orientation)\b/i;
+const PICTURE_TAG = /<(?:img|picture|video|canvas|image)(?![\w-])/i;
+const SVG_GRADIENT_TAG = /<(?:linearGradient|radialGradient)(?![\w-])/i;
+const SVG_MOTION_TAG = /<(?:animate|animateTransform|animateMotion|set)(?![\w-])/i;
+
+const COVER_FIXES = {
+  "cover-picture": ["the cover shows a picture; it is name, colour blocks and one pattern",
+    "remove the picture and draw the blocks and pattern as inline SVG shapes bound to tokens"],
+  "cover-gradient": ["the cover uses a gradient", "fill every block with a solid colour token"],
+  "cover-motion": ["the cover moves", "remove the animation; the cover is still (a transition alone is allowed)"],
+  "cover-responsive": ["the cover has a responsive layout",
+    "lay it out once at 960px wide with no size media or container queries and no viewport units; the host scales it"],
+};
+
+function cssCodes(blocks, codes) {
+  for (const block of blocks) {
+    if (block.keyframes) codes.add("cover-motion");
+    if (block.parents.some((p) => /^@container\b/i.test(p) || (/^@media\b/i.test(p) && SIZE_QUERY.test(p)))) codes.add("cover-responsive");
+    declarationCodes(block.declarations, codes);
+  }
+}
+
+function declarationCodes(list, codes) {
+  for (const { property, value } of list) {
+    const bare = value.replace(/url\([^)]*\)/gi, "url()");
+    if (property === "animation" || property.startsWith("animation-")) codes.add("cover-motion");
+    if (GRADIENT_VALUE.test(bare)) codes.add("cover-gradient");
+    if (VIEWPORT_VALUE.test(bare)) codes.add("cover-responsive");
+  }
+}
+
+// The cover preview and the bundle.css rules that reach it (bundle.css is loaded into every
+// preview). HTML and CSS comments are ignored, so the derivation comment may name anything.
 function coverFindings(dir) {
   const file = path.join(dir, "components", "Cover", "preview.html");
   if (!fs.existsSync(file)) return [];
   const html = readText(file).replace(/<!--[\s\S]*?-->/g, "");
-  return COVER_RULES.filter(([, pattern]) => pattern.test(html)).map(([code, , message, fix]) => ({
-    file: "components/Cover/preview.html", code, severity: "error", message, fix,
+  const styles = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => stripCssComments(m[1])).join("\n");
+  const markup = html.replace(/<(style|script)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
+  const codes = new Set();
+  if (PICTURE_TAG.test(markup)) codes.add("cover-picture");
+  if (SVG_GRADIENT_TAG.test(markup)) codes.add("cover-gradient");
+  if (SVG_MOTION_TAG.test(markup)) codes.add("cover-motion");
+  for (const m of markup.matchAll(/\sstyle\s*=\s*("([^"]*)"|'([^']*)')/gi)) declarationCodes(declarations(m[2] ?? m[3]), codes);
+  cssCodes(cssBlocks(styles), codes);
+  const bundle = path.join(dir, "components", "bundle.css");
+  if (fs.existsSync(bundle)) {
+    const used = new Set();
+    for (const m of markup.matchAll(/\sclass\s*=\s*("([^"]*)"|'([^']*)')/gi)) for (const c of (m[2] ?? m[3]).split(/\s+/)) if (c) used.add(`.${c}`);
+    for (const m of markup.matchAll(/\sid\s*=\s*("([^"]*)"|'([^']*)')/gi)) if ((m[2] ?? m[3]).trim()) used.add(`#${(m[2] ?? m[3]).trim()}`);
+    const reaches = (block) => [...block.prelude.matchAll(/[.#][A-Za-z_-][\w-]*/g)].some((m) => used.has(m[0]));
+    cssCodes(cssBlocks(stripCssComments(readText(bundle))).filter((b) => !b.keyframes && reaches(b)), codes);
+  }
+  return Object.keys(COVER_FIXES).filter((code) => codes.has(code)).map((code) => ({
+    file: "components/Cover/preview.html", code, severity: "error", message: COVER_FIXES[code][0], fix: COVER_FIXES[code][1],
   }));
 }
 
@@ -584,7 +661,7 @@ function checkDesignSystemPackage(options = {}) {
   }
   checkReadme(dir, findings);
   const components = checkComponents(dir, findings);
-  if (tokens &&!findings.some((f) => f.file === "tokens.json") && fs.existsSync(designFile)) {
+  if (tokens && !findings.some((f) => f.file === "tokens.json") && fs.existsSync(designFile)) {
     checkDesignMdDrift(readText(designFile), tokens, findings);
   }
   if (fs.existsSync(designFile)) findings.push(...brandFindings({ projectRoot, systemDir: rel, designText: readText(designFile), tokens }));

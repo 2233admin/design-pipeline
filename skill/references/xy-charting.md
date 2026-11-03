@@ -66,44 +66,49 @@ the motion semantics; its animation API does not redefine the project `MOTION.md
 
 ## Dashboard And Chart Composition
 
-These rules hold for any `vector-data` route (XY, SVG/D3, ECharts, Chart.js), not only XY. They feed
-the Design Contract above and the owner's review; none is a gate.
+Applies to every `vector-data` runtime (XY, SVG/D3, ECharts, Chart.js). It feeds the Design
+Contract above and the owner's review; nothing here is a gate.
 
-- **One decision.** A dashboard serves one decision. Under a one-line title, one sentence of
-  takeaway, computed from the data, says what the numbers mean for that decision.
-- **Headline figures.** At most about six in a row. The first is the one nearest the outcome
-  (orders, not visits). Each shows its change from the previous period, signed, with the period
-  named, coloured by whether the change is good. Every card names its time window ("Last 28 days").
-  Figures that are stages of one process are a funnel or a ratio, not separate tiles.
-- **A shape for the job.** Pick one before laying out cards:
-  - *Scorecard* (weekly check-in): four to six cards, each latest value, change, small trend and
-    target; only a missed target turns red.
-  - *Board* (kept open to watch health): one status line naming what is over its limit, the same
-    metric per member as small charts on one shared scale, recent incidents in a table; only a
-    breach takes the danger colour, and nothing moves.
-  - *Experiment* (ship or not): the primary metric's lift as the big number, a sentence on whether
-    its 95% interval crosses zero, every metric's interval against a zero line.
-  - *Funnel* (where people drop off): each step as a bar from one left edge, the previous period as
-    a thin bar beneath, the share lost between steps, the biggest loss in the danger colour.
-  - *Table* (many rows to scan): one sortable, searchable table, an in-cell bar on one shared scale,
-    secondary columns that hide when narrow.
-  - *Review* or *analysis* (read once): the finding in a sentence around one number, then one chart
-    per heading that says what it shows; one accent series, the rest muted.
-- **Marks.** Counts per day, week or month are bars; rates, running totals and several series over
-  time are straight-segment lines, because a smoothed curve shows values the data does not have.
-  A breakdown table keeps its parent's columns in the same order. Label a line at its end with name
-  and latest value instead of a legend when there are few lines. Define a metric in plain words where
-  it first appears.
-- **Measured layout.** Chart margins come from the widest tick and end label as drawn, not a guessed
-  constant; thin ticks or move end labels apart when labels meet. Give every chart box an explicit
-  height: a responsive chart inside a parent with no resolved height can grow without bound (Chart.js
-  with `maintainAspectRatio: false` loops on its resize observer).
-- **States keep their place.** Loading, empty, failed and refreshing states keep the chart box's
-  drawn height, so nothing below moves. A failed source shows one short line in place; empty values
-  stay blank rather than printing "No data"; a refreshing card dims and keeps its last values.
-  These are the `loading`, `empty` and `error` rows of the component state matrix.
-- **Honest data.** Rows that were made up, estimated or recalled are labelled as sample data on the
-  page, with how they were made; anything left out is named on the page with the reason.
+### Before any card: decision, form, headline
+
+1. Name the single decision the page supports. Put a plain title on top and, beneath it, one
+   sentence computed from the data that states what the numbers imply for that decision.
+2. Pick one form and build only that:
+
+   | Form | Reader's job | Layout |
+   | --- | --- | --- |
+   | Scorecard | Weekly check-in | 4–6 cards; each: current value, delta, small trend, target; red only for a missed target |
+   | Board | Watching health all day | A status line listing what is out of bounds; one metric per member as small multiples sharing a scale; incident table; still, with danger colour reserved for breaches |
+   | Experiment | Ship or not | Lift of the primary metric as the big number; a sentence on whether the 95% interval includes zero; all intervals plotted against a zero line |
+   | Funnel | Locate drop-off | Steps as bars from a shared left edge, prior period as a thin bar under each, percentage lost between steps, largest loss in the danger colour |
+   | Table | Scanning many rows | One sortable, filterable table; in-cell bars on a common scale; low-priority columns collapse on narrow screens |
+   | Review | Reading a finding once | The finding as a sentence built around one number, then one chart per heading; one accent series, others muted |
+
+3. Headline numbers: keep the row to roughly six. Order them by closeness to the outcome (orders
+   before visits). Each carries its delta against the prior period, with sign, the comparison
+   period spelled out, and a colour for good or bad. Each card states its window (for example
+   "28 days to 3 Nov"). Sequential stages of one process become a funnel or a ratio rather than
+   loose tiles.
+
+### Marks, labels and layout
+
+| Rule | Why |
+| --- | --- |
+| Counts per period as bars; rates, cumulative totals and multiple series as lines with straight segments | Smoothing invents in-between values |
+| Few lines: name and last value at the line's end instead of a legend | The eye stays on the data |
+| A drill-down table repeats its parent's columns in the parent's order | Rows compare across levels |
+| Define each metric in plain words at first use | Readers outside the team |
+| Derive chart margins from the measured width of the longest tick and end label; thin ticks or offset labels that collide | Data decides label width |
+| Every chart box has an explicit height | A responsive chart in a parent without a resolved height can grow forever (Chart.js with `maintainAspectRatio: false` loops on resize) |
+
+### States and honesty
+
+- Loading, empty, failed and refreshing keep the box at its drawn height so the page below never
+  shifts: a failed source gets one short in-place line, missing values stay blank instead of a
+  "No data" label, a refresh dims the card while its previous values stay legible. These map to the
+  `loading`, `empty` and `error` rows of the component state matrix.
+- Invented, estimated or remembered rows are marked on the page as sample data, with how they were
+  produced. Anything omitted is named on the page with the reason.
 
 ## Runtime And Security Boundaries
 
@@ -152,8 +157,8 @@ Official sources:
 - Capability matrix: https://github.com/reflex-dev/xy/blob/main/spec/api/capability-matrix.md
 - Alpha limits: https://github.com/reflex-dev/xy/blob/main/docs/api-reference/limitations-and-alpha-status.md
 
-Provenance: Dashboard And Chart Composition distils the dashboard design defaults of the claude.ai
-Dashboard artifact type, as published in `JimLiu/baoyu-design`
+Provenance: Dashboard And Chart Composition restates, as mechanisms, the dashboard design defaults
+of the claude.ai Dashboard artifact type, as published in `JimLiu/baoyu-design`
 (`skills/claude-dashboard/artifact-type/reference/design-defaults.md`, Anthropic material, no licence
 granted), and the chart-container rule of `nexu-io/open-design` `skills/data-report` (Apache-2.0).
 Mechanisms only, in this repository's words; see

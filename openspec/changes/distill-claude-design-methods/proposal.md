@@ -6,7 +6,7 @@ Design artifact types, Claude Design's archived built-in skills, and its own MIT
 and `nexu-io/open-design` (Apache-2.0 skills and craft side files). Our counterparts already cover
 much of it (`design-system-package.md` is modelled on the Design System artifact), but several
 concrete mechanisms are missing: an inventory-first build, measured `on-` and focus colours, a cover
-that stays still and fixed, deck craft beyond the PPTX constraints, dashboard composition, how
+that stays still and fixed, deck rules beyond the PPTX constraints, dashboard composition, how
 direction versions are put to the owner, and which film frames a self-review must look at.
 
 ## What Changes
@@ -14,12 +14,13 @@ direction versions are put to the owner, and which film frames a self-review mus
 - Record the gap analysis per source skill in `design.md`, with what lands, where, and what is left
   out and why.
 - `design-system check` gains two measured rules in one separate function: `on-<fill>` and focus-ring
-  colours must be measured in `contrast` (`on-token-unmeasured`, `focus-ring-unmeasured`,
-  `focus-ring-floor`), and the cover preview must have no picture, gradient, motion or responsive
-  layout (`cover-picture`, `cover-gradient`, `cover-motion`, `cover-responsive`). Each finding
+  colours (named `on-<fill>`, `focus-ring`, `focus-outline`) must be measured in `contrast` at 3:1
+  or more (`on-token-unmeasured`, `on-token-floor`, `focus-ring-unmeasured`, `focus-ring-floor`), and the cover preview must have no picture, gradient, motion or responsive
+  layout, including `bundle.css` rules that reach the cover (`cover-picture`, `cover-gradient`,
+  `cover-motion`, `cover-responsive`). Each finding
   carries its fix.
 - Advisory guidance lands in the existing guides: inventory first and accessibility-ask
-  definitions (`design-system-package.md`), deck craft (`editable-pptx-html.md`), dashboard and
+  definitions (`design-system-package.md`), deck rules for PowerPoint decks (`editable-pptx-html.md`), dashboard and
   chart composition (`xy-charting.md`, routed from `graphics-runtime-routing.md` and `stages.md`),
   version presentation (`direction-preview.md`), film frame review (`workflow-film.md`).
 - Provenance in `design.md` and `THIRD_PARTY_NOTICES.md`.

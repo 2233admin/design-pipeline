@@ -879,8 +879,8 @@ is copied or distributed (`codeCopied: false`); the gap analysis and what landed
   review).
 - Source: https://github.com/nexu-io/open-design, reviewed commit
   `5a0c47777975ddb91d09c1c16b423a3ef74bf572`, Apache License 2.0
-  (https://www.apache.org/licenses/LICENSE-2.0). Mechanisms from `skills/pptx-html-fidelity-audit`
+  (full text at apache.org). Mechanisms from `skills/pptx-html-fidelity-audit`
   (footer rail) and `skills/data-report` (explicit chart container height). Its `craft/` files adapt
   MIT `referodesign/refero_skill`; none of their text is used here.
 
-The project is not affiliated with or endorsed by either upstream.
+Neither upstream sponsors or has reviewed this project.

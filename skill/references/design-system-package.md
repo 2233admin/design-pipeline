@@ -29,18 +29,15 @@ Write it during design synthesis (Stage 4 in `design-synthesis.md`), before `DES
 
 ## Inventory first
 
-Before writing any file, list what the source holds and track the package against that list:
+Make the list before the files, then build against it.
 
-- **From a real source** (code, a design file, a deck, brand guidelines): every token with the
-  source's own name and exact value, in its order (5px stays 5px; nothing snaps to a 4/8 grid or a
-  framework default); every component family the source defines; every logo, icon set and font
-  file. Code is the truth; screenshots are lossy guidance. A component the source does not have goes
-  in only under an `Intentional additions` line in `README.md` with its reason. If the work stops
-  early, say exactly which listed items are not yet built; a package never ends silently partial.
-- **From nothing**: a deliberately small first system, said as such: 6 to 10 colours in one theme,
-  5 to 7 type styles, 4 spacing steps, 3 radii, a short README and no components beyond the ones the
-  product's own pages need.
-- When a read fails partway, report what was and was not read; never fill the gap from memory.
+| Starting point | What the list holds | Rules |
+| --- | --- | --- |
+| A real source: code, a design file, a deck, brand guidelines | Each token under the source's name and value, in source order; each component family the source has; each logo, icon set and font file | Values are copied as found (5px is not rounded to a grid or a framework default). Code outranks screenshots. A component absent from the source is listed under `Intentional additions` in `README.md` with the reason |
+| No source | A starter set, labelled as one: 6–10 colours in one theme, 5–7 type styles, a 4-step spacing scale, 3 radius values and a short README | Components only where the product's own pages need them |
+
+When work stops before the list is done, name the unbuilt entries. When reading the source fails
+partway, say what was read and what was not; never fill gaps from memory.
 
 ## README.md — usage rules
 
@@ -77,32 +74,28 @@ families; type style names start with a letter. Both become CSS names unescaped 
   and up); focus rings, borders and marks that carry meaning need 3:1. Pairs are checked in every
   theme.
 - A `usage` note on every token and style: where it is used, and for a text colour which grounds.
-- Role colours are measured, not assumed. A fill whose text is not plain ink gets an `on-<fill>`
-  token (a dark theme that lightens an accent usually wants dark text on it, not literal white), and
-  `contrast` measures it on `<fill>`. A focus-ring token (a name containing `focus`) is solid and
-  measured at 3:1 or more on every surface a focused control sits on. `check` reports
-  `on-token-unmeasured`, `focus-ring-unmeasured` and `focus-ring-floor` with the entry to add.
-- A real source's failing pair keeps its exact values: its usage note says it misses, and the fix is
-  an added theme, not a re-tint of the brand.
-- Accessibility asks have fixed meanings when the owner makes them. *High contrast* is an added
-  theme, never a re-tint of the brand's own: text at 7:1 on its grounds (4.5:1 from 24px), surfaces
-  and controls set apart by borders at 3:1. *Colour-blind-safe status* means every status also
-  carries a word or an icon, and success and danger either differ in lightness by 3:1 between
-  themselves or success moves off the red–green axis toward blue. A source's own pair that misses
-  stays as it is beside the added theme. These are definitions of an ask, not checks on every
-  package.
+- Role colours follow two names and both are measured:
+  - `on-<fill>`: the text and icon colour drawn on the fill `<fill>`, used whenever that colour is not
+    plain ink. Pick it per theme (a lighter accent in a dark theme often needs dark text rather than
+    white). `contrast` measures it on `<fill>`: 4.5:1 for body-size text, never below 3:1 (marks and
+    text 24px and up).
+  - `focus-ring` or `focus-outline`, optionally with a kebab-case suffix for a theme or state
+    (`focus-ring-inverse`): a solid colour measured at 3:1 or more on every surface a focused control
+    sits on. Other names (`focus-bg`, a fill for a focused row) are ordinary colours.
 
-- Brand colours (only when `DESIGN.md` Product Context declares `Real brands:`): a brand colour is a
-  normal colour token that also carries `brand` (the brand's name, as declared) and `source` (an
-  `https://` URL, `owner`, or a project-relative file such as the downloaded logo). When the source
-  is a project text asset (svg, css, html, json, txt, md) the token's hex must appear in it.
-  Because brand colours are colour tokens, the generated `DESIGN.md` `colors` group carries them.
-- `brands`: an object keyed by brand name. `{"<Brand>": {"colours": "none"}}` states that the page
-  uses none of the brand's colours (the alternative to brand colour tokens);
-  `{"<Brand>": {"logo": {"path": "design-system/assets/logos/<file>", "source": "<https url or owner>"}}}`
-  declares the brand's one logo, a svg, png, webp or jpg that exists under `assets/logos/` inside the
-  project. Every declared real brand needs a logo and either brand colour tokens or `colours: none`;
-  [brand-facts.md](brand-facts.md) lists the findings.
+  `check` reports `on-token-unmeasured`, `on-token-floor`, `focus-ring-unmeasured` and
+  `focus-ring-floor`, each with the `contrast` entry to add or fix.
+- When a source's own colour pair misses its ratio, keep the source's values and say so in the
+  token's usage note; a compliant variant is an extra theme, never a quiet recolouring.
+- Two owner requests have fixed definitions (they are not checked on every package):
+
+  | Request | Meaning |
+  | --- | --- |
+  | High contrast | An extra theme next to the brand's: 7:1 for text on its grounds (4.5:1 from 24px); surfaces and controls separated by 3:1 borders |
+  | Colour-blind-safe status | Each status also shows a word or an icon; success and danger are 3:1 apart in lightness, or success shifts toward blue instead of green |
+
+  If the source's own pair misses, it stays in the brand theme and the safe pair goes in the extra
+  theme.
 
 When a project needs a `primary` colour for tools that require one, add it as an alias token with a
 usage note; otherwise the generator writes the first colour as `primary`.
@@ -129,22 +122,22 @@ with one pattern drawn from the system's own scales (hairline rules for an edito
 for a gridded one, pills for a rounded one). Every fill and size comes from tokens. No icons,
 pictures, gradients or motion.
 
-- Lay it out once, at 960px wide: no media or container queries and no viewport units; the host
-  scales the picture. The name and its tagline sit bottom-left in a text block at most 440px wide;
-  the blocks and pattern stay right of x = 480 or in one band across the top when the name is too
-  wide for its zone.
-- Weight the blocks by identity, not by how often the UI spends a colour: a colour that only means a
-  state (error red) stays small. Never a row of equal squares (a swatch table), never more than five
-  colours or two patterns.
-- Keep a four-line derivation comment above the SVG: the blocks (tokens and sizes), the
-  arrangement, the pattern and the sentence that chose it, the steps and radii used. A line with no
-  token in it means the cover is not derived from the system.
-- Squint test: the name reads first, then colour, then pattern; if the pattern wins, halve it. With a
-  thumb over the name, the blocks and pattern alone should say whose system this is.
+Further cover rules:
 
-`check` measures the fixed part: `cover-picture`, `cover-gradient`, `cover-motion` and
-`cover-responsive` (comments are ignored, so the derivation may name anything). The squint and thumb
-tests are the owner's.
+| Topic | Rule | Checked |
+| --- | --- | --- |
+| Layout | One fixed layout at 960px wide, scaled by the host: no size media queries, no container queries, no viewport units (a `prefers-color-scheme` query is fine) | `cover-responsive` |
+| Stillness | No `animation` or `animation-*` properties, `@keyframes`, or SVG `<animate>`, `<animateTransform>`, `<animateMotion>`, `<set>`; a `transition` alone is allowed | `cover-motion` |
+| Fills | Solid tokens only: no CSS gradient function, no SVG gradient | `cover-gradient` |
+| Shapes | No `<img>`, `<picture>`, `<video>`, `<canvas>` or SVG `<image>` | `cover-picture` |
+| Zones | Name and tagline bottom-left in a text block of 440px at most; blocks and pattern right of x = 480, or in a single top band when the name is too wide | owner |
+| Weight | Big blocks go to the colours people recognise the brand by; a state-only colour (error red) stays small; at most five colours and two patterns; never a row of equal squares | owner |
+| Derivation | A comment above the SVG lists the token-sized blocks, the arrangement, the chosen pattern with its reason, and the steps and radii used; a line naming no token means the cover was not derived | owner |
+| Reading order | Squinting, the name comes first, colour second, pattern third (halve a pattern that wins); hiding the name, the shapes alone still identify the system | owner |
+
+The checks read the cover preview and every `components/bundle.css` rule whose selector names a
+class or id the cover uses, since the bundle loads into every preview. HTML and CSS comments are
+skipped, so the derivation comment may mention anything.
 
 ## Commands
 
