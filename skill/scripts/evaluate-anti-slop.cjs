@@ -40,8 +40,23 @@ const EXCEPTION_POLICIES = {
 };
 
 // A waiver must say why this target differs, after hallmark's gates.md: a reason under 24
-// characters, or one copied word for word onto several rules, explains nothing.
+// characters, or one copied word for word onto several rules, explains nothing. Characters are
+// counted without whitespace and punctuation; a CJK ideograph, kana or hangul syllable counts as 2,
+// so about 12 Chinese characters pass. This prompts an explanation; it cannot stop deliberate padding.
 const MIN_RATIONALE = 24;
+const WAIVER_OUTCOMES = new Set(["accepted-context", "not-applicable"]);
+
+function rationaleWeight(text) {
+  let weight = 0;
+  for (const char of text.replace(/[\s\p{P}]/gu, "")) {
+    weight += /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u.test(char) ? 2 : 1;
+  }
+  return weight;
+}
+
+function rationaleKey(text) {
+  return text.replace(/[\s\p{P}]/gu, "").toLowerCase();
+}
 
 function fail(message) {
   throw new Error(message);
@@ -333,7 +348,7 @@ function validateObservation(observation, rulesById, ids) {
     fail(`observation ${observation.ruleId} evidence is required`);
   }
   if (
-    ["accepted-context", "not-applicable"].includes(observation.outcome) &&
+    WAIVER_OUTCOMES.has(observation.outcome) &&
     (typeof observation.rationale !== "string" || !observation.rationale.trim())
   ) {
     fail(`observation ${observation.ruleId} requires a rationale`);
@@ -342,11 +357,11 @@ function validateObservation(observation, rulesById, ids) {
     fail(`hard rule ${rule.id} cannot use accepted-context`);
   }
   if (
-    ["accepted-context", "not-applicable"].includes(observation.outcome) &&
-    observation.rationale.trim().length < MIN_RATIONALE
+    WAIVER_OUTCOMES.has(observation.outcome) &&
+    rationaleWeight(observation.rationale) < MIN_RATIONALE
   ) {
     fail(
-      `observation ${observation.ruleId} rationale is too short to explain this target: write at least ${MIN_RATIONALE} characters naming the product reason`,
+      `observation ${observation.ruleId} rationale is too short to explain this target: write at least ${MIN_RATIONALE} characters (about ${MIN_RATIONALE / 2} CJK characters), not counting spaces and punctuation, naming the product reason`,
     );
   }
 }
@@ -366,8 +381,8 @@ function validateEvidence(evidence, rulesById) {
   }
   const byRationale = new Map();
   for (const observation of evidence.observations) {
-    if (typeof observation.rationale !== "string") continue;
-    const key = observation.rationale.trim().replace(/\s+/g, " ").toLowerCase();
+    if (!WAIVER_OUTCOMES.has(observation.outcome) || typeof observation.rationale !== "string") continue;
+    const key = rationaleKey(observation.rationale);
     byRationale.set(key, [...(byRationale.get(key) || []), observation.ruleId]);
   }
   for (const ruleIds of byRationale.values()) {

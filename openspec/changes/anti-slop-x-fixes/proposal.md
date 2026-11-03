@@ -20,14 +20,15 @@ found four small gaps:
 - `fashion-tell-advisory` lists the five current clusters (paraphrased, preference severity only);
   the rubric records `anthropic-frontend-design` as a hashed, `accepted-optional` source.
 - `design-system check` reports a `var(--x)` that is neither a token nor a custom property declared
-  in the package's CSS, raw colour values and font stacks outside custom-property declarations, and
-  returns `tokenUse` (declared, referenced, unused).
-- The anti-slop evaluator rejects an `accepted-context` / `not-applicable` rationale under 24
-  characters, and the same rationale copied onto several rules.
+  in `bundle.css` or the same preview, and raw colour values (including SVG paint attributes) and
+  font stacks in declaration values, and returns `tokenUse` (declared, referenced, unused).
+- The anti-slop evaluator rejects an `accepted-context` / `not-applicable` rationale that weighs
+  under 24 (whitespace and punctuation excluded, CJK counted double), and the same waiver rationale
+  copied onto several rules. `anti-slop-review.md` and the evidence schema state the rule.
 
 ## Capabilities
 
-- `design-pipeline`: ADDED three requirements.
+- `design-pipeline`: ADDED seven requirements.
 
 ## Boundaries
 

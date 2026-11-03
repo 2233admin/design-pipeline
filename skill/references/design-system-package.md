@@ -88,10 +88,15 @@ not from a standard kit.
 - `preview.html`: line 1 is the marker `<!-- @dsCard group="<Group>" height=<px> -->`, then a small
   HTML document rendering the component in its main states with real content. The preview frame
   supplies `tokens.css` (compiled from tokens.json) and `components/bundle.css`; use their custom
-  properties and type-style classes, never raw values (`design-system check` reports a `var(--x)`
-  that is neither a token nor a custom property declared in `bundle.css`, raw colour values and
-  font stacks outside custom-property declarations, and lists unused tokens in `tokenUse`). No `iframe`, `frame`, `object`, `embed`,
-  `portal` or `noscript`. Remote scripts only from pinned CDN versions.
+  properties and type-style classes, never raw values. `design-system check` reports a `var(--x)`
+  that is neither a token, a custom property declared in `bundle.css`, nor one declared in the same
+  preview; raw colours (hex, `rgb`, `hsl`, `hwb`, `lab`, `lch`, `oklab`, `oklch`, `color()`,
+  `color-mix()`) and `font-family` stacks in declaration values, `style` attributes and SVG
+  `fill`/`stroke`/`stop-color`/`flood-color`/`lighting-color`; and lists unused tokens in
+  `tokenUse`. Selectors, comments, strings, `url(...)`, `@font-face`, `@property` and custom-property
+  values are not scanned, so a derived colour belongs in a custom property such as
+  `--rule: color-mix(...)`. Named colours (`white`, `red`) are not detected. No `iframe`, `frame`,
+  `object`, `embed`, `portal` or `noscript`. Remote scripts only from pinned CDN versions.
 - `bundle.css` holds the component styles once; the product loads the same file.
 
 ## Cover
