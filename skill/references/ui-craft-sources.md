@@ -79,7 +79,7 @@ finding status, removed signals) in [interface-discipline.md](interface-discipli
 | Id | Check | Sources |
 | --- | --- | --- |
 | UC-01 | Motion earns its place: each animation names one purpose; keyboard-initiated, frequent and data-dense interactions get little or none; motion that adds nothing is removed. | `EM`, `MI/animations.md`, `ID/better-ui/animations.md`, [motion gate](animation-opportunity-and-review.md) |
-| UC-02 | One element moves prominently at a time; actions overlap only when simultaneity is the point. | [animation thinking](animation-thinking.md#direct-the-change) |
+| UC-02 | A readable pose or composition is established before competing movement begins; overlapping actions are separated when their order matters and overlap only when simultaneity is the point. | [animation thinking](animation-thinking.md#direct-the-change) |
 | UC-03 | Timing uses project motion tokens and stays in budget (see [Precedence](#precedence)); exits are faster than entrances; similar elements share timing; ease-out to enter and exit, ease-in-out to move on screen, linear only for constant-rate fills. | `EM`, `MI/animations.md`, [motion gate](animation-opportunity-and-review.md) |
 | UC-04 | Motion never blocks input: rapid toggles retarget instead of queueing, controls stay operable mid-animation, and controls at their default state do not animate on mount. | `EM`, `MI/animations.md`, `ID/better-ui/animations.md` |
 | UC-05 | Trigger-anchored surfaces grow from their trigger and modals from center; scale entrances start at 0.9 or more, never 0; exits are softer, with a small offset. | `EM`, `MI/animations.md`, `ID/better-ui/animations.md` |
@@ -102,6 +102,11 @@ finding status, removed signals) in [interface-discipline.md](interface-discipli
 | UC-22 | A border that only shows depth uses the project elevation token instead. | `MI/surfaces.md`, `ID/better-ui/surfaces.md` |
 | UC-23 | Type fits the surface and density; truncation is a product decision, never cover for an undersized component; CJK fallbacks are verified per platform ([cjk-typography.md](cjk-typography.md)). | `ID/better-typography/UPSTREAM-SKILL.md` |
 | UC-24 | A control added to one surface is added to sibling surfaces carrying its peers; the primary workflow is visible without explanation text. | `ID/interface-review/UPSTREAM-SKILL.md` |
+| UC-25 | Context menus appear at once and animate only their exit. Check: no entrance transition or keyframe on the context-menu surface; an exit fade, if any, stays in the UC-03 budget. | from the former 12-principles bundle (raphaelsalaja/skill, archived upstream) |
+| UC-26 | Values that fade toward zero (volume, glow, momentum, inertial scroll) decay exponentially, not linearly. Check: Web Audio uses `exponentialRampToValueAtTime` (or `setTargetAtTime`) toward a small positive floor, and scripted decay multiplies by a factor per frame instead of subtracting a constant. | from the former 12-principles bundle (raphaelsalaja/skill, archived upstream) |
+| UC-27 | Squash, stretch and press deformation stays subtle: every scale axis stays within 0.95-1.05 (press feedback within the narrower 0.95-0.98 in [Precedence](#precedence)). Check: no `scale`, `scaleX` or `scaleY` keyframe or `whileTap` value outside that range on UI elements. | from the former 12-principles bundle (raphaelsalaja/skill, archived upstream) |
+| UC-28 | Layout, not motion: a modal or dialog dims what is behind it so focus goes to the layer. Check: the backdrop has a visible tint from a project token (not `transparent`), and a non-modal popover does not dim. | from the former 12-principles bundle (raphaelsalaja/skill, archived upstream) |
+| UC-29 | Layout, not motion: animated layers sit on the project's z-index scale, so tooltips, popovers, toasts and modals never render behind content while entering, moving or exiting. Check: each animated overlay takes a named stacking token (no ad hoc numbers), and a transform or `will-change` on an ancestor does not trap it in a lower stacking context. | from the former 12-principles bundle (raphaelsalaja/skill, archived upstream) |
 
 ## Precedence
 

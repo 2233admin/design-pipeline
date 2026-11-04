@@ -34,8 +34,8 @@ through one maintained guide.
 
 #### Scenario: An upstream deletes a bundled skill without a successor
 
-- **WHEN** an upstream removes a bundled skill and its rules are already covered by other bundled
-  sources or pipeline guides
-- **THEN** the bundle, its lock entry, catalog entry, package resources and notice SHALL be removed
-  and every route SHALL cite the existing coverage
+- **WHEN** an upstream removes a bundled skill without a successor
+- **THEN** the bundle, its lock entry, catalog entry, package resources and notice SHALL be removed,
+  every route SHALL cite existing coverage, and each rule without coverage SHALL be restated in the
+  maintained guide with its former source named
 - **AND** no shipped guide, lock entry or vendor directory SHALL still name the removed bundle.

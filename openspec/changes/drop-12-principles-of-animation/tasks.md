@@ -9,6 +9,7 @@
 
 - [x] 2.1 Remove the vendor bundle, importer record and frontmatter license path, lock entry, catalog entry, package resources, notice, `.gitattributes` and vendor README rows.
 - [x] 2.2 `ui-craft-sources.md`: key, UC-02/UC-03 sources, precedence level, conflict lines, section.
+- [x] 2.4 Review fix (PR #278): all 14 upstream rules mapped in design.md; the five uncovered ones restated as UC-25 to UC-29; UC-02 reworded to `animation-thinking.md`.
 - [x] 2.3 `feature-routes.md`, `pipeline-reference.md`, `capability-routing.md`, `docs/features.md`.
 
 ## 3. Verification
