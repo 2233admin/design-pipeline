@@ -222,3 +222,42 @@ They test preparation and actual selected existing render/check paths, not arbit
 scripts or automatic component discovery. See the change's QA evidence for platform, versions,
 failures, observed frames and limits. Audio not heard stays unverified, and no tool pass grants
 Visual Acceptance.
+
+## Code-video libraries audited (2026-11-04)
+
+Two public code-video skill libraries were read (never executed) against this workflow:
+[howseen-ai/claude-motion-design](https://github.com/howseen-ai/claude-motion-design) at
+`3d90d349ef3fdde9b7e89de4df4a2159c9e8697f` (MIT, Copyright (c) 2026 Howseen AI) and
+[XiaoyeCodes/code-animation-prompts](https://github.com/XiaoyeCodes/code-animation-prompts) at
+`69ccbeaf0b821591a40936572c2f559d8f4cfb68` (mixed: free-sharing terms plus three MIT sets; see
+[prompt-motion.md](prompt-motion.md#code-animation-style-library-companion-not-bundled)). What we
+lacked landed in the existing guides, in our words, with no new gate or command:
+
+| Mechanism | Where it landed | Check |
+| --- | --- | --- |
+| Drawing purely from time; seeded randomness; assets ready before registering | [hyperframes.md](hyperframes.md#code-drawn-from-time-seekt-pages-and-ported-code-animations) | Render with one and with several workers as PNG sequences; frame hashes must match |
+| Motion blur by averaging subframes (180° shutter), cuts on whole frames | [workflow-film.md](workflow-film.md#deliver) | `verify film-render` on the blended file; strips of text moves |
+| Strips of consecutive frames around fast moves, phone-width sheet, loop seam strip | [workflow-film.md](workflow-film.md#review) | Viewed by the reviewer; the seam strip adds speed and direction to `loop-seam-jump` |
+| A reader who did not build the film states it in one sentence, muted | [workflow-film.md](workflow-film.md#review) | Review only |
+| Named reference style instead of adjectives (director's brief) | [product-film-direction.md](product-film-direction.md) section 2 | Review only |
+| Sound effects placed by their measured peak, not their start | [film-score.md](film-score.md#sound-effects-on-measured-peaks) | Audio gate after mastering |
+| Style library with reference stills | Companion route in [prompt-motion.md](prompt-motion.md#code-animation-style-library-companion-not-bundled) | None; not vendored |
+
+Already covered here, so not added again: the paused-timeline clock and its adapters
+(HyperFrames), the brief and storyboard with beats, layers and a sound plan (intake, `sound.md`,
+storyboard), picture-derived cue times (the motion adapter above), loudness mastering (`audio
+master`), side-by-side reference review (`film compare`, `film proof`), cut sheets and contact
+sheets of beat midpoints (`film cut-sheet`, `verify film-render`), real product capture instead of
+invented screens (product source admission), parallel render workers (`--workers`), and code-made
+music (`film score`).
+
+Not adopted: fixed style bans and quotas (one accent colour, no particles, damping floors, "one
+thing moves at a time", a new idea every 2–4 s), self-scores repeated until every score is 8+, the
+asset and stock-music sources tied to one studio, chunked-render shell scripts, platform-specific
+caption and poster tricks, and per-shot parallel build agents. Bans and quotas are contextual
+(see "Project authority" above) and a self-score is not acceptance; the rest is either one
+studio's setup or already done by the HyperFrames CLI.
+
+Every adopted mechanism and every rejected ban above is a candidate layer for the design-skill
+ablation eval (#260): an adopted one stays only if films made with it beat the same briefs without
+it, and a rejected ban can be tried there as a variant rather than argued about.

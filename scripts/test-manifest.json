@@ -9,6 +9,7 @@
     "component-eval.test.cjs",
     "github-workflows.test.cjs",
     "hyperframes-routing.test.cjs",
+    "game-ui-lens-and-code-video.test.cjs",
     "adapter-intake.test.cjs",
     "adapter-registry.test.cjs",
     "anti-slop-review.test.cjs",

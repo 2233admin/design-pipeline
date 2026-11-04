@@ -267,8 +267,24 @@ until `productSource` is admitted; the run log, captures and bound job plan are 
 The gates sample beats and text, not every frame, and never grant acceptance. Before asking,
 review the checked draft frame by frame: `ffmpeg -i out.mp4 -vf fps=1 evidence/second-%03d.png`,
 open every frame at full size and look for text overlap, clipping, empty transitional frames,
-edge crowding, too-small text and wrong values. Fix, re-render and rerun `film check`; write the
-frame and creative review in `qa.md`. Then show the draft video, `evidence/contact-sheet.png` and
+edge crowding, too-small text and wrong values. One frame a second misses fast moves and phone
+reading, so add three sheets where they apply:
+
+```bash
+# 12 consecutive frames from just before a fast move or handoff at <t>
+ffmpeg -ss <t-0.1> -i out.mp4 -vf "scale=320:-1,tile=12x1" -frames:v 1 evidence/strip-<t>.png
+# one frame a second at 360 px wide: is every line readable at phone width?
+ffmpeg -i out.mp4 -vf "fps=1,scale=360:-1,tile=5x3" -frames:v 1 evidence/phone.png
+# loop films: last 3 and first 3 frames in a row (N = frame count from ffprobe -count_frames)
+ffmpeg -stream_loop 1 -i out.mp4 -vf "select='between(n\,N-3\,N+2)',scale=320:-1,tile=6x1" -frames:v 1 evidence/seam.png
+```
+
+The storyboard gate's `loop-seam-jump` compares the pixels of the last and first frames; the seam
+strip shows whether motion keeps its speed and direction across the loop, which the gate does not
+measure. Fix, re-render and rerun `film check`; write the frame and creative review in `qa.md`.
+Have a reader who did not build the film (a fresh agent or the owner) watch it muted once and say
+what it shows in one sentence; if that sentence is not the brief's, the problem is the action or
+the order, not the polish. Then show the draft video, `evidence/contact-sheet.png` and
 a one-paragraph gate summary. The owner accepts, or rejects with one sentence
 (`decide --stage review --verdict accept|reject`). A rejection becomes a rule that every later
 `next` returns until the owner accepts a draft, and reopens the check. Every tier asks; quick
@@ -279,3 +295,25 @@ render.
 
 Render the final quality once (`npx --no-install hyperframes render --quality high --output final.mp4`), then
 `decide --stage deliver --answer final.mp4`.
+
+**Motion blur (optional).** A browser render is a set of instant snapshots, so fast moves strobe.
+When the owner wants blur on fast moves, render subframes and average them, like a film shutter:
+render at N times the delivery rate, average the first half of every group of N (a 180° shutter)
+and keep one frame per group. For 30 fps delivery with 8 subframes:
+
+```bash
+npx --no-install hyperframes render --fps 240 --quality high --output renders/sub240.mp4
+ffmpeg -i renders/sub240.mp4 -vf "tmix=frames=4,select='eq(mod(n\,8)\,3)',setpts=N/30/TB" -r 30 \
+  -c:v libx264 -crf 16 -pix_fmt yuv420p renders/blur30.mp4
+ffmpeg -i renders/blur30.mp4 -i final.mp4 -map 0:v -map 1:a? -c copy final-blur.mp4   # keep the film's audio
+```
+
+`--fps` accepts up to 240, so 60 fps delivery gets at most 4 subframes (`tmix=frames=2`, `mod(n\,4)\,1`,
+`N/60/TB`). The exposure of each output frame opens at that frame's time, so a cut placed exactly
+on a frame boundary is never blended; a cut between frame times leaves one double-exposed frame.
+Put cut times on whole frames. Averaging blurs everything that moves, readable text included:
+review the strip sheets of text moves after blending and keep the unblurred render where text must
+stay crisp. Cost grows with N (a 2-second 640×360 test: 5 s at 30 fps, 24 s at 240 fps). Check
+the blended file with `verify film-render --storyboard storyboard.json --video final-blur.mp4
+--output qa/film-evidence-blur` before delivering it. Measured behaviour and limits are recorded in
+OpenSpec change `game-ui-lens-and-code-video`.

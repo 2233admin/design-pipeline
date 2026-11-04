@@ -33,3 +33,24 @@ at most one least-significant bit in a few samples.
 
 Scores come out at their natural level; master them with `audio master`. The gates check timing,
 loudness and licensing; whether the music suits the film stays with creative review.
+
+## Sound effects on measured peaks
+
+A sound effect is heard at its loudest moment, not at the start of its file: a whoosh may peak
+300 ms in. Place each effect so that its peak lands on the picture cue (the `sound.cues` time
+taken from the same curve that moves the picture, see `film-methods.md`), not its first sample.
+
+```bash
+# peak time of the effect in 1 ms windows (prints seconds and dBFS)
+ffmpeg -i sfx/whoosh.wav -af "asetnsamples=48,astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.Peak_level:file=-" -f null - \
+  | paste - - | awk '{split($3,a,":");split($4,b,"=");if(NR==1||b[2]+0>m){m=b[2]+0;t=a[2]}}END{print t, m}'
+# delay = (cue - peak) in ms; mix without normalising the bed
+ffmpeg -i assets/score.wav -i sfx/whoosh.wav -filter_complex "[1]adelay=<ms>:all=1[s];[0][s]amix=inputs=2:normalize=0:duration=first" assets/mix.wav
+```
+
+`asetnsamples=48` makes 1 ms windows at 48 kHz; use the file's rate divided by 1000 otherwise. In
+the recorded test an effect peaking at 0.299 s, delayed by 1701 ms, peaked at 2.000 s in the mix.
+Then `audio master` the mix and let the audio gate check loudness, true peak and clipping. Record
+each effect file in `sound.assets` with its license (a recorded or downloaded effect is a
+third-party asset; one synthesised in the Strudel score is your work). Whether the effect suits
+the moment stays with listening review.
