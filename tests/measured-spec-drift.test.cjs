@@ -56,9 +56,16 @@ const RECONCILIATION = (rows = []) => [
   "",
 ].join("\n");
 
+// Every temporary project is removed when the file finishes, so the suite leaves nothing in tmp.
+const created = [];
+test.after(() => {
+  for (const dir of created) fs.rmSync(dir, { recursive: true, force: true });
+});
+
 // A project with DESIGN.md tokens, a built page and a change that has a reference, so the gate applies.
 function project(page, { design = fs.readFileSync(path.join(FIXTURES, "design-tokens.md"), "utf8"), font = true } = {}) {
   const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "measured-drift-")));
+  created.push(dir);
   const change = path.join(dir, CHANGE);
   fs.mkdirSync(change, { recursive: true });
   fs.writeFileSync(path.join(dir, "DESIGN.md"), design);
