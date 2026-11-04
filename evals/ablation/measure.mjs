@@ -179,11 +179,17 @@ function pageFacts() {
 		const rect = element.getBoundingClientRect();
 		if (rect.width <= 0 || rect.height <= 0 || !chainVisible(element)) continue;
 		joined += node.textContent;
-		if (seen.has(element)) continue;
+		const own = node.textContent.replace(/\s+/g, "").length;
+		if (seen.has(element)) {
+			texts.find((entry) => entry.element === element).chars += own;
+			continue;
+		}
 		seen.add(element);
 		const style = getComputedStyle(element);
 		const svg = element.namespaceURI === "http://www.w3.org/2000/svg";
 		texts.push({
+			element,
+			chars: own,
 			text: element.textContent.trim().slice(0, 60),
 			px: Number.parseFloat(style.fontSize) * scaleOf(element),
 			family: style.fontFamily,
@@ -214,18 +220,28 @@ function pageFacts() {
 			if (!ownText && element.children.length === 0 && (filled || bordered) && !big) decorations.push({ w: Math.round(rect.width), h: Math.round(rect.height), paint: `${fill}|${bordered ? style.borderTopColor : ""}`, tag: element.tagName.toLowerCase() });
 		}
 	}
-	// 假控件：没有 href、href 是 "#" 或 javascript: 的链接，鼠标手型却不是链接、按钮、表单控件也没有 role 的元素
+	// 页面和正文自己的底色（纯色才算；渐变不算颜色，也不算违规）
+	for (const element of [document.documentElement, document.body]) {
+		const fill = getComputedStyle(element).backgroundColor;
+		if (/^rgba?\(/.test(fill) && fill !== "rgba(0, 0, 0, 0)") colors.push(fill);
+	}
+	// 假控件：没有 href、href 是 "#" 或 javascript:、页内锚点指向不存在的 id 的链接；鼠标手型却不是链接、按钮、表单控件也没有 role 的元素
 	let fakeControls = 0;
 	for (const link of document.querySelectorAll("a")) {
-		const href = link.getAttribute("href");
-		if (chainVisible(link) && (href === null || href.trim() === "" || href.trim() === "#" || /^javascript:/i.test(href))) fakeControls++;
+		const href = (link.getAttribute("href") ?? "").trim();
+		if (!chainVisible(link)) continue;
+		if (!href || href === "#" || /^javascript:/i.test(href)) fakeControls++;
+		else if (href.startsWith("#")) {
+			const id = decodeURIComponent(href.slice(1));
+			if (!document.getElementById(id) && !document.getElementsByName(id).length) fakeControls++;
+		}
 	}
 	for (const element of document.body.querySelectorAll("div, span, li, p, img, svg")) {
 		if (!chainVisible(element) || element.closest("a, button, input, select, textarea, label, [role]")) continue;
 		if (getComputedStyle(element).cursor === "pointer" && !(element.parentElement && getComputedStyle(element.parentElement).cursor === "pointer")) fakeControls++;
 	}
 	return {
-		texts,
+		texts: texts.map(({ element, ...rest }) => rest),
 		decorations,
 		colors,
 		joined: joined.replace(/\s+/g, ""),
@@ -320,7 +336,7 @@ const cluster = (values, tolerance) => {
 /**
  * 节律的代理量：都是量出来的几何事实，不是审美判断。
  * - 间距：纵向相邻、不重叠的文字块之间的空隙，落在间距单位整数倍 ±1px 上的比例，以及不同空隙值有几种。
- * - 字号比：不同字号从小到大相邻两级之比的变异系数，越小越像一套等比字阶（少于 3 级不算）。
+ * - 字号比：最大字号以下的各级，相邻两级之比的变异系数，越小越像一套等比字阶（不到 3 级不算）；最大的展示字号是故意的大跳，不算。
  * - 左边线：文字块不同的左边线有几条（±1px 算一条），越少网格越强。
  * - 装饰重复：装饰元素按尺寸和颜色分组，属于重复组（≥2 个一样的）的比例；种类数另记。
  */
@@ -339,9 +355,11 @@ export function rhythm(texts, decorations, unit) {
 		return rest <= 1 || unit - rest <= 1;
 	}).length;
 	const sizes = cluster(texts.map((text) => text.px).filter((px) => px > 0), 0.5).map((group) => group[0]);
+	// 最大的展示字号常常是故意的大跳，不算进比例的一致性：只看它以下的各级，至少要 3 级
 	let ratioCv = null;
-	if (sizes.length >= 3) {
-		const ratios = sizes.slice(1).map((size, index) => size / sizes[index]);
+	const below = sizes.slice(0, -1);
+	if (below.length >= 3) {
+		const ratios = below.slice(1).map((size, index) => size / below[index]);
 		const mean = ratios.reduce((sum, value) => sum + value, 0) / ratios.length;
 		const sd = Math.sqrt(ratios.reduce((sum, value) => sum + (value - mean) ** 2, 0) / ratios.length);
 		ratioCv = Number((sd / mean).toFixed(3));
@@ -390,32 +408,110 @@ export function fingerprint(image, texts, width, height) {
 	return { cols, rows, gray: gray.map((sum, i) => Math.round(sum / Math.max(1, counts[i]))), mask };
 }
 
-/** 两张指纹的像素相似度（1 − 灰度平均差/255）和结构相似度（文字掩码的 Jaccard）。 */
+// 文字掩码向四周各扩一格，几像素的挪动不至于让同一个版式看起来完全不同
+function dilate(mask, cols, rows) {
+	const out = new Array(mask.length).fill(0);
+	for (let row = 0; row < rows; row++)
+		for (let col = 0; col < cols; col++) {
+			if (!mask[row * cols + col]) continue;
+			for (let dy = -1; dy <= 1; dy++)
+				for (let dx = -1; dx <= 1; dx++) {
+					const y = row + dy;
+					const x = col + dx;
+					if (y >= 0 && y < rows && x >= 0 && x < cols) out[y * cols + x] = 1;
+				}
+		}
+	return out;
+}
+
+/**
+ * 两张指纹的结构相似度（文字布局掩码扩一格后的 Jaccard）和像素相似度（1 − 灰度平均差/255）。
+ * 判“一个模子”只看结构：换色、换底纹不改结构，换版式才改。
+ */
 export function similarity(a, b) {
 	if (a.cols !== b.cols || a.rows !== b.rows) return { pixel: 0, structure: 0 };
 	let diff = 0;
 	for (let i = 0; i < a.gray.length; i++) diff += Math.abs(a.gray[i] - b.gray[i]);
+	const left = dilate(a.mask, a.cols, a.rows);
+	const right = dilate(b.mask, b.cols, b.rows);
 	let both = 0;
 	let either = 0;
-	for (let i = 0; i < a.mask.length; i++) {
-		both += a.mask[i] & b.mask[i];
-		either += a.mask[i] | b.mask[i];
+	for (let i = 0; i < left.length; i++) {
+		both += left[i] & right[i];
+		either += left[i] | right[i];
 	}
 	return { pixel: Number((1 - diff / a.gray.length / 255).toFixed(4)), structure: Number((either ? both / either : 1).toFixed(4)) };
 }
 
-/** 从截图和页面事实算出全部量出来的分项。 */
-export function measureRender(rendered, { style, pieces, width, height, minFontPx, profile, controls }) {
+/** 字号分级：±0.5px 算一级。返回从小到大的各级字号，以及每级的字数。 */
+export function typeLevels(texts) {
+	const levels = [];
+	for (const text of [...texts].sort((a, b) => a.px - b.px)) {
+		const last = levels.at(-1);
+		if (last && text.px - last.px <= 0.5) last.chars += text.chars ?? text.text.length;
+		else levels.push({ px: text.px, chars: text.chars ?? text.text.length });
+	}
+	return levels;
+}
+
+/**
+ * 层级下限：至少 3 级字号，标题（最大一级）对正文（字数最多的一级）至少 2.5 倍。
+ * 返回级数、标题对正文之比和没满足的条数（0 到 2）。
+ */
+export function hierarchy(texts, floor) {
+	const levels = typeLevels(texts);
+	if (!levels.length) return { typeLevels: 0, titleBodyRatio: null, hierarchyFails: floor ? 2 : 0 };
+	const body = levels.reduce((best, level) => (level.chars > best.chars ? level : best));
+	const ratio = levels.at(-1).px / body.px;
+	const fails = floor ? Number(levels.length < floor.levels) + Number(ratio < floor.ratio) : 0;
+	return { typeLevels: levels.length, titleBodyRatio: Number(ratio.toFixed(2)), hierarchyFails: fails };
+}
+
+// 颜色按 ΔE00 ≤ 5 聚成几种
+function colourClusters(rgbs) {
+	const labs = [];
+	for (const rgb of rgbs) {
+		const lab = rgbToLab(rgb);
+		if (!labs.some((seen) => deltaE2000(seen, lab) <= DELTA_E)) labs.push(lab);
+	}
+	return labs.length;
+}
+
+/** 关键文字有没有落在安全区里（双比例裁切的交集）：返回落在区外的关键文字条数。 */
+export function safeZoneViolations(texts, zone, keys) {
+	if (!zone || !keys?.length) return 0;
+	const norm = (value) => value.replace(/\s+/g, "");
+	let outside = 0;
+	for (const key of keys) {
+		const boxes = texts.filter((text) => norm(text.text).includes(norm(key)) || (norm(text.text).length >= 2 && norm(key).includes(norm(text.text))));
+		if (!boxes.length) continue;
+		if (boxes.some(({ box }) => box.x < zone.x0 - 0.5 || box.y < zone.y0 - 0.5 || box.x + box.w > zone.x1 + 0.5 || box.y + box.h > zone.y1 + 0.5)) outside++;
+	}
+	return outside;
+}
+
+/**
+ * 从截图和页面事实算出全部量出来的分项。style 为 null 时是没有预设风格的开放场景：色值和字阶改量“自己用得是否收敛”。
+ * 色值贴合只看文字、边框和纯色填充的颜色（渐变、发光不算颜色，也不算违规）；截图像素的比例只报告，不进分。
+ */
+export function measureRender(rendered, { style, pieces, width, height, minFontPx, profile, controls, floor, safeZone, keyPieces }) {
 	const image = decodePng(rendered.png);
-	const near = paletteMatcher(style.colors);
-	let within = 0;
-	for (let i = 0; i < image.width * image.height; i++) if (near([image.data[i * 4], image.data[i * 4 + 1], image.data[i * 4 + 2]]) <= DELTA_E) within++;
 	const parseRgb = (value) => (/rgba?\(([^)]+)\)/.exec(value)?.[1].split(/[\s,/]+/).filter(Boolean).map(Number) ?? null);
-	const painted = [...rendered.facts.texts.map((text) => text.color), ...rendered.facts.colors].map(parseRgb).filter((rgb) => rgb && (rgb.length < 4 || rgb[3] > 0.05));
-	const elementWithin = painted.filter((rgb) => near(rgb.slice(0, 3)) <= DELTA_E).length;
+	const painted = [...rendered.facts.texts.map((text) => text.color), ...rendered.facts.colors].map(parseRgb).filter((rgb) => rgb && (rgb.length < 4 || rgb[3] > 0.05)).map((rgb) => rgb.slice(0, 3));
 	const texts = rendered.facts.texts;
-	const onScale = texts.filter((text) => style.sizes.some((size) => Math.abs(size - text.px) <= 0.5)).length;
-	const declaredFont = texts.filter((text) => style.fonts.some((font) => text.family.split(",")[0].replace(/["']/g, "").trim().toLowerCase() === font.toLowerCase())).length;
+	let palettePixels = null;
+	let paletteElements = null;
+	let typeScale = null;
+	let declaredFonts = null;
+	if (style) {
+		const near = paletteMatcher(style.colors);
+		let within = 0;
+		for (let i = 0; i < image.width * image.height; i++) if (near([image.data[i * 4], image.data[i * 4 + 1], image.data[i * 4 + 2]]) <= DELTA_E) within++;
+		palettePixels = Number((within / (image.width * image.height)).toFixed(4));
+		paletteElements = painted.length ? Number((painted.filter((rgb) => near(rgb) <= DELTA_E).length / painted.length).toFixed(4)) : null;
+		typeScale = texts.length ? Number((texts.filter((text) => style.sizes.some((size) => Math.abs(size - text.px) <= 0.5)).length / texts.length).toFixed(4)) : null;
+		declaredFonts = texts.length ? Number((texts.filter((text) => style.fonts.some((font) => text.family.split(",")[0].replace(/["']/g, "").trim().toLowerCase() === font.toLowerCase())).length / texts.length).toFixed(4)) : null;
+	}
 	const minFont = texts.length ? Math.min(...texts.map((text) => text.px)) : null;
 	const belowMinFont = texts.filter((text) => text.px < minFontPx - 0.05).length;
 
@@ -434,13 +530,17 @@ export function measureRender(rendered, { style, pieces, width, height, minFontP
 	return {
 		image,
 		values: {
-			palettePixels: Number((within / (image.width * image.height)).toFixed(4)),
-			paletteElements: painted.length ? Number((elementWithin / painted.length).toFixed(4)) : null,
-			typeScale: texts.length ? Number((onScale / texts.length).toFixed(4)) : null,
-			declaredFonts: texts.length ? Number((declaredFont / texts.length).toFixed(4)) : null,
+			palettePixels,
+			paletteElements,
+			typeScale,
+			declaredFonts,
+			colourKinds: colourClusters(painted),
+			sizeKinds: typeLevels(texts).length,
 			minFont: minFont === null ? null : Number(minFont.toFixed(2)),
 			belowMinFont,
+			...hierarchy(texts, floor),
 			overflow,
+			safeZoneViolations: safeZoneViolations(texts, safeZone, keyPieces),
 			contrastFails,
 			compositionErrors,
 			compositionCodes: [...new Set(composition.findings.map((finding) => finding.code))],
@@ -448,9 +548,8 @@ export function measureRender(rendered, { style, pieces, width, height, minFontP
 			hiddenWithoutMotion,
 			fakeControls,
 			antiSlopHard: hiddenWithoutMotion + fakeControls,
-			...rhythm(texts, rendered.facts.decorations, style.unit),
+			...rhythm(texts, rendered.facts.decorations, style?.unit ?? 8),
 		},
 		fingerprint: fingerprint(image, texts, width, height),
 	};
 }
-

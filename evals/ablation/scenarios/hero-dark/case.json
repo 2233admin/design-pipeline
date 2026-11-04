@@ -1,9 +1,20 @@
 {
+  "set": "core",
   "style": "foundry-console",
-  "deliverables": ["hero.html"],
-  "width": 1440,
-  "height": 900,
+  "outputs": [
+    {
+      "files": [
+        "hero.html"
+      ],
+      "width": 1440,
+      "height": 900
+    }
+  ],
   "minFontPx": 16,
+  "hierarchy": {
+    "levels": 3,
+    "ratio": 2.5
+  },
   "profile": "ui",
   "controls": true
 }

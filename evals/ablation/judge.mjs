@@ -3,11 +3,12 @@
 // 盲评：从一轮消融的结果目录里取同一场景、同一次的两张截图，藏起变体名、打乱左右，交给另一家的模型按跑之前定好的评分细则二选一。
 // 和量出来的分数分开：它只写 judge.tsv，report.mjs 把两边并列，判定规则里各算各的。
 // 用法：node evals/ablation/judge.mjs --out <结果目录> --judge codex|claude|omp [--seed 1] [--command '<JSON 数组>'] [--timeout 秒]
-//       [--pairs full:bare,decision-tree:adjectives] [--allow-same-family]
+//       [--pairs full:bare,decision-tree:adjectives] [--allow-same-family] [--rejudge]
+// 同一对局（评审、场景、次、两个变体）已经评过就跳过；--rejudge 重评，report.mjs 只算最后一次。
 
-import { appendFileSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { runAgent, seeded } from "./lib.mjs";
@@ -33,9 +34,16 @@ export const DEFAULT_PAIRS = [
 	["decision-tree", "adjectives"],
 	["adjectives", "bare"],
 	["decision-tree", "bare"],
+	["principles", "recipes"],
+	["principles", "bare"],
+	["recipes", "bare"],
+	["principles", "decision-tree"],
 ];
 
-export const JUDGE_HEADER = ["judge", "scenario", "run", "left", "right", "winner", "reason", "transcript"];
+export const JUDGE_HEADER = ["pair", "judge", "scenario", "run", "left", "right", "winner", "reason", "transcript"];
+
+/** 对局编号：评审、场景、次、两个变体（排序后）。重跑同一对局不会重复计数。 */
+export const pairId = (judge, scenario, run, a, b) => `${judge}|${scenario}|${run}|${[a, b].sort().join("|")}`;
 
 /** 评分细则（README 里同一份，跑之前定好）。不含任何变体名。 */
 export function judgePrompt(brief, design) {
@@ -71,20 +79,27 @@ export function parseVerdict(text) {
 	return { winner: last[1], reason: String(reason).replace(/\s+/g, " ").slice(0, 200) };
 }
 
-/** 列出要评的对局：两边同一场景、同一次都打了分且有截图。 */
-export function games(rows, pairs) {
-	const shot = (row) => row && row.status === "ok" && existsSync(join(row.capture ?? "", "screenshot.png"));
-	const out = [];
+/** 列出要评的对局：两边同一场景、同一次都打了分。打了分却没有截图就报错，不悄悄跳过。 */
+export function games(rows, pairs, out) {
+	const shot = (row) => {
+		if (!row || row.status !== "ok") return null;
+		const file = join(isAbsolute(row.capture) ? row.capture : join(out, row.capture), "screenshot.png");
+		if (!existsSync(file)) throw new Error(`${row.variant} / ${row.scenario} 第 ${row.run} 次打了分，却没有截图 ${file}`);
+		return file;
+	};
+	const result = [];
 	const keys = [...new Set(rows.map((row) => `${row.scenario}\t${row.run}`))].sort();
 	for (const key of keys) {
 		const [scenario, run] = key.split("\t");
 		for (const [a, b] of pairs) {
 			const left = rows.find((row) => row.scenario === scenario && String(row.run) === run && row.variant === a);
 			const right = rows.find((row) => row.scenario === scenario && String(row.run) === run && row.variant === b);
-			if (shot(left) && shot(right)) out.push({ scenario, run: Number(run), a: left, b: right });
+			const leftShot = shot(left);
+			const rightShot = shot(right);
+			if (leftShot && rightShot) result.push({ scenario, run: Number(run), a: { ...left, shot: leftShot }, b: { ...right, shot: rightShot } });
 		}
 	}
-	return out;
+	return result;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -97,6 +112,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 			timeout: { type: "string", default: "600" },
 			pairs: { type: "string" },
 			"allow-same-family": { type: "boolean", default: false },
+			rejudge: { type: "boolean", default: false },
 		},
 	});
 	if (!values.out) throw new Error("--out <结果目录> 必填");
@@ -119,25 +135,30 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 	const random = seeded(Number(values.seed));
 	const logs = join(out, "judge");
 	mkdirSync(logs, { recursive: true });
-	for (const game of games(rows, pairs)) {
+	const done = new Set(readTsv(tsv).map((row) => row.pair));
+	for (const game of games(rows, pairs, out)) {
+		// 已经评过的对局跳过；--rejudge 时重评，report 只算最后一次
+		const id = pairId(values.judge, game.scenario, game.run, game.a.variant, game.b.variant);
+		if (done.has(id) && !values.rejudge) continue;
 		// 左右随机：A 是哪个变体只记在 judge.tsv 里，评审看不到
 		const [first, second] = random() < 0.5 ? [game.a, game.b] : [game.b, game.a];
 		const spec = loadCase(game.scenario);
 		const dir = mkdtempSync(join(tmpdir(), "pair-"));
-		copyFileSync(join(first.capture, "screenshot.png"), join(dir, "A.png"));
-		copyFileSync(join(second.capture, "screenshot.png"), join(dir, "B.png"));
+		copyFileSync(first.shot, join(dir, "A.png"));
+		copyFileSync(second.shot, join(dir, "B.png"));
 		const text = judgePrompt(readFileSync(join(SCENARIOS, game.scenario, "repo", "brief.md"), "utf8"), readFileSync(spec.designFile, "utf8"));
 		writeFileSync(join(dir, "prompt.txt"), text);
 		const argv = command.map((part) => part.replace("{A}", join(dir, "A.png")).replace("{B}", join(dir, "B.png")));
 		const result = await runAgent(argv, dir, text, Number(values.timeout));
 		const transcript = join(logs, `${values.judge}-${game.scenario}-${game.run}-${game.a.variant}-${game.b.variant}.txt`);
 		writeFileSync(transcript, `${result.stdout}\n----- stderr -----\n${result.stderr}`);
+		rmSync(dir, { recursive: true, force: true });
 		const verdict = result.timedOut ? null : parseVerdict(result.stdout);
 		const winner = !verdict ? "" : verdict.winner === "tie" ? "tie" : verdict.winner === "A" ? first.variant : second.variant;
-		const row = [values.judge, game.scenario, game.run, first.variant, second.variant, winner || "unparsed", verdict?.reason ?? "", transcript];
+		const row = [id, values.judge, game.scenario, game.run, first.variant, second.variant, winner || "unparsed", verdict?.reason ?? "", relative(out, transcript)];
 		appendFileSync(tsv, `${row.map((cell) => String(cell).replace(/[\t\n]/g, " ")).join("\t")}\n`);
 		console.log(`${game.scenario} 第 ${game.run} 次 ${game.a.variant} 对 ${game.b.variant}：${winner || "没读出结论"}`);
 	}
 	console.log("");
-	for (const text of summarize(rows, readTsv(tsv))) console.log(text);
+	for (const text of summarize(rows, readTsv(tsv), out)) console.log(text);
 }

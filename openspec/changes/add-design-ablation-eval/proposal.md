@@ -30,6 +30,17 @@ that.
 - `capture-composition.cjs` exports its in-page `extract` so the eval reuses it; its command-line
   behaviour is unchanged.
 
+### Review round (2026-11-04)
+
+An independent review found the per-layer conclusions would be unreliable. Changes:
+
+- **Scoring.** A hierarchy floor (at least 3 type levels, title:body ≥ 2.5, or 2.0 for reading cards) now costs flat pages. Palette adherence uses the colours of text, borders and solid fills only, so gradients and glows are neutral. The ratio CV ignores the display size. Rhythm is 0 below 3 levels.
+- **Power.** A variance pilot (`run.mjs --pilot`, `power.mjs`) sets the runs per cell. A layer is kept only when the measured delta (z test, Holm across the family) and the blind judge agree. The judge decides alone only with ≥ 48 pairs, also Holm-corrected. No detectable effect is UNDETERMINED, never a cut. A verdict needs ≥ 3 scenarios.
+- **Removal.** Removal is now by enumerated reference, parenthetical or sentence, and layers declare pointer phrases. A test diffs every variant against `full`. The direction-library variant uses an empty manifest, so `doctor` stays ok.
+- **Scenarios and variants.** Open scenarios have no preset DESIGN.md, and the ignoredone set (S1–S4) adds dual-crop safe zones and two-skin outputs. Two new rule packs, `principles` and `recipes`, test the owner's hypothesis. The research is in `docs/research/`.
+- **Runs.** Per-run layer exposure and `next` detection; judge pair ids with dedupe; one failure rule (timeouts, errors and missing deliverables all score 0, and failure rates are reported); relative paths; a missing capture is an error; in-page anchors must resolve; sameness is structural and calibrated on fixtures.
+- **Isolation.** Isolated roots outside /tmp, workdirs deleted after scoring, and cache state recorded.
+
 ## Capabilities
 
 ### Modified

@@ -4,7 +4,7 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -33,10 +33,11 @@ export function globalInstalls(home = homedir()) {
  * 把场景的 repo/ 和它的 DESIGN.md 复制到临时目录，写上项目规则，按变体装技能。目录名只用场景名，不透露在测什么。
  * 返回工作目录和装好的技能目录。
  */
-export function prepare({ scenarioDir, name, designFile, agents, skillTree, skillDirs }) {
-	const workdir = mkdtempSync(join(tmpdir(), `${name}-`));
+export function prepare({ base = tmpdir(), scenarioDir, name, designFile, agents, skillTree, skillDirs }) {
+	mkdirSync(base, { recursive: true });
+	const workdir = mkdtempSync(join(base, `${name}-`));
 	cpSync(join(scenarioDir, "repo"), workdir, { recursive: true });
-	cpSync(designFile, join(workdir, "DESIGN.md"));
+	if (designFile) cpSync(designFile, join(workdir, "DESIGN.md"));
 	writeFileSync(join(workdir, "AGENTS.md"), agents);
 	writeFileSync(join(workdir, "CLAUDE.md"), "@AGENTS.md\n");
 	const installed = [];
@@ -110,6 +111,31 @@ export function skillUsedIn(stdout, stderr = "") {
 	});
 	if (!events.length) return /design-pipeline|designer-pipeline/.test(`${stdout}\n${stderr}`);
 	return events.some((event) => (event.message?.content ?? []).some((item) => item?.type === "tool_use" && /design-pipeline|designer-pipeline/.test(JSON.stringify(item.input ?? {}))));
+}
+
+/** 运行记录里代理“动过”的文字：stream-json 时是全部工具调用的输入，其他客户端是全部输出。 */
+export function toolText(stdout, stderr = "") {
+	const events = stdout.split("\n").flatMap((line) => {
+		try {
+			const event = JSON.parse(line);
+			return event && typeof event === "object" && event.type ? [event] : [];
+		} catch {
+			return [];
+		}
+	});
+	if (!events.length) return `${stdout}\n${stderr}`;
+	return events.flatMap((event) => (event.message?.content ?? []).filter((item) => item?.type === "tool_use").map((item) => JSON.stringify(item.input ?? {}))).join("\n");
+}
+
+/**
+ * 每层有没有被读到：运行记录的工具调用里出现了这一层（在完整技能里）的某个文件或目录，就算读到。
+ * 返回读到的层 id，以及有没有跑过 `designer-pipeline ... next`。
+ */
+export function exposure(stdout, stderr, layers) {
+	const text = toolText(stdout, stderr);
+	const layersRead = layers.filter((layer) => layer.remove.some((path) => text.includes(path.endsWith("/") ? path : path))).map((layer) => layer.id);
+	const nextRan = /designer-pipeline\.cjs["']?\s+next\b/.test(text);
+	return { layersRead, nextRan };
 }
 
 export const median = (values) => {

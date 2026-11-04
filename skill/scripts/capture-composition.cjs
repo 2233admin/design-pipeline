@@ -104,7 +104,7 @@ async function main() {
   }
 }
 
-// `extract` runs in a page; evals/ablation/measure.mjs reuses it inside its own browser session.
+// `extract` runs in a page; exported so other callers can run it in their own browser session.
 if (require.main === module) main();
 
 module.exports = { extract };

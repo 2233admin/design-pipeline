@@ -1,6 +1,6 @@
 {
   "schema": "design-pipeline.ablation-layers.v1",
-  "note": "Paths are relative to skill/. A path ending in / removes the whole folder. Every entry must match at least one packaged file, so a stale entry fails the build instead of removing nothing. keptCode lists scripts that belong to the layer but stay because code that is kept requires them; the build fails if a removed script is still required.",
+  "note": "Paths are relative to skill/. A path ending in / removes the whole folder. Every entry must match at least one packaged file, so a stale entry fails the build instead of removing nothing. keptCode lists scripts that belong to the layer but stay because code that is kept requires them; the build fails if a removed script is still required. pointers are phrases (case-insensitive) that name the layer without a path; sentences, list items, table cells and sections that contain them are pruned like path mentions. stubs replace a removed file with a placeholder written by variants.mjs, so the CLI degrades instead of breaking.",
   "layers": [
     {
       "id": "taste-skill",
@@ -9,7 +9,11 @@
         "references/taste-skill.md",
         "vendor/taste-skill/"
       ],
-      "keptCode": []
+      "keptCode": [],
+      "pointers": [
+        "Taste suite",
+        "Taste method"
+      ]
     },
     {
       "id": "design-direction-library",
@@ -19,9 +23,22 @@
         "vendor/design-direction-library/"
       ],
       "keptCode": [
-        { "path": "scripts/design-direction-library-core.cjs", "reason": "required by cli-core.cjs and fetch-sources.cjs; reports the library as missing" },
-        { "path": "scripts/directions-core.cjs", "reason": "required by cli-core.cjs; `direction draw` fails with TOOL_MISSING without the library" }
-      ]
+        {
+          "path": "scripts/design-direction-library-core.cjs",
+          "reason": "required by cli-core.cjs and fetch-sources.cjs; reports the library as missing"
+        },
+        {
+          "path": "scripts/directions-core.cjs",
+          "reason": "required by cli-core.cjs; `direction draw` fails with TOOL_MISSING without the library"
+        }
+      ],
+      "pointers": [
+        "design direction library",
+        "direction library"
+      ],
+      "stubs": {
+        "vendor/design-direction-library/manifest.json": "empty-direction-library"
+      }
     },
     {
       "id": "anti-slop-rubric",
@@ -34,7 +51,12 @@
         "references/anti-slop-evidence.schema.json",
         "scripts/evaluate-anti-slop.cjs"
       ],
-      "keptCode": []
+      "keptCode": [],
+      "pointers": [
+        "anti-slop review",
+        "anti-slop rubric",
+        "anti-slop gate"
+      ]
     },
     {
       "id": "ui-craft",
@@ -52,7 +74,19 @@
         "vendor/playwright-cli/"
       ],
       "keptCode": [
-        { "path": "scripts/interaction-audit.cjs", "reason": "the measured page audit of `verify interaction`; also the eval's own measurement" }
+        {
+          "path": "scripts/interaction-audit.cjs",
+          "reason": "the measured page audit of `verify interaction`; also the eval's own measurement"
+        }
+      ],
+      "pointers": [
+        "Impeccable craft floor",
+        "Impeccable gate",
+        "Impeccable contract",
+        "Impeccable Design Contract",
+        "UI craft rule",
+        "UI craft guide",
+        "UI craft precedence"
       ]
     },
     {
@@ -64,8 +98,18 @@
         "scripts/advance-design-synthesis.cjs"
       ],
       "keptCode": [
-        { "path": "scripts/design-synthesis-core.cjs", "reason": "required by cli-core.cjs (`foundation check`) and the replicate workflow" },
-        { "path": "scripts/init-design-synthesis.cjs", "reason": "required by design-synthesis-core.cjs and check-spec-reconciliation.cjs" }
+        {
+          "path": "scripts/design-synthesis-core.cjs",
+          "reason": "required by cli-core.cjs (`foundation check`) and the replicate workflow"
+        },
+        {
+          "path": "scripts/init-design-synthesis.cjs",
+          "reason": "required by design-synthesis-core.cjs and check-spec-reconciliation.cjs"
+        }
+      ],
+      "pointers": [
+        "requirements-driven DESIGN.md synthesis",
+        "requirements-driven synthesis"
       ]
     }
   ]

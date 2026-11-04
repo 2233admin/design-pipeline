@@ -1,56 +1,85 @@
 # 设计流水线逐层消融
 
-design-pipeline 的每一层（Taste 套件、设计方向库、反模板细则、UI 工艺规则与 Impeccable 契约、DESIGN.md 基础步骤）都得拿出证据，证明它让成品变好了，否则就砍掉或重做（#260）。这里不靠印象，而是照 pstack 的实测做法来：固定的场景，一次只拿掉一层，每格跑好几次，判定规则在跑之前写好。
+design-pipeline 的每一层（Taste 套件、设计方向库、反模板细则、UI 工艺规则与 Impeccable 契约、DESIGN.md 基础步骤）都要拿出证据，证明它让成品变好了，否则就砍掉或重做（#260）。这里不靠印象，照 pstack 的实测做法来：固定的场景，一次只拿掉一层，每格跑够次数，判定规则在跑之前写好。
 
-另外两个对照只改提示、不装技能，回答“规则包到底比形容词强不强、比我们的流水线强不强”这个问题。起因是一位创作者的游戏风封面技能，它声称硬性的 if-else 决策树（按字数分版式、固定色值、装饰锚定在实测文字宽度上、精确到像素的摆放定律、出图前自检）比形容词提示好。那个说法没有做过消融。这里的规则包是照那种写法、为我们自己的场景从头写的，没有照抄原文。
+另外几个对照只改提示、不装技能，回答两个问题：
 
-runner 改自 pstack-omp 的 `evals/run.mjs` 和 `evals/lib.mjs`：变体交替跑，每次一行 `results.tsv`，追加时列必须对得上，超时不打分，提示词从标准输入传，超时连子进程一起杀，工作目录名只用场景名。
+- 规则包到底比形容词强不强，比我们的流水线强不强？起因是一位创作者的游戏风封面技能，它声称硬性的 if-else 决策树比形容词提示好，但没做过消融。
+- 主人的假设：讲节奏和比例的关系型原则，胜过堆叠固定像素的装饰配方。来源是 [ignoredone 站点的调研](../../docs/research/ignoredone-arknights-design.md)。
+
+这几个规则包都是照对应写法、为我们自己的场景从头写的，没有照抄原文。
+
+runner 改自 pstack-omp 的 `evals/run.mjs` 和 `evals/lib.mjs`：变体交替跑，每次一行 `results.tsv`，追加时列必须对得上，提示词从标准输入传，超时连子进程一起杀，工作目录名只用场景名。
 
 ## 场景
 
-每个场景给一份需求（`brief.md`）、一份声明好的风格（`DESIGN.md`，Google DESIGN.md 格式，前置元数据里有色值和字号阶梯，能通过 `foundation check`）、一份固定长度的文字（`content.md`），以及一份交付约定：一个自包含的 HTML 或 SVG 文件，固定尺寸。
+每个场景给一份需求（`brief.md`）、一份固定长度的文字（`content.md`）和一份交付约定：一个或两个自包含的 HTML 或 SVG 文件，固定尺寸。带预设风格的场景另给一份 `DESIGN.md`（Google DESIGN.md 格式，前置元数据里有色值和字号阶梯，能通过 `foundation check`）。`case.json` 和 `prompt.md` 不会复制给代理。提示词是一句普通的请求，不透露在测什么。
 
-| 场景 | 风格 | 文字 | 交付 |
-| --- | --- | --- | --- |
-| `cover-dark` | 铸台控制台：深色工业游戏界面风 | 短文字，6 行 | `cover.html` 或 `cover.svg`，1080×1440，字号 ≥ 20px |
-| `cover-light` | 纸页：浅色报刊编辑风 | 短文字，5 行 | `cover.html` 或 `cover.svg`，1080×1440，字号 ≥ 22px |
-| `explainer-light` | 纸页 | 长文约 400 字（385 个汉字） | `card.html` 或 `card.svg`，1080×1920，字号 ≥ 22px |
-| `hero-dark` | 铸台控制台 | 官网首屏，导航、标题、说明、两个按钮 | `hero.html`，1440×900 一屏，字号 ≥ 16px，链接要真能点 |
+| 组 | 场景 | 风格 | 文字 | 交付 |
+| --- | --- | --- | --- | --- |
+| core | `cover-dark` | 铸台控制台（深色工业游戏界面） | 短文字 6 行 | 1080×1440 封面，字号 ≥ 20px |
+| core | `cover-light` | 纸页（浅色报刊编辑） | 短文字 5 行 | 1080×1440 封面，≥ 22px |
+| core | `explainer-light` | 纸页 | 长文 385 个汉字 | 1080×1920 长图卡，≥ 22px |
+| core | `hero-dark` | 铸台控制台 | 官网首屏 | 1440×900 一屏，≥ 16px，链接要真能点 |
+| open | `cover-dark-open` | 不给，风格自定 | 同 `cover-dark` | 同 `cover-dark` |
+| open | `hero-open` | 不给，风格自定 | 同 `hero-dark` | 同 `hero-dark` |
+| ignoredone | `strategy-cover`（S1） | 铸台控制台 | 关卡代号、队伍条件、模式标签、英文微排版、署名 | 两版：1920×1080 和 2560×1600；关键信息必须落在双比例裁切的交集安全区里 |
+| ignoredone | `qa-card`（S2） | 纸页 | 一题问答，正文约 70 字 | 1080×1440 |
+| ignoredone | `tutorial-steps`（S3） | 铸台控制台 | 六步教程加一块截图位 | 1080×1920 |
+| ignoredone | `stream-standby`（S4） | 两套皮肤：铸台控制台、纸页 | 直播待机页文字 | 两版 1920×1080，版式相同、只换皮肤 |
 
-两套风格都是为这个实测原创的，不用任何第三方素材。`styles/` 里放风格，`scenarios/<场景>/repo/` 会复制给代理，`case.json` 和 `prompt.md` 不会。提示词就是一句普通的请求（“帮我做一张……要求在 brief.md……”），不透露在测什么。
+- **两套风格**：为这个实测原创，不用任何第三方素材。S1 的人物用简单几何剪影占位，不用游戏素材。
+- **open 组**：不给 DESIGN.md。有预设风格时，基础步骤（写 DESIGN.md）、设计方向库和 Taste 套件几乎没事可做；open 组就是为了让这几层真的被用到。
+- **双比例裁切**：S1 的两种尺寸取自调研，那份调研本身注明了 2560×1600 是 16:10，不是 4:3。安全区按平台的两种裁切算：16:9 那版左右各留 96px，16:10 那版上下各留 80px。
+- **两套皮肤**：S4 的第二套皮肤用工作目录里的 `DESIGN-light.md`，打分时按纸页的色值量。
+- **默认组**：默认跑 core 和 open（`--sets` 可改）。ignoredone 组主要用来比较“原则对配方”。
 
 ## 变体
 
 | 变体 | 给代理的东西 |
 | --- | --- |
 | `bare` | 不装技能，只有两条共用的项目规则 |
-| `adjectives` | 同 `bare`，多一句风格形容词（`rules/adjectives.json`，例如“高级感的工业风游戏界面质感”） |
-| `decision-tree` | 同 `bare`，多一份 if-else 规则包（`rules/decision-tree.<风格>.md`）：先数字数，按 ≤40、≤180、>180 分版式（>180 时正文区占 75%，装饰缩到角上），只用固定色值，装饰按实测标题宽度算，五条精确到像素的摆放定律，出图前 8 项自检。铸台的那份是主版本，纸页的那份是同一写法的移植 |
+| `adjectives` | 同 `bare`，多一句风格形容词（`rules/adjectives.json`） |
+| `decision-tree` | 同 `bare`，多一份 if-else 规则包（`rules/decision-tree.<风格>.md`）。内容：<br>· 先数字数，按 ≤40、≤180、>180 分版式<br>· 只用固定色值<br>· 装饰按实测标题宽度算<br>· 五条精确到像素的摆放定律<br>· 出图前 8 项自检<br>开放场景用 `packStyle` 指定用哪一份 |
+| `principles` | 同 `bare`，多一份关系型原则（`rules/principles.md`）。内容：<br>· 调研里的 R11–R19：主体先行、一静一闹、主动删信息、动线、醒目度与边距、比例递进、同源变化、用线代面、偏心侵入、三角补空<br>· R1–R10 里能检查的几条：字距按角色、行距与字距之比、读序、双比例安全区、阴影从零加、色相跨度、背景低饱和 |
+| `recipes` | 同 `bare`，多一份固定像素的装饰与质感配方（`rules/recipes.md`）。内容：<br>· 四角钉、标题条、方括号标题、小节标记、胶囊标签、英文微排版、页脚条、刻度<br>· 点阵、扫描线、颗粒、硬投影、改色 |
 | `full` | 装上这个检出的 design-pipeline，内容和发布包一致（不含按需下载的 MengTo、iart 原文） |
 | `full-minus-<层>` | 装上去掉一层的 design-pipeline |
 
-共用的两条项目规则（写进工作目录的 `AGENTS.md`，`CLAUDE.md` 指向它）：没人会回答问题，需要拍板时自己定，在回复里说一句；只交付 brief.md 写的那一个文件。
+共用的两条项目规则（写进工作目录的 `AGENTS.md`，`CLAUDE.md` 指向它）：没人会回答问题，需要拍板时自己定，在回复里说一句；只交付 brief.md 写的文件。
 
 ### 减层怎么做
 
 减层不靠提示词，而是由 `variants.mjs` 从 `skill/` 打出一份少了这一层的技能目录，再装进工作目录。Claude Code 装在 `.claude/skills/design-pipeline`，Codex 和 OMP 装在 `.agents/skills/design-pipeline`。层的定义在 `layers.json`：
 
-| 层 | 删掉的文件 | 因为别处还在用而留下的代码 |
-| --- | --- | --- |
-| `taste-skill` | `references/taste-skill.md`、`vendor/taste-skill/` | 无 |
-| `design-direction-library` | `references/design-direction-library.md`、`vendor/design-direction-library/` | `design-direction-library-core.cjs`、`directions-core.cjs` |
-| `anti-slop-rubric` | `anti-slop-rubric.json` 和它的 schema、`anti-slop-review.md` 和它的 schema、`anti-slop-evidence.schema.json`、`scripts/evaluate-anti-slop.cjs` | 无 |
-| `ui-craft` | `ui-craft-sources.md`、`impeccable-contract.md`、`impeccable-product-design.md`/`.json`，以及它们指向的六个上游包（emil-design-eng、make-interfaces-feel-better、fixing-accessibility、12-principles-of-animation、shadcn、playwright-cli） | `interaction-audit.cjs`（`verify interaction` 的页面审计，这里的打分也用它） |
-| `design-md-foundation` | `references/design-synthesis.md`、`scripts/check-design-foundation.cjs`、`scripts/advance-design-synthesis.cjs` | `design-synthesis-core.cjs`、`init-design-synthesis.cjs`（`foundation check` 和 replicate 流程要用） |
+| 层 | 删掉的文件 | 指代短语（不分大小写） | 留下的代码 |
+| --- | --- | --- | --- |
+| `taste-skill` | `references/taste-skill.md`、`vendor/taste-skill/` | Taste suite、Taste method | 无 |
+| `design-direction-library` | `references/design-direction-library.md`、`vendor/design-direction-library/`；清单换成空清单 | design direction library、direction library | `design-direction-library-core.cjs`、`directions-core.cjs` |
+| `anti-slop-rubric` | 细则 JSON 和 schema、`anti-slop-review.md` 和 schema、`anti-slop-evidence.schema.json`、`scripts/evaluate-anti-slop.cjs` | anti-slop review、anti-slop rubric、anti-slop gate | 无 |
+| `ui-craft` | `ui-craft-sources.md`、`impeccable-contract.md`、`impeccable-product-design.md`/`.json`，以及六个上游包 | Impeccable craft floor、Impeccable gate、Impeccable contract、UI craft rule/guide/precedence | `interaction-audit.cjs` |
+| `design-md-foundation` | `references/design-synthesis.md`、`scripts/check-design-foundation.cjs`、`scripts/advance-design-synthesis.cjs` | requirements-driven (DESIGN.md) synthesis | `design-synthesis-core.cjs`、`init-design-synthesis.cjs` |
 
-打法如下：
+打法：
 
-- 只删声明的文件。声明里有一条一个文件都对不上，就直接报错，免得过时的声明悄悄什么也没删。
-- 其余 Markdown（上游原文 `*/upstream/**` 除外）里，提到被删路径的块一起删掉。块按段落、列表项（连同子项）、表格行、整节（标题提到时）算；一节删空了，标题也删。文件只会少行，不会改行。
+- 只删声明的文件。声明里有一条对不上任何文件，就报错。
+- 其余维护中的 Markdown（`vendor/` 下除总索引 `vendor/README.md` 外都不碰，上游原文保持原字节）里，指向被删内容的地方（路径或指代短语）按下面的顺序删，越小越好：
+  1. 两个引用并列时，只删这一个和它们之间的分隔。
+  2. 只装着它的括号注，删括号注。
+  3. 列举里差不多就是这个引用本身的一项（除引用外最多 3 个词，且不含“读、用、打开、照着”这类路由动词），删这一项和一个分隔。
+  4. 否则删它所在的整句。
+  5. 列表项和表格格子的第一句被删时，整项、整行删掉。
+  6. 代码块只删提到它的行（连同续行）。
+  7. 标题提到它时，整节删掉；一节删空了，标题也删。
 - JSON 里以被删路径为值的数组项删掉，例如 `package-resources.json` 的 `required`、组件来源目录里的条目。
-- 留下来的脚本还在 `require` 被删的文件时，直接报错，免得这个变体的命令行一跑就崩。
+- 留下来的脚本还在 `require` 被删的文件时，报错。
+- 设计方向库换成一份内容为空的清单（保留来源和许可，对象数为 0、修订号换掉，免得去校验缓存里的真库）。`doctor` 照常通过，`direction draw` 报“库没装”（`TOOL_MISSING`）。这样量的是“少了这份内容”，而不是“命令行坏了”。
 - 打出来的目录要过发布包的资源检查（和 `scripts/qa.cjs` 同一组规则）。
-- 每个变体的报告写在 `<结果目录>/variants/<变体>.report.json`，不放在技能目录里，代理看不到。报告列出删了哪些文件、删了哪些块（每块的第一行），以及脚本和 JSON 说明文字里仍提到被删路径的地方。
+- 每个变体的报告写在 `<结果目录>/variants/<变体>.report.json`，不放在技能目录里。报告里有：
+  - 逐行的改动（原行号、原文、新文，删整行时新文为 null）；
+  - 替身文件；
+  - 脚本和 JSON 说明文字里仍提到被删路径的地方。
+- 测试会把每个变体逐文件和 `full` 比对，确认只有声明的文件和报告里的行变了，而且每段改动都落在一处指向被删内容的地方上。
 
 单独打变体目录、看看删了什么：
 
@@ -62,115 +91,175 @@ node evals/ablation/variants.mjs --out /tmp/variants
 
 打分不调模型，同一台机器上同一份文件每次结果一样。交付物先复制进 `captures/<标签>/page/`，在固定尺寸下用无头 Chrome 打开，等 2.5 秒让入场动画走完。SVG 会内联进一个只有它的 HTML 页面里量。浏览器、页面审计、构图门禁、文字提取都复用 `skill/scripts`：`interaction-audit.cjs`、`composition-core.cjs`、`capture-composition.cjs` 的 `extract`、`design-system-package-core.cjs` 的 `frontMatterGroups`、`png-core.cjs`。
 
-**交付约定**（不满足时综合分记 0，其余分项照记）：要求的文件恰好一个；不引用任何外部资源或其他文件（`src`、`href`、`url()`、`@import` 只能是 `data:`、`blob:` 或页内锚点）；渲染时不发出任何请求；SVG 的 `width`/`height` 等于声明尺寸，或者 `viewBox` 比例一致。
+**交付约定**：要求的文件每个恰好一个；不引用外部资源或其他文件；渲染时不发请求；SVG 的尺寸或 viewBox 比例对。不满足的，综合分为 0。
 
-**量出来的分项**（每次一行，写进 `results.tsv`）：
+**失败**：超时、出错、没交付物，一律按失败算。综合分记 0，留在格子里；报告列出每格的失败率。默认超时 3600 秒。
+
+**量出来的分项**：
 
 - 卫生
-  - 文字覆盖 `contentCoverage`：content.md 的每一句有没有原样出现在可见文字里。
-  - 溢出 `overflow`：页面审计的横向溢出、出画、裁切，加上构图门禁的文字出画，再加上页面比画面大，按处数累加。
-  - 字太小 `belowMinFont`：渲染后的字号小于风格的下限（SVG 按缩放折算）。
-  - 对比度不够 `contrastFails`：页面审计按 WCAG 2 算。
-  - 构图门禁错误 `compositionErrors`：空画面、整体对比度太低。构图的提示类结果只记在 `compositionCodes` 里。
-  - 反模板硬规则 `antiSlopHard`：反模板细则里这里能量的两条。一条是减弱动态、动画停在第一帧时看不见的文字（`hiddenWithoutMotion`，对应“内容不依赖入场动画”），另一条是首屏里的假控件（`fakeControls`：没有 href 或 href 是 `#` 的链接，或者鼠标是手型却不是控件的元素）。
+  - 文字覆盖、溢出与裁切、字太小、对比度（WCAG 2）、构图门禁错误（空画面、整体对比度太低）。
+  - 反模板硬规则：减弱动态、动画停在第一帧时看不见的文字；假控件。假控件指没有 href、href 是 `#` 或 `javascript:`、页内锚点指向不存在的 id 的链接，以及鼠标是手型却不是控件的元素。
+  - **层级下限** `hierarchyFails`：要有主标题的场景，要求至少 3 级字号，并且最大一级对正文（字数最多的那一级）至少 2.5 倍（长图卡和问答卡为 2 倍）。一样大的平铺页会被扣分。
+  - **出安全区** `safeZoneViolations`：S1 的关键信息落在裁切区外的条数。
 - 贴合
-  - 色值距离 `palettePixels`：截图里与 DESIGN.md 某个色值的 CIEDE2000 ≤ 5 的像素比例。
-  - `paletteElements`：文字颜色、填充、描边落在色值上的比例。
-  - 字阶 `typeScale`：文字的渲染字号落在 DESIGN.md 字号阶梯上（±0.5px）的比例。
-  - `declaredFonts`：CSS 首选字体是声明字体的比例，只作对照，不进综合分，因为各台机器装的字体不同。
+  - 有预设风格：文字、边框和纯色填充的颜色落在色值 ΔE00 ≤ 5 上的比例（`paletteElements`），以及字号落在字阶上的比例（`typeScale`）。渐变和发光不算颜色，也不算违规。截图像素的比例（`palettePixels`）只报告，不进分。
+  - 开放场景：颜色收敛（`colourKinds`，按 ΔE00 ≤ 5 聚成几种）和字号收敛（`sizeKinds`）。
 - 节律（代理量，见下）
-  - `gapOnStep`、`distinctGaps`：纵向相邻文字块之间的空隙落在间距单位（DESIGN.md 的 `spacing.unit`，8px）整数倍 ±1px 上的比例，以及有几种不同的空隙。
-  - `ratioCv`：相邻两级字号之比的变异系数，越小越像一套等比字阶。少于 3 级时不算。
-  - `leftEdges`：文字块有几条不同的左边线（±1px 算一条），越少网格越强。
-  - `decorations`、`decorationKinds`、`decorationRepeat`：装饰元素（没有自己文字、有填充或描边的元素和 SVG 图形）的个数、种类数，以及按尺寸加颜色属于重复组的比例。0 是全都不一样，1 是全都成组重复，种类数为 1 是全都一样。这一项只报告，不进综合分。
-- 跨次相似度：同一变体、同一场景各次之间，截图缩略灰度图的像素相似度和文字布局掩码的 Jaccard 相似度，由 `report.mjs` 从各次的 `fingerprint.json` 算。
+  - `gapOnStep`、`distinctGaps`：纵向空隙落在间距单位整数倍 ±1px 上的比例，以及有几种不同的空隙。
+  - `ratioCv`：最大字号以下各级相邻两级之比的变异系数。最大的展示字号是故意的大跳，不算。
+  - `leftEdges`：文字块有几条不同的左边线。
+  - 装饰的个数、种类和重复比例：只报告，不进分。
+- 跨次相似度：同一变体、同一场景各次之间，文字布局掩码（截图缩成 48 列的格子，再向四周各扩一格）的 Jaccard 相似度。像素相似度只报告。
 
 **综合分**（跑之前定好，`suite.mjs` 的 `composite`）：
 
 ```text
 卫生 = 100 − 40×缺字比例 − 15×min(溢出,3) − 10×min(字太小,3) − 5×min(对比度不够,4)
-           − 10×min(构图错误,2) − 10×min(反模板硬规则,3)，最低 0
-贴合 = 100 × (0.6×色值内像素 + 0.2×色值内元素 + 0.2×字阶内)
-节律 = 100 × 平均(间距落在单位上的比例, 1 − 字号比变异系数/0.5, 1 − (左边线数 − 1)/8)，只取能算的几项
-综合 = 0.4×卫生 + 0.4×贴合 + 0.2×节律；不合交付约定为 0
+           − 10×min(构图错误,2) − 10×min(反模板硬规则,3) − 25×min(层级不够,2) − 10×min(出安全区,3)，最低 0
+贴合（有风格）= 100 × (0.7×颜色落在色值上的比例 + 0.3×字号落在字阶上的比例)
+贴合（开放）  = 100 × (0.5×颜色收敛 + 0.5×字号收敛)；≤6 种颜色、≤5 级字号满分，≥10 种、≥8 级为 0
+节律 = 字号不到 3 级时为 0；否则 100 × 平均(间距落在单位上的比例, 1 − 字号比变异系数/0.5, 1 − (左边线数 − 1)/8)
+综合 = 0.4×卫生 + 0.4×贴合 + 0.2×节律；不合交付约定、失败为 0
 ```
 
-节律几项都是代理量：它们量的是几何上有没有章法（空隙是不是同一把尺子量的，字阶是不是等比，左边线多不多，装饰是重复还是各不相同），不是好不好看。节律占综合分的 0.2，只是为了让“规则包会不会把间距卡在 8 的倍数上”这类说法能被量到。口味的结论由盲评定，不由这些数定。规则包本身就写着“间距只能是 8 的倍数”“左对齐到 64px”，在节律上天然占便宜，下结论时要把这一点写进去。
+几个交付物的场景，综合分取各版的平均，次数类分项相加。
 
-### 盲评（可选，和量出来的分数分开）
+**校准**（`tests/fixtures/ablation/`，测试里钉住）：
 
-`judge.mjs` 从结果目录取同一场景、同一次的两张截图，复制成 `A.png`、`B.png` 放进一个只有它们的临时目录。路径和提示词里都没有变体名，左右按 `--seed` 随机。两张图交给另一家的模型，按下面的评分细则二选一。出图用 Claude 时，评审用 Codex，反过来也一样；同一家要显式加 `--allow-same-family`，并写进结论。评审结果只写 `judge.tsv`，不改 `results.tsv`。
+| 文件 | 内容 | 综合分 |
+| --- | --- | --- |
+| 好封面 `good.html` | — | 92.8 |
+| `monotone.html` | 所有字一样大的平铺页 | 60 |
+| `gradient.html` | 好封面加径向渐变底和发光 | 92.8（渐变和发光不加分也不扣分） |
+| `overflow.html` | 字溢出 | 66.8 |
+| `offpalette.html` | 色值不对 | 70.4 |
 
-评分细则（`judge.mjs` 的 `judgePrompt`，跑之前定好）：逐条比较风格贴合、文字（完整、清楚、层级、截断、出画、字太小）、节奏（留白、对齐、间距、装饰有变化而不杂乱、为内容服务）、专门设计（是不是换了字的通用模板）四项，综合给出 A、B 或 tie，最后一行只输出 `{"winner":"A"|"B"|"tie","reason":"一句话"}`。
+跨次相似度（文字布局）的校准：
 
-默认对局：`full` 对其余每个变体；再加 `decision-tree` 对 `adjectives`、`adjectives` 对 `bare`、`decision-tree` 对 `bare`。
+| 对比 | 相似度 |
+| --- | --- |
+| 同一版式只换色 | 1.0 |
+| 同一版式换色又挪 8–12px | 0.88 |
+| 不同版式 | ≤ 0.06 |
+| 平铺页对另一版式 | 0.55 |
+
+阈值定在 0.8。
+
+**节律几项都是代理量**：它们量的是几何上有没有章法，不是好不好看。节律只占综合分的 0.2，口味的结论由盲评定，不由这些数定。规则包本身就写着“间距只能是 8 的倍数”“左对齐到 64px”，在节律上天然占便宜；所以有“套模板”这条规则，下结论时也要把这一点写进去。
+
+### 盲评（和量出来的分数分开）
+
+`judge.mjs` 的做法：
+
+- 从结果目录取同一场景、同一次的两张截图，复制成 `A.png`、`B.png`，放进一个只有它们的临时目录。路径和提示词里都没有变体名，左右按 `--seed` 随机。
+- 交给另一家的模型，按评分细则二选一。评分细则见 `judge.mjs` 的 `judgePrompt`：风格贴合、文字、节奏、专门设计四项，给出 A、B 或 tie。
+- 出图和评审是同一家时，要显式加 `--allow-same-family`。
+- 每一局有对局编号（评审、场景、次、两个变体）。重跑时已评过的跳过；`--rejudge` 重评时只算最后一次，不会重复计数。打了分却没有截图，直接报错，不悄悄跳过。
+- 结果只写 `judge.tsv`。
 
 ## 已知盲区
 
-- 量出来的数只看画面上能量的东西，看不出构思好不好、是不是为内容专门设计，这些只能靠盲评，或者主人自己看 `captures/`。
-- 字体：两套风格的字体多半没装，各台机器回退到的字体不同，溢出和字宽也会跟着变。比较都在同一个场景里做，所以一个场景的所有次要在同一台机器上量。要分机器跑，就按场景分。
-- CSS `transform: scale()` 放大的文字，字号按 CSS 值算；SVG 的缩放已经折算。
-- `palettePixels` 会被抗锯齿的文字边缘拉低一点。它只用于比较变体，不用于和 1 比。
-- 反模板细则里只有两条硬规则能在一张静态成品上量出来；“组件真的能用”“响应式”“参考来源”这几条在这里量不到。
-- 减层只删文件和路由。`next` 等命令自己吐出的说明文字里提到被删文件的地方还在，变体报告的 `residual` 照实列出（目前在 `cli-core.cjs`、`directions-core.cjs`、`workflows/directions.cjs`、`workflows/replicate.cjs`、`companion-capabilities.json`）。
-- 设计方向库直接接在 `next` 的方向步骤上（风格轮盘从库里抽）。去掉它以后 `doctor` 报安装不完整（退出码 2），标准档的 ui、web 流程到方向步骤会被挡住。所以这一行量的是“没有这一步”，不只是“少了一份参考资料”。
-- 运行前 `next` 可能要下载设计方向库的图片（`sources fetch --bundle design-direction-library`）。没下载时 `full` 和各减层变体在这一步一样受影响，跑之前先下载好。
-- “用没用技能”从运行记录判断。Claude Code 用 `stream-json` 输出，只看工具调用（调 Skill、读技能目录里的文件、跑技能的命令行），不看开头列出的可用技能清单；Codex、OMP 只有文字输出，按文字里有没有 `design-pipeline` 判断，可能漏判或误判。
-- 装了 pstack 等其他技能的客户端，`bare` 也不是一张白纸。要量净效果，就在只装了这里要测的东西的客户端上跑，或者把这一点写进结论。
+- 量出来的数只看画面上能量的东西，看不出构思好不好、是不是为内容专门设计。这些只能靠盲评，或者主人自己看 `captures/`。
+- **预设风格会把层藏起来**：core 组给了 DESIGN.md，基础步骤、设计方向库、Taste 套件几乎无事可做，这几层在 core 组上量不出作用是意料之中的。open 组就是为它们加的，读结论时分组看。
+- **设计方向库换成了空清单**：`doctor` 照常通过，`direction draw` 报库没装，标准档 ui、web 流程里的风格轮盘抽不出来。量的是“少了这份内容”的效果，但流程里依赖轮盘的那一步也会因此走不下去。
+- 字体：两套风格的字体多半没装，各台机器回退到的字体不同，溢出和字宽也会跟着变。比较都在场景内做，所以一个场景的所有次要在同一台机器上量。分机器跑时按场景分。
+- CSS `transform: scale()` 放大的文字，字号按 CSS 值算。
+- 反模板细则里只有两条硬规则能在一张静态成品上量出来。
+- 减层只删文件和路由；`next` 等命令吐出的说明文字里提到被删文件的地方还在，变体报告的 `residual` 照实列出。
+- “用没用技能”和“读没读到某一层”都从运行记录判断。
+  - Claude Code 用 `stream-json` 输出，只看工具调用（调 Skill、读技能目录里的文件、跑技能的命令行），不看开头列出的可用技能清单。
+  - Codex、OMP 只有文字输出，按文字找，可能漏判或误判。
+  - 每次记下读到了哪几层（`layersRead`，按这一层在完整技能里的文件路径找）和有没有跑 `next`（`nextRan`）。
+- **网络**：代理在工作目录里照常能上网。brief 要求交付物不引用网络资源，渲染时发出的请求会被记下并判不合约定，但代理在做的过程中去网上查资料、下载东西，这里管不着，也不记录。要严格隔离，就在断网或只放行模型接口的环境里跑。
+- **共用缓存**：下载缓存（`~/.cache/design-pipeline`，或 `DESIGN_PIPELINE_CACHE`）对所有变体都可见。runner 每次开跑时把它的状态写进 `environment.jsonl`。
+- 装了 pstack 等其他技能的客户端，`bare` 也不是一张白纸。
 
 ## 判定规则（跑之前定好，`report.mjs` 的 `RULES`）
 
-一格是“一个变体 × 一个场景”。下面的数都是综合分中位数，每格至少 3 次打了分才算。
+一格是“一个变体 × 一个场景”。失败的运行按 0 分留在格子里。
+
+**先跑方差试跑**：`run.mjs --pilot` 只跑 `bare`，每个场景 5 次，跑完打印每个场景的标准差，再按合并后的 σ 算出每格要跑几次（`power.mjs`）。算法：
+
+```text
+n = 2σ²(z₁₋α/₂ + z₀.₈)² / (S·δ²)，δ = 5 分，α = 0.05 / 5（五层做 Holm 校正时第一步的门槛），S 是场景数，至少 3
+```
+
+正式跑用它算出的 `--runs`。用的是正态近似，检验和下面的量值检验是同一个。
 
 **前提**
 
-- 装了技能的变体，至少 80% 的运行要看得出用了技能。做不到时，这个变体的结论无效，先解决技能没触发的问题，不据此砍任何东西。
-- `full` 对 `bare`：如果完整流水线没有胜过不装技能，逐层结论只作参考，先查流水线整体。
+- 装了技能的变体，只用看得出用了技能的运行；用了技能的不到 80% 时，这个变体的结论无效，先解决技能没触发的问题。
+- 某一层只有在至少一半的 `full` 运行读到了它的文件时，这一层的比较才算数；否则判待定。
+- 至少 3 个场景、并且至少 3/4 的已跑场景，每格凑够 3 次，才下任何结论。
+- `full` 还没判定为胜过 `bare` 时，逐层结论只作参考，先查流水线整体。
 
-**一层（`full` 对 `full-minus-<层>`）**
+**量值检验**：每个场景算两格均值之差，再在场景之间取平均 D；标准误合并各场景的方差；用双侧 z 检验。五层是一族，做 Holm 校正；提示写法的五组、原则对配方的四组各是一族。
 
-- **保留**：满足下面任一条。
-  - 量值：各场景差值（`full` 减去减层）的中位数 ≥ 5 分，并且至少 3/4 的场景差值为正。
-  - 盲评：分出胜负的对局至少 12 局（4 个场景 × 3 次），`full` 赢 ≥ 60%。
-- **砍掉**（去掉反而更好）：差值中位数 ≤ −5 且至少 3/4 的场景为负，或者盲评 `full` 赢 ≤ 40%（至少 12 局）。
-- **矛盾**：量值和盲评方向相反时，每格补到 5 次、盲评补到 24 局再判。
-- **噪声太大**：都不满足，并且相关各格里最大的四分位距大于差值绝对值的 2 倍时，每格补到 5 次再判。
-- **看不出作用**：其余情况。标记砍掉或重做：要么删掉这层的文件和路由，要么重写它，再跑一遍。
+**盲评**：分出胜负的对局做双侧精确二项检验（p = 0.5），同一族做 Holm 校正。
 
-**套模板**：同一变体在至少 2 个场景里，各次之间的像素相似度 ≥ 0.97 并且文字布局相似度 ≥ 0.9，判为套模板（同一个模子印出来）。套模板的变体，量值上的优势一律不算，只有盲评能让它胜出。原因是，规则包把每个数都钉死以后，节律和贴合分自然高，但那不是口味。
+**结论**：
 
-**提示写法**（`decision-tree` 对 `adjectives`，`adjectives` 对 `bare`，`decision-tree` 对 `bare`，`full` 对 `decision-tree`，`full` 对 `adjectives`）：用同样的门槛判前者胜、后者胜、分不出、补跑。结论分开写：
+- **保留**（前者更好）：满足下面任一条。
+  - 量值显著为正，并且盲评至少 12 局分出胜负、前者胜率过半。两边方向一致才算。
+  - 盲评单独下结论：至少 48 局分出胜负，校正后显著，量值没有显著反向。
+- **砍掉**（去掉反而更好）：同上，方向相反。
+- **矛盾**：量值和盲评显著地方向相反。补数据再判。
+- **待定**：其余一切，包括量值显著但盲评还不够 12 局、两边都不显著、场景不够。待定不是砍掉，只是继续收数据。报告会按当前 σ 算出要跑多少次。
 
-- 规则包胜过形容词，并且没被判为套模板：说明硬规则确实比形容词有用；再看它能不能胜过 `full`。
-- 规则包只在量值上胜、盲评没胜，或者被判为套模板：说明它只是把可量的数卡住了，不能据此说它的成品更好。
-- 形容词对 `bare` 分不出：形容词提示没用。
+**套模板**：同一变体在至少 2 个场景里，各次之间文字布局相似度的均值 ≥ 0.8，判为套模板（同一个模子印出来）。套模板的变体，量值上的优势一律不算，只有盲评能让它胜出。
+
+**比较的组**
+
+- 逐层：`full` 对 `full-minus-<层>`。
+- 提示写法：`decision-tree` 对 `adjectives`、`adjectives` 对 `bare`、`decision-tree` 对 `bare`、`full` 对 `decision-tree`、`full` 对 `adjectives`。
+- 原则对配方：`principles` 对 `recipes`、`principles` 对 `bare`、`recipes` 对 `bare`、`principles` 对 `decision-tree`。
+  - 主人的假设成立，要求 `principles` 胜过 `recipes`，并且 `principles` 没被判为套模板。
+  - `recipes` 只在量值上胜、盲评没胜，说明它只是把可量的数卡住了。
 
 ## 怎么跑
 
 ```sh
 npm ci
-node evals/ablation/run.mjs --client claude --runs 3 --out <结果目录>
+node evals/ablation/run.mjs --client claude --pilot                 # 方差试跑，打印每格要跑几次
+node evals/ablation/run.mjs --client claude --runs <试跑算出的次数>
 node evals/ablation/judge.mjs --out <结果目录> --judge codex
 node evals/ablation/report.mjs <结果目录>
 ```
 
-- `--client` 可选 `claude`、`codex`、`omp`。`--variants`、`--scenarios` 可以只跑一部分，`--timeout` 是每次的秒数（默认 1800），`--keep-skill` 打完分后保留工作目录里装的技能（默认删掉省空间）。
-- 用户级目录装着 design-pipeline 时（`~/.agents/skills`、`~/.claude/skills`、`~/.codex/skills`、`~/.claude/plugins/cache`、`~/.omp/agent/managed-skills`），runner 拒绝跑：`bare` 和减层变体也会读到完整技能，那就不是消融了。先停用插件或挪走；确定客户端读不到它时，可以加 `--allow-global-skill`。
-- 每次的回复在 `<结果目录>/<客户端>-<变体>-<场景>-<次>.txt`，截图和全部量值在 `captures/<同名>/`，工作目录路径在 `results.tsv` 的 `workdir` 列。
-- 分几次跑时，追加到同一个结果目录，列不一致会拒绝。要在几台机器上分着跑，就按场景分（`--scenarios`），一个场景的所有变体在同一台机器上跑完。
-- 先试一轮小的，确认技能会触发：`--runs 1 --variants bare,full,decision-tree --scenarios cover-dark`，看 `skillUsed` 列和回复记录。
+- **客户端**：`--client` 可选 `claude`、`codex`、`omp`。
+- **选范围**：`--sets core,open,ignoredone`、`--variants`、`--scenarios` 可以只跑一部分。比较原则对配方：`--sets ignoredone,core --variants bare,principles,recipes,decision-tree`。
+- **目录**：
+  - 结果默认放在 `~/agent-runs/ablation-<时间>`（`--out` 可改）。
+  - 工作目录放在 `~/agent-runs/work/<场景>-xxxx`（`--work-root` 可改），上级目录不带“消融”字样，因为代理看得到自己的路径。
+  - 都不在 `/tmp`。
+- **工作目录**：打完分就删（`--keep-workdir` 保留）。交付物的副本在 `captures/<标签>/page/`，代理留下的文件清单在 `captures/<标签>/workdir-files.json`，回复在 `<结果目录>/<客户端>-<变体>-<场景>-<次>.txt`。`results.tsv` 里的路径都是相对结果目录或工作根目录的。
+- **用户级安装**：用户级目录装着 design-pipeline 时，runner 拒绝跑，因为 `bare` 和减层变体也会读到完整技能。先停用插件或挪走；确定客户端读不到它时，可以加 `--allow-global-skill`。
+- **分次跑**：追加到同一个结果目录，列不一致会拒绝。分机器跑时按场景分。
 
-自测（不调模型）在 `tests/ablation-eval.test.cjs`。它用假代理写三份现成的封面（好的、字溢出的、色值不对的），确认打分分得开；还检查减层目录只删了声明的东西、`results.tsv` 的列钉住了、盲评的提示词里没有变体名。
+自测（不调模型）在 `tests/ablation-eval.test.cjs`。它用假代理写几份现成的封面，确认下面这些：
+
+- 打分分得开好封面和坏封面；
+- 减层目录逐文件对比只改了声明的东西；
+- 判定规则、去重、失败和路径规则照 README 走；
+- 盲评提示词里没有变体名。
 
 ## 成本
 
-全量一轮是 9 个变体 × 4 个场景 × 3 次 = 108 次代理运行。下面是估计（按单次交付物的大小和技能文档的长度推算，还没有实测；第一轮跑完后用 `seconds` 列和客户端的用量记录替换掉）：
+全量一轮的运行次数：
 
-| 部分 | 次数 | 每次 | 合计 |
-| --- | --- | --- | --- |
-| `bare`、`adjectives`、`decision-tree` | 36 | 3 到 8 分钟，约 2 万到 6 万 token | 2 到 5 小时，约 150 万 token |
-| `full` 和 5 个减层 | 72 | 10 到 30 分钟，约 20 万到 60 万 token（读技能文档、跑 `next` 和检查，大部分是可缓存的输入） | 12 到 36 小时，约 1500 万到 4000 万 token |
-| 打分 | 108 | 约 6 秒 | 约 11 分钟，不用模型 |
-| 盲评（默认对局） | 11 组 × 4 × 3 = 132 | 两张图加约 3000 字的提示，30 到 60 秒 | 1 到 2 小时，约 100 万 token |
+```text
+（11 个变体 × 6 个 core 与 open 场景 + 5 个不装技能的变体 × 4 个 ignoredone 场景）× n
+```
 
-全量单线程大约要一到两天，主要花在装了技能的那 72 次上。在订阅制的客户端上，这些是额度和时间；按 API 计费时，用上面的 token 数乘当时的单价。先用上面那轮小的试跑（3 次、约 1 小时）确认技能会触发，再跑全量。
+n 是试跑算出的每格次数。n = 5 时是 430 次。下面是估计（还没有实测；第一轮跑完后用 `seconds` 列和客户端的用量记录替换掉）：
+
+| 部分 | 每次 | 说明 |
+| --- | --- | --- |
+| 方差试跑 | 3 到 8 分钟，约 2 万到 6 万 token | `bare` × 6 场景 × 5 次 = 30 次，约 2 到 4 小时 |
+| 不装技能的变体 | 3 到 8 分钟，约 2 万到 6 万 token | 约占全量的一半 |
+| `full` 和 5 个减层 | 10 到 30 分钟，约 20 万到 60 万 token | 读技能文档、跑 `next` 和检查，大部分是可缓存的输入 |
+| 打分 | 每个交付物约 6 秒 | 不用模型 |
+| 盲评 | 30 到 60 秒，约 1 万 token | 默认 15 组对局 × 场景数 × n |
+
+n = 5 时，全量单线程要几天，主要花在装了技能的那几百次上。先跑方差试跑，再按它算出的次数决定跑全量，还是先只跑 core 和 open 里最关心的几层。
