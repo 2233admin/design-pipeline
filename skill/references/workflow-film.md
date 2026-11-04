@@ -181,6 +181,17 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
   `sound.cues[].kind` is `entry`, `exit`, `downbeat`, `accent`, `riser`, `impact`, `voiceover` or
   `silence`. `film-core.cjs` is the source; `tests/film-storyboard-values.test.cjs` keeps this list
   equal to it.
+- Narration: record (or synthesize) the take before timing the beats, put it in the project and run
+  `film voiceover --project-root . --audio assets/narration.wav [--script lines.txt] [--start <sec>] --write`.
+  It measures the phrases from the take's pauses with ffmpeg `silencedetect` (no speech model; with
+  `--script`, one spoken line per line, the longest pauses become the line breaks) and writes `vo-NN`
+  `voiceover` cues with `atSec`/`endSec` plus `sound.narration` (path, sha256). Pauses inside a
+  phrase are reported as candidate word boundaries, not every word. Put a phrase's cue id in the
+  `soundCues` of the beat that shows what it says and start the beat on it: the gate fails
+  `voiceover-off-phrase` when the words start more than 0.1 s before the beat or after it ends, or the
+  beat covers less than half of the shorter of the two spans, and `voiceover-stale` when the take
+  changed; run `film voiceover --write` again after every new take. `endSec` is allowed only on
+  `voiceover` and `silence` cues.
 - Cut sheet (shot-for-shot work): the optional `cuts` array follows the Japanese TV-animation cut
   sheet (e-conte); a beat is the sequence, a cut is one continuous shot inside one beat. Each cut has
   `no`, `startSec`, `endSec`, `picture`, `transition`, `size`, `camera`, and may have `action`,
@@ -229,6 +240,7 @@ Pick the lowest-rung tool that reaches each beat:
 | Enamel, solid bevels, angle-dependent materials | WebGL/Three.js + GLSL or Blender | `film-materials.md` |
 | Music as code | `film score --project-root . --bpm <n> --template <name>` | `film-score.md` |
 | Virtual camera filming an agent's terminal while a tracker locks onto typed glyphs | `film scaffold --template tracking-hud --output <new-dir>`, edit `film.config.js`, `node build.cjs` | `film-tracking-hud-template.md` |
+| Narration phrase timing | `film voiceover --project-root . --audio <take> --write` | this page, storyboard |
 | Loudness and fades | `audio master --input <audio> --output <wav>` | `audio-gate.md` |
 
 Product promo: build from the admitted captures cited in `beats[].source`. Place the recorded

@@ -46,7 +46,8 @@ const {
 const { exitCodeForStatus: componentFirstExitCode } = require("./component-first/orchestration/aggregate-result.cjs");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
-const { checkStoryboard, evaluateFilmRender, productSourceFiles } = require("./film-core.cjs");
+const { checkStoryboard, evaluateFilmRender, narrationFiles, productSourceFiles } = require("./film-core.cjs");
+const { voiceoverFilm } = require("./voiceover-core.cjs");
 const { renderCutSheet, seedCuts } = require("./film-cut-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
 const { evaluateFilmRuns } = require("./film-eval-core.cjs");
@@ -161,7 +162,7 @@ const KNOWN_OPTIONS = new Set([
   "--direction-lock", "--providers", "--storyboard", "--from-reference", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict", "--job-plan", "--bundle",
   "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
-  "--start", "--end", "--fps", "--max-frames", "--cut-threshold", "--min-shot", "--by", "--page-review", "--until", "--assisted-by", "--tradeoff", "--revision", "--affects",
+  "--start", "--end", "--min-pause", "--script", "--fps", "--max-frames", "--cut-threshold", "--min-shot", "--by", "--page-review", "--until", "--assisted-by", "--tradeoff", "--revision", "--affects",
   "--spec", "--stills", "--ffmpeg", "--ffprobe", "--medium", "--second", "--pool", "--east-pool",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
 ]);
@@ -467,6 +468,7 @@ function publicHelp() {
     "  film-edit render|check --project-root <dir> [--output renders/edit.mp4]",
     "  film score --project-root <dir> --bpm <n> [--template punchy-launch|calm-build|tech-pulse --key c] | [--pattern score.strudel.js] [--output assets/score.wav] [--write] [--replace]",
     "    (Strudel, AGPL-3.0, is installed into <dir>/.design-pipeline/strudel on first use; never bundled)",
+    "  film voiceover --project-root <dir> --audio <narration.wav> [--script lines.txt] [--start <sec>] [--min-pause 0.25] [--write]   (phrase cues measured from the take's pauses with silencedetect; --script: one spoken line per line; --write records vo-* cues and the narration hash in storyboard.json)",
     "  film blocks --project-root <dir> [--query <action words>] [--tag 3d|shader|transition|...] [--type block|component] [--refresh]",
     "  film cut-sheet --project-root <dir> [--from-reference <shots-analysis report.json>]   (writes cut-sheet.html from storyboard.json cuts; --from-reference first seeds one cut per detected shot, descriptions left empty, never overwrites existing cuts)",
     "  film check --project-root <dir> [--allow code,code]   (runs storyboard, timeline, render and composition gates; each finding carries a fix; --allow accepts named composition warnings)",
@@ -1177,7 +1179,7 @@ function filmLayout(parsed, root, composition, url, times) {
 // source's run log and captures, and the bound Stage 0 job plan. Recording them as checked inputs
 // lets the existing workflow input hashes reopen the gate when any of them changes.
 function filmEvidenceInputs(board, plan) {
-  return [...productSourceFiles(board), ...(typeof board.referenceCuts === "string" ? [board.referenceCuts] : []), ...(plan?.jobPlanPath ? [plan.jobPlanPath] : [])];
+  return [...productSourceFiles(board), ...narrationFiles(board), ...(typeof board.referenceCuts === "string" ? [board.referenceCuts] : []), ...(plan?.jobPlanPath ? [plan.jobPlanPath] : [])];
 }
 
 function verifyCommand(parsed, root, action) {
@@ -2432,6 +2434,22 @@ const COMMANDS = {
             render: (args) => runKernel("render-score.cjs", [...args, ...["--chrome", "--puppeteer-module"].flatMap((flag) => (option(parsed, flag) ? [flag, option(parsed, flag)] : []))], root).value,
           });
           return { result, exitCode: result.alignment.status === "passed" ? 0 : 2 };
+        },
+      },
+      voiceover: {
+        required: ["--project-root", "--audio"],
+        run: ({ parsed, root }) => {
+          const project = contained(root, option(parsed, "--project-root"), "--project-root");
+          const result = voiceoverFilm(project, {
+            audio: contained(root, option(parsed, "--audio"), "--audio"),
+            script: option(parsed, "--script") ? contained(root, option(parsed, "--script"), "--script") : null,
+            startSec: option(parsed, "--start") === null ? undefined : Number(option(parsed, "--start")),
+            minPauseSec: option(parsed, "--min-pause") === null ? undefined : Number(option(parsed, "--min-pause")),
+            write: option(parsed, "--write") === true,
+            ffmpeg: option(parsed, "--ffmpeg"),
+            ffprobe: option(parsed, "--ffprobe"),
+          });
+          return { result, exitCode: result.status === "passed" ? 0 : 2 };
         },
       },
       blocks: {

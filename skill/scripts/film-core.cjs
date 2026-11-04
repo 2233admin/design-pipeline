@@ -26,11 +26,16 @@ const DETACHED_HANDOFFS = new Set(["reset", "dissolve"]);
 const NAMED_CARRY_HANDOFFS = new Set(["continuation", "morph", "camera-carry", "match-cut"]);
 const SURFACE_MOTION = new Set(["fade", "fade-in", "fade-out", "opacity", "scale", "scale-in", "scale-out", "zoom", "ken-burns", "slide-in", "slide-out", "blur-in", "blur-out"]);
 const CUE_KINDS = ["entry", "exit", "downbeat", "accent", "riser", "impact", "voiceover", "silence"];
+// Cues that last (a spoken phrase, a held silence) may carry endSec; the rest are instants.
+const SPAN_CUE_KINDS = new Set(["voiceover", "silence"]);
+// A picture may lead its phrase anywhere inside the beat; the voice may lead the picture by at most
+// this much (about three frames at 30 fps) before the beat reads as late.
+const VOICE_LEAD_SEC = 0.1;
 const PLACEHOLDER = /^(tbd|todo|n\/?a|none|-|\.\.\.|placeholder)$/i;
 const FRAME_TOLERANCE_SEC = 0.05;
 const MAX_HOLD_SHARE = 0.25;
 // These are review prompts, not universal laws of animation or editing.
-const RHYTHM_WARNINGS = new Set(["uniform-cadence", "no-rest", "hold-dominant", "hold-chain", "slideshow-handoffs", "sound-unbound"]);
+const RHYTHM_WARNINGS = new Set(["uniform-cadence", "no-rest", "hold-dominant", "hold-chain", "slideshow-handoffs", "sound-unbound", "voiceover-unbound"]);
 const MATERIAL_REQUIREMENTS = ["solid-depth", "bevel", "clearcoat", "view-dependent-color", "surface-relief"];
 const RENDER_ROUTES = ["dom", "canvas2d", "css3d", "webgl", "blender", "footage"];
 // Product-promo admission (storyboard.productSource): a product-launch-video film is evaluated
@@ -242,6 +247,13 @@ function productSourceFiles(board) {
   return [source.run?.log?.path, ...source.captures.map((capture) => capture?.path)].filter((file) => typeof file === "string" && file.trim());
 }
 
+// The narration take the voiceover cues were measured from: a checked gate input, so changing the
+// take reopens the gates that relied on its timing.
+function narrationFiles(board) {
+  const file = board && typeof board === "object" ? board.sound?.narration?.file : null;
+  return typeof file === "string" && file.trim() ? [file] : [];
+}
+
 function validateShape(board) {
   assertKeys(board, ["schema", "id", "durationSec", "grammar", "benefit", "proofAction", "sound", "beats"], ["schema", "id", "durationSec", "fps", "grammar", "benefit", "proofAction", "reference", "sound", "beats", "endState", "rendering", "productSource", "cuts", "referenceCuts", "parityStrict"], "storyboard", SCOPE);
   if (board.endState !== undefined) assertEnum(board.endState, ["free", "rest", "loop"], "endState", SCOPE);
@@ -272,7 +284,17 @@ function validateShape(board) {
   }
   const captures = board.productSource === undefined ? new Map() : validateProductSource(board.productSource);
   const sound = board.sound;
-  assertKeys(sound, ["mode"], ["mode", "reason", "source", "cues", "usage", "assets"], "sound", SCOPE);
+  assertKeys(sound, ["mode"], ["mode", "reason", "source", "cues", "usage", "assets", "narration"], "sound", SCOPE);
+  if (sound.narration !== undefined) {
+    // Written by `film voiceover`: the measured take the voiceover cues come from.
+    const narration = sound.narration;
+    assertKeys(narration, ["file", "sha256", "startSec"], ["file", "sha256", "startSec", "minPauseSec", "phrases"], "sound.narration", SCOPE);
+    real(narration.file, "sound.narration.file");
+    if (typeof narration.sha256 !== "string" || !SHA256_HEX.test(narration.sha256)) fail(SCOPE, "sound.narration.sha256 must be a 64-character lowercase hex digest");
+    seconds(narration.startSec, "sound.narration.startSec");
+    if (narration.minPauseSec !== undefined) seconds(narration.minPauseSec, "sound.narration.minPauseSec");
+    if (narration.phrases !== undefined && !(Number.isInteger(narration.phrases) && narration.phrases > 0)) fail(SCOPE, "sound.narration.phrases must be a positive integer");
+  }
   if (sound.usage !== undefined) assertEnum(sound.usage, ["commercial", "personal", "internal"], "sound.usage", SCOPE);
   if (sound.assets !== undefined) {
     if (!Array.isArray(sound.assets)) fail(SCOPE, "sound.assets must be an array");
@@ -292,12 +314,16 @@ function validateShape(board) {
   const cueIds = new Set();
   for (const [index, cue] of cues.entries()) {
     const label = `sound.cues[${index}]`;
-    assertKeys(cue, ["id", "atSec", "kind", "note"], ["id", "atSec", "kind", "note"], label, SCOPE);
+    assertKeys(cue, ["id", "atSec", "kind", "note"], ["id", "atSec", "endSec", "kind", "note"], label, SCOPE);
     real(cue.id, `${label}.id`);
     if (cueIds.has(cue.id)) fail(SCOPE, `${label} duplicates ${cue.id}`);
     cueIds.add(cue.id);
     seconds(cue.atSec, `${label}.atSec`);
     assertEnum(cue.kind, CUE_KINDS, `${label}.kind`, SCOPE);
+    if (cue.endSec !== undefined) {
+      if (!SPAN_CUE_KINDS.has(cue.kind)) fail(SCOPE, `${label}.endSec is only for ${[...SPAN_CUE_KINDS].join(" and ")} cues, which last; other cues are instants`);
+      if (typeof cue.endSec !== "number" || !Number.isFinite(cue.endSec) || cue.endSec <= cue.atSec) fail(SCOPE, `${label}.endSec must be a number after atSec`);
+    }
     real(cue.note, `${label}.note`);
   }
   if (!Array.isArray(board.beats) || board.beats.length === 0) fail(SCOPE, "beats must be a non-empty array");
@@ -333,6 +359,42 @@ function validateShape(board) {
   }
   if (board.cuts !== undefined) validateCuts(board.cuts, board);
   else if (board.referenceCuts !== undefined || board.parityStrict !== undefined) fail(SCOPE, "referenceCuts and parityStrict need cuts");
+}
+
+// Narration first, picture second: a beat that binds a voiceover phrase shows what the phrase says
+// while it is said. The phrase must start inside the beat (the voice may lead by VOICE_LEAD_SEC), and
+// a phrase with an end must share at least half of the shorter of the two spans with the beat.
+function voiceoverChecks(board, add, options) {
+  const phrases = new Map((board.sound.cues ?? []).filter((cue) => cue.kind === "voiceover").map((cue) => [cue.id, cue]));
+  let bound = 0;
+  for (const beat of board.beats) {
+    for (const id of beat.soundCues ?? []) {
+      const phrase = phrases.get(id);
+      if (!phrase) continue;
+      bound += 1;
+      const span = phrase.endSec === undefined ? null : [phrase.atSec, phrase.endSec];
+      const where = span ? `${phrase.atSec}-${phrase.endSec}s` : `${phrase.atSec}s`;
+      if (phrase.atSec < beat.startSec - VOICE_LEAD_SEC || phrase.atSec >= beat.endSec) {
+        add("voiceover-off-phrase", `beat ${beat.id} (${beat.startSec}-${beat.endSec}s) binds phrase ${id} (${where}), which starts ${phrase.atSec < beat.startSec ? `${Number((beat.startSec - phrase.atSec).toFixed(3))}s before the beat` : "after the beat ends"}`, beat.id);
+        continue;
+      }
+      if (span) {
+        const overlap = Math.min(beat.endSec, span[1]) - Math.max(beat.startSec, span[0]);
+        const shorter = Math.min(beat.endSec - beat.startSec, span[1] - span[0]);
+        if (overlap < 0.5 * shorter) add("voiceover-off-phrase", `beat ${beat.id} (${beat.startSec}-${beat.endSec}s) shares only ${Number(Math.max(0, overlap).toFixed(3))}s with phrase ${id} (${where})`, beat.id);
+      }
+    }
+  }
+  const narration = board.sound.narration;
+  if (!narration) return;
+  if (phrases.size && bound === 0) add("voiceover-unbound", `the film is narrated (${phrases.size} phrase cues) but no beat binds a phrase`);
+  if (!options.projectRoot) return;
+  let file;
+  try { file = resolveInside(options.projectRoot, narration.file, "sound.narration.file", { scope: SCOPE }); }
+  catch (error) { add("voiceover-narration-missing", `sound.narration.file ${narration.file} is not a file inside the project (${error.message})`); return; }
+  if (!fs.existsSync(file) || !fs.statSync(file).isFile()) { add("voiceover-narration-missing", `sound.narration.file ${narration.file} does not exist`); return; }
+  const digest = sha256(fs.readFileSync(file));
+  if (digest !== narration.sha256) add("voiceover-stale", `${narration.file} changed after its phrases were measured (sha256 ${digest.slice(0, 12)}, recorded ${narration.sha256.slice(0, 12)}); the voiceover cues may no longer match the take`);
 }
 
 function checkStoryboard(board, options = {}) {
@@ -423,7 +485,11 @@ function checkStoryboard(board, options = {}) {
 
   // Sound binds to the composition clock.
   const cues = board.sound.cues ?? [];
-  for (const cue of cues) if (cue.atSec > total + FRAME_TOLERANCE_SEC) add("cue-outside-film", `cue ${cue.id} at ${cue.atSec}s is after the film ends`);
+  for (const cue of cues) {
+    if (cue.atSec > total + FRAME_TOLERANCE_SEC) add("cue-outside-film", `cue ${cue.id} at ${cue.atSec}s is after the film ends`);
+    else if (cue.endSec !== undefined && cue.endSec > total + FRAME_TOLERANCE_SEC) add("cue-outside-film", `cue ${cue.id} lasts until ${cue.endSec}s, after the film ends at ${total}s`);
+  }
+  voiceoverChecks(board, add, options);
   if (board.sound.mode === "scored") {
     if (!cues.some((cue) => cue.kind === "entry")) add("sound-no-entry", "scored film must declare a music entry cue");
     const accented = actionBeats.filter((beat) => (beat.soundCues ?? []).length > 0).length;
@@ -826,4 +892,4 @@ function evaluateFilmRender(board, video, options = {}) {
   };
 }
 
-module.exports = { BEAT_ROLES, CUE_KINDS, GRAMMARS, HANDOFFS, PRODUCT_PROMO_FORM, TRANSFORMATIONS, STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, soundEvents, instantReplacement, motionProfile, probe, productSourceAdmission, productSourceFiles, run, structureCut, structureSteps };
+module.exports = { BEAT_ROLES, CUE_KINDS, VOICE_LEAD_SEC, narrationFiles, GRAMMARS, HANDOFFS, PRODUCT_PROMO_FORM, TRANSFORMATIONS, STORYBOARD_SCHEMA, RENDER_SCHEMA, checkStoryboard, detectCuts, detectOnsets, evaluateFilmRender, soundEvents, instantReplacement, motionProfile, probe, productSourceAdmission, productSourceFiles, run, structureCut, structureSteps };

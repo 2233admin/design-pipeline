@@ -83,6 +83,7 @@
     "audio-gate.test.cjs",
     "film-catalog-3d.test.cjs",
     "film-score.test.cjs",
+    "film-voiceover.test.cjs",
     "film-motion-rules.test.cjs",
     "film-continuity.test.cjs",
     "film-blender.test.cjs",
