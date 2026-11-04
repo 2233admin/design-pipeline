@@ -66,8 +66,11 @@ npm run package:skill
 Playwright Chromium 与 HyperFrames browser。
 
 `capabilities:check` 审核已有 source-evidence，没有证据会保留 `UNKNOWN`，不会联网刷新能力。
-`sources:check` 校验锁定的来源快照；来源导入需明确选择 revision 和本地 checkout，不能通过重算
-manifest 哈希伪造更新。当前运行时固定 GSAP 3.15.0、HyperFrames 0.8.137、Playwright 1.63.0；
+上游来源跟随最新：`sources.lock.json` 记录每个上游的 revision（npm 运行时为最新发布）；
+`npm run sources:update` 拉取上游 HEAD、用导入脚本重新导入并重算哈希、派生引用和锁文件，升级 PR
+的测试全绿即是审核。`sources:check` 离线校验快照与哈希，`-- --upstream` 列出落后的来源。不要手改
+vendored 字节或哈希；需要重新设计的来源在锁文件里标 `held` 并附后续 issue。运行时固定版本
+（GSAP、HyperFrames、Playwright）也是锁文件里 `npm` 类条目；
 pixelmatch 已升级到 8.0.0，新比较报告记录版本、OKLab/HyAB 算法与实际选项；旧数值与新算法之间
 需重新校准，旧黄金 HTML 和视频不因工具链刷新而重写或重新审批。命令清单以根
 `package.json` 为准；OpenSpec CLI 也由 workspace 固定，通过 `npm exec -- openspec ...` 调用。

@@ -47,7 +47,8 @@ The root `package.json` is the source of truth for maintenance commands:
 | `npm run deps:check` | Report available workspace dependency updates. |
 | `npm run specs:check` | Run strict OpenSpec validation for the repository. |
 | `npm run capabilities:check` | Audit existing source-evidence; missing evidence remains `UNKNOWN`, with no network refresh. |
-| `npm run sources:check` | Verify locked source snapshots and their existing checks. |
+| `npm run sources:check` | Verify that `sources.lock.json` agrees with every derived pin and that each vendored snapshot matches its hashes (offline). `-- --upstream` also lists sources behind upstream as warnings. |
+| `npm run sources:update [-- --only <id>]` | Move every upstream (or one, with its repository and bundle siblings) to upstream HEAD or the latest release: fetch into a temporary directory, re-import, regenerate hashes, derived pins and the lock. Upstream code is never run. |
 | `npm run sources:import:mengto -- --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import a reviewed local MengTo revision. |
 | `npm run sources:import:iart -- --source-root <checkout-directory> --reviewed-at YYYY-MM-DD` | Import reviewed local iArt checkouts. |
 | `npm run sources:import:designmd -- --source <clean-checkout> --reviewed-at YYYY-MM-DD` | Import a reviewed local DESIGN.md revision. |
@@ -60,10 +61,14 @@ The root `package.json` is the source of truth for maintenance commands:
 | `npm run test:art-motion` | Run the focused Art Motion tests with a scoped `fonttools==4.66.1`. |
 | `npm run package:skill` / `npm run install:skill -- --root <skills-root> --target <skill-target>` | Build or locally install the skill. |
 
-Imports require a local checkout at the deliberately selected revision. `sources:check` validates
-already locked snapshots; it does not update them, and recomputing a manifest hash is not a source
-refresh. The owned runtime pins are GSAP 3.15.0, HyperFrames 0.8.137, Playwright 1.63.0 and
-pixelmatch 8.0.0. Comparison v1 reports now identify the installed pixelmatch version, OKLab/HyAB
+Upstream sources track latest. `sources.lock.json` is the single record of each upstream's
+revision (or npm release), commit time and review date; `npm run sources:update` moves them and the
+weekly `Track latest upstream` workflow opens one pull request on `chore/track-latest-upstream` with
+the result of the full QA. Green checks are the review and the owner merges. A source whose upstream
+moved or removed a cited file, or changed a cited license text, fails loudly and stays put until a
+guide, route or importer is fixed; a source that needs a redesign is `held` in the lock with its
+follow-up issue. The `sources:import:*` commands remain for one importer on a local checkout.
+Runtime pins (GSAP, HyperFrames, Playwright, pixelmatch) are lock entries of kind `npm`. Comparison v1 reports now identify the installed pixelmatch version, OKLab/HyAB
 metric and actual options. Scores from v7 require recalibration before comparison with v8. Do not
 regenerate or re-approve existing golden HTML or video as part of a dependency refresh.
 

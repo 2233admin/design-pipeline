@@ -14,7 +14,7 @@ const map = JSON.parse(
 const coreCommands = [
   "shape", "init", "document", "extract", "critique", "audit", "polish", "bolder",
   "quieter", "distill", "harden", "onboard", "animate", "colorize", "typeset", "layout",
-  "delight", "overdrive", "clarify", "adapt", "optimize", "live", "visualize",
+  "delight", "overdrive", "clarify", "adapt", "optimize", "live", "generate",
 ];
 
 test("maps the complete Impeccable product-design command surface", () => {
@@ -32,6 +32,6 @@ test("maps the complete Impeccable product-design command surface", () => {
   assert.ok(map.commands.every((command) => stages.has(command.stage)));
   assert.deepEqual(
     map.supportingCapabilities.map((capability) => capability.id).sort(),
-    ["doctor", "hooks", "native-platform", "pin", "routing"],
+    ["comp-round", "doctor", "hooks", "native-platform", "pin", "routing"],
   );
 });

@@ -12,7 +12,8 @@ const upstream = ["hua", "shu"].join("");
 const pathPattern = new RegExp(`${upstream.slice(0, 3)}[\\s_.-]*${upstream.slice(3)}`, "i");
 const contentPattern = `${upstream.slice(0, 3)}[[:space:]_.-]*${upstream.slice(3)}`;
 const allowedFolder = "skill/vendor/design-direction-library/";
-const allowedFiles = new Set(["THIRD_PARTY_NOTICES.md", "scripts/import-design-direction-library.cjs"]);
+// sources.lock.json records the upstream repository and revision the bundle follows.
+const allowedFiles = new Set(["THIRD_PARTY_NOTICES.md", "scripts/import-design-direction-library.cjs", "sources.lock.json"]);
 
 const isAllowed = (file) => file.startsWith(allowedFolder) || allowedFiles.has(file);
 

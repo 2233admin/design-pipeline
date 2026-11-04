@@ -10,6 +10,7 @@ const test = require("node:test");
 const { canonicalTree, frontmatter } = require("../scripts/git-tree-snapshot.cjs");
 const { gitTreeId } = require("../skill/scripts/mengto-skills-core.cjs");
 const { storedPath } = require("../skill/scripts/upstream-path.cjs");
+const { lockedSource } = require("./helpers/locked-source.cjs");
 const { restoreUpstreamNames, storedTree, upstreamFilesIn } = require("./helpers/upstream-names.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
@@ -35,16 +36,14 @@ function run(command, args, cwd, env = {}) {
   return result;
 }
 
-test("taste-skill preserves the complete reviewed Git blobs, tree and license", () => {
+test("taste-skill preserves the complete locked Git blobs, tree and license", () => {
   assert.equal(manifest.schema, "design-pipeline.taste-skill-source.v1");
   assert.equal(manifest.source.repository, "https://github.com/Leonxlnx/taste-skill");
-  assert.equal(manifest.source.revision, "12af471f627f866411b4bd785b19646d3672784c");
-  assert.equal(manifest.source.gitTree, "db698c9093437ee7daea871f70b48d06a838038e");
+  assert.equal(manifest.source.revision, lockedSource("taste-skill").revision);
   assert.equal(manifest.source.license, "MIT");
   assert.deepEqual(manifest.source.scope, ["**"]);
   assert.equal(manifest.snapshot.root, "upstream");
   const files = upstreamFilesIn(sourceRoot);
-  assert.equal(files.length, 72);
   assert.equal(manifest.snapshot.fileCount, files.length);
   assert.deepEqual(manifest.snapshot.objects.map((object) => object.path).sort(), files);
   assert.equal(new Set(manifest.snapshot.objects.map((object) => object.path)).size, files.length);
@@ -56,10 +55,9 @@ test("taste-skill preserves the complete reviewed Git blobs, tree and license", 
     assert.equal(object.size, content.length, object.path);
     assert.equal(object.oid, crypto.createHash("sha1").update(`blob ${content.length}\0`).update(content).digest("hex"), object.path);
   }
-  assert.equal(bytes, 3093372);
   assert.equal(manifest.snapshot.byteCount, bytes);
   assert.equal(gitTreeId(manifest.snapshot.objects), manifest.source.gitTree);
-  assert.equal(manifest.snapshot.treeSha256, "e12cc2e63faba012ac716039de7cdd26da29cf1b2b48e065eca81aec910fc91e");
+  assert.equal(manifest.snapshot.treeSha256, lockedSource("taste-skill").treeSha256);
   assert.equal(canonicalTree(sourceRoot, files), manifest.snapshot.treeSha256);
   assert.deepEqual(manifest.snapshot.executableFiles, ["install.sh"]);
   assert.deepEqual(manifest.licenses, [{ path: "upstream/LICENSE", license: "MIT", copyright: "Copyright (c) 2026 Leonxlnx" }]);
@@ -122,7 +120,7 @@ test("taste-skill importer reads a folded description to the end of its block an
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
 
-test("taste-skill import rejects unreviewed, dirty, incomplete and invalid-date sources without replacing the snapshot", () => {
+test("taste-skill import rejects dirty, incomplete and invalid-date sources without replacing the snapshot", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-taste-import-"));
   try {
     const scripts = path.join(root, "scripts");
@@ -155,7 +153,6 @@ test("taste-skill import rejects unreviewed, dirty, incomplete and invalid-date 
       assert.equal(storedTree(destination), before);
       assert.deepEqual(fs.readdirSync(path.dirname(destination)), ["taste-skill"]);
     };
-    rejects(/source revision must be the reviewed/);
     fs.appendFileSync(path.join(source, "README.md"), "dirty\n");
     rejects(/tracked working-tree changes/);
     fs.writeFileSync(path.join(source, "README.md"), read("README.md"));
@@ -274,18 +271,21 @@ test("the existing source-check test fails for changed, missing or added Taste b
       "skill/scripts/upstream-path.cjs",
       "skill/scripts/vendor-cache.cjs",
       "tests/helpers/upstream-names.cjs",
+      "tests/helpers/locked-source.cjs",
+      "scripts/sources-lock.cjs",
+      "sources.lock.json",
       "skill/references/package-resources.json",
     ]) copyFile(relative);
     fs.cpSync(vendorRoot, path.join(root, "skill/vendor/taste-skill"), { recursive: true });
     // A separate source-check run must not inherit Node's recursive test-runner context.
-    const check = () => run(process.execPath, ["--test", "--test-reporter", "tap", "--test-name-pattern", "^taste-skill preserves the complete reviewed", path.join(root, "tests/taste-skill.test.cjs")], root, { NODE_TEST_CONTEXT: undefined });
+    const check = () => run(process.execPath, ["--test", "--test-reporter", "tap", "--test-name-pattern", "^taste-skill preserves the complete locked", path.join(root, "tests/taste-skill.test.cjs")], root, { NODE_TEST_CONTEXT: undefined });
     const baseline = check();
     assert.equal(baseline.status, 0, baseline.stderr || baseline.stdout);
     assert.match(baseline.stdout, /^# pass 1$/m);
     const rejects = (pattern) => {
       const result = check();
       assert.equal(result.status, 1, result.stderr || result.stdout);
-      assert.match(result.stdout, /not ok.*taste-skill preserves the complete reviewed/);
+      assert.match(result.stdout, /not ok.*taste-skill preserves the complete locked/);
       assert.match(result.stdout, pattern);
     };
     const copiedSource = path.join(root, "skill/vendor/taste-skill/upstream");
@@ -299,9 +299,9 @@ test("the existing source-check test fails for changed, missing or added Taste b
     const missing = path.join(copiedSource, "skills/taste-skill/UPSTREAM-SKILL.md");
     const missingBytes = fs.readFileSync(missing);
     fs.rmSync(missing);
-    rejects(/71 !== 72/);
+    rejects(/72 !== 71|71 !== 72/);
     fs.writeFileSync(missing, missingBytes);
     fs.writeFileSync(path.join(copiedSource, "unreviewed.txt"), "added blob\n");
-    rejects(/73 !== 72/);
+    rejects(/72 !== 73|73 !== 72/);
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });

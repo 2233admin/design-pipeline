@@ -2,6 +2,7 @@
   "schema": "design-pipeline.test-manifest.v1",
   "tests": [
     "gepa-source.test.cjs",
+    "sources-lock.test.cjs",
     "gepa-runtime.test.cjs",
     "reference-analysis-entry.test.cjs",
     "reference-video.test.cjs",

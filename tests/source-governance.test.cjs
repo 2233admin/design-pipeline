@@ -27,8 +27,8 @@ const sourceRefs = {
   },
   "skill/references/animation-opportunity-and-review.md": {
     sourceId: "emilkowalski-animation-review",
-    revision: "d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
-    contentHash: "fff4cfc7619acb1467b0e3fafac6a4075fead4f7e90711a772af2c0280090139",
+    revision: "f1090bec277140d02ed202440185ad9d02ac1490",
+    contentHash: "936fccfc37aa3a13bd49e4a5b56e937bfbc92013edfcc89fa8cb61294e1adf1c",
     license: "MIT",
     reviewedAt: "2026-08-26T00:00:00.000Z",
     sourceFiles: [
@@ -40,8 +40,8 @@ const sourceRefs = {
   },
   "skill/references/react-doctor.md": {
     sourceId: "millionco-react-doctor",
-    revision: "e5824abe9a8ccaff326fdaecc11b21ce35ea7750",
-    contentHash: "8bfd7427d966a3831b1e1e84c44b6237279b5e0530a286e84351c1941129e49b",
+    revision: "9791c32f61fb1477a4f8dd596ff80184ad26b2e3",
+    contentHash: "9185b6f241eece1f0f9bb4c6264f50ad8fa081d379fe788c51593a2d343ffa24",
     license: "LicenseRef-Million-Modified-MIT",
     reviewedAt: "2026-10-13T00:00:00.000Z",
     sourceFiles: ["skills/react-doctor/SKILL.md", "skills/react-doctor/references/explain.md"],
@@ -112,7 +112,9 @@ test("reference files carry one fixed source evidence shape", () => {
     assert.equal(metadata.kind, "github");
     assert.equal(metadata.reviewedRevision, expected.revision);
     assert.equal(metadata.reviewedContentHash, expected.contentHash);
-    assert.equal(metadata.reviewedAt, expected.reviewedAt);
+    // sources:update moves reviewedAt whenever it confirms the locked revision is still upstream HEAD.
+    assert.match(metadata.reviewedAt, /^\d{4}-\d{2}-\d{2}T00:00:00\.000Z$/);
+    assert.ok(metadata.reviewedAt >= expected.reviewedAt, relativePath);
     assert.equal(metadata.license, expected.license);
     assert.match(metadata.contentHashScope, /sourceFiles|single-source/i);
     if (expected.sourceFiles) {
@@ -142,7 +144,8 @@ test("tracked companion sources expose the same baseline metadata", () => {
     assert.ok(profile, `missing profile ${profileId}`);
     assert.equal(profile.sourceMeta.id, sourceId);
     assert.match(profile.sourceMeta.reviewedRevision, /^[0-9a-f]{40}$/);
-    assert.match(profile.sourceMeta.reviewedAt, /^2026-08-26T00:00:00\.000Z$/);
+    assert.match(profile.sourceMeta.reviewedAt, /^\d{4}-\d{2}-\d{2}T00:00:00\.000Z$/);
+    assert.ok(profile.sourceMeta.reviewedAt >= "2026-08-26T00:00:00.000Z", profileId);
     assert.ok(profile.sourceMeta.license);
     const expected = Object.values(sourceRefs).find(
       (reference) => reference.sourceId === sourceId,
@@ -253,9 +256,9 @@ const referenceSkills = {
   },
   "skill/references/reference-skill-onetake.md": {
     sourceId: "onetake-reference-skill",
-    url: "https://github.com/feitangyuan/onetake/tree/36072d36e777a7de4604eacaa110342f80ae76eb",
-    revision: "36072d36e777a7de4604eacaa110342f80ae76eb",
-    contentHash: "f5d0914ed654dc4dba1d4024394225ed37b6bf17d53d555e675ecdc531a64a18",
+    url: "https://github.com/feitangyuan/onetake/tree/013a61ac8d98883c73733f59c06e49e9ba444f14",
+    revision: "013a61ac8d98883c73733f59c06e49e9ba444f14",
+    contentHash: "b1748e94eb8e09a13a247345d8d9eee9b244469e7557d65e5d7dec8984ad2d5d",
     license: "PolyForm-Noncommercial-1.0.0",
   },
 };
