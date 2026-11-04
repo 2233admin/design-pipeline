@@ -87,6 +87,62 @@ test("measured phrase times match tone bursts placed at known times, also under 
   }
 });
 
+// Mix a bed under a take: a pink-noise or sine source at the given dB under the take's peak (-6 dBFS).
+function underBed(file, source, dbUnderPeak) {
+  const mixed = `${file}.bed.wav`;
+  const graph = `[1]volume=${-6 - dbUnderPeak}dB[bed];[0][bed]amix=inputs=2:duration=first:normalize=0`;
+  const result = spawnSync("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-i", file, "-f", "lavfi", "-i", source, "-filter_complex", graph, "-ac", "1", mixed], { encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  fs.renameSync(mixed, file);
+}
+
+test("a take with a music bed or noise in its pauses is refused as not dry, with the dry-stem fix", { skip: !hasFfmpeg && "ffmpeg not installed" }, () => {
+  const dir = tmp();
+  const spans = [[0.5, 1.8], [2.4, 4.0], [4.6, 7.4]];
+  const refused = (file) => {
+    const error = assert.throws(() => alignNarration(measureSilences(file, tools)), (thrown) => thrown.code === "NARRATION_NOT_DRY");
+    return error;
+  };
+  // Pink noise 30 dB under the voice (unit-amplitude pink noise sits about 10 dB under full scale).
+  const pink = path.join(dir, "pink-30.wav");
+  tones(pink, spans, 8);
+  underBed(pink, "anoisesrc=r=24000:a=1:c=pink:seed=3", 30 - 10);
+  refused(pink);
+  assert.throws(() => alignNarration(measureSilences(pink, tools)), /dry narration stem: the voice alone, before music/);
+  // A sustained sine pad 20 dB under the voice fills every pause; even a script cannot place the breaks.
+  const pad = path.join(dir, "pad-20.wav");
+  tones(pad, spans, 8);
+  underBed(pad, "sine=f=110:r=24000", 20 - 3);
+  assert.throws(() => alignNarration(measureSilences(pad, tools), { lines: ["a", "b", "c"] }), (thrown) => thrown.code === "NARRATION_NOT_DRY" && /dry narration stem/.test(thrown.message));
+  // The same take dry, and with the bed 50 dB down, still splits into its three phrases.
+  const dry = path.join(dir, "dry.wav");
+  tones(dry, spans, 8);
+  assert.equal(alignNarration(measureSilences(dry, tools)).phrases.length, 3);
+  const faint = path.join(dir, "pink-50.wav");
+  tones(faint, spans, 8);
+  underBed(faint, "anoisesrc=r=24000:a=1:c=pink:seed=3", 50 - 10);
+  assert.equal(alignNarration(measureSilences(faint, tools)).phrases.length, 3);
+  // A long take with no phrase pause is one phrase only when the script says so.
+  const unbroken = { durationSec: 6, peakDb: -3, noiseDb: -38, floorDb: -90, silences: [[0, 0.2], [2, 2.06], [5.8, 6]] };
+  assert.throws(() => alignNarration(unbroken), (thrown) => thrown.code === "NARRATION_NOT_DRY" && /pass --script with that single line/.test(thrown.message));
+  assert.equal(alignNarration(unbroken, { lines: ["one long line"] }).phrases.length, 1);
+});
+
+test("a script line break that falls on a word gap is refused: the speaker ran the lines together", () => {
+  const silences = [[0, 0.2], [1.0, 1.06], [2.0, 2.055], [3.0, 3.4]];
+  assert.throws(() => alignNarration({ durationSec: 3.4, silences }, { lines: ["one", "two", "three"] }), (thrown) => thrown.code === "PHRASES_UNMATCHED" && /between script lines 1 and 2 would be a 0\.06s pause .* did not pause between those lines/.test(thrown.message));
+  // --min-pause below 0.15 s lowers the bar.
+  assert.equal(alignNarration({ durationSec: 3.4, silences }, { lines: ["one", "two", "three"], minPauseSec: 0.05 }).phrases.length, 3);
+});
+
+test("ffmpeg failures from film voiceover are reported as film voiceover", { skip: !hasFfmpeg && "ffmpeg not installed" }, () => {
+  const dir = tmp();
+  const junk = path.join(dir, "junk.wav");
+  fs.writeFileSync(junk, "not audio");
+  assert.throws(() => measureSilences(junk, tools), (thrown) => /^film voiceover: ffmpeg exited/.test(thrown.message) && thrown.code === "TOOL_FAILED");
+  assert.throws(() => measureSilences(junk, { ffmpeg: path.join(dir, "no-ffmpeg"), ffprobe: "ffprobe" }), (thrown) => /^film voiceover: .*unavailable/.test(thrown.message) && thrown.code === "TOOL_MISSING");
+});
+
 test("bound beats must land on their phrase", () => {
   const film = board();
   film.sound.cues.push({ id: "vo-01", atSec: 1.7, endSec: 3.4, kind: "voiceover", note: "Drag a node to connect it." });
@@ -112,6 +168,17 @@ test("bound beats must land on their phrase", () => {
   sliver.sound.cues.find((cue) => cue.id === "vo-02").endSec = 10.5;
   const sliverResult = checkStoryboard(sliver);
   assert.match(sliverResult.findings.find((f) => f.code === "voiceover-off-phrase").message, /shares only 0\.2s/);
+  // Exactly at the 0.1 s lead tolerance, despite 0.136 - 0.036 being 0.10000000000000002 in floats.
+  const edge = structuredClone(film);
+  edge.sound.cues.push({ id: "vo-03", atSec: 0.036, endSec: 0.9, kind: "voiceover", note: "edge" });
+  edge.beats[0].startSec = 0;
+  const edgeBoard = structuredClone(edge);
+  edgeBoard.beats[0].endSec = 0.136; edgeBoard.beats[1].startSec = 0.136;
+  edgeBoard.beats[1].soundCues.push("vo-03");
+  edgeBoard.beats[1].soundCues = edgeBoard.beats[1].soundCues.filter((id) => id !== "vo-01");
+  assert.deepEqual(codes(checkStoryboard(edgeBoard)).filter((code) => code === "voiceover-off-phrase"), []);
+  edgeBoard.beats[0].endSec = 0.137; edgeBoard.beats[1].startSec = 0.137;
+  assert.deepEqual(codes(checkStoryboard(edgeBoard)).filter((code) => code === "voiceover-off-phrase"), ["voiceover-off-phrase"]);
   for (const code of ["voiceover-off-phrase", "voiceover-unbound", "voiceover-stale", "voiceover-narration-missing"]) assert.ok(HINTS.storyboard[code], code);
 });
 

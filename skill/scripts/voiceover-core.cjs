@@ -26,19 +26,32 @@ const NOISE_FLOOR_RANGE_DB = [-70, -25];
 const SILENT_PEAK_DB = -60;
 // With a script, a chosen boundary this close in length to the longest rejected pause is ambiguous.
 const AMBIGUOUS_RATIO = 1.5;
+// A line break shorter than this (or than --min-pause, if smaller) is a word gap: the speaker ran the
+// lines together. flite word gaps measured 0.05-0.07 s; its sentence pauses 0.14-0.19 s.
+const MIN_LINE_BREAK_SEC = 0.15;
+// Dry-take checks. The floor is the 5th percentile of 50 ms RMS levels (the quietest moments, i.e. the
+// pauses). Noise peaks ride about 10 dB over a noise floor's RMS, so a floor less than 10 dB under the
+// pause threshold makes pauses flicker over it: a pink bed 30 dB under the voice had its floor 0.7 dB
+// over the threshold and merged two phrases; 36 dB under, 4.8 dB below it, split correctly.
+const FLOOR_PERCENTILE = 0.05;
+const FLOOR_WINDOW_SEC = 0.05;
+const FLOOR_MARGIN_DB = 10;
+// Read narration pauses within a few seconds; a longer take with no phrase break is a mix or a bed.
+const DRY_CHECK_MIN_SEC = 4;
+const DRY_FIX = "Fix: pass the dry narration stem: the voice alone, before music, ambience and sound effects are mixed in. Phrase times are read from the quiet between phrases, and a music bed or room noise fills that quiet, so phrases merge or vanish without any error. Export the voice track from the mix, or record it again in a quiet room";
 
 const round = (value) => Number(value.toFixed(3));
 
 function measureSilences(file, tools) {
-  const peakOut = run(tools.ffmpeg, ["-hide_banner", "-nostats", "-i", file, "-vn", "-af", "volumedetect", "-f", "null", "-"]).stderr;
+  const peakOut = run(tools.ffmpeg, ["-hide_banner", "-nostats", "-i", file, "-vn", "-af", "volumedetect", "-f", "null", "-"], { scope: SCOPE }).stderr;
   const peakMatch = /max_volume:\s*(-?[0-9.]+|-inf) dB/.exec(String(peakOut));
   if (!peakMatch || peakMatch[1] === "-inf" || Number(peakMatch[1]) < SILENT_PEAK_DB) fail(SCOPE, `${path.basename(file)} has no audible signal (peak under ${SILENT_PEAK_DB} dBFS). Fix: pass the narration take itself (wav or mp3 with the spoken lines)`, { code: "NARRATION_SILENT" });
   const peakDb = Number(peakMatch[1]);
   const noiseDb = Math.min(NOISE_FLOOR_RANGE_DB[1], Math.max(NOISE_FLOOR_RANGE_DB[0], peakDb - PEAK_RELATIVE_DB));
-  const durOut = run(tools.ffprobe, ["-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", file]).stdout;
+  const durOut = run(tools.ffprobe, ["-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", file], { scope: SCOPE }).stdout;
   const durationSec = Number(String(durOut).trim());
   if (!(durationSec > 0)) fail(SCOPE, `${path.basename(file)} reports no duration. Fix: re-export the narration as wav`, { code: "NARRATION_UNREADABLE" });
-  const out = String(run(tools.ffmpeg, ["-hide_banner", "-nostats", "-i", file, "-vn", "-af", `silencedetect=n=${noiseDb.toFixed(1)}dB:d=${WORD_GAP_SEC}`, "-f", "null", "-"]).stderr);
+  const out = String(run(tools.ffmpeg, ["-hide_banner", "-nostats", "-i", file, "-vn", "-af", `silencedetect=n=${noiseDb.toFixed(1)}dB:d=${WORD_GAP_SEC}`, "-f", "null", "-"], { scope: SCOPE }).stderr);
   const silences = [];
   let open = null;
   for (const match of out.matchAll(/silence_(start|end):\s*(-?[0-9.]+)/g)) {
@@ -47,7 +60,23 @@ function measureSilences(file, tools) {
     else if (open !== null) { silences.push([open, Math.min(at, durationSec)]); open = null; }
   }
   if (open !== null) silences.push([open, durationSec]);
-  return { durationSec, peakDb, noiseDb, silences };
+  return { durationSec, peakDb, noiseDb, floorDb: noiseFloor(file, tools), silences };
+}
+
+// 5th percentile of 50 ms RMS levels in dBFS on an 8 kHz mono decode: the level of the take's pauses.
+function noiseFloor(file, tools) {
+  const rate = 8000;
+  const { stdout } = run(tools.ffmpeg, ["-hide_banner", "-loglevel", "error", "-i", file, "-vn", "-ac", "1", "-ar", String(rate), "-f", "s16le", "-"], { binary: true, scope: SCOPE });
+  const size = Math.round(FLOOR_WINDOW_SEC * rate);
+  const levels = [];
+  for (let start = 0; start + size <= stdout.length / 2; start += size) {
+    let sum = 0;
+    for (let i = 0; i < size; i += 1) { const sample = stdout.readInt16LE((start + i) * 2) / 32768; sum += sample * sample; }
+    levels.push(Math.max(-120, 10 * Math.log10(sum / size || 1e-12)));
+  }
+  if (!levels.length) return -120;
+  levels.sort((a, b) => a - b);
+  return Number(levels[Math.floor(levels.length * FLOOR_PERCENTILE)].toFixed(1));
 }
 
 // Speech segments are the complement of the silences; clicks shorter than MIN_SPEECH_SEC fold into
@@ -75,6 +104,12 @@ function groupPhrases(segments, { minPauseSec, lines }) {
     }
     const ranked = [...gaps].sort((a, b) => b.lengthSec - a.lengthSec || a.startSec - b.startSec);
     const chosen = ranked.slice(0, lines.length - 1);
+    const shortest = Math.min(MIN_LINE_BREAK_SEC, minPauseSec);
+    const runOn = [...chosen].sort((a, b) => a.startSec - b.startSec).findIndex((gap) => gap.lengthSec < shortest);
+    if (runOn >= 0) {
+      const gap = [...chosen].sort((a, b) => a.startSec - b.startSec)[runOn];
+      fail(SCOPE, `the break between script lines ${runOn + 1} and ${runOn + 2} would be a ${round(gap.lengthSec)}s pause at ${round(gap.startSec)}s, shorter than ${shortest}s: that is a gap between words, so the speaker did not pause between those lines. Fix: record a short pause (about 0.3 s) between those lines, or join them into one script line`, { code: "PHRASES_UNMATCHED" });
+    }
     split = new Set(chosen.map((gap) => gap.index));
     const weakest = chosen.length ? Math.min(...chosen.map((gap) => gap.lengthSec)) : null;
     const strongestRejected = ranked[lines.length - 1]?.lengthSec ?? null;
@@ -102,9 +137,16 @@ function readScript(file) {
 
 // Pure alignment: measured silences in, phrase list out (exported for tests and reuse).
 function alignNarration(measure, { startSec = 0, minPauseSec = DEFAULT_MIN_PAUSE_SEC, lines = null } = {}) {
+  if (!measure.silences.length) fail(SCOPE, `the take has no pause at all (nothing quieter than ${measure.noiseDb ?? "the pause threshold"} dBFS for ${WORD_GAP_SEC}s). ${DRY_FIX}`, { code: "NARRATION_NOT_DRY" });
+  if (measure.floorDb !== undefined && measure.durationSec > DRY_CHECK_MIN_SEC && measure.floorDb > measure.noiseDb - FLOOR_MARGIN_DB) {
+    fail(SCOPE, `the take's quietest moments sit at ${measure.floorDb} dBFS, only ${round(measure.peakDb - measure.floorDb)} dB under its peak and less than ${FLOOR_MARGIN_DB} dB under the ${measure.noiseDb.toFixed(1)} dBFS pause threshold, so pauses cannot be told from what fills them. ${DRY_FIX}`, { code: "NARRATION_NOT_DRY" });
+  }
   const segments = speechSegments(measure.durationSec, measure.silences);
   if (!segments.length) fail(SCOPE, "no speech found above the noise floor. Fix: pass the narration take itself, not a silent or music-only file", { code: "NARRATION_SILENT" });
   const { phrases, ambiguity } = groupPhrases(segments, { minPauseSec, lines });
+  if (!lines && phrases.length === 1 && measure.durationSec > DRY_CHECK_MIN_SEC) {
+    fail(SCOPE, `the ${round(measure.durationSec)}s take has no pause of ${minPauseSec}s or more, so it measures as one phrase. ${DRY_FIX}. If it really is one unbroken line, pass --script with that single line`, { code: "NARRATION_NOT_DRY" });
+  }
   const result = phrases.map((parts, index) => ({
     id: `${CUE_PREFIX}${String(index + 1).padStart(2, "0")}`,
     atSec: round(startSec + parts[0][0]),
@@ -164,7 +206,7 @@ function voiceoverFilm(projectDir, options = {}) {
   return {
     status: findings.some((finding) => finding.severity !== "warn") ? "failed" : "passed",
     written: Boolean(options.write) && !findings.some((finding) => finding.code === "voiceover-binding-broken"),
-    narration: { ...narration, durationSec: round(measure.durationSec), peakDb: measure.peakDb, noiseFloorDb: Number(measure.noiseDb.toFixed(1)) },
+    narration: { ...narration, durationSec: round(measure.durationSec), peakDb: measure.peakDb, pauseThresholdDb: Number(measure.noiseDb.toFixed(1)), floorDb: measure.floorDb },
     phrases,
     cues,
     findings,
@@ -172,7 +214,7 @@ function voiceoverFilm(projectDir, options = {}) {
       ? "Bind each beat that shows what a phrase says to that phrase: add its cue id to the beat's soundCues and start the beat on the phrase, then run verify film-storyboard."
       : "Rerun with --write to record these cues and the narration hash in storyboard.json.",
     creativeAcceptance: "not-assessed",
-    limits: "Phrase times are measured from pauses (silencedetect against the take's own peak); word boundaries are the pauses inside a phrase, not every word. No speech recognition is involved.",
+    limits: "Phrase times are measured from pauses (silencedetect against the take's own peak); word boundaries are the pauses inside a phrase, not every word. No speech recognition is involved. The take must be the dry narration stem (voice only, before music and effects): a bed or noise fills the pauses, and a take whose quiet is within 10 dB of the pause threshold, or that has no pause, is refused as NARRATION_NOT_DRY.",
   };
 }
 

@@ -186,7 +186,12 @@ card. The user picks one (`decide --stage concept --choice 1|2|3`).
   It measures the phrases from the take's pauses with ffmpeg `silencedetect` (no speech model; with
   `--script`, one spoken line per line, the longest pauses become the line breaks) and writes `vo-NN`
   `voiceover` cues with `atSec`/`endSec` plus `sound.narration` (path, sha256). Pauses inside a
-  phrase are reported as candidate word boundaries, not every word. Put a phrase's cue id in the
+  phrase are reported as candidate word boundaries, not every word. Pass the dry narration stem
+  (the voice alone, before music, ambience and effects are mixed): phrases are read from the quiet
+  between them, which a bed fills. A take with no pause, a take over 4 s that measures as one phrase
+  (without a one-line `--script`), or one whose quietest moments are within 10 dB of the pause
+  threshold is refused as `NARRATION_NOT_DRY`; a script line break shorter than 0.15 s (a word gap)
+  is refused as `PHRASES_UNMATCHED`. Put a phrase's cue id in the
   `soundCues` of the beat that shows what it says and start the beat on it: the gate fails
   `voiceover-off-phrase` when the words start more than 0.1 s before the beat or after it ends, or the
   beat covers less than half of the shorter of the two spans, and `voiceover-stale` when the take

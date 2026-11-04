@@ -31,6 +31,8 @@ const SPAN_CUE_KINDS = new Set(["voiceover", "silence"]);
 // A picture may lead its phrase anywhere inside the beat; the voice may lead the picture by at most
 // this much (about three frames at 30 fps) before the beat reads as late.
 const VOICE_LEAD_SEC = 0.1;
+// Float slack for comparisons at a tolerance edge: 0.136 - 0.036 is 0.10000000000000002.
+const TIME_EPSILON_SEC = 1e-6;
 const PLACEHOLDER = /^(tbd|todo|n\/?a|none|-|\.\.\.|placeholder)$/i;
 const FRAME_TOLERANCE_SEC = 0.05;
 const MAX_HOLD_SHARE = 0.25;
@@ -374,14 +376,14 @@ function voiceoverChecks(board, add, options) {
       bound += 1;
       const span = phrase.endSec === undefined ? null : [phrase.atSec, phrase.endSec];
       const where = span ? `${phrase.atSec}-${phrase.endSec}s` : `${phrase.atSec}s`;
-      if (phrase.atSec < beat.startSec - VOICE_LEAD_SEC || phrase.atSec >= beat.endSec) {
+      if (beat.startSec - phrase.atSec > VOICE_LEAD_SEC + TIME_EPSILON_SEC || phrase.atSec >= beat.endSec) {
         add("voiceover-off-phrase", `beat ${beat.id} (${beat.startSec}-${beat.endSec}s) binds phrase ${id} (${where}), which starts ${phrase.atSec < beat.startSec ? `${Number((beat.startSec - phrase.atSec).toFixed(3))}s before the beat` : "after the beat ends"}`, beat.id);
         continue;
       }
       if (span) {
         const overlap = Math.min(beat.endSec, span[1]) - Math.max(beat.startSec, span[0]);
         const shorter = Math.min(beat.endSec - beat.startSec, span[1] - span[0]);
-        if (overlap < 0.5 * shorter) add("voiceover-off-phrase", `beat ${beat.id} (${beat.startSec}-${beat.endSec}s) shares only ${Number(Math.max(0, overlap).toFixed(3))}s with phrase ${id} (${where})`, beat.id);
+        if (overlap < 0.5 * shorter - TIME_EPSILON_SEC) add("voiceover-off-phrase", `beat ${beat.id} (${beat.startSec}-${beat.endSec}s) shares only ${Number(Math.max(0, overlap).toFixed(3))}s with phrase ${id} (${where})`, beat.id);
       }
     }
   }
@@ -530,11 +532,13 @@ function checkStoryboard(board, options = {}) {
 
 function run(bin, args, options = {}) {
   const result = spawnSync(bin, args, { encoding: options.binary ? "buffer" : "utf8", maxBuffer: 1 << 28, windowsHide: true });
-  if (result.error) fail("film render", `${bin} unavailable: ${result.error.message}. Fix: run \`${installCommand("ffmpeg")}\` (it installs ffmpeg and ffprobe) and keep both on PATH`, { code: "TOOL_MISSING" });
+  // options.scope names the command that ran the tool (default: the render gate).
+  const scope = options.scope || "film render";
+  if (result.error) fail(scope, `${bin} unavailable: ${result.error.message}. Fix: run \`${installCommand("ffmpeg")}\` (it installs ffmpeg and ffprobe) and keep both on PATH`, { code: "TOOL_MISSING" });
   if (result.status !== 0) {
     const stderr = String(result.stderr || "").trim();
     const diagnostic = stderr.length > 6144 ? `${stderr.slice(0, 4096)}\n[diagnostic truncated]\n${stderr.slice(-2048)}` : stderr;
-    fail("film render", `${bin} exited ${result.status}: ${diagnostic}`, { code: "TOOL_FAILED", stderrTruncated: stderr.length > 6144 });
+    fail(scope, `${bin} exited ${result.status}: ${diagnostic}`, { code: "TOOL_FAILED", stderrTruncated: stderr.length > 6144 });
   }
   return result;
 }

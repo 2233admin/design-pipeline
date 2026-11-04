@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: narration phrase cues
-`film voiceover` SHALL measure a narration take's phrases with ffmpeg silencedetect at a threshold relative to the take's peak, without a speech model. Pauses of at least `--min-pause` end phrases, or with a script of N lines the N-1 longest pauses. With `--write` it SHALL record `vo-NN` voiceover cues with `endSec` and the take's path and SHA-256 in `sound.narration`.
+`film voiceover` SHALL measure a narration take's phrases with ffmpeg silencedetect at a threshold relative to the take's peak, without a speech model. Pauses of at least `--min-pause` end phrases, or with a script of N lines the N-1 longest pauses. It SHALL refuse a take that is not dry. With `--write` it SHALL record `vo-NN` voiceover cues with `endSec` and the take's SHA-256 in `sound.narration`.
 
 #### Scenario: Take with sentence pauses
 - **WHEN** a take has three spoken stretches separated by 0.5 s pauses and a 70 ms pause inside the first
@@ -18,6 +18,14 @@
 #### Scenario: Take outside the project or silent
 - **WHEN** the take is outside the project root or its peak is under -60 dBFS
 - **THEN** the command SHALL fail with a contract error naming the fix and write nothing
+
+#### Scenario: Take mixed with a bed
+- **WHEN** the take has no pause, a take over 4 s measures as one phrase without a one-line script, or its quietest 5% of 50 ms windows are within 10 dB of the pause threshold (a pink bed 30 dB under the voice, a sine pad)
+- **THEN** the command SHALL fail with `NARRATION_NOT_DRY` and a fix asking for the dry narration stem
+
+#### Scenario: Script break on a word gap
+- **WHEN** a script line break would fall on a pause shorter than 0.15 s (or `--min-pause`, if smaller)
+- **THEN** the command SHALL fail with `PHRASES_UNMATCHED` saying the speaker did not pause between those lines
 
 #### Scenario: Re-measure drops a bound phrase
 - **WHEN** a re-measured take no longer has a cue id that a beat binds

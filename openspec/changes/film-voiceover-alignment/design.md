@@ -13,10 +13,22 @@ copied.
    and a take with a pink-noise floor about 45 dB down split alike (tested). A peak under -60 dBFS is
    `NARRATION_SILENT`. Minimum pause 0.05 s: the word gaps flite produces measured 0.05-0.07 s.
    Speech shorter than 0.06 s between pauses (a click, a breath) folds into the silence.
+1a. **Dry takes only (`NARRATION_NOT_DRY`).** A bed fills the pauses the method reads: in review, a
+   pink bed 30 dB under the voice merged two phrases silently, and a -20 dB bed or a sine pad left no
+   pause. The take is refused when it has no pause; when it is over 4 s and measures as one phrase
+   without a one-line script; or when its floor (5th percentile of 50 ms RMS levels on an 8 kHz
+   decode) is less than 10 dB under the pause threshold. 10 dB is the headroom noise peaks need over a
+   noise floor's RMS; it is tied to the pause threshold rather than a fixed distance from the peak
+   (25 dB, as first proposed, does not catch the -30 dB bed: its floor sat 44 dB under the peak). On
+   the review fixtures, beds 30 dB or less under the voice are refused and 36 dB or more pass with the
+   right phrase count; a bed 26 dB under that happened to split correctly is also refused (conservative).
+   The fix asks for the dry narration stem and says why.
 2. **Phrases from pauses, not a model.** Default: every pause of at least 0.25 s ends a phrase (read
    narration pauses 0.3 s or more between sentences). With `--script` (one spoken line per line) the
    N-1 longest pauses end phrases, ties to the earlier pause, and each phrase gets its line as the
-   cue note; fewer pauses than lines is `PHRASES_UNMATCHED` with a re-record/join fix. When the
+   cue note; fewer pauses than lines is `PHRASES_UNMATCHED` with a re-record/join fix, and so is a
+   chosen break shorter than 0.15 s (or `--min-pause`, if smaller): it is a word gap, the speaker did
+   not pause between those lines. When the
    weakest chosen break is under 1.5x the longest pause kept inside a line, a
    `voiceover-boundary-ambiguous` warning names both lengths. Flite sentence pauses are only
    0.14-0.19 s, which is why the script path exists rather than lowering the default.
@@ -35,13 +47,15 @@ copied.
    fails `voiceover-stale` / `voiceover-narration-missing`. The gate never runs ffmpeg itself.
 6. **"Lands on its phrase".** The picture may lead the words anywhere inside the beat; the voice may
    lead the picture by at most 0.1 s (`VOICE_LEAD_SEC`, three frames at 30 fps, the render sync
-   tolerance). A bound phrase starting earlier than that, or at/after the beat's end, fails. When the
+   tolerance), compared with a 1e-6 s epsilon so 0.136 - 0.036 counts as 0.1. A bound phrase starting earlier than that, or at/after the beat's end, fails. When the
    phrase has `endSec`, beat and phrase must share at least half of the shorter span, so a beat that
    only clips the first 0.2 s of a 1.9 s phrase fails. `voiceover-unbound` (no beat binds any phrase
    of a narrated film) is a review warning, like `sound-unbound`.
 7. **Placement offset.** `--start` is the film time where the take begins; cue times are film times.
    A phrase ending after `durationSec` is `voiceover-past-end` in the command result and
    `cue-outside-film` in the gate.
+8. **Tool errors name the command.** `run` takes a scope; ffmpeg failures inside `film voiceover`
+   read `film voiceover: ...`, not `film render`.
 
 ## File ownership
 
