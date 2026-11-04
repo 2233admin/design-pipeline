@@ -78,6 +78,47 @@ own cmap could show. This change lets the skill measure fonts itself.
    - M PLUS Rounded 1c has no licence file in its google/fonts directory at `bbda725`. It is kept, with a
      `FONT_LICENSE_TEXT_MISSING` warning and a fix to read the upstream licence.
 
+## Review fixes (PR #290)
+
+9. **Strict ranges.** Every 206 response must have a `Content-Range` that starts at the requested offset and
+   ends at the requested end, and a body of exactly that length. A truncated, shifted, over-long or headerless
+   answer is an error. Before this fix, the reviewer's repro showed such answers being measured as a smaller
+   font without any error.
+10. **Corrupt input.** These cases now raise `FONT_UNREADABLE` with a fix:
+    - out-of-bounds table reads;
+    - a cmap format-4 glyph-array offset past the table (previously read as glyph 0);
+    - a truncated format 0 subtable;
+    - format 12/13 groups outside Unicode;
+    - a TTC face count larger than the file;
+    - broken zlib (WOFF).
+    `fonts query --path` reports a bad file in `localProblems` and still answers with the remaining files.
+11. **Cache merge and staleness.**
+    - `fonts refresh --source <id>` merges into the existing output, or into the packaged catalog when no
+      output exists. Only that source's families, revision and problems are replaced, and cmaps that nothing
+      references any more are dropped.
+    - Each catalog revision records `pinned`, the registry pin in force at refresh time.
+    - The user cache is skipped, and `catalog.skippedCache` gives the reason and a fix, when it lacks a source
+      the package has or was refreshed under a different pin than the package's. A deliberate
+      `--revision head` refresh stays in use until the package's pin moves.
+    - A `--source lxgw-wenkai` merge into the full catalog reproduces identical bytes.
+12. **Problems on rows.** Each query row carries its family's catalog problems. M PLUS Rounded 1c, for
+    example, carries `FONT_LICENSE_TEXT_MISSING`.
+13. **Licence text is verified.** The declared id must match the text: OFL needs the "SIL OPEN FONT LICENSE
+    Version 1.1" header, Apache 2.0 "Apache License, Version 2.0", and UFL its title. A mismatch is the
+    blocking problem `FONT_LICENSE_MISMATCH`. All 168 licence texts verify.
+    - LXGW WenKai's OFL.txt also records its Reserved Font Names (霞鹜, 落霞孤鹜, LXGW and others) and its
+      `[ADDITIONAL PERMISSION]`. The permission allows the names on unmodified recompiles and on web-only
+      subsets or conversions, but not on installable redistributions.
+14. **Smaller fixes.**
+    - `--limit` must be a positive integer up to 1000 (exit 1).
+    - `contrast.measure` now says that variable fonts are measured at their heaviest `wght` instance.
+    - The shipped CJK guide says the fangsong source is release-only and recorded as blocked when unreachable.
+      It no longer mentions this environment.
+15. **User-supplied font licences are not duplicated here.** User-supplied fonts are registered through
+    `materials add --kind font` (PR #289, `materials/licenses.json`). After both PRs merge, a follow-up will
+    make `fonts query/measure --path` read a local font's licence from that record. Until then, local rows
+    carry `licenseNote: unknown`. No second licence record is added here.
+
 ## File ownership
 
 - New: `skill/scripts/font-catalog-core.cjs`, `skill/scripts/refresh-font-catalog.cjs`,

@@ -33,3 +33,13 @@ The skill SHALL keep a packaged catalog of open fonts at pinned source revisions
 
 - **WHEN** a registered source's files are reachable only through a host the environment refuses
 - **THEN** the registry SHALL record it as blocked with the observed response, and the catalog SHALL not contain it
+
+#### Scenario: Misaligned or truncated range
+
+- **WHEN** a server answers a range request with a body or `Content-Range` that does not match the requested bytes
+- **THEN** the refresh SHALL fail for that file instead of measuring partial data
+
+#### Scenario: Stale cache after an upgrade
+
+- **WHEN** the user cache lacks a packaged source or was refreshed under a different pinned revision than the package
+- **THEN** `fonts query` SHALL use the packaged catalog and report the skipped cache with its reason and a fix

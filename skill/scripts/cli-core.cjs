@@ -1507,7 +1507,8 @@ function fontsCommand(parsed, action) {
   try {
     if (action === "query") {
       const text = fontQueryText(parsed);
-      const { origin, file, catalog } = fontCatalog.resolveCatalog({ catalog: option(parsed, "--catalog"), cacheRoot: vendorCacheRoot });
+      const limitCheck = option(parsed, "--limit") === null ? null : numberOption(parsed, "--limit", { max: 1000 });
+      const { origin, file, catalog, skippedCache } = fontCatalog.resolveCatalog({ catalog: option(parsed, "--catalog"), cacheRoot: vendorCacheRoot });
       const local = option(parsed, "--path") ? measureFontPath(option(parsed, "--path")) : { faces: [], problems: [] };
       const result = fontCatalog.queryCatalog({
         catalog,
@@ -1517,7 +1518,7 @@ function fontsCommand(parsed, action) {
         weight: option(parsed, "--weight"),
         localFaces: fontCatalog.localEntries(local.faces),
       });
-      const limit = Number(option(parsed, "--limit", 20));
+      const limit = limitCheck ?? 20;
       const findings = result.candidates.length ? [] : [{
         code: "font-coverage-none",
         message: `no ${option(parsed, "--style") || "listed"} font covers all ${result.characters} characters`,
@@ -1531,7 +1532,7 @@ function fontsCommand(parsed, action) {
       return {
         result: {
           status: result.candidates.length ? "ready" : "blocked",
-          catalog: { origin, file, revisions: catalog.revisions },
+          catalog: { origin, file, revisions: catalog.revisions, ...(skippedCache ? { skippedCache } : {}) },
           ...result,
           candidates: result.candidates.slice(0, limit),
           missing: result.missing.slice(0, limit),

@@ -15,7 +15,7 @@ const test = require("node:test");
 const repoRoot = path.resolve(__dirname, "..");
 const cli = path.join(repoRoot, "skill/scripts/designer-pipeline.cjs");
 const core = require("../skill/scripts/font-catalog-core.cjs");
-const { parseTextproto, measureRemote } = require("../skill/scripts/refresh-font-catalog.cjs");
+const { mergeCatalog, parseTextproto, measureRemote } = require("../skill/scripts/refresh-font-catalog.cjs");
 
 const catalog = JSON.parse(fs.readFileSync(core.CATALOG_FILE, "utf8"));
 const sources = core.loadSources();
@@ -23,8 +23,8 @@ const sources = core.loadSources();
 // The real copy of the 夜想回廊 experiment (simplified Chinese title cards and chapter names).
 const NOCTURNE = ["门在身后关上。走廊，又长了一间。", "钥匙不是用来开门的", "蝴蝶标本的证词", "眼睛记得的事", "记忆标本", "剪掉的那一页", "齿轮在墙里走", "第七级台阶不存在", "夜想回廊制作委员会"].join("\n");
 
-function run(args) {
-  const child = spawnSync(process.execPath, [cli, ...args, "--json"], { cwd: repoRoot, encoding: "utf8", env: { ...process.env, DESIGN_PIPELINE_CACHE: fs.mkdtempSync(path.join(os.tmpdir(), "font-cache-")) } });
+function run(args, cache = fs.mkdtempSync(path.join(os.tmpdir(), "font-cache-"))) {
+  const child = spawnSync(process.execPath, [cli, ...args, "--json"], { cwd: repoRoot, encoding: "utf8", env: { ...process.env, DESIGN_PIPELINE_CACHE: cache } });
   let value = null;
   try {
     value = JSON.parse(child.stdout);
@@ -295,7 +295,7 @@ test("remote measurement reads by range and refuses a server that ignores Range"
 test("the packaged catalog pins its sources and traces every licence to a file at that revision", () => {
   assert.equal(catalog.schema, core.CATALOG_SCHEMA);
   for (const source of sources.sources.filter((s) => s.measure)) {
-    assert.deepEqual(catalog.revisions[source.id], { repository: source.repository, revision: source.revision }, source.id);
+    assert.deepEqual(catalog.revisions[source.id], { repository: source.repository, revision: source.revision, pinned: source.revision }, source.id);
   }
   // Only warnings: a family whose directory has no licence text is named, never dropped silently.
   assert.ok(catalog.problems.every((problem) => problem.severity === "warning" && problem.fix));
@@ -378,4 +378,131 @@ test("CLI: query merges local fonts, measure reports coverage, refresh needs a s
   assert.match(refresh.stderr + refresh.stdout, /--revision needs --source/);
   const unknown = run(["fonts", "query", "--text", "门", "--font", "x"]);
   assert.match(unknown.stderr + unknown.stdout, /UNKNOWN_OPTION|unknown option/);
+});
+
+// ---------------------------------------------------------------------------------------------
+// Review fixes (PR #290): ranges, corrupt files, cache merge and staleness, row problems, licences.
+
+async function withRangeServer(font, mode, body) {
+  const server = http.createServer((request, response) => {
+    const match = /bytes=(\d+)-(\d+)/.exec(request.headers.range || "");
+    const [a, b] = [Number(match[1]), Math.min(Number(match[2]), font.length - 1)];
+    let chunk = font.subarray(a, b + 1);
+    let range = `bytes ${a}-${b}/${font.length}`;
+    if (mode === "truncate" && a > 0) chunk = chunk.subarray(0, Math.max(1, Math.floor(chunk.length * 0.6)));
+    if (mode === "wrong-offset" && a > 0) {
+      chunk = font.subarray(0, b - a + 1);
+      range = `bytes 0-${b - a}/${font.length}`;
+    }
+    if (mode === "rest-of-file" && a > 0) {
+      chunk = font.subarray(a);
+      range = `bytes ${a}-${font.length - 1}/${font.length}`;
+    }
+    if (mode === "no-content-range") range = null;
+    response.writeHead(206, { ...(range ? { "content-range": range } : {}), "content-length": chunk.length });
+    response.end(chunk);
+  });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  try {
+    return await body(`http://127.0.0.1:${server.address().port}/f.ttf`);
+  } finally {
+    server.close();
+  }
+}
+
+test("a truncated, shifted or over-long 206 is refused, never measured as a smaller font", async () => {
+  const font = buildFont({ variation: variationAllPoints() });
+  await withRangeServer(font, "honest", async (url) => assert.equal((await measureRemote(url)).contrast.value, 2.5));
+  for (const mode of ["truncate", "wrong-offset", "rest-of-file", "no-content-range"]) {
+    await withRangeServer(font, mode, (url) => assert.rejects(measureRemote(url), /misaligned or truncated|Content-Range/, mode));
+  }
+});
+
+test("corrupt fonts raise FONT_UNREADABLE with a fix; one bad file under --path does not stop the query", () => {
+  const good = buildFont({ map: { 0x5341: 1, 0x41: 1, 0x4e00: 1 }, arraySegment: 0x4e00 });
+  assert.throws(() => core.measureFile(tempFont("cut.ttf", good.subarray(0, good.length - 40))), (error) => error.code === "FONT_UNREADABLE" && Boolean(error.fix));
+  // A glyph-array offset past the cmap table: previously read as glyph 0 (silently missing).
+  const { tables } = core.tableDirectory(good);
+  const broken = Buffer.from(good);
+  const cmapAt = tables.cmap.offset;
+  const sub = cmapAt + broken.readUInt32BE(cmapAt + 8);
+  const segments = broken.readUInt16BE(sub + 6) / 2;
+  const rangeOffsets = sub + 14 + segments * 6 + 2;
+  for (let k = 0; k < segments; k += 1) if (broken.readUInt16BE(rangeOffsets + 2 * k)) broken.writeUInt16BE(0x7ff0, rangeOffsets + 2 * k);
+  assert.throws(() => core.measureFile(tempFont("oob.ttf", broken)), (error) => error.code === "FONT_UNREADABLE" && /past the table/.test(error.message));
+  const huge = Buffer.concat([Buffer.from("ttcf"), u32(0x00010000), u32(0x7fffffff), u32(16)]);
+  assert.throws(() => core.measureFile(tempFont("huge.ttc", huge)), (error) => error.code === "FONT_UNREADABLE");
+
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "font-mixed-"));
+  fs.writeFileSync(path.join(dir, "Good.ttf"), good);
+  fs.writeFileSync(path.join(dir, "Bad.ttf"), broken);
+  const query = run(["fonts", "query", "--text", "十", "--path", dir]);
+  assert.equal(query.status, 0, query.stderr);
+  assert.ok(query.value.candidates.some((row) => row.origin === "local"));
+  assert.deepEqual(query.value.localProblems.map((problem) => [path.basename(problem.file), problem.code]), [["Bad.ttf", "FONT_UNREADABLE"]]);
+  assert.ok(query.value.localProblems[0].fix);
+});
+
+test("refresh --source merges into the existing catalog and keeps the other sources", () => {
+  const google = catalog.families.filter((family) => family.source === "google-fonts");
+  const fresh = { families: [{ family: "LXGW WenKai", source: "lxgw-wenkai", directory: "lxgw-wenkai", files: [{ cmap: "new1" }] }], problems: [], revisions: { "lxgw-wenkai": { repository: "r", revision: "b".repeat(40), pinned: "a".repeat(40) } }, cmaps: { new1: "AA==" } };
+  const merged = mergeCatalog(catalog, "lxgw-wenkai", fresh);
+  assert.equal(merged.families.length, google.length + 1);
+  assert.deepEqual(merged.revisions["google-fonts"], catalog.revisions["google-fonts"]);
+  assert.equal(merged.revisions["lxgw-wenkai"].revision, "b".repeat(40));
+  assert.deepEqual(merged.problems, catalog.problems.filter((problem) => problem.source !== "lxgw-wenkai"));
+  const oldLxgw = catalog.families.find((family) => family.source === "lxgw-wenkai").files.map((file) => file.cmap);
+  const stillUsed = new Set(google.flatMap((family) => family.files.map((file) => file.cmap)));
+  for (const id of oldLxgw.filter((id) => !stillUsed.has(id))) assert.equal(merged.cmaps[id], undefined, "unreferenced cmaps are dropped");
+  assert.equal(merged.cmaps.new1, "AA==");
+  // Without --source the refresh is the whole catalog.
+  assert.equal(mergeCatalog(catalog, null, fresh).families.length, 1);
+});
+
+test("a stale user cache (missing source or older pin) falls back to the packaged catalog", () => {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "font-cache-"));
+  const cacheFile = path.join(cacheDir, "fonts", "catalog.json");
+  fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+  const write = (value) => fs.writeFileSync(cacheFile, JSON.stringify(value));
+  const query = () => run(["fonts", "query", "--text", "门"], cacheDir).value.catalog;
+
+  write({ ...catalog, revisions: { "google-fonts": catalog.revisions["google-fonts"] } });
+  assert.equal(query().origin, "packaged");
+  assert.match(query().skippedCache.reason, /no lxgw-wenkai source/);
+
+  write({ ...catalog, revisions: { ...catalog.revisions, "google-fonts": { ...catalog.revisions["google-fonts"], pinned: "0".repeat(40), revision: "0".repeat(40) } } });
+  assert.equal(query().origin, "packaged");
+  assert.match(query().skippedCache.reason, /pin 0000000/);
+  assert.ok(query().skippedCache.fix);
+
+  // A deliberate refresh to a newer commit under the same pin stays in use.
+  write({ ...catalog, revisions: { ...catalog.revisions, "google-fonts": { ...catalog.revisions["google-fonts"], revision: "f".repeat(40) } } });
+  assert.equal(query().origin, "cache");
+  assert.equal(core.staleCacheReason(catalog, catalog), null);
+});
+
+test("query rows carry their family's catalog problems; --limit must be a positive integer", () => {
+  const result = core.queryCatalog({ catalog, text: "十", style: "round" });
+  const rounded = [...result.candidates, ...result.missing].find((row) => row.family === "M PLUS Rounded 1c");
+  assert.ok(rounded);
+  assert.deepEqual(rounded.problems.map((problem) => problem.code), ["FONT_LICENSE_TEXT_MISSING"]);
+  assert.ok(rounded.problems[0].fix);
+  const noto = core.queryCatalog({ catalog, text: "十", style: "mincho" }).candidates.find((row) => row.family === "Noto Serif SC");
+  assert.deepEqual(noto.problems, []);
+  for (const bad of ["0", "-3", "abc", "2.5"]) {
+    const limited = run(["fonts", "query", "--text", "门", "--limit", bad]);
+    assert.equal(limited.status, 1, `--limit ${bad}`);
+    assert.match(limited.stderr + limited.stdout, /--limit/);
+  }
+  assert.equal(run(["fonts", "query", "--text", "门", "--limit", "2"]).value.candidates.length, 2);
+});
+
+test("licence texts are verified against the declared licence; LXGW records its additional permission", () => {
+  for (const family of catalog.families) if (family.license.text) assert.equal(family.license.text.verified, true, family.family);
+  const lxgw = catalog.families.find((family) => family.family === "LXGW WenKai");
+  assert.equal(lxgw.license.id, "OFL");
+  assert.match(lxgw.license.text.reservedFontName, /霞鹜/);
+  assert.match(lxgw.license.text.additionalPermission, /web font delivery/);
+  assert.match(catalog.contrast.measure, /heaviest wght/);
+  assert.doesNotMatch(fs.readFileSync(path.join(repoRoot, "skill/references/cjk-typography.md"), "utf8"), /this environment/);
 });

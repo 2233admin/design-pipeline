@@ -5,11 +5,13 @@
  "revisions": {
   "google-fonts": {
    "repository": "https://github.com/google/fonts",
-   "revision": "bbda7253fc363238b05d97515ca71f8ae49c4fa9"
+   "revision": "bbda7253fc363238b05d97515ca71f8ae49c4fa9",
+   "pinned": "bbda7253fc363238b05d97515ca71f8ae49c4fa9"
   },
   "lxgw-wenkai": {
    "repository": "https://github.com/lxgw/LxgwWenKai",
-   "revision": "da0fdf92a0adc5d83c82ecde06d6665c97a2a45e"
+   "revision": "da0fdf92a0adc5d83c82ecde06d6665c97a2a45e",
+   "pinned": "da0fdf92a0adc5d83c82ecde06d6665c97a2a45e"
   }
  },
  "glyphSets": {
@@ -44,13 +46,14 @@
  },
  "contrast": {
   "glyph": "十 (U+5341)",
-  "measure": "stem width at 85% height / bar thickness at 15% width, default instance; family value is its highest file",
+  "measure": "stem width at 85% height / bar thickness at 15% width; static files at their own weight, variable files at their heaviest wght instance (gvar applied); family value is its highest file",
   "high": 1.8
  },
  "families": [
   {
    "family": "Kosugi",
    "source": "google-fonts",
+   "directory": "apache/kosugi",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -73,7 +76,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/apache/kosugi/LICENSE.txt",
      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -139,6 +144,7 @@
   {
    "family": "Kosugi Maru",
    "source": "google-fonts",
+   "directory": "apache/kosugimaru",
    "category": "SANS_SERIF",
    "styles": [
     "gothic",
@@ -162,7 +168,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/apache/kosugimaru/LICENSE.txt",
      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -228,6 +236,7 @@
   {
    "family": "Aoboshi One",
    "source": "google-fonts",
+   "directory": "ofl/aoboshione",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -250,7 +259,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/aoboshione/OFL.txt",
      "sha256": "c0093b62824cfa8786df613c00a316fa483bdcb7ccd11ba5faca006bb692f68d",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -315,6 +326,7 @@
   {
    "family": "BIZ UDGothic",
    "source": "google-fonts",
+   "directory": "ofl/bizudgothic",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -338,7 +350,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/bizudgothic/OFL.txt",
      "sha256": "e753d7155d53c747d037a445e584c8ecfca6dd79846db610417e282a736b28bc",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -424,6 +438,7 @@
   {
    "family": "BIZ UDMincho",
    "source": "google-fonts",
+   "directory": "ofl/bizudmincho",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -447,7 +462,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/bizudmincho/OFL.txt",
      "sha256": "ef0ed524b3bd012f37015e986809eed6f67905456ebfc1ebd7fcc2765282ee01",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -533,6 +550,7 @@
   {
    "family": "BIZ UDPGothic",
    "source": "google-fonts",
+   "directory": "ofl/bizudpgothic",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -556,7 +574,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/bizudpgothic/OFL.txt",
      "sha256": "e753d7155d53c747d037a445e584c8ecfca6dd79846db610417e282a736b28bc",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -642,6 +662,7 @@
   {
    "family": "BIZ UDPMincho",
    "source": "google-fonts",
+   "directory": "ofl/bizudpmincho",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -665,7 +686,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/bizudpmincho/OFL.txt",
      "sha256": "ef0ed524b3bd012f37015e986809eed6f67905456ebfc1ebd7fcc2765282ee01",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -751,6 +774,7 @@
   {
    "family": "Bpmf Huninn",
    "source": "google-fonts",
+   "directory": "ofl/bpmfhuninn",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -773,7 +797,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/bpmfhuninn/OFL.txt",
      "sha256": "7f4e87a64cb3f3421650b2f0f12fbf23e97f06f93d1d395cae6a8d3205db1c26",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -839,6 +865,7 @@
   {
    "family": "Bpmf Iansui",
    "source": "google-fonts",
+   "directory": "ofl/bpmfiansui",
    "category": "HANDWRITING",
    "styles": [
     "handwriting"
@@ -861,7 +888,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/bpmfiansui/OFL.txt",
      "sha256": "7f4e87a64cb3f3421650b2f0f12fbf23e97f06f93d1d395cae6a8d3205db1c26",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -927,6 +956,7 @@
   {
    "family": "Bpmf Zihi Kai Std",
    "source": "google-fonts",
+   "directory": "ofl/bpmfzihikaistd",
    "category": "SANS_SERIF",
    "styles": [
     "kai"
@@ -949,7 +979,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/bpmfzihikaistd/OFL.txt",
      "sha256": "7f4e87a64cb3f3421650b2f0f12fbf23e97f06f93d1d395cae6a8d3205db1c26",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -1015,6 +1047,7 @@
   {
    "family": "Cactus Classical Serif",
    "source": "google-fonts",
+   "directory": "ofl/cactusclassicalserif",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -1037,7 +1070,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/cactusclassicalserif/OFL.txt",
      "sha256": "358cbc7066747b8ed6581a771dbccf6397c21db559fdf671e560d7a8a084c5d4",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -1103,6 +1138,7 @@
   {
    "family": "Cherry Bomb One",
    "source": "google-fonts",
+   "directory": "ofl/cherrybombone",
    "category": "DISPLAY",
    "styles": [
     "display"
@@ -1125,7 +1161,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/cherrybombone/OFL.txt",
      "sha256": "0e04cbdaa14fc3e98b6ad1c9156b04d952cbdd0d31845766bae4cb543a71bcba",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -1190,6 +1228,7 @@
   {
    "family": "Chiron GoRound TC",
    "source": "google-fonts",
+   "directory": "ofl/chirongoroundtc",
    "category": "SANS_SERIF",
    "styles": [
     "gothic",
@@ -1213,7 +1252,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/chirongoroundtc/OFL.txt",
      "sha256": "7b9cc84fe1935d1418de4af57b4106038fb836b3a162e1b86507c7fc8543a759",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -1284,6 +1325,7 @@
   {
    "family": "Chiron Hei HK",
    "source": "google-fonts",
+   "directory": "ofl/chironheihk",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -1306,7 +1348,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/chironheihk/OFL.txt",
      "sha256": "68b9a31cc191bb8f5f428f191209f7d08c6b5b0d4816a293e5bd230724e84f10",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -1377,6 +1421,7 @@
   {
    "family": "Chiron Sung HK",
    "source": "google-fonts",
+   "directory": "ofl/chironsunghk",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -1399,7 +1444,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/chironsunghk/OFL.txt",
      "sha256": "b8aea45c9cb6a682b68e32d2cfa454ce34117770b6bd6a956c1661428918c1f4",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -1470,6 +1517,7 @@
   {
    "family": "Chocolate Classical Sans",
    "source": "google-fonts",
+   "directory": "ofl/chocolateclassicalsans",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -1492,7 +1540,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/chocolateclassicalsans/OFL.txt",
      "sha256": "2e07464fdfc781cd68f976fcfab13ad30913c04465571c33eaddc7db20f74ad6",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -1558,6 +1608,7 @@
   {
    "family": "Chokokutai",
    "source": "google-fonts",
+   "directory": "ofl/chokokutai",
    "category": "DISPLAY",
    "styles": [
     "display"
@@ -1580,7 +1631,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/chokokutai/OFL.txt",
      "sha256": "55270f3e221dc526d84c2833e512cc0f399bcd2b4b1746f63d532345b23fae56",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -1645,6 +1698,7 @@
   {
    "family": "Darumadrop One",
    "source": "google-fonts",
+   "directory": "ofl/darumadropone",
    "category": "DISPLAY",
    "styles": [
     "display"
@@ -1667,7 +1721,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/darumadropone/OFL.txt",
      "sha256": "bd898c86fb555f060ee9e5d318d631bbdcd196b98ae8019e0077421f46da132f",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -1732,6 +1788,7 @@
   {
    "family": "Dela Gothic One",
    "source": "google-fonts",
+   "directory": "ofl/delagothicone",
    "category": "DISPLAY",
    "styles": [
     "display"
@@ -1754,7 +1811,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/delagothicone/OFL.txt",
      "sha256": "c0014792d4f4abc0508c295b277f2b17ae44465c8dc88d12af9cea48279b5fda",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -1820,6 +1879,7 @@
   {
    "family": "DotGothic16",
    "source": "google-fonts",
+   "directory": "ofl/dotgothic16",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -1842,7 +1902,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/dotgothic16/OFL.txt",
      "sha256": "b6630c61ea078cacd7fabe37d14ffe557a0b45b06683374a9aa9e24262993e33",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -1908,6 +1970,7 @@
   {
    "family": "Hachi Maru Pop",
    "source": "google-fonts",
+   "directory": "ofl/hachimarupop",
    "category": "HANDWRITING",
    "styles": [
     "handwriting"
@@ -1930,7 +1993,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/hachimarupop/OFL.txt",
      "sha256": "8d3c434650e84f42ddb33e9b5929089ea51c39b231b798dacb33087d5f05d9f1",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -1996,6 +2061,7 @@
   {
    "family": "Hina Mincho",
    "source": "google-fonts",
+   "directory": "ofl/hinamincho",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -2018,7 +2084,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/hinamincho/OFL.txt",
      "sha256": "3e9b0ddf2dd1ed6ada1bc29977601095102505d11dae646df1f6b1d59572f4ba",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -2084,6 +2152,7 @@
   {
    "family": "Huninn",
    "source": "google-fonts",
+   "directory": "ofl/huninn",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -2106,7 +2175,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/huninn/OFL.txt",
      "sha256": "d71824aeb09afc4c2cac01acab5c3db79796e927ba37be40d69fb62a412639b6",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -2172,6 +2243,7 @@
   {
    "family": "Iansui",
    "source": "google-fonts",
+   "directory": "ofl/iansui",
    "category": "HANDWRITING",
    "styles": [
     "handwriting"
@@ -2194,7 +2266,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/iansui/OFL.txt",
      "sha256": "ba756a625db54032da8e4c8e58a19519964b93fac04267ec15e14ee8c5cc82a5",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -2260,6 +2334,7 @@
   {
    "family": "IBM Plex Sans JP",
    "source": "google-fonts",
+   "directory": "ofl/ibmplexsansjp",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -2288,7 +2363,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/ibmplexsansjp/OFL.txt",
      "sha256": "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da",
-     "reservedFontName": "Plex"
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -2474,6 +2551,7 @@
   {
    "family": "Kaisei Decol",
    "source": "google-fonts",
+   "directory": "ofl/kaiseidecol",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -2498,7 +2576,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/kaiseidecol/OFL.txt",
      "sha256": "6c5445d4febbf6d84025b874a85c51e7e4bfa7495279eccdb4c317a6de857b46",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -2604,6 +2684,7 @@
   {
    "family": "Kaisei HarunoUmi",
    "source": "google-fonts",
+   "directory": "ofl/kaiseiharunoumi",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -2628,7 +2709,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/kaiseiharunoumi/OFL.txt",
      "sha256": "6c5445d4febbf6d84025b874a85c51e7e4bfa7495279eccdb4c317a6de857b46",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -2734,6 +2817,7 @@
   {
    "family": "Kaisei Opti",
    "source": "google-fonts",
+   "directory": "ofl/kaiseiopti",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -2758,7 +2842,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/kaiseiopti/OFL.txt",
      "sha256": "6c5445d4febbf6d84025b874a85c51e7e4bfa7495279eccdb4c317a6de857b46",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -2864,6 +2950,7 @@
   {
    "family": "Kaisei Tokumin",
    "source": "google-fonts",
+   "directory": "ofl/kaiseitokumin",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -2889,7 +2976,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/kaiseitokumin/OFL.txt",
      "sha256": "6c5445d4febbf6d84025b874a85c51e7e4bfa7495279eccdb4c317a6de857b46",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -3015,6 +3104,7 @@
   {
    "family": "Kapakana",
    "source": "google-fonts",
+   "directory": "ofl/kapakana",
    "category": "HANDWRITING",
    "styles": [
     "handwriting"
@@ -3037,7 +3127,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/kapakana/OFL.txt",
      "sha256": "89c5e961d4a259af9f3a187be51aa1e095a6fca13a7ad20b40a1d690be7cdc0a",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -3106,6 +3198,7 @@
   {
    "family": "Kiwi Maru",
    "source": "google-fonts",
+   "directory": "ofl/kiwimaru",
    "category": "SERIF",
    "styles": [
     "round"
@@ -3130,7 +3223,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/kiwimaru/OFL.txt",
      "sha256": "07ceae7a6e3294cbbd0fdf6e35226550566a1cce9fd226d0f8a57f3d34c664fe",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -3236,6 +3331,7 @@
   {
    "family": "Klee One",
    "source": "google-fonts",
+   "directory": "ofl/kleeone",
    "category": "HANDWRITING",
    "styles": [
     "kai",
@@ -3260,7 +3356,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/kleeone/OFL.txt",
      "sha256": "e376b0df8e8a2345a9533db6f0a5333a1107975569ad9d1973a7ee557161ca38",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -3346,6 +3444,7 @@
   {
    "family": "LINE Seed JP",
    "source": "google-fonts",
+   "directory": "ofl/lineseedjp",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -3371,7 +3470,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/lineseedjp/OFL.txt",
      "sha256": "1cfc3752ddd076bc7d461b6680e42a345f2579f91319fa04192b754b3b993f65",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -3497,6 +3598,7 @@
   {
    "family": "Liu Jian Mao Cao",
    "source": "google-fonts",
+   "directory": "ofl/liujianmaocao",
    "category": "HANDWRITING",
    "styles": [
     "handwriting"
@@ -3519,7 +3621,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/liujianmaocao/OFL.txt",
      "sha256": "ff56684b0212481e7c3886c26d5a655de9b211c8119e5ccc756138a97b066acc",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -3585,6 +3689,7 @@
   {
    "family": "Long Cang",
    "source": "google-fonts",
+   "directory": "ofl/longcang",
    "category": "HANDWRITING",
    "styles": [
     "handwriting"
@@ -3607,7 +3712,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/longcang/OFL.txt",
      "sha256": "603546b7219a94bb59bf8294458194a5010119486354092b66a09a3fd61aeacc",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -3673,6 +3780,7 @@
   {
    "family": "LXGW Marker Gothic",
    "source": "google-fonts",
+   "directory": "ofl/lxgwmarkergothic",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -3695,7 +3803,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/lxgwmarkergothic/OFL.txt",
      "sha256": "58e494ff4a5177d593a97ffc482f4069f59f54a0d4049fd29e531d3b1009e8b4",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -3761,6 +3871,7 @@
   {
    "family": "LXGW WenKai Mono TC",
    "source": "google-fonts",
+   "directory": "ofl/lxgwwenkaimonotc",
    "category": "MONOSPACE",
    "styles": [
     "kai",
@@ -3786,7 +3897,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/lxgwwenkaimonotc/OFL.txt",
      "sha256": "4fff27d35db0e22cd81d58da6f20e09f415cf354a3338e3cf1fc0eb9222c7174",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -3892,6 +4005,7 @@
   {
    "family": "LXGW WenKai TC",
    "source": "google-fonts",
+   "directory": "ofl/lxgwwenkaitc",
    "category": "HANDWRITING",
    "styles": [
     "kai",
@@ -3917,7 +4031,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/lxgwwenkaitc/OFL.txt",
      "sha256": "4fff27d35db0e22cd81d58da6f20e09f415cf354a3338e3cf1fc0eb9222c7174",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -4023,6 +4139,7 @@
   {
    "family": "Ma Shan Zheng",
    "source": "google-fonts",
+   "directory": "ofl/mashanzheng",
    "category": "HANDWRITING",
    "styles": [
     "kai",
@@ -4046,7 +4163,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/mashanzheng/OFL.txt",
      "sha256": "d7bdb1cee215b689e23c2f95672a6084c790542170648267a55114103d756a08",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -4112,6 +4231,7 @@
   {
    "family": "Mochiy Pop One",
    "source": "google-fonts",
+   "directory": "ofl/mochiypopone",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -4134,7 +4254,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/mochiypopone/OFL.txt",
      "sha256": "76be26178f13ef82866cf6a5c54272191bb583c203ad7035021c7681c9043558",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -4200,6 +4322,7 @@
   {
    "family": "Mochiy Pop P One",
    "source": "google-fonts",
+   "directory": "ofl/mochiypoppone",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -4222,7 +4345,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/mochiypoppone/OFL.txt",
      "sha256": "76be26178f13ef82866cf6a5c54272191bb583c203ad7035021c7681c9043558",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -4288,6 +4413,7 @@
   {
    "family": "Monomaniac One",
    "source": "google-fonts",
+   "directory": "ofl/monomaniacone",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -4310,7 +4436,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/monomaniacone/OFL.txt",
      "sha256": "0e7bc933f607a0fe98e2635cef0df76dc9b6a0198a7a7ad035e8a2b8d329e137",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -4375,6 +4503,7 @@
   {
    "family": "M PLUS 1",
    "source": "google-fonts",
+   "directory": "ofl/mplus1",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -4397,7 +4526,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/mplus1/OFL.txt",
      "sha256": "04971e3fcee60b247395150d93b3616f6a0b092572332c96187b472976553abc",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -4468,6 +4599,7 @@
   {
    "family": "M PLUS 1 Code",
    "source": "google-fonts",
+   "directory": "ofl/mplus1code",
    "category": "MONOSPACE",
    "styles": [
     "mono"
@@ -4490,7 +4622,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/mplus1code/OFL.txt",
      "sha256": "04971e3fcee60b247395150d93b3616f6a0b092572332c96187b472976553abc",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -4561,6 +4695,7 @@
   {
    "family": "M PLUS 1p",
    "source": "google-fonts",
+   "directory": "ofl/mplus1p",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -4589,7 +4724,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/mplus1p/OFL.txt",
      "sha256": "da15da6b1496d4de18f97e2ad1b722ef8a1c121149c2c93b2cf7eac6ac27b35c",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -4775,6 +4912,7 @@
   {
    "family": "M PLUS 2",
    "source": "google-fonts",
+   "directory": "ofl/mplus2",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -4797,7 +4935,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/mplus2/OFL.txt",
      "sha256": "04971e3fcee60b247395150d93b3616f6a0b092572332c96187b472976553abc",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -4868,6 +5008,7 @@
   {
    "family": "M PLUS Rounded 1c",
    "source": "google-fonts",
+   "directory": "ofl/mplusrounded1c",
    "category": "SANS_SERIF",
    "styles": [
     "gothic",
@@ -5079,6 +5220,7 @@
   {
    "family": "M PLUS U",
    "source": "google-fonts",
+   "directory": "ofl/mplusu",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -5101,7 +5243,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/mplusu/OFL.txt",
      "sha256": "795cd5988c81dd9b11e460de70e715ab0900ee72fbfbb6ce83c387b92990fbde",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -5172,6 +5316,7 @@
   {
    "family": "Murecho",
    "source": "google-fonts",
+   "directory": "ofl/murecho",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -5194,7 +5339,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/murecho/OFL.txt",
      "sha256": "7d9f69e9be971aaa0caf64555545b3d34d23204d53ee88085790866ee21c75f9",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -5265,6 +5412,7 @@
   {
    "family": "New Tegomin",
    "source": "google-fonts",
+   "directory": "ofl/newtegomin",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -5287,7 +5435,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/newtegomin/OFL.txt",
      "sha256": "448df04b698cb1101857b61c7d1b4187beb59d3a0fb5edbd834d308758cda95e",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -5353,6 +5503,7 @@
   {
    "family": "Noto Sans HK",
    "source": "google-fonts",
+   "directory": "ofl/notosanshk",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -5375,7 +5526,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/notosanshk/OFL.txt",
      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9",
-     "reservedFontName": "'Source'"
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -5446,6 +5599,7 @@
   {
    "family": "Noto Sans JP",
    "source": "google-fonts",
+   "directory": "ofl/notosansjp",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -5468,7 +5622,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/notosansjp/OFL.txt",
      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9",
-     "reservedFontName": "'Source'"
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -5539,6 +5695,7 @@
   {
    "family": "Noto Sans SC",
    "source": "google-fonts",
+   "directory": "ofl/notosanssc",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -5561,7 +5718,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/notosanssc/OFL.txt",
      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9",
-     "reservedFontName": "'Source'"
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -5632,6 +5791,7 @@
   {
    "family": "Noto Sans TC",
    "source": "google-fonts",
+   "directory": "ofl/notosanstc",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -5654,7 +5814,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/notosanstc/OFL.txt",
      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9",
-     "reservedFontName": "'Source'"
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -5725,6 +5887,7 @@
   {
    "family": "Noto Serif HK",
    "source": "google-fonts",
+   "directory": "ofl/notoserifhk",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -5747,7 +5910,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/notoserifhk/OFL.txt",
      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9",
-     "reservedFontName": "'Source'"
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -5818,6 +5983,7 @@
   {
    "family": "Noto Serif JP",
    "source": "google-fonts",
+   "directory": "ofl/notoserifjp",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -5840,7 +6006,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/notoserifjp/OFL.txt",
      "sha256": "5e0da210fb04058a8c0087985d2d456b931c2579811a49655721d3cf0c36b6d6",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -5911,6 +6079,7 @@
   {
    "family": "Noto Serif SC",
    "source": "google-fonts",
+   "directory": "ofl/notoserifsc",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -5933,7 +6102,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/notoserifsc/OFL.txt",
      "sha256": "5e0da210fb04058a8c0087985d2d456b931c2579811a49655721d3cf0c36b6d6",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -6004,6 +6175,7 @@
   {
    "family": "Noto Serif TC",
    "source": "google-fonts",
+   "directory": "ofl/notoseriftc",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -6026,7 +6198,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/notoseriftc/OFL.txt",
      "sha256": "5e0da210fb04058a8c0087985d2d456b931c2579811a49655721d3cf0c36b6d6",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -6097,6 +6271,7 @@
   {
    "family": "Palette Mosaic",
    "source": "google-fonts",
+   "directory": "ofl/palettemosaic",
    "category": "DISPLAY",
    "styles": [
     "display"
@@ -6119,7 +6294,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/palettemosaic/OFL.txt",
      "sha256": "3c1a085f9dbd44877f73b0e1e1917ab084eb79828328fba74323c3bcd4171c6a",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -6184,6 +6361,7 @@
   {
    "family": "Potta One",
    "source": "google-fonts",
+   "directory": "ofl/pottaone",
    "category": "DISPLAY",
    "styles": [
     "display"
@@ -6206,7 +6384,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/pottaone/OFL.txt",
      "sha256": "fe55933bcfad354914050fe0e7c879bd666a623f1e363a651198ac40c271cd26",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -6272,6 +6452,7 @@
   {
    "family": "Rampart One",
    "source": "google-fonts",
+   "directory": "ofl/rampartone",
    "category": "DISPLAY",
    "styles": [
     "display"
@@ -6294,7 +6475,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/rampartone/OFL.txt",
      "sha256": "1286896706738557c1fb98f0f66006d4ca675e475d681ca85976fd0da9daa353",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -6360,6 +6543,7 @@
   {
    "family": "Reggae One",
    "source": "google-fonts",
+   "directory": "ofl/reggaeone",
    "category": "DISPLAY",
    "styles": [
     "display"
@@ -6382,7 +6566,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/reggaeone/OFL.txt",
      "sha256": "2756c3dcd85ad997b742330f91332fb478afad302708d4149f7bcd4600543ce2",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -6448,6 +6634,7 @@
   {
    "family": "Rock 3D",
    "source": "google-fonts",
+   "directory": "ofl/rock3d",
    "category": "DISPLAY",
    "styles": [
     "display"
@@ -6470,7 +6657,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/rock3d/OFL.txt",
      "sha256": "91595b148d8e476851147257a1234aa4a1dba722424fcdbdfca8965450fb48ad",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -6535,6 +6724,7 @@
   {
    "family": "RocknRoll One",
    "source": "google-fonts",
+   "directory": "ofl/rocknrollone",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -6557,7 +6747,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/rocknrollone/OFL.txt",
      "sha256": "b2f42a005a6a48ead81e369021e300184f0cbecb48aee6f831e46c7897f6055b",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -6623,6 +6815,7 @@
   {
    "family": "Sawarabi Gothic",
    "source": "google-fonts",
+   "directory": "ofl/sawarabigothic",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -6645,7 +6838,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/sawarabigothic/OFL.txt",
      "sha256": "5f247fad3e8a86b6c0779dff09277047c1ce2b0b7580a1093347a8af755352ba",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -6711,6 +6906,7 @@
   {
    "family": "Sawarabi Mincho",
    "source": "google-fonts",
+   "directory": "ofl/sawarabimincho",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -6733,7 +6929,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/sawarabimincho/OFL.txt",
      "sha256": "23a49d3198c9ffd233f73208c5e39c4ed893783cece36b954c0a65ee9aa7ef29",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -6799,6 +6997,7 @@
   {
    "family": "Shippori Antique",
    "source": "google-fonts",
+   "directory": "ofl/shipporiantique",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -6821,7 +7020,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/shipporiantique/OFL.txt",
      "sha256": "9ad629515fb62dfc2a831187b260bb53b4fcae1494dd4cb94c2b30da2466da51",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -6887,6 +7088,7 @@
   {
    "family": "Shippori Antique B1",
    "source": "google-fonts",
+   "directory": "ofl/shipporiantiqueb1",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -6909,7 +7111,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/shipporiantiqueb1/OFL.txt",
      "sha256": "9ad629515fb62dfc2a831187b260bb53b4fcae1494dd4cb94c2b30da2466da51",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -6975,6 +7179,7 @@
   {
    "family": "Shippori Mincho",
    "source": "google-fonts",
+   "directory": "ofl/shipporimincho",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -7001,7 +7206,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/shipporimincho/OFL.txt",
      "sha256": "41fba056279be5f45ff9a99e44b7b53897b42732f5806d8e666e0ab49ac6bd38",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -7147,6 +7354,7 @@
   {
    "family": "Shippori Mincho B1",
    "source": "google-fonts",
+   "directory": "ofl/shipporiminchob1",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -7173,7 +7381,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/shipporiminchob1/OFL.txt",
      "sha256": "41fba056279be5f45ff9a99e44b7b53897b42732f5806d8e666e0ab49ac6bd38",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -7319,6 +7529,7 @@
   {
    "family": "Shizuru",
    "source": "google-fonts",
+   "directory": "ofl/shizuru",
    "category": "DISPLAY",
    "styles": [
     "display"
@@ -7341,7 +7552,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/shizuru/OFL.txt",
      "sha256": "82e1f1ecc4c04924c6490b5a3f03c39feacb81337a45911daa30b758c69df788",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -7406,6 +7619,7 @@
   {
    "family": "Slackside One",
    "source": "google-fonts",
+   "directory": "ofl/slacksideone",
    "category": "HANDWRITING",
    "styles": [
     "handwriting"
@@ -7428,7 +7642,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/slacksideone/OFL.txt",
      "sha256": "7d4c49f4c5e195125c1bbec7b8c6b884b616555cdf7c7101b98b39a766f88945",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -7493,6 +7709,7 @@
   {
    "family": "Stick",
    "source": "google-fonts",
+   "directory": "ofl/stick",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -7515,7 +7732,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/stick/OFL.txt",
      "sha256": "35187dd015d0c0006d57f99815fb3f81304c4445f04c3fa35bc533a7a4b00676",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -7581,6 +7800,7 @@
   {
    "family": "Train One",
    "source": "google-fonts",
+   "directory": "ofl/trainone",
    "category": "DISPLAY",
    "styles": [
     "display"
@@ -7603,7 +7823,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/trainone/OFL.txt",
      "sha256": "709f9689eabbab61e913ddc288187e7e3d09550339f7df894a909548f90af814",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -7669,6 +7891,7 @@
   {
    "family": "Tsukimi Rounded",
    "source": "google-fonts",
+   "directory": "ofl/tsukimirounded",
    "category": "SANS_SERIF",
    "styles": [
     "gothic",
@@ -7696,7 +7919,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/tsukimirounded/OFL.txt",
      "sha256": "0d268d55bd00b6518d3f136afb63e7f01f49c922b06c4e55dd4a2841d3bd66e6",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -7837,6 +8062,7 @@
   {
    "family": "UoqMunThenKhung",
    "source": "google-fonts",
+   "directory": "ofl/uoqmunthenkhung",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -7859,7 +8085,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/uoqmunthenkhung/OFL.txt",
      "sha256": "406ef62322951b6ea94f7a91989971ddd05441e0768e638528b27e5e677c3b91",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -7925,6 +8153,7 @@
   {
    "family": "WDXL Lubrifont JP N",
    "source": "google-fonts",
+   "directory": "ofl/wdxllubrifontjpn",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -7947,7 +8176,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/wdxllubrifontjpn/OFL.txt",
      "sha256": "048eba87d28b5d74c432cfa38ca44737e86a5508cf912c1b2cc211c45944e1d9",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -8013,6 +8244,7 @@
   {
    "family": "WDXL Lubrifont SC",
    "source": "google-fonts",
+   "directory": "ofl/wdxllubrifontsc",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -8035,7 +8267,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/wdxllubrifontsc/OFL.txt",
      "sha256": "048eba87d28b5d74c432cfa38ca44737e86a5508cf912c1b2cc211c45944e1d9",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -8101,6 +8335,7 @@
   {
    "family": "WDXL Lubrifont TC",
    "source": "google-fonts",
+   "directory": "ofl/wdxllubrifonttc",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -8123,7 +8358,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/wdxllubrifonttc/OFL.txt",
      "sha256": "048eba87d28b5d74c432cfa38ca44737e86a5508cf912c1b2cc211c45944e1d9",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -8189,6 +8426,7 @@
   {
    "family": "Yomogi",
    "source": "google-fonts",
+   "directory": "ofl/yomogi",
    "category": "HANDWRITING",
    "styles": [
     "handwriting"
@@ -8211,7 +8449,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/yomogi/OFL.txt",
      "sha256": "bc0330d5973ab1f200553f51b4cb4ef11b81187fdcd0249f7f83992726c02a48",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -8277,6 +8517,7 @@
   {
    "family": "Yuji Boku",
    "source": "google-fonts",
+   "directory": "ofl/yujiboku",
    "category": "SERIF",
    "styles": [
     "display"
@@ -8299,7 +8540,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/yujiboku/OFL.txt",
      "sha256": "ef7c85c72ae94381c8bc4832ae4e6fbabdeafa2bb8a31313cd75dce95a690256",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -8365,6 +8608,7 @@
   {
    "family": "Yuji Hentaigana Akari",
    "source": "google-fonts",
+   "directory": "ofl/yujihentaiganaakari",
    "category": "HANDWRITING",
    "styles": [
     "handwriting"
@@ -8387,7 +8631,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/yujihentaiganaakari/OFL.txt",
      "sha256": "ef7c85c72ae94381c8bc4832ae4e6fbabdeafa2bb8a31313cd75dce95a690256",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -8452,6 +8698,7 @@
   {
    "family": "Yuji Hentaigana Akebono",
    "source": "google-fonts",
+   "directory": "ofl/yujihentaiganaakebono",
    "category": "HANDWRITING",
    "styles": [
     "handwriting"
@@ -8474,7 +8721,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/yujihentaiganaakebono/OFL.txt",
      "sha256": "ef7c85c72ae94381c8bc4832ae4e6fbabdeafa2bb8a31313cd75dce95a690256",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -8539,6 +8788,7 @@
   {
    "family": "Yuji Mai",
    "source": "google-fonts",
+   "directory": "ofl/yujimai",
    "category": "SERIF",
    "styles": [
     "display"
@@ -8561,7 +8811,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/yujimai/OFL.txt",
      "sha256": "ef7c85c72ae94381c8bc4832ae4e6fbabdeafa2bb8a31313cd75dce95a690256",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -8627,6 +8879,7 @@
   {
    "family": "Yuji Syuku",
    "source": "google-fonts",
+   "directory": "ofl/yujisyuku",
    "category": "SERIF",
    "styles": [
     "display"
@@ -8649,7 +8902,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/yujisyuku/OFL.txt",
      "sha256": "ef7c85c72ae94381c8bc4832ae4e6fbabdeafa2bb8a31313cd75dce95a690256",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -8715,6 +8970,7 @@
   {
    "family": "Yusei Magic",
    "source": "google-fonts",
+   "directory": "ofl/yuseimagic",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -8737,7 +8993,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/yuseimagic/OFL.txt",
      "sha256": "c74e8c47951ddd9c902f07097761cfa0457993e28d8e1e946e273c0250be77c9",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -8803,6 +9061,7 @@
   {
    "family": "ZCOOL KuaiLe",
    "source": "google-fonts",
+   "directory": "ofl/zcoolkuaile",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -8825,7 +9084,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/zcoolkuaile/OFL.txt",
      "sha256": "538078469839b4a2e7ad22bef4ebe41681a4e53749bb2a072144024f1d6d703d",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -8891,6 +9152,7 @@
   {
    "family": "ZCOOL QingKe HuangYou",
    "source": "google-fonts",
+   "directory": "ofl/zcoolqingkehuangyou",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -8913,7 +9175,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/zcoolqingkehuangyou/OFL.txt",
      "sha256": "f1bce31b817dee01c1e4ef8bc45d8ecb95f01f4abbf0a985007cb3cd0fd8123d",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -8979,6 +9243,7 @@
   {
    "family": "ZCOOL XiaoWei",
    "source": "google-fonts",
+   "directory": "ofl/zcoolxiaowei",
    "category": "SANS_SERIF",
    "styles": [
     "mincho",
@@ -9002,7 +9267,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/zcoolxiaowei/OFL.txt",
      "sha256": "a094514ca57cf8f9c5e8d8d1adab5d8cd3a377297ff016f9df2c05b3ecd77f0a",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -9068,6 +9335,7 @@
   {
    "family": "Zen Antique",
    "source": "google-fonts",
+   "directory": "ofl/zenantique",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -9090,7 +9358,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/zenantique/OFL.txt",
      "sha256": "c76594cc8f4af2ea35d1e05278b1911b22cc6227bc3b0ad404f68be03fe3f107",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -9156,6 +9426,7 @@
   {
    "family": "Zen Antique Soft",
    "source": "google-fonts",
+   "directory": "ofl/zenantiquesoft",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -9178,7 +9449,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/zenantiquesoft/OFL.txt",
      "sha256": "c76594cc8f4af2ea35d1e05278b1911b22cc6227bc3b0ad404f68be03fe3f107",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -9244,6 +9517,7 @@
   {
    "family": "Zen Kaku Gothic Antique",
    "source": "google-fonts",
+   "directory": "ofl/zenkakugothicantique",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -9270,7 +9544,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/zenkakugothicantique/OFL.txt",
      "sha256": "0fac78a235c98d640cb06332eb5362c211d86fa03c011df438c35005d22ad2c7",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -9416,6 +9692,7 @@
   {
    "family": "Zen Kaku Gothic New",
    "source": "google-fonts",
+   "directory": "ofl/zenkakugothicnew",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -9442,7 +9719,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/zenkakugothicnew/OFL.txt",
      "sha256": "0fac78a235c98d640cb06332eb5362c211d86fa03c011df438c35005d22ad2c7",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -9588,6 +9867,7 @@
   {
    "family": "Zen Kurenaido",
    "source": "google-fonts",
+   "directory": "ofl/zenkurenaido",
    "category": "SANS_SERIF",
    "styles": [
     "gothic"
@@ -9610,7 +9890,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/zenkurenaido/OFL.txt",
      "sha256": "fdfcb596ac910b447e482f42d4d1e5df3cfcb71c681a9f10e7f2d0126b274111",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -9676,6 +9958,7 @@
   {
    "family": "Zen Maru Gothic",
    "source": "google-fonts",
+   "directory": "ofl/zenmarugothic",
    "category": "SANS_SERIF",
    "styles": [
     "gothic",
@@ -9703,7 +9986,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/zenmarugothic/OFL.txt",
      "sha256": "2a20cf7ce1909d8ee1e949095d340f7d7656705f7c810a2d6faf56800ad0cb3d",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -9849,6 +10134,7 @@
   {
    "family": "Zen Old Mincho",
    "source": "google-fonts",
+   "directory": "ofl/zenoldmincho",
    "category": "SERIF",
    "styles": [
     "mincho"
@@ -9875,7 +10161,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/zenoldmincho/OFL.txt",
      "sha256": "469d214f9842809659c827b7f2adaf40ec0df6efdd5fe18b7127665c32aafaec",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -10021,6 +10309,7 @@
   {
    "family": "Zhi Mang Xing",
    "source": "google-fonts",
+   "directory": "ofl/zhimangxing",
    "category": "HANDWRITING",
    "styles": [
     "handwriting"
@@ -10043,7 +10332,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/google/fonts/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/zhimangxing/OFL.txt",
      "sha256": "10947328199e369a3e6b4a67e8e5507ed99d5bbb264a1f156415aa9b665e4d15",
-     "reservedFontName": null
+     "reservedFontName": null,
+     "additionalPermission": null,
+     "verified": true
     }
    },
    "files": [
@@ -10109,6 +10400,7 @@
   {
    "family": "LXGW WenKai",
    "source": "lxgw-wenkai",
+   "directory": "lxgw-wenkai",
    "category": "HANDWRITING",
    "styles": [
     "kai",
@@ -10134,7 +10426,9 @@
     "text": {
      "file": "https://raw.githubusercontent.com/lxgw/LxgwWenKai/da0fdf92a0adc5d83c82ecde06d6665c97a2a45e/OFL.txt",
      "sha256": "1a25e35da1031c6c3436fde545bb9cb5aca954e9873afe510c834b8b79bd21a0",
-     "reservedFontName": "'霞鹜', '霞鶩', '落霞孤鹜', '落霞孤鶩' and 'LXGW'"
+     "reservedFontName": "'霞鹜', '霞鶩', '落霞孤鹜', '落霞孤鶩' and 'LXGW'",
+     "additionalPermission": "The Reserved Font Names '霞鹜', '霞鶩', '落霞孤鹜', '落霞孤鶩' and 'LXGW' may continue to be used in Modified Versions recompiled from the Original Version, without modifications to the font source code; or in Modified Versions subsetted or converted to other formats (e.g., WOFF/WOFF2) solely for web font delivery, provided such Modified Versions are not made available as installable desktop fonts (e.g., on mainstream platforms like Google Fonts, or third-party non-commercial platforms recognized by the author @lxgw; other web font platforms please contact the author @lxgw for confirmation).",
+     "verified": true
     }
    },
    "files": [

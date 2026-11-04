@@ -24,3 +24,11 @@
 - [x] 3.2 Cross-checks against fontTools and headless Chrome (design.md); refresh reproducibility.
 - [x] 3.3 Full `npm test`.
 - [x] 3.4 CHANGELOG entry.
+
+## 4. Review fixes (PR #290)
+
+- [x] 4.1 Strict 206 checks; out-of-bounds and corrupt input raise FONT_UNREADABLE; per-file local problems.
+- [x] 4.2 `refresh --source` merge; stale-cache fallback with `pinned`.
+- [x] 4.3 Family problems on query rows; `--limit` validation; contrast text; CJK guide wording.
+- [x] 4.4 Licence text verified against the declared id; LXGW Reserved Font Names and additional permission recorded.
+- [x] 4.5 Tests for each, ported from the review's range repro; specs:check.

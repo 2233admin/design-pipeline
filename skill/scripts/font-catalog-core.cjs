@@ -27,6 +27,22 @@ class FontError extends Error {
   }
 }
 
+const UNREADABLE_FIX = "The file is truncated or corrupt: download it again from its source (check its size against the source) or remove it from --path.";
+const unreadable = (detail) => new FontError("FONT_UNREADABLE", `the font is corrupt or truncated: ${detail}`, UNREADABLE_FIX);
+
+/** Run a parse step; out-of-range reads and broken zlib streams become FONT_UNREADABLE. */
+function guarded(file, step) {
+  try {
+    return step();
+  } catch (error) {
+    if (error instanceof FontError) throw new FontError(error.code, `${file}: ${error.message.replace(`${file}: `, "")}`, error.fix);
+    if (error instanceof RangeError || error?.code === "ERR_OUT_OF_RANGE" || error?.code === "ERR_BUFFER_OUT_OF_BOUNDS" || /^Z_|incorrect header|invalid (stored|block|distance)|unexpected end/i.test(`${error?.code || ""} ${error?.message || ""}`)) {
+      throw new FontError("FONT_UNREADABLE", `${file}: the font is corrupt or truncated (${error.message})`, UNREADABLE_FIX);
+    }
+    throw error;
+  }
+}
+
 // ---------------------------------------------------------------------------------------------
 // Glyph sets. Legacy encodings come from Node's own decoders, so the counts are the standards'
 // own: GB 2312 hanzi 6763, JIS X 0208 level 1 2965, Big5 frequent (A440-C67E) 5401.
@@ -116,6 +132,10 @@ function facesOfBuffer(buf, file = "font") {
   if (!format) throw new FontError("FONT_UNREADABLE", `${file} is not a TTF, OTF, TTC or WOFF file`, "Pass the font file itself, not an archive, CSS file or HTML page.");
   if (format === "woff2") throw new FontError("FONT_FORMAT_UNSUPPORTED", `${file} is WOFF2, whose cmap this reader does not decode`, "Measure the TTF/OTF release of the same family, or decompress it first (fonttools: `fonttools ttLib.woff2 decompress <file>`).");
   const make = (directory, read) => {
+    for (const [name, entry] of Object.entries(directory.tables)) {
+      const end = entry.offset + (entry.compressed ?? entry.length);
+      if (end > buf.length) throw unreadable(`table ${name} ends at byte ${end}, past the ${buf.length}-byte file`);
+    }
     const cache = new Map();
     const table = (name) => {
       if (!directory.tables[name]) return null;
@@ -132,6 +152,7 @@ function facesOfBuffer(buf, file = "font") {
     };
     return { format, faces: [make(directory, read)] };
   }
+  if (format === "ttc" && 12 + buf.readUInt32BE(8) * 4 > buf.length) throw unreadable(`the collection header lists ${buf.readUInt32BE(8)} faces, more than the file can hold`);
   const offsets = format === "ttc" ? Array.from({ length: buf.readUInt32BE(8) }, (_, i) => buf.readUInt32BE(12 + i * 4)) : [0];
   return { format, faces: offsets.map((offset) => make(tableDirectory(buf, offset), (entry) => buf.subarray(entry.offset, entry.offset + entry.length))) };
 }
@@ -165,7 +186,8 @@ function readCmap(cmap) {
           let glyph;
           if (rangeOffset) {
             const at = offsets + 2 * k + rangeOffset + 2 * (c - start);
-            glyph = at + 2 <= cmap.length ? cmap.readUInt16BE(at) : 0;
+            if (at + 2 > cmap.length) throw unreadable(`cmap format 4 glyph index for U+${c.toString(16).toUpperCase()} points past the table`);
+            glyph = cmap.readUInt16BE(at);
             if (glyph) glyph = (glyph + delta) & 0xffff;
           } else glyph = (c + delta) & 0xffff;
           if (glyph) map.set(c, glyph);
@@ -175,12 +197,14 @@ function readCmap(cmap) {
       const groups = cmap.readUInt32BE(sub + 12);
       for (let k = 0; k < groups; k += 1) {
         const [start, end, first] = [0, 4, 8].map((o) => cmap.readUInt32BE(sub + 16 + k * 12 + o));
+        if (start > end || end > 0x10ffff) throw unreadable(`cmap format ${format} group ${start.toString(16)}-${end.toString(16)} is not a Unicode range`);
         for (let c = start; c <= end; c += 1) {
           const glyph = format === 12 ? first + c - start : first;
           if (glyph) map.set(c, glyph);
         }
       }
     } else if (format === 0) {
+      if (sub + 6 + 256 > cmap.length) throw unreadable("cmap format 0 subtable is truncated");
       for (let c = 0; c < 256; c += 1) if (cmap[sub + 6 + c]) map.set(c, cmap[sub + 6 + c]);
     } else if (format === 6) {
       const first = cmap.readUInt16BE(sub + 6);
@@ -597,22 +621,28 @@ function measureFace(table, read) {
 function localReader(face) {
   return {
     has: (name) => face.has(name),
-    read: (name, offset, length) => face.table(name).subarray(offset, offset + length),
+    read: (name, offset, length) => {
+      const table = face.table(name);
+      if (offset < 0 || length < 0 || offset + length > table.length) throw unreadable(`${name} read ${offset}+${length} is past its ${table.length}-byte table`);
+      return table.subarray(offset, offset + length);
+    },
   };
 }
 
 /** Every face of a local font file, measured. */
 function measureFile(file) {
   const buf = fs.readFileSync(file);
-  const { format, faces } = facesOfBuffer(buf, file);
-  return faces.map((face, index) => ({
-    file,
-    face: index,
-    format,
-    bytes: buf.length,
-    sha256: crypto.createHash("sha256").update(buf).digest("hex"),
-    ...measureFace((name) => face.table(name), localReader(face)),
-  }));
+  return guarded(file, () => {
+    const { format, faces } = facesOfBuffer(buf, file);
+    return faces.map((face, index) => ({
+      file,
+      face: index,
+      format,
+      bytes: buf.length,
+      sha256: crypto.createHash("sha256").update(buf).digest("hex"),
+      ...measureFace((name) => face.table(name), localReader(face)),
+    }));
+  });
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -711,6 +741,22 @@ function loadSources(file = SOURCES_FILE) {
   return sources;
 }
 
+/**
+ * A cache is stale when it lacks a source the package has, or was refreshed under a different
+ * registry pin than the package's (the skill was upgraded since). A deliberate `--revision head`
+ * refresh records the pin in force, so it stays in use until the package's pin moves.
+ */
+function staleCacheReason(cache, packaged) {
+  for (const [id, pinned] of Object.entries(packaged.revisions || {})) {
+    const entry = cache.revisions?.[id];
+    if (!entry) return `the cache has no ${id} source, which the packaged catalog has`;
+    const cachePin = entry.pinned || entry.revision;
+    const packagePin = pinned.pinned || pinned.revision;
+    if (cachePin !== packagePin) return `the cache's ${id} was refreshed under pin ${cachePin.slice(0, 7)}, the package now pins ${packagePin.slice(0, 7)}`;
+  }
+  return null;
+}
+
 function userCatalogFile(cacheRootFn) {
   return path.join(cacheRootFn(), "fonts", "catalog.json");
 }
@@ -718,14 +764,27 @@ function userCatalogFile(cacheRootFn) {
 /** The catalog to read: --catalog, else a refreshed user cache, else the packaged one. */
 function resolveCatalog({ catalog, cacheRoot }) {
   const candidates = catalog ? [["option", path.resolve(catalog)]] : [["cache", userCatalogFile(cacheRoot)], ["packaged", CATALOG_FILE]];
+  let skipped = null;
   for (const [origin, file] of candidates) {
     if (!fs.existsSync(file)) {
       if (origin === "option") throw new FontError("FONT_CATALOG_MISSING", `${file} does not exist`, "Pass a catalog written by `fonts refresh --output <file>`, or omit --catalog to use the packaged one.");
       continue;
     }
-    const value = readJson(file);
+    let value;
+    try {
+      value = readJson(file);
+    } catch (error) {
+      throw new FontError("FONT_CATALOG_INVALID", `${file} is not valid JSON (${error.message})`, origin === "cache" ? `Delete ${file} or run \`designer-pipeline fonts refresh\`.` : "Regenerate it with `designer-pipeline fonts refresh --output <file>`.");
+    }
     if (value.schema !== CATALOG_SCHEMA) throw new FontError("FONT_CATALOG_INVALID", `${file} is not ${CATALOG_SCHEMA}`, "Regenerate it with `designer-pipeline fonts refresh`.");
-    return { origin, file, catalog: value };
+    if (origin === "cache") {
+      const stale = staleCacheReason(value, readJson(CATALOG_FILE));
+      if (stale) {
+        skipped = { file, reason: stale, fix: "Run `designer-pipeline fonts refresh` to rebuild the cache at the package's pins, or delete it." };
+        continue;
+      }
+    }
+    return { origin, file, catalog: value, ...(skipped ? { skippedCache: skipped } : {}) };
   }
   throw new FontError("FONT_CATALOG_MISSING", "no font catalog is packaged or cached", "Reinstall the skill or run `designer-pipeline fonts refresh`.");
 }
@@ -762,6 +821,13 @@ function fileMaxWeight(file) {
 function maxWeight(entry) {
   const axisMax = (entry.files || []).reduce((max, file) => Math.max(max, file.weightAxis ? file.weightAxis.max : 0), 0);
   return Math.max(axisMax, ...weightsOf(entry), 0);
+}
+
+/** Catalog problems (warnings such as a missing licence text) that belong to a family. */
+function familyProblems(catalog, family) {
+  const key = family.directory;
+  if (!key) return [];
+  return (catalog.problems || []).filter((problem) => problem.source === family.source && (problem.path === key || problem.path.startsWith(`${key}/`)));
 }
 
 /**
@@ -813,6 +879,7 @@ function queryCatalog({ catalog, text, style, contrast, weight, localFaces = [] 
       weights: weightsOf(entry),
       weightAxis: entry.files.find((file) => file.weightAxis)?.weightAxis || null,
       license: entry.license || null,
+      problems: entry.origin === "catalog" ? familyProblems(catalog, entry) : [],
       files: files.map((file) => file.url || file.path),
       coverage: { covered: wanted.length - lacking.size, total: wanted.length },
     };
@@ -871,6 +938,8 @@ module.exports = {
   CATALOG_FILE,
   CATALOG_SCHEMA,
   FontError,
+  guarded,
+  staleCacheReason,
   HIGH_CONTRAST,
   SOURCES_FILE,
   SOURCES_SCHEMA,

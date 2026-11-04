@@ -54,8 +54,8 @@ covers the text. Then set the **whole string** in a face that covers it, not gly
 GB 2312, JIS level 1, Big5 common and Latin, plus its weights, stroke contrast and style.
 `fonts refresh` re-measures the pinned sources into the user cache. Styles are `mincho`
 (明朝/宋), `gothic` (黑), `kai`, `fangsong`, `round`, `display`, `handwriting` and `mono`. The
-catalog has no fangsong face yet, because the only reviewed open fangsong is published only as
-GitHub Release files, which this environment cannot download.
+catalog has no fangsong face yet: the reviewed open fangsong (Zhuque) is release-only, and a source
+whose files cannot be reached is recorded as blocked in `references/fonts/sources.json`, not measured.
 
 ## Size, Line Height, and Measure
 

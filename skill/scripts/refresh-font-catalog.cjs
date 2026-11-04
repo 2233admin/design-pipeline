@@ -56,9 +56,20 @@ function remoteFile(url) {
     const response = await request(url, { headers: { Range: `bytes=${offset}-${offset + length - 1}` } });
     if (response.status === 404) throw Object.assign(new Error(`not found: ${url}`), { code: "NOT_FOUND" });
     if (response.status !== 206) throw new Error(`${url} ignored the Range request (HTTP ${response.status}); refusing a full download`);
-    const total = /\/(\d+)$/.exec(response.headers.get("content-range") || "");
-    if (total) state.size = Number(total[1]);
-    return Buffer.from(await response.arrayBuffer());
+    // A 206 must answer exactly the bytes asked for: a shifted, short or over-long body would be
+    // measured as a different (smaller) font without any error.
+    const header = response.headers.get("content-range") || "";
+    const match = /^bytes (\d+)-(\d+)\/(\d+)$/.exec(header.trim());
+    if (!match) throw new Error(`${url} answered 206 without a usable Content-Range (${header || "none"})`);
+    const [start, end, total] = match.slice(1).map(Number);
+    const expectedEnd = Math.min(offset + length, total) - 1;
+    const body = Buffer.from(await response.arrayBuffer());
+    if (start !== offset || end !== expectedEnd || body.length !== expectedEnd - offset + 1) {
+      throw new Error(`${url} answered bytes ${start}-${end} (${body.length} bytes) for ${offset}-${offset + length - 1}; refusing a misaligned or truncated range`);
+    }
+    if (offset + length > total) throw new Error(`${url}: a table at ${offset}+${length} runs past the ${total}-byte file`);
+    state.size = total;
+    return body;
   };
   return { read, state };
 }
@@ -97,7 +108,7 @@ async function measureRemote(url) {
   };
   for (let round = 0; ; round += 1) {
     try {
-      const measured = core.measureFace((name) => tables[name] || null, reader);
+      const measured = core.guarded(url, () => core.measureFace((name) => tables[name] || null, reader));
       return {
         bytes: file.state.size,
         cmapSha256: crypto.createHash("sha256").update(tables.cmap).digest("hex"),
@@ -144,6 +155,12 @@ function parseTextproto(source) {
 const list = (value) => (value === undefined ? [] : [].concat(value));
 
 const LICENSE_FILES = ["OFL.txt", "LICENSE.txt", "UFL.txt", "LICENSE"];
+// What the licence text must contain for the declared licence id to be believed.
+const LICENSE_MARKERS = {
+  OFL: /SIL OPEN FONT LICENSE\s+Version 1\.1/i,
+  APACHE2: /Apache License[\s\S]{0,40}Version 2\.0/i,
+  UFL: /UBUNTU FONT LICEN[CS]E\s+Version 1\.0/i,
+};
 
 async function licenseEvidence(repository, revision, directory, names = LICENSE_FILES) {
   for (const name of names) {
@@ -152,10 +169,29 @@ async function licenseEvidence(repository, revision, directory, names = LICENSE_
     const body = await text(url);
     if (!body) continue;
     const content = body.toString("utf8");
-    const reserved = /with Reserved Font Names? ([^\n.]+)/i.exec(content);
-    return { file: url, sha256: crypto.createHash("sha256").update(body).digest("hex"), reservedFontName: reserved ? reserved[1].trim().replace(/^"|"$/g, "") : null };
+    const reserved = /with Reserved Font Names? ([^\n]+?)\.(?:\s|\[|$)/i.exec(content);
+    const additional = /\[ADDITIONAL PERMISSION\]\s*([^\n]+)/i.exec(content);
+    return {
+      file: url,
+      sha256: crypto.createHash("sha256").update(body).digest("hex"),
+      reservedFontName: reserved ? reserved[1].trim().replace(/^"|"$/g, "") : null,
+      additionalPermission: additional ? additional[1].trim() : null,
+      content,
+    };
   }
   return null;
+}
+
+/** Check the licence text against the declared id; returns the evidence without its body. */
+function verifyLicense(evidence, licenseKey, where, source, problems) {
+  if (!evidence) return null;
+  const { content, ...kept } = evidence;
+  const marker = LICENSE_MARKERS[licenseKey];
+  kept.verified = Boolean(marker && marker.test(content));
+  if (!kept.verified) {
+    problems.push({ source: source.id, path: where, code: "FONT_LICENSE_MISMATCH", message: `${evidence.file} does not contain the ${licenseKey} licence text that is declared for it`, fix: "Read the licence text, then correct the declared licence in sources.json (or METADATA.pb upstream) before using the font." });
+  }
+  return kept;
 }
 
 async function pool(items, worker) {
@@ -177,12 +213,13 @@ function resolveHead(repository) {
   return sha[1];
 }
 
-function familyRecord({ source, family, category, override, licenseKey, licenseFields, files }) {
+function familyRecord({ source, directory, family, category, override, licenseKey, licenseFields, files }) {
   const measuredContrast = files.map((file) => file.measured.contrast.value).filter((value) => value !== null);
   const contrast = measuredContrast.length ? Math.max(...measuredContrast) : null;
   return {
     family,
     source,
+    directory,
     category,
     styles: core.styleTags({ category, contrast, override }),
     contrast,
@@ -204,7 +241,7 @@ async function refreshGoogle(source, revision, licenses, problems) {
     }
     const metadata = parseTextproto(body.toString("utf8"));
     const licenseKey = String(metadata.license || "").toUpperCase();
-    const evidence = await licenseEvidence(source.repository, revision, directory);
+    const evidence = verifyLicense(await licenseEvidence(source.repository, revision, directory), licenseKey, directory, source, problems);
     if (!evidence) problems.push({ source: source.id, path: directory, code: "FONT_LICENSE_TEXT_MISSING", severity: "warning", message: `no licence text (${LICENSE_FILES.join(", ")}) beside METADATA.pb at ${revision}; the licence is declared only by its \`license\` field`, fix: "Read the licence in the family's upstream repository (METADATA.pb `source.repository_url`) and keep that text with the font before shipping it." });
     const files = [];
     const byFile = new Map();
@@ -228,6 +265,7 @@ async function refreshGoogle(source, revision, licenses, problems) {
       directory,
       record: familyRecord({
         source: source.id,
+        directory,
         family: metadata.name,
         category: metadata.category,
         override,
@@ -246,7 +284,7 @@ async function refreshGoogle(source, revision, licenses, problems) {
 }
 
 async function refreshFiles(source, revision, licenses, problems) {
-  const evidence = await licenseEvidence(source.repository, revision, "", [source.licenseFile]);
+  const evidence = verifyLicense(await licenseEvidence(source.repository, revision, "", [source.licenseFile]), source.license.toUpperCase(), source.licenseFile, source, problems);
   if (!evidence) problems.push({ source: source.id, path: source.licenseFile, code: "FONT_LICENSE_MISSING", message: `${source.licenseFile} is not found at ${revision}`, fix: "Point licenseFile at the licence text in the repository." });
   const files = await pool(source.files, async (entry) => {
     const url = rawUrl(source.repository, revision, entry.path);
@@ -264,6 +302,7 @@ async function refreshFiles(source, revision, licenses, problems) {
     directory: source.id,
     record: familyRecord({
       source: source.id,
+      directory: source.id,
       family: source.family,
       category: source.category,
       override: source.styles,
@@ -290,6 +329,24 @@ async function discoverGoogle(source, problems) {
   }
 }
 
+/**
+ * The catalog parts after a refresh. With a base and a source id, the base keeps every other
+ * source's families, revision and problems; cmaps no family references any more are dropped.
+ */
+function mergeCatalog(base, sourceId, fresh) {
+  const keep = base && sourceId ? base : { families: [], problems: [], revisions: {}, cmaps: {} };
+  const others = (list) => (list || []).filter((item) => item.source !== sourceId);
+  const families = [...others(keep.families), ...fresh.families].sort((a, b) => a.source.localeCompare(b.source) || String(a.directory || a.family).localeCompare(String(b.directory || b.family)));
+  const used = new Set(families.flatMap((family) => family.files.map((file) => file.cmap)));
+  const cmaps = { ...(keep.cmaps || {}), ...fresh.cmaps };
+  return {
+    families,
+    problems: [...others(keep.problems), ...fresh.problems].sort((a, b) => `${a.source}/${a.path}`.localeCompare(`${b.source}/${b.path}`)),
+    revisions: Object.fromEntries(Object.entries({ ...Object.fromEntries(Object.entries(keep.revisions || {}).filter(([id]) => id !== sourceId)), ...fresh.revisions }).sort(([a], [b]) => a.localeCompare(b))),
+    cmaps: Object.fromEntries(Object.entries(cmaps).filter(([id]) => used.has(id)).sort(([a], [b]) => a.localeCompare(b))),
+  };
+}
+
 async function main() {
   const args = JSON.parse(process.argv[2] || "{}");
   const sources = core.loadSources(args.sourcesFile || core.SOURCES_FILE);
@@ -303,7 +360,8 @@ async function main() {
     let revision = source.revision;
     if (args.revision) revision = args.revision === "head" ? resolveHead(source.repository) : args.revision;
     if (!/^[0-9a-f]{40}$/.test(revision)) throw new Error(`revision for ${source.id} must be a 40-hex commit, got ${revision}`);
-    revisions[source.id] = { repository: source.repository, revision };
+    // `pinned` is the registry pin in force: a cache refreshed under an older pin is stale after an upgrade.
+    revisions[source.id] = { repository: source.repository, revision, pinned: source.revision };
     const found = source.kind === "google-fonts" ? await refreshGoogle(source, revision, sources.licenses, problems) : await refreshFiles(source, revision, sources.licenses, problems);
     records.push(...found);
     if (args.discover && source.kind === "google-fonts") discovery[source.id] = await discoverGoogle(source, problems);
@@ -339,18 +397,29 @@ async function main() {
       const { licenseKey, ...rest } = record;
       return { ...rest, files, coverage };
     });
+  // `--source <id>` replaces only that source's entries in the existing output (or, when there is
+  // none yet, in the packaged catalog) and keeps every other source with its revision and problems.
+  const output = path.resolve(args.output);
+  let base = null;
+  if (args.source) {
+    const baseFile = fs.existsSync(output) ? output : core.CATALOG_FILE;
+    try {
+      base = JSON.parse(fs.readFileSync(baseFile, "utf8"));
+    } catch {}
+    if (!base || base.schema !== core.CATALOG_SCHEMA) throw new Error(`${baseFile} is not a ${core.CATALOG_SCHEMA} catalog to merge --source ${args.source} into; refresh without --source or pass another --output`);
+  }
+  const merged = mergeCatalog(base, args.source, { families, problems, revisions, cmaps });
   const catalog = {
     schema: core.CATALOG_SCHEMA,
     generator: "designer-pipeline fonts refresh",
     sourcesSchema: sources.schema,
-    revisions,
+    revisions: merged.revisions,
     glyphSets: Object.fromEntries(Object.entries(core.glyphSets()).map(([id, set]) => [id, { label: set.label, total: set.codepoints.length }])),
-    contrast: { glyph: "十 (U+5341)", measure: "stem width at 85% height / bar thickness at 15% width, default instance; family value is its highest file", high: core.HIGH_CONTRAST },
-    families,
-    problems: problems.sort((a, b) => `${a.source}/${a.path}`.localeCompare(`${b.source}/${b.path}`)),
-    cmaps: Object.fromEntries(Object.entries(cmaps).sort(([a], [b]) => a.localeCompare(b))),
+    contrast: { glyph: "十 (U+5341)", measure: "stem width at 85% height / bar thickness at 15% width; static files at their own weight, variable files at their heaviest wght instance (gvar applied); family value is its highest file", high: core.HIGH_CONTRAST },
+    families: merged.families,
+    problems: merged.problems,
+    cmaps: merged.cmaps,
   };
-  const output = path.resolve(args.output);
   fs.mkdirSync(path.dirname(output), { recursive: true });
   const serialized = `${JSON.stringify(catalog, null, 1)}\n`;
   fs.writeFileSync(`${output}.tmp`, serialized);
@@ -362,8 +431,9 @@ async function main() {
     bytes: Buffer.byteLength(serialized),
     sha256: crypto.createHash("sha256").update(serialized).digest("hex"),
     revisions,
-    families: families.length,
-    files: families.reduce((sum, family) => sum + family.files.length, 0),
+    families: catalog.families.length,
+    files: catalog.families.reduce((sum, family) => sum + family.files.length, 0),
+    refreshed: Object.keys(revisions),
     problems,
     discovery,
   })}\n`);
@@ -377,4 +447,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { parseTextproto, rawUrl, measureRemote };
+module.exports = { mergeCatalog, parseTextproto, rawUrl, measureRemote };
