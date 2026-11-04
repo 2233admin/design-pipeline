@@ -19,13 +19,19 @@ HyperFrames headless shell, else an installed Chrome, Edge or Chromium; see inst
 needs `puppeteer-core` in the project or `--puppeteer-module <absolute path to puppeteer-core>`
 on the call; without either it fails with `puppeteer-core not found`. It writes `screenshot.png`
 plus `elements.json` (visible text with box, size, weight and effective colors).
-`--seek <sec>` positions the page first. On a HyperFrames composition (a `data-composition-id`
-root) it seeks through the HyperFrames runtime, as `hyperframes render` does for each frame, so
-clips outside their `data-start`/`data-duration` window are hidden and the capture matches the
-rendered frame; a local `index.html` uses the runtime from the project's `hyperframes` install
-(`film scaffold` pins it), a preview URL its own. Without the runtime, `--seek` on such a page is
-refused with the PNG-sequence render command instead. Other pages seek their registered GSAP
-timelines. The result names the clock: `seek.clock` is `hyperframes-runtime` or `timeline`.
+`--seek <sec>` positions the page first. A page whose loaded DOM has a `[data-composition-id]`
+root is a HyperFrames composition (a mention in a comment or string does not count). It is reloaded
+the way `hyperframes render` prepares a frame: the render frame rate (the root's `data-fps`, else 30)
+is set before any script, the HyperFrames runtime is present (the page's own, as in the preview, else
+the project's `hyperframes` install; `film scaffold` pins it), and the runtime's `renderSeek` moves
+it. Clips outside their `data-start`/`data-duration` window are hidden, so the capture matches the
+rendered frame. The runtime snaps the time to that frame rate: `seek.appliedSec` in the result is
+the frame time actually shown next to the requested `seek.atSec` (`--seek 3.99` at 24 fps shows
+3.9583 s), with `seek.fps` and `seek.durationSec`. A time at or past the duration has no rendered
+frame and fails with `SEEK_OUT_OF_RANGE`, naming the duration and the last frame time. Without the
+runtime, `--seek` on such a page fails with `TOOL_MISSING` and the PNG-sequence render command.
+Other pages seek their registered GSAP timelines as given (`seek.clock` is `timeline`; for
+HyperFrames it is `hyperframes-runtime`).
 Without `--elements` the gate runs on pixels alone.
 
 Errors fail the gate: `blank-frame`, `low-contrast`, `text-contrast` (WCAG 4.5:1, 3:1 large),

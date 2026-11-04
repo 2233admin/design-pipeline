@@ -16,13 +16,18 @@ capture measure content that never appears in the film.
   page's scripts as the renderer injects it. A `--url` (the HyperFrames preview) already carries its runtime.
 - Without a runtime, `--seek` on a HyperFrames page is refused (`TOOL_MISSING`) with the fix: install the project, or
   take the frame from `hyperframes render --format png-sequence`.
-- Pages without a `data-composition-id` root keep the timeline seek. The command result records
-  `seek: {atSec, clock}` with `clock` `hyperframes-runtime` or `timeline`, the vocabulary the film layout probe uses.
-- `--seek` must be a non-negative number.
+- The page is recognised by a `[data-composition-id]` element in its loaded DOM, then reloaded with the render
+  frame rate (`data-fps`, else 30) set before the runtime starts, as the renderer does.
+- The runtime snaps the time to that frame rate; the result records `seek: {atSec, appliedSec, fps, durationSec,
+  clock}`. A time at or past the duration fails with `SEEK_OUT_OF_RANGE`: the render has no frame there.
+- Pages without such an element keep the timeline seek (`clock: timeline`), the vocabulary the film layout probe uses.
+- `--seek` must be a non-negative number. The CLI keeps the kernel's `TOOL_MISSING` and `SEEK_OUT_OF_RANGE` codes
+  instead of `KERNEL_FAILED`.
 
 ## Reused
 
 - `film-capture-core.cjs` gains `resolveHyperframesRuntime` beside `resolvePuppeteer`; no new gate, schema or flag.
+- `runKernel` code propagation uses the allow-list mechanism of PR #251.
 - The layout probe (`film check`) keeps emulating clip windows when it has no runtime; this change does not touch it.
 
 ## Out of scope

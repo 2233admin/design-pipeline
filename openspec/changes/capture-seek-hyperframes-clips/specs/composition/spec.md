@@ -2,7 +2,7 @@
 
 ### Requirement: Seeked captures follow the HyperFrames clock
 
-`composition capture --seek <t>` on a page with a `data-composition-id` root SHALL seek through the HyperFrames runtime the renderer uses, so clips outside their `data-start`/`data-duration` window are hidden as in the rendered frame. Without that runtime it SHALL refuse and name the PNG-sequence render. Other pages SHALL seek their registered timelines. The result SHALL record which clock seeked.
+`composition capture --seek <t>` on a page whose DOM has a `data-composition-id` root SHALL seek through the HyperFrames runtime at the render frame rate, hiding clips outside their windows as the rendered frame does, and SHALL record the requested and applied time. A time at or past the duration SHALL fail with `SEEK_OUT_OF_RANGE`; a missing runtime with `TOOL_MISSING` naming the PNG-sequence render. Other pages SHALL seek their timelines.
 
 #### Scenario: Clip outside its window
 
@@ -18,7 +18,22 @@
 #### Scenario: Runtime missing
 
 - **WHEN** `--seek` is given for a HyperFrames composition whose project has no `hyperframes` install, or a served HyperFrames page without the runtime
-- **THEN** the capture SHALL fail with `TOOL_MISSING`, write no screenshot, and name `hyperframes render --format png-sequence`
+- **THEN** the CLI SHALL fail with error code `TOOL_MISSING`, write no screenshot, and name `hyperframes render --format png-sequence`
+
+#### Scenario: Time snapped to the frame rate
+
+- **WHEN** the root has `data-fps="24"` and the capture seeks to 3.99 s
+- **THEN** the result SHALL record `atSec: 3.99`, `fps: 24` and `appliedSec` 95/24 s, the frame the render shows
+
+#### Scenario: Time past the end
+
+- **WHEN** a 4 s composition is captured with `--seek 4` or `--seek 11`
+- **THEN** the CLI SHALL fail with error code `SEEK_OUT_OF_RANGE` naming the 4 s duration and the last frame time, and write no screenshot
+
+#### Scenario: Mention outside the DOM
+
+- **WHEN** a page without a `data-composition-id` element mentions the attribute in a comment or script string
+- **THEN** the capture SHALL seek its timelines and record `seek.clock: timeline`
 
 #### Scenario: Page without clips
 

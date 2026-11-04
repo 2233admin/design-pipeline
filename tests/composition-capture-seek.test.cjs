@@ -33,7 +33,7 @@ const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "dp-capture-seek-"));
 
 // Three clips: #world for the whole film, #early 0-1 s (ends exactly at a sampled time), #late
 // 2-3 s. The timeline also moves #always, so the frame depends on both clock parts.
-function film(dir, { withRuntime }) {
+function film(dir, { withRuntime, fps = null, comment = "" }) {
   fs.mkdirSync(path.join(dir, "lib"), { recursive: true });
   fs.copyFileSync(TOOLS.gsap, path.join(dir, "lib/gsap.min.js"));
   if (withRuntime) {
@@ -43,7 +43,7 @@ function film(dir, { withRuntime }) {
   fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><html><head><meta charset="UTF-8"><script src="lib/gsap.min.js"></script>
 <style>*{margin:0;padding:0}html,body{width:640px;height:360px;overflow:hidden;background:#0b0d12}
 #root{position:relative;width:100%;height:100%}h1{position:absolute;font:bold 48px sans-serif;white-space:nowrap}</style></head><body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="4" data-width="640" data-height="360">
+${comment}<div id="root" data-composition-id="main" data-start="0" data-duration="4"${fps ? ` data-fps="${fps}"` : ""} data-width="640" data-height="360">
 <div id="world" class="clip" data-start="0" data-duration="4" data-track-index="0"><h1 id="always" style="left:20px;top:20px;color:#fff">ALWAYS</h1></div>
 <div id="early" class="clip" data-start="0" data-duration="1" data-track-index="1"><h1 style="left:20px;top:150px;color:#0ff">EARLY CLIP</h1></div>
 <div id="late" class="clip" data-start="2" data-duration="1" data-track-index="2"><h1 style="left:20px;top:270px;color:#f0f">LATE CLIP</h1></div>
@@ -112,7 +112,7 @@ test("--seek on a HyperFrames composition matches the rendered frame", { skip: T
       const run = capture(dir, output, at);
       assert.equal(run.status, 0, run.stderr || run.stdout);
       const result = JSON.parse(run.stdout);
-      assert.deepEqual(result.seek, { atSec: at, clock: "hyperframes-runtime" });
+      assert.deepEqual(result.seek, { atSec: at, appliedSec: at, fps: 30, durationSec: 4, clock: "hyperframes-runtime" });
       const elements = JSON.parse(fs.readFileSync(path.join(output, "elements.json"), "utf8"));
       assert.deepEqual(elements.items.filter((item) => item.kind === "text").map((item) => item.text).sort(), [...shown].sort(), `text at ${at}s`);
       const renderFrame = path.join(frames, `frame_${String(frame).padStart(6, "0")}.png`);
@@ -125,17 +125,69 @@ test("--seek on a HyperFrames composition matches the rendered frame", { skip: T
   }
 });
 
-test("--seek on a HyperFrames composition without the runtime is refused with the render command", () => {
+const cliJson = (run) => JSON.parse(run.stdout);
+
+test("--seek on a HyperFrames composition without the runtime is refused with the render command", { skip: TOOLS.skip, timeout: 120000 }, () => {
   const dir = tmp();
   try {
-    if (TOOLS.gsap) film(dir, { withRuntime: false });
-    else fs.writeFileSync(path.join(dir, "index.html"), '<div data-composition-id="main" data-duration="4"></div>');
-    const run = spawnSync(process.execPath, [cli, "composition", "capture", "--root", dir, "--composition", "index.html", "--output", "cap", "--seek", "0.5", "--json"], { cwd: dir, encoding: "utf8", windowsHide: true, timeout: 60000 });
-    assert.notEqual(run.status, 0);
-    const text = `${run.stdout}${run.stderr}`;
-    assert.match(text, /clip windows \(data-start\/data-duration\)/);
-    assert.match(text, /hyperframes render --format png-sequence/);
+    film(dir, { withRuntime: false });
+    const run = capture(dir, path.join(dir, "cap"), 0.5);
+    assert.equal(run.status, 1);
+    const { error } = cliJson(run);
+    assert.equal(error.code, "TOOL_MISSING");
+    assert.match(error.message, /clip windows \(data-start\/data-duration\)/);
+    assert.match(error.message, /hyperframes render --format png-sequence/);
     assert.equal(fs.existsSync(path.join(dir, "cap", "screenshot.png")), false);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+// The runtime quantises to the render's frame rate (root data-fps, else 30) and reports the time
+// it applied; a time at or past the end has no rendered frame and is refused.
+test("--seek reports the frame time applied at the composition's fps and refuses times past the end", { skip: TOOLS.skip, timeout: 300000 }, () => {
+  const dir = tmp();
+  try {
+    for (const [fps, at, applied] of [[24, 0.53, 0.5], [24, 3.99, 95 / 24], [60, 0.53, 31 / 60], [60, 3.99, 239 / 60], [null, 0.53, 0.5]]) {
+      fs.rmSync(dir, { recursive: true, force: true });
+      fs.mkdirSync(dir);
+      film(dir, { withRuntime: true, fps });
+      const run = capture(dir, path.join(dir, "cap"), at);
+      assert.equal(run.status, 0, run.stderr || run.stdout);
+      const { seek } = cliJson(run);
+      assert.equal(seek.clock, "hyperframes-runtime");
+      assert.equal(seek.fps, fps || 30);
+      assert.equal(seek.atSec, at);
+      assert.ok(Math.abs(seek.appliedSec - applied) < 1e-9, `${fps} fps, --seek ${at}: applied ${seek.appliedSec}, expected ${applied}`);
+    }
+    for (const at of [4, 11]) {
+      const run = capture(dir, path.join(dir, `past-${at}`), at);
+      assert.equal(run.status, 1);
+      const { error } = cliJson(run);
+      assert.equal(error.code, "SEEK_OUT_OF_RANGE");
+      assert.match(error.message, /duration 4 s at 30 fps/);
+      assert.match(error.message, /last frame is at 3\.9667 s/);
+      assert.equal(fs.existsSync(path.join(dir, `past-${at}`, "screenshot.png")), false);
+    }
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("a data-composition-id mention outside the DOM does not make a page HyperFrames", { skip: TOOLS.skip, timeout: 120000 }, () => {
+  const dir = tmp();
+  try {
+    fs.copyFileSync(TOOLS.gsap, path.join(dir, "gsap.min.js"));
+    fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><html><head><script src="gsap.min.js"></script>
+<style>body{margin:0;background:#fff}h1{position:absolute;left:0;top:0;font:40px sans-serif}</style></head><body>
+<!-- <div data-composition-id="main" data-duration="4"> was the old root -->
+<h1 id="t">Moves</h1><script>
+const note = '<div data-composition-id="x">';
+const tl = gsap.timeline({ paused: true }); tl.to("#t", { x: 200, duration: 2, ease: "none" }, 0); window.__timelines.main = tl;
+</script></body></html>`);
+    const run = capture(dir, path.join(dir, "cap"), 1);
+    assert.equal(run.status, 0, run.stderr || run.stdout);
+    assert.deepEqual(cliJson(run).seek, { atSec: 1, clock: "timeline" });
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -162,7 +214,8 @@ test("--seek on a served HyperFrames page without the runtime is refused", { ski
       child.on("close", (status) => resolve({ status, out }));
     });
     assert.notEqual(run.status, 0, run.out);
-    assert.match(run.out, /HyperFrames runtime, which did not become ready/);
+    assert.equal(JSON.parse(run.out.trim().split("\n")[0]).error.code, "TOOL_MISSING");
+    assert.match(run.out, /does not load it/);
     assert.match(run.out, /hyperframes render --format png-sequence/);
   } finally {
     server.close();

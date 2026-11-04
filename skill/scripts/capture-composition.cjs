@@ -4,8 +4,9 @@
 // Kernel for `composition capture`: loads a page (local HTML file or http(s) URL) in headless
 // Chrome, writes screenshot.png and elements.json (visible text with box, font and effective
 // colors; block boxes for alignment). Reuses the browser stack resolved for film capture.
-// --seek on a HyperFrames composition seeks through the HyperFrames runtime, as the renderer
-// does, so clip windows (data-start/data-duration) hide what the rendered frame does not show.
+// --seek on a HyperFrames composition seeks through the HyperFrames runtime at the render's frame
+// rate, as the renderer does, so clip windows (data-start/data-duration) hide what the rendered
+// frame does not show; see seekPage.
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -72,27 +73,65 @@ function extract() {
   return { viewport: { width: innerWidth, height: innerHeight }, background: effectiveBackground(document.body), items };
 }
 
-const HYPERFRAMES_ROOT = /<[^>]*\sdata-composition-id\s*=/i;
 const RENDER_FIX = "take the frame from the real render instead: `npx --no-install hyperframes render --format png-sequence --output <dir>` in the film project (frame_000001.png is 0 s; frame N is at (N-1)/fps seconds)";
 
-// Seeks the page and returns the clock that drove it. A HyperFrames page goes through the
-// runtime's renderSeek (what `hyperframes render` calls for every frame); any other page seeks
-// its registered timelines, which cannot hide clips outside their windows.
-async function seekPage(page, at) {
-  const { hyperframes, runtime } = await page.evaluate(() => ({ hyperframes: Boolean(document.querySelector("[data-composition-id]")), runtime: Boolean(window.__hyperframes || window.__player || window.__hf) }));
-  if (!hyperframes) {
+// The frame rate `hyperframes render` uses: the root's data-fps (an integer, decimal or
+// ffmpeg-style rational such as 30000/1001), else 30.
+function renderFps(raw) {
+  const text = String(raw || "").trim();
+  const rational = /^(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/.exec(text);
+  const value = rational ? Number(rational[1]) / Number(rational[2]) : /^\d+(?:\.\d+)?$/.test(text) ? Number(text) : NaN;
+  return Number.isFinite(value) && value > 0 ? value : 30;
+}
+
+// Seeks the loaded page and returns the seek record. A page with a [data-composition-id] root
+// (checked in the DOM, so a mention in a comment or string does not count) is reloaded the way
+// the renderer prepares it: its frame rate set before any script and the HyperFrames runtime
+// present (the page's own, else the project's install), then seeked with the runtime's
+// renderSeek, the call `hyperframes render` makes for each frame. Other pages seek their
+// registered timelines, which cannot hide clips outside their data-start/data-duration windows.
+async function seekPage(page, { url, compositionDir, at }) {
+  const probe = await page.evaluate(() => {
+    const root = document.querySelector("[data-composition-id]");
+    return { hyperframes: Boolean(root), fps: root && root.getAttribute("data-fps"), runtime: Boolean(window.__hyperframes || window.__player || window.__hf) };
+  });
+  if (!probe.hyperframes) {
     await page.evaluate((t) => { for (const tl of Object.values(window.__timelines || {})) if (tl && tl.seek) tl.seek(t, false); }, at);
-    return "timeline";
+    return { atSec: at, clock: "timeline" };
   }
-  // A runtime that is still building scenes gets time to finish; a page without one fails now.
-  const ready = runtime && await page.waitForFunction(() => window.__renderReady === true && window.__player && typeof window.__player.renderSeek === "function", { timeout: 30000 }).then(() => true, () => false);
+  const fps = renderFps(probe.fps);
+  // Same shape and defaults the renderer's render-mode script installs; the runtime reads it at start.
+  await page.evaluateOnNewDocument((value) => {
+    window.__HF_EXPORT_RENDER_SEEK_CONFIG = { mode: "preview-phase", diagnostics: false, step: 1 / 120, offsetFraction: 0.5, fps: value, fpsSource: "render-options", owner: "runtime" };
+  }, fps);
+  if (!probe.runtime) {
+    const runtime = compositionDir ? resolveHyperframesRuntime(compositionDir) : null;
+    if (!runtime) {
+      const where = compositionDir ? `hyperframes is not installed for ${compositionDir}. Fix: run \`npm install\` in the film project (film scaffold pins hyperframes), or ${RENDER_FIX}` : `the page at ${url} does not load it. Fix: capture through the HyperFrames preview or the project's index.html with hyperframes installed, or ${RENDER_FIX}`;
+      fail("composition capture", `--seek on a HyperFrames composition needs the HyperFrames runtime to apply clip windows (data-start/data-duration), and ${where}`, { code: "TOOL_MISSING" });
+    }
+    await page.evaluateOnNewDocument(fs.readFileSync(runtime, "utf8"));
+  }
+  await page.goto(url, { waitUntil: "networkidle0", timeout: 30000 });
+  // A runtime that is still building scenes gets time to finish.
+  const ready = await page.waitForFunction(() => window.__renderReady === true && window.__player && typeof window.__player.renderSeek === "function", { timeout: 30000 }).then(() => true, () => false);
   if (!ready) fail("composition capture", `--seek on a HyperFrames composition needs the HyperFrames runtime, which did not become ready on this page, so clip windows (data-start/data-duration) would not apply. Fix: capture the project's index.html with hyperframes installed (npm install in the film project), or ${RENDER_FIX}`, { code: "TOOL_MISSING" });
-  await page.evaluate(async (t) => {
+  // The renderer's duration: the runtime's, else the root's data-duration.
+  const durationSec = await page.evaluate(() => {
+    const value = Number(window.__player.getDuration());
+    return value > 0 ? value : Number(document.querySelector("[data-composition-id]").getAttribute("data-duration")) || 0;
+  });
+  if (!(at < durationSec)) {
+    const lastFrameSec = Math.max(0, Math.ceil(durationSec * fps - 1e-9) - 1) / fps;
+    fail("composition capture", `--seek ${at} is at or past the end of the composition (duration ${durationSec} s at ${Number(fps.toFixed(3))} fps); the render has no frame there, its last frame is at ${Number(lastFrameSec.toFixed(4))} s. Fix: pass --seek below ${durationSec}`, { code: "SEEK_OUT_OF_RANGE" });
+  }
+  const appliedSec = await page.evaluate(async (t) => {
     window.__player.renderSeek(t);
     if (typeof window.__hfWaitForSeekCompletion === "function") await window.__hfWaitForSeekCompletion();
     await document.fonts.ready;
+    return Number(window.__player.getTime());
   }, at);
-  return "hyperframes-runtime";
+  return { atSec: at, appliedSec, fps, durationSec, clock: "hyperframes-runtime" };
 }
 
 (async () => {
@@ -108,26 +147,21 @@ async function seekPage(page, at) {
     if (!file && !/^https?:\/\//.test(url)) fail("composition capture", "--url must be http(s)");
     const seek = options["--seek"] === undefined ? null : Number(options["--seek"]);
     if (seek !== null && !(Number.isFinite(seek) && seek >= 0)) fail("composition capture", `--seek must be a non-negative number of seconds, got ${options["--seek"]}`);
-    // The renderer injects the runtime into the page; a bare index.html needs the project's copy.
-    let runtime = null;
-    if (seek !== null && file && HYPERFRAMES_ROOT.test(fs.readFileSync(file, "utf8"))) {
-      runtime = resolveHyperframesRuntime(path.dirname(file));
-      if (!runtime) fail("composition capture", `--seek on a HyperFrames composition needs the HyperFrames runtime to apply clip windows (data-start/data-duration), and hyperframes is not installed for ${file}. Fix: run \`npm install\` in the film project (film scaffold pins hyperframes), or ${RENDER_FIX}`, { code: "TOOL_MISSING" });
-    }
     const puppeteer = resolvePuppeteer(file ? path.dirname(file) : process.cwd(), options["--puppeteer-module"]);
     browser = await puppeteer.launch({ executablePath: resolveBrowser(options["--chrome"]), headless: true, args: ["--allow-file-access-from-files"] });
     const page = await browser.newPage();
     await page.setViewport({ width, height });
     await page.evaluateOnNewDocument(() => { window.__timelines = window.__timelines || {}; });
-    if (runtime) await page.evaluateOnNewDocument(fs.readFileSync(runtime, "utf8"));
     await page.goto(url, { waitUntil: "networkidle0", timeout: 30000 });
-    const clock = seek === null ? null : await seekPage(page, seek);
+    const seeked = seek === null ? null : await seekPage(page, { url, compositionDir: file ? path.dirname(file) : null, at: seek });
     fs.mkdirSync(output, { recursive: true });
     await page.screenshot({ path: path.join(output, "screenshot.png"), type: "png" });
     const elements = await page.evaluate(extract);
     fs.writeFileSync(path.join(output, "elements.json"), `${JSON.stringify(elements, null, 2)}\n`);
-    process.stdout.write(`${JSON.stringify(jsonResult(true, { status: "captured", output, screenshot: "screenshot.png", elements: "elements.json", items: elements.items.length, ...(clock ? { seek: { atSec: seek, clock } } : {}) }))}\n`);
+    process.stdout.write(`${JSON.stringify(jsonResult(true, { status: "captured", output, screenshot: "screenshot.png", elements: "elements.json", items: elements.items.length, ...(seeked ? { seek: seeked } : {}) }))}\n`);
   } catch (error) {
+    // stderr keeps the message; the JSON error on stdout carries the code for the CLI to keep.
+    process.stdout.write(`${JSON.stringify(jsonResult(false, {}, error))}\n`);
     process.stderr.write(`${error.message}\n`);
     process.exitCode = 1;
   } finally {

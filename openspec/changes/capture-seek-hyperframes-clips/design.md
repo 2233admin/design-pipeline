@@ -5,20 +5,33 @@
    window is `[start, start + duration)`), seeks the registered timelines and syncs media. Calling it gives the same
    frame the render captures, including future runtime behaviour, so no clip-window logic is re-implemented here.
    The clip-window emulation in `layout-probe.js` stays the fallback for `film check` only.
-2. **Where the runtime comes from.** A local composition gets `hyperframes/dist/hyperframe.runtime.iife.js` from the
-   project's install via `page.evaluateOnNewDocument`, before any page script, as the renderer injects it at the
-   head start. Resolution bases are the composition directory then the working directory (same as `puppeteer-core`).
-   The pinned film scaffold (0.8.137) and the workspace (0.8.164) both ship that file. Pages are recognised by a
-   `data-composition-id` attribute in the file (local) or in the DOM (URL).
-3. **Refuse instead of guessing.** No runtime file, or a served page whose runtime never reports ready
-   (`__renderReady` and `__player.renderSeek`, 30 s while a runtime is present; immediately when none is), fails with
-   `TOOL_MISSING` and names `npx --no-install hyperframes render --format png-sequence --output <dir>` and how frame
-   numbers map to seconds. The refusal happens before the browser launches for local files.
-4. **Only `--seek` changes.** Without `--seek` the capture is the page's load state as before; `appearance-ledger`
+2. **Where the runtime comes from, and how the page is recognised.** After the first load the DOM is queried for
+   `[data-composition-id]` (a mention in a comment or script string does not count; review of #277). A HyperFrames
+   page is then reloaded with what the renderer installs before any script: `__HF_EXPORT_RENDER_SEEK_CONFIG`
+   (the render-mode script's shape and defaults, with the render frame rate) and, when the page has no runtime of
+   its own, the project's `hyperframes/dist/hyperframe.runtime.iife.js`. Resolution bases are the composition
+   directory then the working directory (same as `puppeteer-core`). The runtime reads the config only at start
+   (setting it after load left 30 fps in a measurement), hence the reload. The pinned film scaffold (0.8.137), the
+   workspace (0.8.164) and 0.9.9 ship that file and behave the same (independent review).
+3. **Frame rate, quantisation and range.** `hyperframes render` uses `--fps`, else the root's `data-fps`, else 30;
+   the capture uses `data-fps` (integer, decimal or rational such as `30000/1001`) else 30. `renderSeek` snaps the
+   time to that frame grid, so the result records `appliedSec` from `__player.getTime()` next to the requested
+   `atSec`, plus `fps` and `durationSec`. Measured: `--seek 3.99` gives 95/24 s at 24 fps, 239/60 s at 60 fps,
+   119/30 s with no `data-fps`. The duration is the renderer's (`__player.getDuration()`, else the root's
+   `data-duration`); the runtime clamps later times to the end, a frame the render never produces, so `--seek` at
+   or past it fails with `SEEK_OUT_OF_RANGE` naming the duration and the last frame time.
+4. **Refuse instead of guessing.** No runtime file, a served page without a runtime, or a runtime that never
+   reports ready (`__renderReady` and `__player.renderSeek`, 30 s) fails with `TOOL_MISSING` and names
+   `npx --no-install hyperframes render --format png-sequence --output <dir>` and how frame numbers map to seconds.
+5. **Error codes reach the caller.** `runKernel` turned every kernel exit 1 into `KERNEL_FAILED`. The kernel now also
+   prints its JSON error on stdout, and `runKernel` keeps codes in `PROPAGATED_KERNEL_CODES` (`TOOL_MISSING`,
+   `SEEK_OUT_OF_RANGE`), the mechanism PR #251 adds for `REFERENCE_*`; when both land the set is their union.
+   `capture-web-evidence.cjs` is the only other kernel printing JSON errors, so its `TOOL_MISSING` is now kept too.
+6. **Only `--seek` changes.** Without `--seek` the capture is the page's load state as before; `appearance-ledger`
    and the design-system previews call capture without it and are unaffected.
-5. **Result shape.** `seek: {atSec, clock}` is added to the CLI result only (not to `elements.json`), so
+7. **Result shape.** `seek: {atSec, appliedSec, fps, durationSec, clock}` (only `atSec` and `clock` for timeline pages) is added to the CLI result only (not to `elements.json`), so
    `verify composition` and existing `elements.json` readers see no change.
-6. **Compatibility with open work.** PR #266 turns the kernel's IIFE into `main()` and exports `extract`; this change
+8. **Compatibility with open work.** PR #266 turns the kernel's IIFE into `main()` and exports `extract`; this change
    adds `seekPage` beside `extract` and edits only the body, so the two merge cleanly. The planned
    `capture-stable-frames` order (navigate, seek, freeze, settle) still holds: seeking finishes before the
    screenshot.
