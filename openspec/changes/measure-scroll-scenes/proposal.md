@@ -12,17 +12,19 @@ progress or checks that it settles there (#242).
 ## What Changes
 
 - `interaction.json` (`design-pipeline.interaction-probe.v1`) accepts a third named probe kind,
-  `"kind": "scroll"`, with `id`, `target` and optional `points` (default 10), `settleMs` (default
-  1200, the motion probe's settle default), `restWindowMs` (default 300) and `viewports` (default
-  desktop 1440x900 and phone 390x844 `mobile: true`). Planned waiting is capped at 120 s per probe.
+  `"kind": "scroll"`, with `id`, `target` and optional `points` (default 6), `settleMs` and
+  `reducedSettleMs` (default 1200 each, the motion probe's settle default), `restWindowMs` (default
+  300), `viewports` (default desktop 1440x900 and phone 390x844 `mobile: true`) and `ignore`
+  (selectors of ambient elements). The planned time is capped at 120 s per probe.
 - The existing interaction capture (`capture-interaction.cjs` through `interaction-capture-core.cjs`)
   loads the page per viewport twice, with `prefers-reduced-motion` `no-preference` and `reduce`, and
-  scrolls instantly to the scene's progress points: before, 0 %, 10 % ... 100 %, after. At each it
-  waits `settleMs`, records the scene state and a screenshot, waits `restWindowMs` and records how
+  scrolls the target's nearest scrolling ancestor (else the page) instantly to the scene's
+  progress points: before, 0 % ... 100 %, after. At each it waits the pass's settle, records the scene state and a screenshot, waits `restWindowMs` and records how
   far the scene still moved.
 - The evaluator adds two findings to the existing interaction result, each with a concrete `fix`:
   `scroll-never-started` (motion pass: no progress point differs from the 0 % frame) and
-  `scroll-never-rests` (any pass: a held position still changed in the rest window). Page errors
+  `scroll-never-rests` (any pass: a held position still changed in the rest window, beyond 2 px
+  with motion allowed and 0.5 px under reduced motion). Page errors
   seen during the pass are named in the never-started message. Requests outside the project fail
   with the existing `external-request` finding.
 - `verify interaction` writes one labelled contact sheet per viewport and pass under
@@ -44,4 +46,4 @@ progress or checks that it settles there (#242).
 ## Impact
 
 - Existing probe files are unchanged; a probe file without a scroll probe captures exactly as before.
-- A scroll probe adds browser time (about 80 s planned waiting at the defaults, plus screenshots).
+- A scroll probe adds browser time (about 67 s planned at the defaults, plus screenshots).

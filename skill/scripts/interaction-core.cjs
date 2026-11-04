@@ -638,6 +638,8 @@ function evaluateProbeFile(doc, capture, options = {}) {
     status: probes.some((probe) => probe.status === "failed") ? "failed" : "passed",
     probes,
     findings: probes.flatMap((probe) => probe.findings.map((finding) => ({ probeId: probe.id, ...finding }))),
+    // Measurement notes that are not findings (a scroll point that snapped away from its plan).
+    ...(probes.some((probe) => probe.notes) ? { notes: probes.flatMap((probe) => (probe.notes || []).map((note) => `${probe.id}: ${note}`)) } : {}),
   };
 }
 

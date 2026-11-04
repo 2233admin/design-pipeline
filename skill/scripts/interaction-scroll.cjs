@@ -25,30 +25,36 @@
 const { assertKeys, assertString, fail, isObject } = require("./contract-utils.cjs");
 
 const SCOPE = "interaction probe";
-const SCROLL_KEYS = ["id", "kind", "target", "points", "settleMs", "restWindowMs", "viewports"];
+const SCROLL_KEYS = ["id", "kind", "target", "points", "settleMs", "reducedSettleMs", "restWindowMs", "viewports", "ignore"];
 const DEFAULT_SCROLL_VIEWPORTS = [{ width: 1440, height: 900, mobile: false }, { width: 390, height: 844, mobile: true }];
-const DEFAULTS = { points: 10, settleMs: 1200, restWindowMs: 300 };
+const DEFAULTS = { points: 6, settleMs: 1200, reducedSettleMs: 1200, restWindowMs: 300 };
 const MAX_VIEWPORTS = 4;
 const MAX_VIEWPORT_PX = 4096;
 const MAX_POINTS = 20;
-// Planned waiting per probe (viewports x 2 passes x frames x (settle + rest window)). The CLI gives
-// the capture kernel this budget on top of its usual minute, so the cap keeps one probe from asking
-// for a run nobody waits for.
+const MAX_IGNORE = 16;
+// Planned time per probe: per viewport and pass, a load (allowed 2 s), the initial settle, and every
+// frame's settle plus rest window. The CLI gives the capture kernel this budget on top of its usual
+// minute, so the cap keeps one probe from asking for a run nobody waits for; above 90 s for a run
+// the CLI prints a note before it starts.
+const LOAD_ALLOWANCE_MS = 2000;
 const MAX_BUDGET_MS = 120000;
+const NOTE_BUDGET_MS = 90000;
 const PASSES = ["motion", "reduced"];
 
 // Thresholds of the contract, not tuning knobs. A scene element is still moving when its box moved
-// more than 0.5 px or its opacity by more than 0.01 inside the rest window, the same "at rest"
-// numbers the motion probe uses; a pixel has changed when one channel moved by more than 8 of 255,
-// and the scene is still changing when more than 0.5 % of its visible pixels did.
-const MOVE_EPS_PX = 0.5;
+// more than 2 px (motion pass) or 0.5 px (reduced pass, the motion probe's "at rest" number) or its
+// opacity by more than 0.01 inside the rest window. The motion pass allows 2 px because smooth-scroll
+// libraries ease toward the scroll position: a 0.06 lerp per frame still drifts about 1 px in the
+// rest window after a 1.2 s settle. A pixel has changed when one channel moved by more than 8 of 255,
+// and the scene is still changing when more than 0.5 % of its visible, not ignored pixels did.
+const MOVE_EPS_PX = { motion: 2, reduced: 0.5 };
 const OPACITY_EPS = 0.01;
 const PIXEL_CHANNEL_EPS = 8;
 const PIXEL_SHARE_EPS = 0.005;
 
 const HINTS = {
   "scroll-never-started": "Make the scene run on scroll: check that its script loads without an error, that the scroll timeline or trigger is bound to this element and the page's real scroller, and that the scene starts from its first state rather than its finished composition. Then rerun; every progress point should differ from the 0 % frame somewhere.",
-  "scroll-never-rests": "Let the scene settle when scrolling stops: end scrubbed tweens on the scroll position (scrub true or a short lag), stop easing loops that never reach their target, and pause looping decoration while the scene is held. Under reduced motion, jump to the state for the position instead of animating to it. A loop that is the point of the scene belongs outside the probed target.",
+  "scroll-never-rests": "Let the scene settle when scrolling stops: end scrubbed tweens on the scroll position (scrub true or a short lag), stop easing loops that never reach their target, and pause looping decoration while the scene is held. Under reduced motion, jump to the state for the position instead of animating to it. An ambient loop that is meant to run (a breathing glow, a gradient, a Lottie canvas) goes in the probe's ignore list; a scroll library that eases must bring the scene within 2 px per 300 ms by settleMs.",
 };
 
 function integerBetween(value, label, min, max) {
@@ -76,8 +82,13 @@ function framesPerPass(points) {
   return points + 3;
 }
 
+function passSettleMs(probe, passName) {
+  return passName === "reduced" ? probe.reducedSettleMs : probe.settleMs;
+}
+
 function scrollBudgetMs(probe) {
-  return probe.viewports.length * PASSES.length * framesPerPass(probe.points) * (probe.settleMs + probe.restWindowMs);
+  const pass = (settle) => LOAD_ALLOWANCE_MS + settle + framesPerPass(probe.points) * (settle + probe.restWindowMs);
+  return probe.viewports.length * (pass(probe.settleMs) + pass(probe.reducedSettleMs));
 }
 
 // Returns the probe with its defaults applied, so capture and evaluation never re-apply them.
@@ -88,13 +99,18 @@ function validateScrollProbe(probe, label) {
   assertString(probe.target, `${label}.target`, SCOPE);
   const points = probe.points ?? DEFAULTS.points;
   const settleMs = probe.settleMs ?? DEFAULTS.settleMs;
+  const reducedSettleMs = probe.reducedSettleMs ?? DEFAULTS.reducedSettleMs;
   const restWindowMs = probe.restWindowMs ?? DEFAULTS.restWindowMs;
   integerBetween(points, `${label}.points`, 2, MAX_POINTS);
   integerBetween(settleMs, `${label}.settleMs`, 0, 3000);
+  integerBetween(reducedSettleMs, `${label}.reducedSettleMs`, 0, 3000);
   integerBetween(restWindowMs, `${label}.restWindowMs`, 50, 2000);
-  const normalized = { id: probe.id, kind: "scroll", target: probe.target, points, settleMs, restWindowMs, viewports: validateScrollViewports(probe.viewports, `${label}.viewports`) };
+  const ignore = probe.ignore ?? [];
+  if (!Array.isArray(ignore) || ignore.length > MAX_IGNORE || ignore.some((selector) => typeof selector !== "string" || !selector.trim())) fail(SCOPE, `${label}.ignore must list at most ${MAX_IGNORE} non-empty selectors`);
+  if (new Set(ignore).size !== ignore.length) fail(SCOPE, `${label}.ignore lists a selector twice`);
+  const normalized = { id: probe.id, kind: "scroll", target: probe.target, points, settleMs, reducedSettleMs, restWindowMs, ignore: [...ignore], viewports: validateScrollViewports(probe.viewports, `${label}.viewports`) };
   const budget = scrollBudgetMs(normalized);
-  if (budget > MAX_BUDGET_MS) fail(SCOPE, `${label} plans ${budget} ms of waiting (viewports x 2 passes x ${framesPerPass(points)} frames x (settleMs + restWindowMs)); the limit is ${MAX_BUDGET_MS} ms. Fix: lower points, settleMs or restWindowMs, or split the viewports across two probes`);
+  if (budget > MAX_BUDGET_MS) fail(SCOPE, `${label} plans ${budget} ms (per viewport and pass: a ${LOAD_ALLOWANCE_MS} ms load, the initial settle and ${framesPerPass(points)} frames x (settle + restWindowMs)); the limit is ${MAX_BUDGET_MS} ms. Fix: lower points, settleMs, reducedSettleMs or restWindowMs, or split the viewports across two probes`);
   return normalized;
 }
 
@@ -121,24 +137,29 @@ function planScrollPoints(geometry, viewportHeight, points) {
   return { range: hold ? "hold" : "pass-through", points: list };
 }
 
-// Share of pixels inside `rect` (viewport px) whose largest channel difference exceeds the
-// contract threshold. Both images are decoded RGBA of the same size.
-function changedPixelShare(a, b, rect) {
+// Share of pixels inside `rect` (screenshot px) whose largest channel difference exceeds the
+// contract threshold, leaving out the pixels under `masks` (ignored elements). Both images are
+// decoded RGBA of the same size.
+function changedPixelShare(a, b, rect, masks = []) {
   if (a.width !== b.width || a.height !== b.height) return 1;
+  const masked = (x, y) => masks.some((mask) => x >= mask.x && x < mask.x + mask.width && y >= mask.y && y < mask.y + mask.height);
   const x0 = Math.max(0, Math.floor(rect.x));
   const y0 = Math.max(0, Math.floor(rect.y));
   const x1 = Math.min(a.width, Math.ceil(rect.x + rect.width));
   const y1 = Math.min(a.height, Math.ceil(rect.y + rect.height));
   if (x1 <= x0 || y1 <= y0) return 0;
   let changed = 0;
+  let counted = 0;
   for (let y = y0; y < y1; y += 1) {
     for (let x = x0; x < x1; x += 1) {
+      if (masks.length && masked(x, y)) continue;
+      counted += 1;
       const offset = (y * a.width + x) * 4;
       const delta = Math.max(Math.abs(a.data[offset] - b.data[offset]), Math.abs(a.data[offset + 1] - b.data[offset + 1]), Math.abs(a.data[offset + 2] - b.data[offset + 2]));
       if (delta > PIXEL_CHANNEL_EPS) changed += 1;
     }
   }
-  return changed / ((x1 - x0) * (y1 - y0));
+  return counted ? changed / counted : 0;
 }
 
 // A fingerprint of the pixels of each canvas or video fully inside the viewport: their content is
@@ -167,16 +188,27 @@ function mediaFingerprints(image, rects) {
   });
 }
 
-// Two scene states differ when the DOM state differs, or when a canvas or video fingerprint moved
-// by more than the pixel threshold in any cell (or one of them is outside the viewport).
+const cellsDiffer = (left, right) => left.length !== right.length || left.some((value, cell) => Math.abs(value - right[cell]) > PIXEL_CHANNEL_EPS);
+
+// The fingerprints of one point, settled: a canvas or video whose pixels changed during the rest
+// window is playing on its own (a loop, a Lottie, a video) and is marked "moving", so it never
+// counts as the scene having started.
+function settledMedia(settled, later) {
+  return settled.map((cells, index) => (cells && later[index] && cellsDiffer(cells, later[index]) ? "moving" : cells));
+}
+
+// Two scene states differ when the DOM state differs, or when a settled canvas or video
+// fingerprint moved by more than the pixel threshold in any cell (or one of them is outside the
+// viewport). A "moving" fingerprint at either point is not compared.
 function statesDiffer(a, b) {
   if (a.state !== b.state) return true;
   const left = a.media || [], right = b.media || [];
   if (left.length !== right.length) return true;
   return left.some((cells, index) => {
     const other = right[index];
+    if (cells === "moving" || other === "moving") return false;
     if (cells === null || other === null) return cells !== other;
-    return cells.length !== other.length || cells.some((value, cell) => Math.abs(value - other[cell]) > PIXEL_CHANNEL_EPS);
+    return cellsDiffer(cells, other);
   });
 }
 
@@ -193,27 +225,39 @@ function toImageRect(rect, frame, image) {
 // descendants, computed transform, opacity, filter, clip-path and visibility, and each box relative
 // to its frame of reference (the nearest fixed or sticky ancestor inside the scene, else the
 // target), so plain scrolling and pinning do not read as animation while any element that moves
-// within the scene does. Text is included so a scroll-driven counter counts as change. The full
-// record is kept on window for the rest comparison; only a hash and the geometry leave the page.
-function scrollSceneState(selector) {
+// within the scene does. A fixed or sticky element is itself a frame: its own box (a sticky header
+// that shrinks, a pinned stage) is left out and only its styles count. Elements matching `ignore`
+// are left out; their descendants are not. Text is included so a scroll-driven counter counts as
+// change. The boxes are kept on window for the rest comparison; only a hash and regions leave.
+function scrollSceneState(selector, ignore) {
   const target = document.querySelector(selector);
   if (!target) return { found: false };
   const elements = [target, ...target.querySelectorAll("*")].slice(0, 401);
+  const ignored = (element) => ignore.some((css) => element.matches(css));
+  const pinned = (element) => ["fixed", "sticky"].includes(getComputedStyle(element).position);
   const half = (value) => Math.round(value * 2) / 2;
   const reference = (element) => {
     for (let current = element; current; current = current.parentElement) {
-      const position = getComputedStyle(current).position;
-      if (position === "fixed" || position === "sticky" || current === target) return current;
+      if (pinned(current) || current === target) return current;
     }
     return target;
   };
+  const rect = (box) => ({ x: box.x, y: box.y, width: box.width, height: box.height });
+  const masks = [];
   const records = elements.map((element) => {
-    const style = getComputedStyle(element);
     const box = element.getBoundingClientRect();
+    if (ignored(element)) {
+      masks.push(rect(box));
+      return null;
+    }
+    const style = getComputedStyle(element);
     const frame = reference(element);
-    const origin = frame === element ? { x: box.x, y: box.y } : frame.getBoundingClientRect();
+    const geometry = frame === element ? [] : (() => {
+      const origin = frame.getBoundingClientRect();
+      return [half(box.x - origin.x), half(box.y - origin.y), half(box.width), half(box.height)];
+    })();
     return {
-      key: [half(box.x - origin.x), half(box.y - origin.y), half(box.width), half(box.height), style.transform, style.opacity, style.filter, style.clipPath, style.visibility].join("|"),
+      key: [...geometry, style.transform, style.opacity, style.filter, style.clipPath, style.visibility].join("|"),
       box: [box.x, box.y, box.width, box.height],
       opacity: Number(style.opacity),
     };
@@ -226,14 +270,11 @@ function scrollSceneState(selector) {
       hash = Math.imul(hash, 16777619) >>> 0;
     }
   };
-  for (const record of records) feed(record.key + "\n");
+  records.forEach((record, index) => feed(record ? `${index}:${record.key}\n` : `${index}:ignored\n`));
   feed(text);
-  window.__scrollSceneRecords = records.map((record) => ({ box: record.box, opacity: record.opacity }));
+  window.__scrollSceneRecords = records.map((record) => (record ? { box: record.box, opacity: record.opacity } : null));
   const box = target.getBoundingClientRect();
-  const media = [...target.querySelectorAll("canvas, video")].slice(0, 4).map((element) => {
-    const rect = element.getBoundingClientRect();
-    return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
-  });
+  const media = [...target.querySelectorAll("canvas, video")].filter((element) => !ignored(element) && !element.closest(ignore.join(",") || ":not(*)")).slice(0, 4).map((element) => rect(element.getBoundingClientRect()));
   const visible = {
     x: Math.max(0, box.x),
     y: Math.max(0, box.y),
@@ -244,10 +285,12 @@ function scrollSceneState(selector) {
   // scaled-down 980 px layout, so the regions are mapped from CSS px to screenshot px in Node.
   const view = window.visualViewport;
   const frame = view ? { x: view.offsetLeft, y: view.offsetTop, width: view.width, height: view.height } : { x: 0, y: 0, width: innerWidth, height: innerHeight };
-  return { found: true, hash: hash.toString(16), elements: records.length, media, visible, frame, scrollY: Math.round(scrollY) };
+  const scroller = window.__scrollSceneScroller;
+  return { found: true, hash: hash.toString(16), elements: records.filter(Boolean).length, media, masks, visible, frame, scrollY: Math.round(scroller ? scroller.scrollTop : scrollY) };
 }
 
-// Runs in the page after the rest window: how far the scene moved since scrollSceneState.
+// Runs in the page after the rest window: how far the not-ignored scene elements moved since
+// scrollSceneState.
 function scrollSceneRest(selector) {
   const target = document.querySelector(selector);
   const before = window.__scrollSceneRecords;
@@ -258,8 +301,9 @@ function scrollSceneRest(selector) {
   const structural = elements.length !== before.length;
   if (!structural) {
     elements.forEach((element, index) => {
-      const box = element.getBoundingClientRect();
       const was = before[index];
+      if (!was) return;
+      const box = element.getBoundingClientRect();
       shiftPx = Math.max(shiftPx, Math.abs(box.x - was.box[0]), Math.abs(box.y - was.box[1]), Math.abs(box.width - was.box[2]), Math.abs(box.height - was.box[3]));
       opacity = Math.max(opacity, Math.abs(Number(getComputedStyle(element).opacity) - was.opacity));
     });
@@ -267,25 +311,61 @@ function scrollSceneRest(selector) {
   return { found: true, shiftPx: Math.round(shiftPx * 1000) / 1000, opacity: Math.round(opacity * 1000) / 1000, structural };
 }
 
-// Runs in the page: where the scene sits in the document and how far the page can scroll.
-function scrollSceneGeometry(selector) {
+// Runs in the page: which element scrolls the scene, where the scene sits in that scroller's
+// content and how far it can scroll. The scroller is the target's nearest ancestor that scrolls
+// vertically (overflow auto, scroll or overlay with content taller than its box), else the
+// document; it is kept on window so every later scroll and scrollY reading uses the same one.
+function scrollSceneGeometry(selector, ignore) {
   const target = document.querySelector(selector);
   if (!target) return { found: false };
+  for (const css of ignore) {
+    try {
+      document.querySelector(css);
+    } catch {
+      return { found: true, invalidIgnore: css };
+    }
+  }
+  let scroller = null;
+  for (let current = target.parentElement; current && current !== document.body && current !== document.documentElement; current = current.parentElement) {
+    if (["auto", "scroll", "overlay"].includes(getComputedStyle(current).overflowY) && current.scrollHeight > current.clientHeight + 1) {
+      scroller = current;
+      break;
+    }
+  }
+  window.__scrollSceneScroller = scroller;
   const box = target.getBoundingClientRect();
-  const scroller = document.scrollingElement || document.documentElement;
+  if (scroller) {
+    const frame = scroller.getBoundingClientRect();
+    const name = scroller.id ? `#${scroller.id}` : scroller.tagName.toLowerCase() + (scroller.classList.length ? `.${[...scroller.classList].join(".")}` : "");
+    return { found: true, scroller: name, top: box.top - frame.top - scroller.clientTop + scroller.scrollTop, height: box.height, viewportHeight: scroller.clientHeight, maxScroll: scroller.scrollHeight - scroller.clientHeight };
+  }
+  const root = document.scrollingElement || document.documentElement;
   // The viewport height in CSS px: a phone page without a viewport meta tag lays out 980 px wide, so
   // its screen is taller in CSS px than the device viewport the probe declared.
   const viewportHeight = document.documentElement.clientHeight || innerHeight;
-  return { found: true, top: box.top + scrollY, height: box.height, viewportHeight, maxScroll: scroller.scrollHeight - viewportHeight };
+  return { found: true, scroller: "document", top: box.top + scrollY, height: box.height, viewportHeight, maxScroll: root.scrollHeight - viewportHeight };
+}
+
+// Runs in the page: an instant jump of the scene's scroller, then two frames.
+function scrollSceneTo(y) {
+  return new Promise((resolve) => {
+    const scroller = window.__scrollSceneScroller;
+    (scroller || window).scrollTo({ top: y, left: 0, behavior: "instant" });
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
 }
 
 // ---------- evaluation (pure) ----------
 
 const round = (value, digits = 4) => Math.round(value * 10 ** digits) / 10 ** digits;
 
-function restMoving(rest) {
-  return rest.structural === true || rest.shiftPx > MOVE_EPS_PX || rest.opacity > OPACITY_EPS || rest.pixelShare > PIXEL_SHARE_EPS;
+function restMoving(rest, passName) {
+  return rest.structural === true || rest.shiftPx > MOVE_EPS_PX[passName] || rest.opacity > OPACITY_EPS || rest.pixelShare > PIXEL_SHARE_EPS;
 }
+
+// Scroll snapping, a scroll library or a clamp can leave the scroller somewhere other than the
+// planned position; the point is still measured where it actually is, and the row says so.
+const OFF_PLAN_PX = 1;
 
 function readPass(shot, viewport, passName, label) {
   const at = `${label} ${viewport.width}x${viewport.height} ${passName}`;
@@ -294,7 +374,7 @@ function readPass(shot, viewport, passName, label) {
   shot.points.forEach((point, index) => {
     const where = `${at} point ${index}`;
     if (!isObject(point) || typeof point.label !== "string" || typeof point.state !== "string" || !point.state) fail(SCOPE, `${where} has no measured state`);
-    if (point.media !== undefined && !(Array.isArray(point.media) && point.media.every((cells) => cells === null || (Array.isArray(cells) && cells.every(Number.isFinite))))) fail(SCOPE, `${where}.media must list pixel fingerprints or null`);
+    if (point.media !== undefined && !(Array.isArray(point.media) && point.media.every((cells) => cells === null || cells === "moving" || (Array.isArray(cells) && cells.every(Number.isFinite))))) fail(SCOPE, `${where}.media must list pixel fingerprints, "moving" or null`);
     if (point.progress !== null && !(typeof point.progress === "number" && point.progress >= 0 && point.progress <= 1)) fail(SCOPE, `${where}.progress must be null or between 0 and 1`);
     for (const key of ["plannedY", "scrollY"]) if (!Number.isFinite(point[key])) fail(SCOPE, `${where}.${key} must be a number`);
     const rest = point.rest;
@@ -306,13 +386,15 @@ function readPass(shot, viewport, passName, label) {
 }
 
 // One row per scroll probe: per viewport and pass the number of progress points whose scene differs
-// from the 0 % frame and the largest movement inside a rest window, and the two findings.
+// from the 0 % frame, the largest movement inside a rest window and the points the scroller did not
+// reach as planned, the two findings, and notes.
 function evaluateScroll(probe, shot) {
   assertKeys(shot, ["id", "kind", "passes"], ["id", "kind", "passes", "requests", "pageErrors"], `capture ${probe.id}`, SCOPE);
   if (shot.kind !== "scroll" || !Array.isArray(shot.passes) || shot.passes.length !== probe.viewports.length * PASSES.length) fail(SCOPE, `capture ${probe.id} has incomplete scroll passes`);
   const pageErrors = Array.isArray(shot.pageErrors) ? shot.pageErrors.filter((entry) => typeof entry === "string") : [];
   const coverage = [];
   const findings = [];
+  const notes = [];
   probe.viewports.forEach((viewport, viewportIndex) => {
     PASSES.forEach((passName, passIndex) => {
       const recorded = shot.passes[viewportIndex * PASSES.length + passIndex];
@@ -320,13 +402,15 @@ function evaluateScroll(probe, shot) {
       const label = `${viewport.width}x${viewport.height}`;
       const changedPoints = progress.slice(1).filter((point) => statesDiffer(point, progress[0])).length;
       const scrolled = new Set(progress.map((point) => point.scrollY)).size > 1;
-      const moving = recorded.points.filter((point) => restMoving(point.rest));
+      const moving = recorded.points.filter((point) => restMoving(point.rest, passName));
+      const offPlan = recorded.points.filter((point) => Math.abs(point.scrollY - point.plannedY) > OFF_PLAN_PX).map((point) => ({ label: point.label, plannedY: point.plannedY, scrollY: point.scrollY }));
+      if (offPlan.length) notes.push(`${label} ${passName}: ${offPlan.length} of ${recorded.points.length} points ended away from the planned scroll position (${offPlan.slice(0, 4).map((point) => `${point.label} ${point.plannedY} -> ${point.scrollY}`).join(", ")}${offPlan.length > 4 ? ", ..." : ""}), for example by scroll snapping; they were measured where the scroller stopped`);
       const maxRest = {
         shiftPx: round(Math.max(...recorded.points.map((point) => point.rest.shiftPx))),
         opacity: round(Math.max(...recorded.points.map((point) => point.rest.opacity))),
         pixelShare: round(Math.max(...recorded.points.map((point) => point.rest.pixelShare))),
       };
-      coverage.push({ viewport: { ...viewport }, pass: passName, range: recorded.range, points: recorded.points.length, changedPoints, restingPoints: recorded.points.length - moving.length, maxRest, ...(typeof recorded.sheet === "string" ? { sheet: recorded.sheet } : {}) });
+      coverage.push({ viewport: { ...viewport }, pass: passName, range: recorded.range, points: recorded.points.length, changedPoints, restingPoints: recorded.points.length - moving.length, maxRest, ...(offPlan.length ? { offPlan } : {}), ...(typeof recorded.sheet === "string" ? { sheet: recorded.sheet } : {}) });
       if (passName === "motion" && changedPoints === 0) {
         const cause = scrolled ? `the scene measured the same at all ${progress.length} progress points from 0 % to 100 %` : `the page stayed at scrollY ${progress[0].scrollY} for every progress point, so the scene was never scrolled through`;
         findings.push({
@@ -339,13 +423,13 @@ function evaluateScroll(probe, shot) {
         const worst = moving.map((point) => `${point.label} (${point.rest.structural ? "elements added or removed, " : ""}${round(point.rest.shiftPx, 2)} px, opacity ${round(point.rest.opacity, 3)}, ${round(point.rest.pixelShare * 100, 2)} % pixels)`);
         findings.push({
           code: "scroll-never-rests", severity: "error", viewport: label, pass: passName, selector: probe.target,
-          message: `${probe.target} never rests at ${label}${passName === "reduced" ? " with prefers-reduced-motion: reduce" : ""}: ${moving.length} of ${recorded.points.length} held positions still changed during the ${probe.restWindowMs} ms rest window after ${probe.settleMs} ms of settle: ${worst.slice(0, 6).join("; ")}${worst.length > 6 ? "; ..." : ""}`,
-          fix: HINTS["scroll-never-rests"], actual: worst.slice(0, 6).join("; "), expected: `box moves at most ${MOVE_EPS_PX} px, opacity at most ${OPACITY_EPS}, at most ${PIXEL_SHARE_EPS * 100} % of visible scene pixels change`,
+          message: `${probe.target} never rests at ${label}${passName === "reduced" ? " with prefers-reduced-motion: reduce" : ""}: ${moving.length} of ${recorded.points.length} held positions still changed during the ${probe.restWindowMs} ms rest window after ${passSettleMs(probe, passName)} ms of settle: ${worst.slice(0, 6).join("; ")}${worst.length > 6 ? "; ..." : ""}`,
+          fix: HINTS["scroll-never-rests"], actual: worst.slice(0, 6).join("; "), expected: `box moves at most ${MOVE_EPS_PX[passName]} px, opacity at most ${OPACITY_EPS}, at most ${PIXEL_SHARE_EPS * 100} % of visible, not ignored scene pixels change`,
         });
       }
     });
   });
-  return { id: probe.id, kind: "scroll", status: findings.some((finding) => finding.severity === "error") ? "failed" : "passed", coverage, findings };
+  return { id: probe.id, kind: "scroll", status: findings.some((finding) => finding.severity === "error") ? "failed" : "passed", coverage, findings, ...(notes.length ? { notes } : {}) };
 }
 
 // Native completion re-reads a scroll row against the normalized declaration: every viewport and
@@ -366,7 +450,7 @@ function scrollResultFailure(probe, row) {
 }
 
 module.exports = {
-  DEFAULT_SCROLL_VIEWPORTS, HINTS, PASSES,
-  changedPixelShare, evaluateScroll, mediaFingerprints, planScrollPoints, scrollBudgetMs, scrollResultFailure, statesDiffer, toImageRect,
+  DEFAULT_SCROLL_VIEWPORTS, HINTS, NOTE_BUDGET_MS, PASSES,
+  changedPixelShare, passSettleMs, settledMedia, scrollSceneTo, evaluateScroll, mediaFingerprints, planScrollPoints, scrollBudgetMs, scrollResultFailure, statesDiffer, toImageRect,
   scrollSceneGeometry, scrollSceneRest, scrollSceneState, validateScrollProbe,
 };

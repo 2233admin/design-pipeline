@@ -12,7 +12,7 @@ const { fail } = require("./contract-utils.cjs");
 const { resolvePuppeteer } = require("./film-capture-core.cjs");
 const { browserIdentity, resolveBrowser } = require("./browser-locate.cjs");
 const { auditOptions, auditPage } = require("./interaction-audit.cjs");
-const { PASSES, changedPixelShare, mediaFingerprints, planScrollPoints, scrollSceneGeometry, scrollSceneRest, scrollSceneState, toImageRect } = require("./interaction-scroll.cjs");
+const { PASSES, changedPixelShare, mediaFingerprints, passSettleMs, planScrollPoints, scrollSceneGeometry, scrollSceneRest, scrollSceneState, scrollSceneTo, settledMedia, toImageRect } = require("./interaction-scroll.cjs");
 const { decodePng } = require("./png-core.cjs");
 
 const SCOPE = "interaction capture";
@@ -266,22 +266,22 @@ async function recordScrollPass(page, browser, probe, url, viewport, passName, t
     await document.fonts.ready;
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   });
-  await sleep(probe.settleMs);
-  const geometry = await page.evaluate(scrollSceneGeometry, probe.target);
+  const settleMs = passSettleMs(probe, passName);
+  await sleep(settleMs);
+  const geometry = await page.evaluate(scrollSceneGeometry, probe.target, probe.ignore);
   const at = `probe "${probe.id}" at ${viewport.width}x${viewport.height} (${passName})`;
   if (!geometry.found) fail(SCOPE, `${at}: no element matches ${probe.target} on ${url}${pageErrors.length ? ` (page errors: ${pageErrors.slice(0, 3).join(" | ")})` : ""}. Fix: point "target" at the scroll scene's section, rendered by load; a target the scene's script creates (a GSAP .pin-spacer) is missing when that script did not run`);
+  if (geometry.invalidIgnore) fail(SCOPE, `${at}: ignore selector ${JSON.stringify(geometry.invalidIgnore)} is not a valid CSS selector. Fix: correct it in the probe, then rerun`);
+  if (!(geometry.maxScroll > 0)) fail(SCOPE, `${at}: the target is not inside a scrollable area (${geometry.scroller} cannot scroll at this viewport). Fix: point "target" at a scene inside the page's scrolling content, or make the page or the scene's container scroll`);
   if (!(geometry.height > 0)) fail(SCOPE, `${at}: ${probe.target} has no height. Fix: target the scene's section itself, which spans the scroll distance the scene plays over`);
   const plan = planScrollPoints(geometry, geometry.viewportHeight, probe.points);
   const points = [];
   const frames = [];
   for (const planned of plan.points) {
-    await page.evaluate((y) => new Promise((resolve) => {
-      window.scrollTo({ top: y, left: 0, behavior: "instant" });
-      requestAnimationFrame(() => requestAnimationFrame(resolve));
-    }), planned.plannedY);
-    await sleep(probe.settleMs);
+    await page.evaluate(scrollSceneTo, planned.plannedY);
+    await sleep(settleMs);
     assertLocalTarget();
-    const state = await page.evaluate(scrollSceneState, probe.target);
+    const state = await page.evaluate(scrollSceneState, probe.target, probe.ignore);
     if (!state.found) fail(SCOPE, `${at}: ${probe.target} disappeared at ${planned.label}. Fix: probe an element that stays in the page while it scrolls`);
     const settled = Buffer.from(await page.screenshot({ type: "png", captureBeyondViewport: false }));
     await sleep(probe.restWindowMs);
@@ -290,19 +290,21 @@ async function recordScrollPass(page, browser, probe, url, viewport, passName, t
     const later = Buffer.from(await page.screenshot({ type: "png", captureBeyondViewport: false }));
     const first = decodePng(settled, "scroll frame");
     const second = decodePng(later, "scroll frame");
+    const masks = state.masks.map((rect) => toImageRect(rect, state.frame, first));
+    const mediaRects = state.media.map((rect) => toImageRect(rect, state.frame, first));
     points.push({
       label: planned.label,
       progress: planned.progress,
       plannedY: planned.plannedY,
       scrollY: state.scrollY,
       state: state.hash,
-      media: mediaFingerprints(first, state.media.map((rect) => toImageRect(rect, state.frame, first))),
+      media: settledMedia(mediaFingerprints(first, mediaRects), mediaFingerprints(second, mediaRects)),
       elements: state.elements,
-      rest: { structural: rest.structural, shiftPx: rest.shiftPx, opacity: rest.opacity, pixelShare: Math.round(changedPixelShare(first, second, toImageRect(state.visible, state.frame, first)) * 10000) / 10000 },
+      rest: { structural: rest.structural, shiftPx: rest.shiftPx, opacity: rest.opacity, pixelShare: Math.round(changedPixelShare(first, second, toImageRect(state.visible, state.frame, first), masks) * 10000) / 10000 },
     });
     frames.push(settled);
   }
-  const entry = { viewport: { width: viewport.width, height: viewport.height, mobile: viewport.mobile }, pass: passName, range: plan.range, points };
+  const entry = { viewport: { width: viewport.width, height: viewport.height, mobile: viewport.mobile }, pass: passName, range: plan.range, scroller: geometry.scroller, points };
   if (framesDir) {
     const name = `${String(probe.id).replace(/[^A-Za-z0-9._-]+/g, "-")}-${viewport.width}x${viewport.height}-${passName}.jpg`;
     await writeScrollSheet(browser, frames, plan.points.map((point) => `${probe.id} ${point.label}`), viewport, path.join(framesDir, name));

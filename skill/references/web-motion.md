@@ -114,6 +114,16 @@ the target element every frame, then flags:
 - `scroll-never-rests` (scroll probe) — at a held scroll position the scene is still moving after
   the settle time, with motion allowed or under reduced motion.
 
+Smooth scrolling (Lenis, Locomotive, ScrollSmoother, a hand-written lerp) eases toward the scroll
+position, so it must converge inside the probe's settle: after `settleMs` (1200 ms by default) the
+scene may still drift at most 2 px during the 300 ms rest window. With a per-frame lerp `k` at
+60 fps a jump of `J` px leaves `J (1 - k)^72` to go after 1.2 s and drifts `J (1 - k)^72 (1 -
+(1 - k)^18)` in the window, so the largest jump that still rests is about 250 px for `k` 0.06, 1000
+px for 0.08 and 4600 px for 0.1 (a GSAP `scrub` lag of 1 s or less rests). One progress step of a
+default probe on a scene three screens tall is about 300 px at 1440x900 (measured: a 0.06 lerp
+drifted 2.2 to 2.6 px after a 300 px jump, 0.8 to 0.9 px after a 100 px one). Under `prefers-reduced-motion: reduce`
+stop the easing (jump straight to the scroll position): the reduced pass allows 0.5 px.
+
 Each finding operationalizes a rule above: `dead-interaction`/`no-settle` and the two scroll findings are "responses settle",
 `rest-drift` is the rest-value guarantee, and the rest map to the material and self-contained-page rules.
 

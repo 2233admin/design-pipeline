@@ -56,7 +56,7 @@ const { templates: filmTemplates } = require("../tools/prompt-motion/library.cjs
 const { scaffoldVisualCraft, TEMPLATES: scaffoldTemplates } = require("../tools/visual-craft/scaffold.cjs");
 const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
 const { evaluateProbeFile, validateProbeFile } = require("./interaction-core.cjs");
-const { scrollBudgetMs } = require("./interaction-scroll.cjs");
+const { NOTE_BUDGET_MS, scrollBudgetMs } = require("./interaction-scroll.cjs");
 const { scoreFilm } = require("./score-project-core.cjs");
 const { renderBlenderShot } = require("./blender-project-core.cjs");
 const { listTemplates } = require("./blender-core.cjs");
@@ -1119,8 +1119,9 @@ function observeInteraction(root, options = {}) {
   if (options.puppeteer) args.push("--puppeteer-module", options.puppeteer);
   if (options.framesDir && context.doc.probes.some(probe => probe.kind === "scroll")) args.push("--frames-dir", contained(root, options.framesDir, "scroll contact sheets", false));
   // A scroll probe waits at every point it photographs; its validated plan is added to the usual minute.
-  const scrollBudget = context.doc.probes.filter(probe => probe.kind === "scroll").reduce((sum, probe) => sum + scrollBudgetMs(probe) * 2, 0);
-  const kernel = runKernel("capture-interaction.cjs", args, root, { timeout: 60000 + scrollBudget });
+  const scrollBudget = context.doc.probes.filter(probe => probe.kind === "scroll").reduce((sum, probe) => sum + scrollBudgetMs(probe), 0);
+  if (scrollBudget > NOTE_BUDGET_MS) process.stderr.write(`note: the scroll probes in ${path.basename(context.probeFile)} plan about ${Math.round(scrollBudget / 1000)} s of loading and waiting before screenshots; lower points, settleMs or viewports for a faster run\n`);
+  const kernel = runKernel("capture-interaction.cjs", args, root, { timeout: 60000 + scrollBudget * 2 });
   const capture = kernel.value?.capture;
   if (kernel.exitCode !== 0 || capture?.schema !== "design-pipeline.interaction-capture.v1" || typeof capture.url !== "string") {
     fail("interaction capture", "capture kernel returned no valid capture", { code: "KERNEL_FAILED" });

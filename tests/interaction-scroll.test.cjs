@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { evaluateProbeFile, validateProbeFile, HINTS } = require("../skill/scripts/interaction-core.cjs");
-const { changedPixelShare, mediaFingerprints, planScrollPoints, scrollBudgetMs, scrollResultFailure, statesDiffer, toImageRect } = require("../skill/scripts/interaction-scroll.cjs");
+const { changedPixelShare, mediaFingerprints, planScrollPoints, scrollBudgetMs, scrollResultFailure, settledMedia, statesDiffer, toImageRect } = require("../skill/scripts/interaction-scroll.cjs");
 const { captureInteraction } = require("../skill/scripts/interaction-capture-core.cjs");
 const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
 const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
@@ -19,13 +19,16 @@ const scrollProbe = (extra = {}) => ({ id: "story", kind: "scroll", target: "#sc
 
 // ---------- contract ----------
 
-test("a scroll probe gets desktop and phone viewports, ten steps and the motion probe's settle by default", () => {
+test("a scroll probe gets desktop and phone viewports, six steps and the motion probe's settle in both passes by default", () => {
   const [probe] = validateProbeFile(doc(scrollProbe())).probes;
   assert.deepEqual(probe, {
-    id: "story", kind: "scroll", target: "#scene", points: 10, settleMs: 1200, restWindowMs: 300,
+    id: "story", kind: "scroll", target: "#scene", points: 6, settleMs: 1200, reducedSettleMs: 1200, restWindowMs: 300, ignore: [],
     viewports: [{ width: 1440, height: 900, mobile: false }, { width: 390, height: 844, mobile: true }],
   });
-  assert.equal(scrollBudgetMs(probe), 2 * 2 * 13 * 1500);
+  // Per viewport: a 2 s load allowance, the initial settle and 9 frames x (settle + rest), per pass.
+  assert.equal(scrollBudgetMs(probe), 2 * 2 * (2000 + 1200 + 9 * 1500));
+  assert.equal(scrollBudgetMs({ ...probe, reducedSettleMs: 400 }), 2 * ((2000 + 1200 + 9 * 1500) + (2000 + 400 + 9 * 700)));
+  assert.deepEqual(validateProbeFile(doc(scrollProbe({ ignore: [".glow", ".particles *"] }))).probes[0].ignore, [".glow", ".particles *"]);
 });
 
 test("scroll probe fields are bounded and unknown fields are rejected before the browser starts", () => {
@@ -39,7 +42,11 @@ test("scroll probe fields are bounded and unknown fields are rejected before the
   rejects(scrollProbe({ viewports: [{ width: 390, height: 844, mobile: "yes" }] }), /mobile must be true or false/);
   rejects(scrollProbe({ exclude: ["#loop"] }), /exclude/);
   rejects(scrollProbe({ target: "" }), /target/);
-  rejects(scrollProbe({ points: 20, settleMs: 3000, restWindowMs: 2000 }), /plans 460000 ms of waiting.*limit is 120000 ms/);
+  rejects(scrollProbe({ points: 20, settleMs: 3000, restWindowMs: 2000 }), /plans \d+ ms .*limit is 120000 ms/);
+  rejects(scrollProbe({ reducedSettleMs: 5000 }), /reducedSettleMs must be an integer between 0 and 3000/);
+  rejects(scrollProbe({ ignore: ".glow" }), /ignore must list at most 16 non-empty selectors/);
+  rejects(scrollProbe({ ignore: [""] }), /ignore must list/);
+  rejects(scrollProbe({ ignore: [".glow", ".glow"] }), /ignore lists a selector twice/);
   rejects({ id: "story", kind: "scrol", target: "#scene" }, /kind has invalid value scrol; allowed: audit, scroll/);
   rejects({ ...scrollProbe(), id: "" }, /id/);
   assert.throws(() => validateProbeFile(doc(scrollProbe(), scrollProbe())), /duplicates probe id story/);
@@ -66,6 +73,9 @@ test("pixel change is counted inside the scene's visible region only, in screens
   assert.equal(changedPixelShare(a, b, { x: 2, y: 0, width: 2, height: 2 }), 0);
   b.data[4] = 8; // a change of 8 of 255 is not a change
   assert.equal(changedPixelShare(a, b, { x: 1, y: 0, width: 1, height: 1 }), 0);
+  // Pixels under an ignored element are left out of both the count and the area.
+  assert.equal(changedPixelShare(a, b, { x: 0, y: 0, width: 4, height: 2 }, [{ x: 0, y: 0, width: 1, height: 1 }]), 0);
+  assert.equal(changedPixelShare(a, b, { x: 0, y: 0, width: 4, height: 2 }, [{ x: 2, y: 0, width: 2, height: 2 }]), 1 / 4);
   // A 980 px layout shown on a 390 px phone screenshot: CSS px are scaled down into the image.
   assert.deepEqual(toImageRect({ x: 490, y: 0, width: 490, height: 100 }, { x: 0, y: 0, width: 980, height: 2122 }, { width: 390, height: 844 }), { x: 195, y: 0, width: 195, height: 100 * 844 / 2122 });
 });
@@ -83,6 +93,10 @@ test("a canvas counts as changed when its averaged pixels move, not when resampl
   assert.equal(statesDiffer(at(canvas(4)), at(canvas(40))), true);
   assert.equal(statesDiffer(at(canvas(4)), { state: "dom", media: mediaFingerprints(canvas(4), [{ x: 60, y: 0, width: 64, height: 32 }]) }), true, "a canvas leaving the viewport is a change");
   assert.equal(statesDiffer({ state: "a", media: [] }, { state: "b", media: [] }), true);
+  // A canvas that played on its own during the rest window is not evidence that the scene started.
+  const loop = settledMedia(mediaFingerprints(canvas(4), rect), mediaFingerprints(canvas(40), rect));
+  assert.deepEqual(loop, ["moving"]);
+  assert.equal(statesDiffer({ state: "dom", media: loop }, at(canvas(20))), false);
 });
 
 // ---------- evaluation ----------
@@ -136,16 +150,35 @@ test("movement inside the rest window never rests, in the motion and in the redu
   const moving = { structural: false, shiftPx: 12.5, opacity: 0, pixelShare: 0.02 };
   const fade = { structural: false, shiftPx: 0, opacity: 0.2, pixelShare: 0 };
   const pixels = { structural: false, shiftPx: 0, opacity: 0, pixelShare: 0.006 };
-  const subThreshold = { structural: false, shiftPx: 0.5, opacity: 0.01, pixelShare: 0.005 };
-  const result = evaluateProbeFile(doc(scrollProbe(one)), capture([
+  const subThreshold = { structural: false, shiftPx: 2, opacity: 0.01, pixelShare: 0.005 };
+  const result = evaluateProbeFile(doc(scrollProbe({ ...one, reducedSettleMs: 400 })), capture([
     pass(view, "motion", ["a", "b", "c"], [quiet, moving, subThreshold]),
     pass(view, "reduced", ["a", "a", "a"], [fade, pixels, quiet, { ...quiet, structural: true }]),
   ]));
   assert.deepEqual(result.findings.map((finding) => [finding.code, finding.pass]), [["scroll-never-rests", "motion"], ["scroll-never-rests", "reduced"]]);
   assert.match(result.findings[0].message, /1 of 5 held positions still changed during the 300 ms rest window after 1200 ms of settle: 0% \(12\.5 px/);
-  assert.match(result.findings[1].message, /prefers-reduced-motion: reduce: 3 of 5/);
+  assert.match(result.findings[1].message, /prefers-reduced-motion: reduce: 3 of 5 held positions still changed during the 300 ms rest window after 400 ms of settle/);
   assert.match(result.findings[1].message, /elements added or removed/);
   assert.equal(result.findings[1].fix, HINTS["scroll-never-rests"]);
+});
+
+test("a smooth-scroll drift of 1.5 px rests with motion allowed but not under reduced motion", () => {
+  const drift = { structural: false, shiftPx: 1.5, opacity: 0, pixelShare: 0.001 };
+  const result = evaluateProbeFile(doc(scrollProbe(one)), capture([
+    pass(view, "motion", ["a", "b", "c"], [drift, drift, drift]),
+    pass(view, "reduced", ["a", "a", "a"], [drift]),
+  ]));
+  assert.deepEqual(result.findings.map((finding) => [finding.code, finding.pass]), [["scroll-never-rests", "reduced"]]);
+  assert.match(result.findings[0].expected, /at most 0\.5 px/);
+});
+
+test("points the scroller did not reach as planned are listed and noted, not failed", () => {
+  const snapped = pass(view, "motion", ["a", "b", "c"], [], [0, 100, 200, 340, 400]);
+  const result = evaluateProbeFile(doc(scrollProbe(one)), capture([snapped, pass(view, "reduced", ["a", "a", "a"])]));
+  assert.equal(result.status, "passed");
+  assert.deepEqual(result.probes[0].coverage[0].offPlan, [{ label: "100%", plannedY: 300, scrollY: 340 }]);
+  assert.equal(result.probes[0].coverage[1].offPlan, undefined);
+  assert.match(result.notes[0], /^story: 800x600 motion: 1 of 5 points ended away from the planned scroll position \(100% 300 -> 340\), for example by scroll snapping/);
 });
 
 test("an incomplete or reordered scroll capture is a contract error, not a pass", () => {
@@ -192,13 +225,24 @@ const skip = missingTool();
 const STYLE = "html,body{margin:0;background:#0e0e12;color:#eee;font:16px system-ui}.pad{height:600px;background:#1a1a22}#scene{height:300vh;position:relative}.stage{position:sticky;top:0;height:100vh;overflow:hidden;display:grid;place-items:center}#box{width:120px;height:120px;background:#4af}";
 const PROGRESS = "var s=document.getElementById('scene');function p(){var r=s.getBoundingClientRect();return Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));}";
 
-function page(script, { head = "", meta = true, stage = '<div id="box"></div>' } = {}) {
-  return `<!doctype html><html><head><meta charset="utf-8">${meta ? '<meta name="viewport" content="width=device-width,initial-scale=1">' : ""}<link rel="icon" href="data:,"><style>${STYLE}</style>${head}</head>
-<body><div class="pad"></div><section id="scene"><div class="stage">${stage}</div></section><div class="pad"></div><script>${script}</script></body></html>`;
+function page(script, { head = "", meta = true, stage = '<div id="box"></div>', body = null, style = STYLE } = {}) {
+  return `<!doctype html><html><head><meta charset="utf-8">${meta ? '<meta name="viewport" content="width=device-width,initial-scale=1">' : ""}<link rel="icon" href="data:,"><style>${style}</style>${head}</head>
+${body ?? `<body><div class="pad"></div><section id="scene"><div class="stage">${stage}</div></section><div class="pad"></div><script>${script}</script></body>`}</html>`;
 }
 
+const SCRUB = `${PROGRESS}var b=document.getElementById('box');function u(){b.style.transform='translateX('+((p()-0.5)*300)+'px)';}addEventListener('scroll',u,{passive:true});u();`;
+// Smooth-scroll libraries ease; the well-behaved ones stop easing under reduced motion.
+const REDUCE = "var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;";
+
 const PAGES = {
-  scrub: page(`${PROGRESS}var b=document.getElementById('box');function u(){b.style.transform='translateX('+((p()-0.5)*300)+'px)';}addEventListener('scroll',u,{passive:true});u();`),
+  scrub: page(SCRUB),
+  lerp06: page(`${PROGRESS}${REDUCE}var b=document.getElementById('box'),x=0;(function t(){var goal=(p()-0.5)*600;x=reduce?goal:x+(goal-x)*0.06;b.style.transform='translateX('+x+'px)';requestAnimationFrame(t);})();`),
+  smoother: page("", { body: `<body><div id="wrap" style="position:fixed;top:0;left:0;width:100%"><div class="pad"></div><section id="scene"><div class="stage"><div id="box"></div></div></section><div class="pad"></div></div><div id="ghost"></div><script>${REDUCE}var w=document.getElementById('wrap'),y=0;document.getElementById('ghost').style.height=w.offsetHeight+'px';(function t(){y=reduce?scrollY:y+(scrollY-y)*0.08;w.style.transform='translateY('+(-y)+'px)';var r=document.getElementById('scene').getBoundingClientRect();document.getElementById('box').style.transform='translateX('+((-r.top/innerHeight)*100)+'px)';requestAnimationFrame(t);})();</script></body>` }),
+  breathing: page(SCRUB, { head: "<style>@keyframes breathe{0%,100%{opacity:.85}50%{opacity:1}}.stage{animation:breathe 6s ease-in-out infinite}</style>" }),
+  headerAndLoop: page("", { body: `<body><div class="pad"></div><section id="scene"><header id="bar" style="position:fixed;top:0;left:0;right:0;height:80px;background:#333"></header><div class="stage"><canvas id="cv" width="300" height="200" style="width:300px;height:200px"></canvas></div></section><div class="pad"></div><script>addEventListener('scroll',function(){document.getElementById('bar').style.height=scrollY>50?'40px':'80px';});var g=document.getElementById('cv').getContext('2d'),t=0;(function f(){t++;g.fillStyle='#222';g.fillRect(0,0,300,200);g.fillStyle='#fa4';g.fillRect((t*3)%260,80,40,40);requestAnimationFrame(f);})();</script></body>` }),
+  inner: page("", { body: `<body style="overflow:hidden"><div id="sc" style="height:100vh;overflow-y:auto"><div class="pad"></div><section id="scene"><div class="stage"><div id="box"></div></div></section><div class="pad"></div></div><script>var sc=document.getElementById('sc'),b=document.getElementById('box');sc.addEventListener('scroll',function(){var r=document.getElementById('scene').getBoundingClientRect();b.style.transform='translateX('+(-r.top/3)+'px)';});</script></body>` }),
+  fixedPage: page("", { body: `<body style="overflow:hidden"><section id="scene" style="height:50vh"><div id="box"></div></section></body>` }),
+  snap: page(SCRUB, { style: `${STYLE}html{scroll-snap-type:y mandatory}.pad,#scene{scroll-snap-align:start}` }),
   dead: page("throw new Error('ScrollTrigger is not defined');"),
   lerp: page(`${PROGRESS}var b=document.getElementById('box'),x=0;(function t(){x+=((p()-0.5)*600-x)*0.015;b.style.transform='translateX('+x+'px)';requestAnimationFrame(t);})();`),
   reduceLoop: page(`${PROGRESS}var b=document.getElementById('box');if(!matchMedia('(prefers-reduced-motion: reduce)').matches){function u(){b.style.transform='translateY('+((p()-0.5)*200)+'px)';}addEventListener('scroll',u,{passive:true});u();}`, { head: "<style>@keyframes spin{to{transform:rotate(360deg)}}@media (prefers-reduced-motion: reduce){#box{animation:spin 2s linear infinite}}</style>" }),
@@ -206,11 +250,11 @@ const PAGES = {
   canvasStatic: page(`${PROGRESS}var g=document.getElementById('cv').getContext('2d');g.fillStyle='#222';g.fillRect(0,0,300,200);g.fillStyle='#fa4';g.fillRect(p()*260,80,40,40);`, { meta: false, stage: '<canvas id="cv" width="300" height="200" style="width:300px;height:200px"></canvas>' }),
 };
 
-async function scroll(name, viewport, framesDir = null) {
+async function scroll(name, viewport, framesDir = null, options = { points: 2, settleMs: 300, reducedSettleMs: 300, restWindowMs: 250 }) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "dp-scroll-"));
   try {
     fs.writeFileSync(path.join(dir, "index.html"), PAGES[name]);
-    const raw = doc(scrollProbe({ points: 2, settleMs: 300, restWindowMs: 250, viewports: [viewport] }));
+    const raw = doc(scrollProbe({ ...options, viewports: [viewport] }));
     const probeFile = path.join(dir, "interaction.json");
     fs.writeFileSync(probeFile, JSON.stringify(raw));
     const captured = await captureInteraction(probeFile, { doc: validateProbeFile(raw), puppeteerModule: PUPPETEER_MODULE, framesDir });
@@ -267,4 +311,49 @@ test("a canvas scene on a phone page without a viewport meta tag is measured in 
   assert.equal(drawn.result.probes[0].coverage[0].changedPoints, 2);
   const still = await scroll("canvasStatic", phone);
   assert.deepEqual(codes(still.result), ["scroll-never-started:motion"]);
+});
+
+// The defaults where settling is what is being judged: six steps and 1200 ms of settle in both passes.
+const DEFAULTS = { points: 6 };
+
+test("a lerp of 0.06 per frame and a fixed smooth-scroll wrapper rest with motion allowed", { skip }, async () => {
+  for (const name of ["lerp06", "smoother"]) {
+    const { result } = await scroll(name, desktop, null, DEFAULTS);
+    assert.deepEqual(codes(result), [], `${name}: ${JSON.stringify(result.probes[0].coverage.map((entry) => entry.maxRest))}`);
+    assert.ok(result.probes[0].coverage[0].changedPoints > 0, name);
+  }
+});
+
+test("a breathing stage never rests unless the probe ignores it, and then the scene still counts", { skip }, async () => {
+  const plain = await scroll("breathing", desktop, null, DEFAULTS);
+  assert.ok(codes(plain.result).includes("scroll-never-rests:motion"), JSON.stringify(codes(plain.result)));
+  const ignored = await scroll("breathing", desktop, null, { ...DEFAULTS, ignore: [".stage"] });
+  assert.deepEqual(codes(ignored.result), []);
+  assert.ok(ignored.result.probes[0].coverage[0].changedPoints > 0);
+});
+
+test("a shrinking fixed header and a looping canvas do not make a static scene count as started", { skip }, async () => {
+  const plain = await scroll("headerAndLoop", desktop);
+  assert.ok(codes(plain.result).includes("scroll-never-started:motion"), JSON.stringify(codes(plain.result)));
+  assert.ok(codes(plain.result).includes("scroll-never-rests:motion"), "the loop itself still moves");
+  const ignored = await scroll("headerAndLoop", desktop, null, { points: 2, settleMs: 300, reducedSettleMs: 300, restWindowMs: 250, ignore: ["#cv"] });
+  assert.deepEqual(codes(ignored.result), ["scroll-never-started:motion"]);
+});
+
+test("a scene inside an overflow scroller is scrolled through that scroller", { skip }, async () => {
+  const { captured, result } = await scroll("inner", desktop);
+  assert.deepEqual(codes(result), []);
+  assert.equal(captured.probes[0].passes[0].scroller, "#sc");
+  assert.ok(result.probes[0].coverage[0].changedPoints > 0);
+});
+
+test("a target with nothing to scroll is a contract error, not never-started", { skip }, async () => {
+  await assert.rejects(scroll("fixedPage", desktop), /the target is not inside a scrollable area/);
+});
+
+test("points that scroll snapping moved are measured where they stopped and noted", { skip }, async () => {
+  const { result } = await scroll("snap", desktop);
+  assert.equal(result.status, "passed");
+  assert.ok(result.probes[0].coverage[0].offPlan.length > 0);
+  assert.match(result.notes.join("\n"), /ended away from the planned scroll position .*scroll snapping/);
 });

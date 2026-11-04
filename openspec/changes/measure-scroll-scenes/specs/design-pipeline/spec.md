@@ -27,8 +27,24 @@ carry a fix.
 - **WHEN** a canvas scene is drawn from scroll progress on a phone page without a viewport meta tag
 - **THEN** its canvas pixels SHALL be compared in screenshot pixels with a tolerance, so a drawn scene passes and a static canvas fails with `scroll-never-started`
 
+#### Scenario: Scene inside an overflow scroller
+- **WHEN** the scene sits in an `overflow-y: auto` container and the page itself does not scroll
+- **THEN** the probe SHALL scroll that container, and a target with nothing to scroll SHALL be a contract error, not `scroll-never-started`
+
+#### Scenario: Ambient loop and smooth scrolling
+- **WHEN** a scene rests but an element listed in `ignore` loops, or a smooth-scroll library still drifts at most 2 px in the rest window with motion allowed
+- **THEN** no `scroll-never-rests` SHALL be added for the motion pass; the reduced pass SHALL still allow at most 0.5 px
+
+#### Scenario: Self-playing media and pinned chrome
+- **WHEN** the only changes across progress are a canvas or video that changes during the rest window, or a fixed or sticky element's own box
+- **THEN** the scene SHALL NOT count as started
+
+#### Scenario: Scroll snapping moves a point
+- **WHEN** the scroller stops more than 1 px from a planned point
+- **THEN** the point SHALL be measured where it stopped and listed in the coverage and the result notes
+
 #### Scenario: Probe outside its bounds
-- **WHEN** a scroll probe has an unknown field, a value out of range or more than 120 s of planned waiting
+- **WHEN** a scroll probe has an unknown field, a value out of range, an invalid `ignore` list or more than 120 s of planned time
 - **THEN** validation SHALL reject it before the browser starts
 
 #### Scenario: Native completion over a failed scroll row
