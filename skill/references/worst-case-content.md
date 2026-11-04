@@ -33,7 +33,17 @@ For a web page, `long-content` and `overflow` evidence can be measured instead o
 - numbers become 9,999,999 (`huge-number`);
 - `scope` (a list of selectors, default `body`) limits the rewrite to text the page does not author; `aria-hidden` text, scripts, styles and SVG are left alone. Form values and placeholders are not rewritten.
 
-Only the overflow checks are read from the stressed page (`audit.horizontal-overflow`, `audit.viewport-bounds`, `audit.content-clipping`, and `audit.content-overflow` when `declare.contentBoxes` is set), and only what the stress newly breaks is reported, each with `"pass": "stress"`, a message starting `<viewport> with 2.5x text:` and a fix. Clipped text that is a deliberate truncation (`text-overflow: ellipsis` or a line clamp) passes when the full value is reachable from it (a `title`, a link or a `details` element) and fails otherwise. Any stress finding fails the audit like any other.
+Only the overflow checks are read from the stressed page (`audit.horizontal-overflow`, `audit.viewport-bounds`, `audit.content-clipping`, and `audit.content-overflow` when `declare.contentBoxes` is set), and only what the stress newly breaks is reported, each with `"pass": "stress"`, a message starting `<viewport> with 2.5x text:` and a fix. Any stress finding fails the audit like any other.
+
+Clipped text that is a deliberate truncation (`text-overflow: ellipsis` or a line clamp) passes only when the full value is reachable from it, which means one of:
+
+- a `title` on the truncated element itself whose text (trimmed, whitespace collapsed) contains its full value;
+- an enclosing link with a real `href` (not empty, not `#`, not `javascript:`);
+- an enclosing `details` element.
+
+A stale title, a title on an ancestor, a titled child such as `<abbr title>` and `href="#"` are not ways back.
+
+If the page puts its own text back after the rewrite (a MutationObserver, a framework re-render), the stressed audit would measure the original copy. The pass checks that every rewritten text still holds its stress value after the stressed audit; any `reverted` text fails it with `stress-reverted`. Point `scope` at a region the page does not re-render, or disable re-rendering in the fixture.
 
 A passing run is evidence for both states. Cite the audit row, and add the scenarios you added by hand:
 
@@ -42,7 +52,14 @@ A passing run is evidence for both states. Cite the audit row, and add the scena
 "overflow": { "applicable": true, "covered": true, "evidence": "evidence/interaction.json#page-audit stress 1280x800, 390x844; qa/many-items.png" }
 ```
 
-The stress pass covers text length only. `many-items`, `squeezed-sibling`, `narrow-container` inside a wider page and the shape axis (RTL, tall scripts, emoji) still need their own fixtures. When the scope holds no text the stress coverage is `not-applicable`: declare the states from other evidence or point `scope` at the data-driven text. The component state gate itself is unchanged; it still checks that each state is declared with evidence.
+The stress pass covers text length only. `many-items`, `squeezed-sibling`, `narrow-container` inside a wider page and the shape axis (RTL, tall scripts, emoji) still need their own fixtures. Its blind spots, counted per viewport in the coverage's `skipped`, also need their own fixtures:
+
+- `shadowRoots`: text inside open shadow roots is not rewritten (closed roots are not visible to the page at all);
+- `inputsAndPlaceholders`: form values and placeholders of `input`, `textarea` and `select`;
+- `pseudoContent`: generated `::before` / `::after` text;
+- `svgText`: SVG `text` elements.
+
+The 2.5x rewrite repeats a text's own words separated by spaces, so it does not exercise CJK line breaking without spaces or `word-break: keep-all`: a long unspaced CJK run stays one long word only in the unbroken table-cell string. Test CJK with a real CJK fixture (`tall-script-text`, `cjk-typography.md`). When the scope holds no text the stress coverage is `not-applicable`: declare the states from other evidence or point `scope` at the data-driven text. The component state gate itself is unchanged; it still checks that each state is declared with evidence.
 
 The ids in the next sections are optional extras. Use one only when it adds a case the existing state does not name, for example `unbroken-string` is a sharper test than a generic `long-content`.
 

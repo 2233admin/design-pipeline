@@ -11,8 +11,9 @@
  * numbers become 9,999,999. The page then settles and `auditPage` measures it again; only the
  * overflow checks (STRESS_CODES) are read from that second measurement, and only what the stress
  * newly breaks is reported, so a failure the normal audit already reports is not repeated.
- * Clipped text that is a deliberate truncation (ellipsis or line clamp) passes when the full value
- * can still be reached (a title, a link or a details element) and fails otherwise.
+ * Clipped text that is a deliberate truncation (ellipsis or line clamp) passes only when the full
+ * value can still be reached (its own title holding the full text, a link with a real href, or a
+ * details element) and fails otherwise. A page that reverts the rewrite fails the pass.
  *
  * Idea from feimacode/open-design-agent-kit packages/core/src/export/screenChecks.ts at
  * 927d4b6e6a29d8bfebdccadb4bb4a1b2a6438e73 (MIT, Copyright (c) 2026 Iven Xu): the 2.5x lengthening,
@@ -37,6 +38,8 @@ const UNBROKEN = "Wolfeschlegelsteinhausenbergerdorffinternationalholdingsltd";
 const HUGE_NUMBER = "9,999,999";
 const PASSING = ["passed", "not-applicable"];
 const TRUNCATION_FIX = "Give truncated text a way back to the full value: a title attribute with the full text, a link to a detail view, or a details element; or let it wrap.";
+const REVERTED_FIX = "The page re-rendered over the stress text; point stress.scope at a region it doesn't re-render, or disable re-rendering in the fixture.";
+const SKIPPED_KEYS = ["shadowRoots", "inputsAndPlaceholders", "pseudoContent", "svgText"];
 const STRESS_FIX_SUFFIX = " Real content is longer than the mock-up: let the text wrap (overflow-wrap: anywhere, min-width: 0 in flex and grid rows), or truncate it with a way back to the full value.";
 
 // ---------- probe contract ----------
@@ -84,8 +87,23 @@ function applyStress(options) {
     if (!matches.length) contractErrors.push(`stress.scope[${index}] ${JSON.stringify(selector)} matches no element on the page`);
     scopes.push(...matches);
   });
-  if (contractErrors.length) return { contractErrors, textScale: options.textScale, changed: 0, lengthened: 0, unbroken: 0, numbers: 0 };
+  const skipped = { shadowRoots: 0, inputsAndPlaceholders: 0, pseudoContent: 0, svgText: 0 };
+  if (contractErrors.length) return { contractErrors, textScale: options.textScale, changed: 0, lengthened: 0, unbroken: 0, numbers: 0, skipped };
   const SKIP = "script, style, noscript, template, svg, math, [aria-hidden=\"true\"]";
+  // What the rewrite cannot reach, counted so the coverage names its blind spots: text in open
+  // shadow roots (closed ones are invisible to the page), form values and placeholders, generated
+  // ::before/::after content, and SVG text.
+  const inScope = new Set();
+  for (const scope of scopes) for (const el of [scope, ...scope.querySelectorAll("*")]) inScope.add(el);
+  for (const el of inScope) {
+    if (el.shadowRoot) skipped.shadowRoots += 1;
+    if (el.matches("input, textarea, select") && (el.value || el.getAttribute("placeholder"))) skipped.inputsAndPlaceholders += 1;
+    if (el.matches("svg text, svg tspan, svg textPath") && el.textContent.trim()) skipped.svgText += 1;
+    for (const pseudo of ["::before", "::after"]) {
+      const content = getComputedStyle(el, pseudo).content;
+      if (/^["']/.test(content) && content.length > 2) skipped.pseudoContent += 1;
+    }
+  }
   const CELL = "td, th, li, dd, [role=\"cell\"], [role=\"gridcell\"], [role=\"listitem\"]";
   const nodes = [];
   const seen = new Set();
@@ -103,6 +121,10 @@ function applyStress(options) {
   let unbroken = 0;
   let numbers = 0;
   let cells = 0;
+  // Kept on the page so the clipping classifier can read each text's pre-stress value and the
+  // revert check can tell whether the page re-rendered over the stress.
+  const record = { nodes: [], values: [], originals: new Map() };
+  window.__designPipelineStress = record;
   for (const node of nodes) {
     const text = node.nodeValue;
     const trimmed = text.trim();
@@ -123,15 +145,41 @@ function applyStress(options) {
       for (let index = 0; next.length < target; index += 1) next += ` ${words[index % words.length]}`;
       lengthened += 1;
     }
+    record.originals.set(node, text);
     node.nodeValue = lead + next + tail;
+    record.nodes.push(node);
+    record.values.push(node.nodeValue);
   }
-  return { contractErrors, textScale: options.textScale, changed: lengthened + unbroken + numbers, lengthened, unbroken, numbers };
+  return { contractErrors, textScale: options.textScale, changed: lengthened + unbroken + numbers, lengthened, unbroken, numbers, skipped };
+}
+
+// Runs in the page after the stressed audit. A rewritten text that is detached or no longer holds
+// its stress value was reverted by the page (a MutationObserver, a framework re-render), so what
+// the audit measured may have been the original copy.
+function checkStressHeld() {
+  const record = window.__designPipelineStress;
+  if (!record) return { reverted: 0, checked: 0 };
+  let reverted = 0;
+  record.nodes.forEach((node, index) => { if (!node.isConnected || node.nodeValue !== record.values[index]) reverted += 1; });
+  return { reverted, checked: record.nodes.length };
 }
 
 // Runs in the page. For each clipped element the stressed audit reported, whether the clip is a
 // deliberate truncation (text-overflow: ellipsis or a line clamp on it or on an ancestor up to the
-// clipping element) and whether the full value can still be reached from it.
+// clipping element) and whether the full value can be reached from it. A way back is one of: a
+// title on the element itself whose whitespace-collapsed text contains the element's full
+// pre-stress text; an enclosing link with a real href (not empty, not "#", not javascript:); or an
+// enclosing details element. A title on an ancestor or on an unrelated child, a stale title and
+// href="#" are not ways back.
 function classifyClipping(items) {
+  const record = window.__designPipelineStress;
+  const collapse = (text) => String(text || "").replace(/\s+/g, " ").trim();
+  const original = (element) => {
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    let text = "";
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) text += record?.originals.has(node) ? record.originals.get(node) : node.nodeValue;
+    return collapse(text);
+  };
   return items.map(({ selector, related }) => {
     let element = null;
     let clip = null;
@@ -149,8 +197,13 @@ function classifyClipping(items) {
       if (style.textOverflow === "ellipsis" || (clamp && clamp !== "none")) truncation = true;
       if (truncation || node === clip) break;
     }
-    const titled = [element.closest("[title]"), element.querySelector("[title]")].some((node) => node && node.getAttribute("title").trim());
-    const wayBack = titled || Boolean(element.closest("a[href], details") || element.querySelector("a[href]"));
+    const full = original(element);
+    const title = element.hasAttribute("title") ? collapse(element.getAttribute("title")) : "";
+    const titled = full.length > 0 && title.includes(full);
+    const link = element.closest("a[href]");
+    const href = link ? link.getAttribute("href").trim() : "";
+    const linked = Boolean(link) && href !== "" && href !== "#" && !/^javascript:/i.test(href);
+    const wayBack = titled || linked || Boolean(element.closest("details"));
     return { selector, truncation, wayBack };
   });
 }
@@ -173,7 +226,9 @@ function summarizeStress(probeId, where, baseline, stress, readCheck) {
   if (Array.isArray(applied.contractErrors) && applied.contractErrors.length) return { contractErrors: applied.contractErrors };
   const counts = ["changed", "lengthened", "unbroken", "numbers"];
   if (!counts.every((key) => Number.isInteger(applied[key]) && applied[key] >= 0) || !(applied.textScale > 1)) fail(SCOPE, `audit ${probeId} at ${where} has an incomplete stress record`);
-  const base = { textScale: applied.textScale, changedTexts: applied.changed, lengthened: applied.lengthened, unbroken: applied.unbroken, numbers: applied.numbers, states: [...STRESS_STATES] };
+  const skipped = isObject(applied.skipped) ? applied.skipped : null;
+  if (!skipped || !SKIPPED_KEYS.every((key) => Number.isInteger(skipped[key]) && skipped[key] >= 0)) fail(SCOPE, `audit ${probeId} at ${where} has an incomplete stress record`);
+  const base = { textScale: applied.textScale, changedTexts: applied.changed, lengthened: applied.lengthened, unbroken: applied.unbroken, numbers: applied.numbers, skipped: Object.fromEntries(SKIPPED_KEYS.map((key) => [key, skipped[key]])), states: [...STRESS_STATES] };
   if (applied.changed === 0) {
     return { coverage: { ...base, status: "not-applicable", hint: "The stress scope holds no visible text to lengthen; declare long-content and overflow from other evidence, or point stress.scope at the text the page does not author.", checks: STRESS_CODES.map((code) => ({ code, status: "not-applicable", checked: 0, failed: 0, indeterminate: 0 })) }, findings: [] };
   }
@@ -181,6 +236,8 @@ function summarizeStress(probeId, where, baseline, stress, readCheck) {
   if (!isObject(result)) fail(SCOPE, `audit ${probeId} at ${where} has no stressed measurement`);
   if (Array.isArray(result.contractErrors) && result.contractErrors.length) return { contractErrors: result.contractErrors };
   if (!isObject(result.checks)) fail(SCOPE, `audit ${probeId} at ${where} has no stressed checks`);
+  const reverted = stress.reverted;
+  if (!Number.isInteger(reverted) || reverted < 0) fail(SCOPE, `audit ${probeId} at ${where} has no stress revert check`);
   const truncation = new Map((Array.isArray(stress.truncation) ? stress.truncation : []).map((entry) => [entry.selector, entry]));
   const findings = [];
   const checks = STRESS_CODES.map((code) => {
@@ -208,8 +265,16 @@ function summarizeStress(probeId, where, baseline, stress, readCheck) {
     for (const item of after.indeterminate) if (!known.has(itemKey(item))) report(item, "indeterminate");
     return { code, status: checkStatus(after.checked, failed, indeterminate), checked: after.checked, failed, indeterminate, ...(reachable ? { truncatedWithWayBack: reachable } : {}), ...(before.failedCount + before.indeterminateCount ? { alreadyReported: before.failedCount + before.indeterminateCount } : {}) };
   });
-  const settled = checks.every((check) => PASSING.includes(check.status) || check.status === "not-declared");
-  return { coverage: { ...base, status: settled ? "passed" : "failed", checks }, findings };
+  if (reverted) {
+    findings.push({
+      code: "stress-reverted", severity: "error", probeId, viewport: where, pass: "stress",
+      expected: "every rewritten text still holds its stress value after the stressed audit", actual: `${reverted} of ${applied.changed} rewritten texts reverted`,
+      message: `${where} with ${applied.textScale}x text: the page re-rendered over the stress text, so the stressed audit may have measured the original copy`,
+      fix: REVERTED_FIX,
+    });
+  }
+  const settled = !reverted && checks.every((check) => PASSING.includes(check.status) || check.status === "not-declared");
+  return { coverage: { ...base, reverted, status: settled ? "passed" : "failed", checks }, findings };
 }
 
 // The failed and indeterminate content-clipping items of a stressed measurement, for classifyClipping.
@@ -227,8 +292,9 @@ function stressCoverageFailure(entry) {
   if (!isObject(stress) || !PASSING.includes(stress.status) || stress.textScale <= 1 || !Array.isArray(stress.checks)) return "has no passing stress coverage";
   if (stress.checks.map((check) => check?.code).join() !== STRESS_CODES.join()) return "does not cover every stress check";
   if (stress.status === "passed" && !(stress.changedTexts > 0)) return "claims a stress pass that lengthened no text";
+  if (stress.status === "passed" && stress.reverted !== 0) return "claims a stress pass the page reverted";
   if (stress.checks.some((check) => !(PASSING.includes(check?.status) || check?.status === "not-declared") || !Number.isInteger(check.checked) || (check.status === "passed" && check.checked === 0))) return "has a stress check without a passing status";
   return null;
 }
 
-module.exports = { STRESS_CODES, STRESS_STATES, STRESS_DEFAULTS, MAX_TEXT_SCALE, UNBROKEN, HUGE_NUMBER, validateStress, stressOptions, applyStress, classifyClipping, summarizeStress, clippedItems, stressCoverageFailure };
+module.exports = { SKIPPED_KEYS, STRESS_CODES, STRESS_STATES, STRESS_DEFAULTS, MAX_TEXT_SCALE, UNBROKEN, HUGE_NUMBER, validateStress, stressOptions, applyStress, checkStressHeld, classifyClipping, summarizeStress, clippedItems, stressCoverageFailure };

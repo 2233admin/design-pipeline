@@ -22,6 +22,14 @@ the existing overflow codes, each with a fix. A passing record SHALL name `long-
 - **THEN** the stress coverage SHALL pass at every viewport and count the reachable truncations
 - **AND** a failure the normal audit already reported SHALL NOT be repeated as a stress finding.
 
+#### Scenario: Unreachable truncation or a reverted rewrite
+
+- **WHEN** a truncated element has only a stale title, an ancestor's or a child's title, or
+  `href="#"`, or the page puts its own text back after the rewrite
+- **THEN** the truncation SHALL fail with a fix, and a reverted rewrite SHALL fail the stress pass
+  with `stress-reverted`
+- **AND** the coverage SHALL count the text the rewrite cannot reach under `skipped`.
+
 #### Scenario: Stress declaration is malformed or missing
 
 - **WHEN** `stress` is not an object, has an unknown key, a `textScale` not above 1 or above 10, or

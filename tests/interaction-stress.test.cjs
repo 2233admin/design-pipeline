@@ -116,14 +116,15 @@ const measurement = (items = {}) => ({
   })),
 });
 const item = (code, selector, extra = {}) => ({ code, selector, expected: "inside", actual: "right text clipped 40px", message: "text is cut off by an overflow: hidden or clip container", fix: "Let the text wrap.", ...extra });
-const applied = (extra = {}) => ({ contractErrors: [], textScale: 2.5, changed: 4, lengthened: 2, unbroken: 1, numbers: 1, ...extra });
+const SKIPPED = { shadowRoots: 0, inputsAndPlaceholders: 0, pseudoContent: 0, svgText: 0 };
+const applied = (extra = {}) => ({ contractErrors: [], textScale: 2.5, changed: 4, lengthened: 2, unbroken: 1, numbers: 1, skipped: { ...SKIPPED }, ...extra });
 
 test("the summary reports only what the stress newly breaks, passes reachable truncation and fails the row", (t) => {
   const project = tmp(t);
   const clip = "audit.content-clipping";
   const baseline = measurement({ [clip]: [item(clip, "#already")] });
   const stressed = measurement({ [clip]: [item(clip, "#already"), item(clip, "#name"), item(clip, "#role", { related: "#role" }), item(clip, "#titled")], "audit.horizontal-overflow": [item("audit.horizontal-overflow", "html", { message: "the page scrolls sideways" })] });
-  const viewport = { viewport: VIEWPORTS[0], requests: [], result: baseline, stress: { applied: applied(), result: stressed, truncation: [
+  const viewport = { viewport: VIEWPORTS[0], requests: [], result: baseline, stress: { applied: applied(), result: stressed, reverted: 0, truncation: [
     { selector: "#name", truncation: false, wayBack: false },
     { selector: "#role", truncation: true, wayBack: false },
     { selector: "#titled", truncation: true, wayBack: true },
@@ -141,6 +142,17 @@ test("the summary reports only what the stress newly breaks, passes reachable tr
   assert.deepEqual(coverage.checks.map((entry) => [entry.code, entry.status]), [["audit.horizontal-overflow", "failed"], ["audit.viewport-bounds", "passed"], [clip, "failed"], ["audit.content-overflow", "not-declared"]]);
   const clipping = coverage.checks[2];
   assert.deepEqual([clipping.failed, clipping.truncatedWithWayBack, clipping.alreadyReported], [2, 1, 1]);
+
+  assert.deepEqual([coverage.reverted, coverage.skipped], [0, SKIPPED]);
+
+  // A page that reverted the rewrite fails the pass whatever the overflow checks measured.
+  const reverted = audit.summarizeAudit("page-audit", [{ ...viewport, stress: { applied: applied(), result: baseline, reverted: 2, truncation: [] } }], project, [], { stress: true });
+  assert.equal(reverted.status, "failed");
+  assert.equal(reverted.coverage[0].stress.status, "failed");
+  assert.deepEqual(reverted.findings.filter((finding) => finding.pass === "stress").map((finding) => [finding.code, finding.actual]), [["stress-reverted", "2 of 4 rewritten texts reverted"]]);
+  assert.match(reverted.findings.at(-1).fix, /re-rendered over the stress text; point stress\.scope at a region it doesn't re-render, or disable re-rendering in the fixture/);
+  assert.throws(() => audit.summarizeAudit("page-audit", [{ ...viewport, stress: { applied: applied(), result: baseline, truncation: [] } }], project, [], { stress: true }), /no stress revert check/);
+  assert.throws(() => audit.summarizeAudit("page-audit", [{ ...viewport, stress: { applied: applied({ skipped: undefined }), result: baseline, reverted: 0 } }], project, [], { stress: true }), /incomplete stress record/);
 
   // Without the stress declaration the same capture summarizes exactly as before.
   const plain = audit.summarizeAudit("page-audit", [viewport], project, []);
@@ -163,12 +175,13 @@ test("a stress pass with nothing to lengthen is not-applicable, a missing record
 test("native completion needs a settled stress record at every viewport when the probe declares one", () => {
   const probe = validateProbeFile(probeDoc("done", auditProbe())).probes[0];
   const checks = audit.AUDIT_CODES.map((code) => ({ code, status: audit.OPTIONAL_CODES.includes(code) ? "not-declared" : "passed", checked: audit.OPTIONAL_CODES.includes(code) ? 0 : 3 }));
-  const stressed = { textScale: 2.5, changedTexts: 4, states: ["long-content", "overflow"], status: "passed", checks: stress.STRESS_CODES.map((code) => ({ code, status: code === "audit.content-overflow" ? "not-declared" : "passed", checked: code === "audit.content-overflow" ? 0 : 2 })) };
+  const stressed = { textScale: 2.5, changedTexts: 4, reverted: 0, states: ["long-content", "overflow"], status: "passed", checks: stress.STRESS_CODES.map((code) => ({ code, status: code === "audit.content-overflow" ? "not-declared" : "passed", checked: code === "audit.content-overflow" ? 0 : 2 })) };
   const row = (entry) => ({ id: "page-audit", kind: "audit", status: "passed", findings: [], coverage: VIEWPORTS.map((viewport) => ({ viewport, checks, ...entry })) });
   assert.equal(auditResultFailure(probe, row({ stress: stressed })), null);
   assert.match(auditResultFailure(probe, row({})), /1280x800 has no passing stress coverage/);
   assert.match(auditResultFailure(probe, row({ stress: { ...stressed, status: "failed" } })), /has no passing stress coverage/);
   assert.match(auditResultFailure(probe, row({ stress: { ...stressed, changedTexts: 0 } })), /lengthened no text/);
+  assert.match(auditResultFailure(probe, row({ stress: { ...stressed, reverted: 1 } })), /claims a stress pass the page reverted/);
   assert.match(auditResultFailure(probe, row({ stress: { ...stressed, checks: stressed.checks.slice(1) } })), /does not cover every stress check/);
   const plain = validateProbeFile(probeDoc("done", auditProbe({ stress: undefined }))).probes[0];
   assert.equal(auditResultFailure(plain, row({})), null, "a probe without stress is completed as before");
@@ -207,6 +220,28 @@ test("the fragile page breaks under 2.5x text at both viewports; the robust page
     const clipping = entry.stress.checks.find((c) => c.code === "audit.content-clipping");
     assert.equal(clipping.truncatedWithWayBack, index === 0 ? 2 : 3, "the titled ellipses, and at 390px the clamped link, are reachable truncations");
   }
+});
+
+test("a way back is the element's own full title, a real link or details; stale, ancestor, href=\"#\" and child titles are not", { skip: tools.skip }, async (t) => {
+  const { row } = await measure(t, "truncation", auditProbe({ viewports: [VIEWPORTS[0]] }));
+  const clipping = row.findings.filter((finding) => finding.pass === "stress" && finding.code === "audit.content-clipping");
+  assert.deepEqual(clipping.map((finding) => finding.selector), ["#stale-title", "#ancestor-title", "#hash-link", "#abbr-title"]);
+  assert.ok(clipping.every((finding) => /truncated with no way to read the full value/.test(finding.message) && /title attribute with the full text/.test(finding.fix)));
+  assert.equal(row.coverage[0].stress.checks.find((check) => check.code === "audit.content-clipping").truncatedWithWayBack, 3, "#own-title (whitespace collapsed), #real-link and #in-details");
+});
+
+test("a page that re-renders over the stress text fails instead of passing on its original copy", { skip: tools.skip }, async (t) => {
+  const { row } = await measure(t, "revert", auditProbe({ viewports: [VIEWPORTS[0]] }));
+  const entry = row.coverage[0].stress;
+  assert.equal(entry.status, "failed");
+  assert.equal(entry.reverted, 1);
+  assert.equal(entry.checks.find((check) => check.code === "audit.content-clipping").status, "passed", "the audit measured the restored mock-up name");
+  assert.deepEqual(row.findings.map((finding) => [finding.code, finding.actual]), [["stress-reverted", "1 of 1 rewritten texts reverted"]]);
+});
+
+test("the coverage counts the text the rewrite cannot reach", { skip: tools.skip }, async (t) => {
+  const { row } = await measure(t, "blind-spots", auditProbe({ viewports: [VIEWPORTS[0]] }));
+  assert.deepEqual(row.coverage[0].stress.skipped, { shadowRoots: 1, inputsAndPlaceholders: 4, pseudoContent: 1, svgText: 1 });
 });
 
 test("stress.scope limits the rewrite to the declared regions; textScale changes the length", { skip: tools.skip }, async (t) => {

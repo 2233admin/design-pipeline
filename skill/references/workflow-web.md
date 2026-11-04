@@ -733,8 +733,9 @@ the browser starts.
   one unbroken word and numbers become 9,999,999; the page is then audited again. Only what this
   newly breaks in `audit.horizontal-overflow`, `audit.viewport-bounds`, `audit.content-clipping` and
   `audit.content-overflow` is reported (`"pass": "stress"`); an ellipsis or line clamp passes only
-  when a `title`, link or `details` element reaches the full value. Each viewport's `coverage` entry
-  gains `stress` with its status, counts and the states it is evidence for (`long-content`,
+  with its own `title` holding the full text, an enclosing link with a real `href` or a `details`
+  element, and a page that re-renders over the rewrite fails with `stress-reverted`. Each viewport's `coverage` entry
+  gains `stress` with its status, counts, `reverted`, the `skipped` blind spots and the states it is evidence for (`long-content`,
   `overflow`); see `worst-case-content.md#measured-evidence-the-stress-pass`. A `scope` selector the
   page rejects or does not match exits 1.
 

@@ -15,7 +15,11 @@
 - [x] 3.1 `tests/interaction-stress.test.cjs` with `tests/fixtures/ui-stress/` fragile and robust pages: contract, summary, completion, both viewports, scope and scale, CLI exit codes 2/0/1; registered in `scripts/test-manifest.json`.
 - [x] 3.2 `worst-case-content.md` (citing the pass as state evidence, limits), `workflow-web.md` (the field), `package-resources.json`, `THIRD_PARTY_NOTICES.md`, CHANGELOG.
 
-## 4. Verification
+## 4. Review of #274
 
-- [x] 4.1 Existing focused checks: `tests/interaction-audit.test.cjs`, `interaction-evaluate`, `interaction-cli`, `interaction-capture`.
-- [x] 4.2 Repository QA: `npm test`.
+- [x] 4.1 Revert check (`checkStressHeld`, `reverted`, `stress-reverted`), strict way back, `skipped` counts, CJK and blind-spot notes; fixtures `truncation.html`, `revert.html`, `blind-spots.html` with tests.
+
+## 5. Verification
+
+- [x] 5.1 Existing focused checks: `tests/interaction-audit.test.cjs`, `interaction-evaluate`, `interaction-cli`, `interaction-capture`.
+- [x] 5.2 Repository QA: `npm test`.

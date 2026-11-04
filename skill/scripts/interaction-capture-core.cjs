@@ -12,7 +12,7 @@ const { fail } = require("./contract-utils.cjs");
 const { resolvePuppeteer } = require("./film-capture-core.cjs");
 const { browserIdentity, resolveBrowser } = require("./browser-locate.cjs");
 const { auditOptions, auditPage } = require("./interaction-audit.cjs");
-const { applyStress, classifyClipping, clippedItems, stressOptions } = require("./interaction-stress.cjs");
+const { applyStress, checkStressHeld, classifyClipping, clippedItems, stressOptions } = require("./interaction-stress.cjs");
 
 const SCOPE = "interaction capture";
 const CAPTURE_SCHEMA = "design-pipeline.interaction-capture.v1";
@@ -208,7 +208,8 @@ async function settleForAudit() {
 }
 
 // The long-content stress pass on the loaded page: lengthen its text, let layout and fonts settle,
-// measure it again with the same audit, then classify the clipped text as reachable truncation or not.
+// measure it again with the same audit, classify the clipped text as reachable truncation or not,
+// and check that the page did not revert the rewrite.
 async function recordStress(page, options, stressing, assertLocalTarget) {
   const applied = await page.evaluate(applyStress, stressing);
   assertLocalTarget();
@@ -218,7 +219,9 @@ async function recordStress(page, options, stressing, assertLocalTarget) {
   assertLocalTarget();
   const truncation = result.contractErrors?.length ? [] : await page.evaluate(classifyClipping, clippedItems(result));
   assertLocalTarget();
-  return { applied, result, truncation };
+  // Last, so a re-render anywhere between the rewrite and the classification is caught.
+  const { reverted } = await page.evaluate(checkStressHeld);
+  return { applied, result, truncation, reverted };
 }
 
 // One fresh navigation per declared viewport at device scale 1, then the in-page audit. Each

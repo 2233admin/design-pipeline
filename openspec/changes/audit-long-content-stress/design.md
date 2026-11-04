@@ -30,9 +30,12 @@ the code here is ours.
 4. **Truncation is judged, not just clipped.** `worst-case-content.md` allows truncation with a way
    back. In the page, each stressed `audit.content-clipping` item is walked from the element up to
    its clipping element: `text-overflow: ellipsis` or a `-webkit-line-clamp` makes it a truncation.
-   A non-empty `title` on it, an ancestor or a descendant, or an enclosing/contained `a[href]` or
-   enclosing `details`, is a way back: that item passes (`truncatedWithWayBack`). A truncation
-   without one fails with a truncation-specific fix. The normal audit's clipping rule is unchanged.
+   A way back is exactly one of: a `title` on the element itself whose trimmed, whitespace-collapsed
+   text contains the element's full pre-stress text (read from the page's record of the rewrite); an
+   enclosing `a[href]` whose href is not empty, `#` or `javascript:`; or an enclosing `details`. That
+   item passes (`truncatedWithWayBack`). A stale title, a title on an ancestor, a titled descendant
+   (`<abbr title>`) and `href="#"` do not count (review of #274); a truncation without a way back
+   fails with a truncation-specific fix. The normal audit's clipping rule is unchanged.
 5. **The rewrite.** Visible text nodes (two or more non-space characters) under `scope` (default
    `body`), skipping `script, style, noscript, template, svg, math, [aria-hidden="true"]`:
    numeric-only texts get their digit run replaced by `9,999,999` (`huge-number`); every fourth text
@@ -53,7 +56,19 @@ the code here is ours.
    completion rejects a `passed` stress record with zero changed texts.
 9. **`textScale` bounds.** Above 1 (otherwise nothing grows) and at most 10 (a 10x page already
    exceeds any real translation and keeps the element count bounded by the audit's 5000 limit).
-10. **Dead controls are out of scope.** The reference's click pass tests whether stateful ARIA
+10. **A reverted rewrite fails the pass.** A page whose MutationObserver or framework re-render
+    puts its own text back would let the stressed audit measure the original copy and pass. The
+    rewrite keeps each node and its stress value on the page; after the stressed audit and the
+    truncation classification, every node must still be connected and hold that value. The count is
+    `reverted`; any reverted text fails the stress coverage with a `stress-reverted` finding whose fix
+    is to point `scope` at a region the page does not re-render or to disable re-rendering in the
+    fixture. Native completion rejects a passed record with `reverted` above 0.
+11. **Blind spots are counted, not hidden.** Text the rewrite cannot reach is counted per viewport
+    in `skipped`: elements in scope with an open `shadowRoot`, `input`/`textarea`/`select` with a
+    value or placeholder, elements with string `::before`/`::after` content, and non-empty SVG text
+    elements. They are not rewritten; `worst-case-content.md` lists them with the CJK limit (the
+    repeat inserts spaces, so unspaced CJK breaking and `keep-all` are not exercised).
+12. **Dead controls are out of scope.** The reference's click pass tests whether stateful ARIA
     controls respond; that evidences `pressed`/`focus`, not long content, and #252 is extending the
     audit's state checks. Left for a separate issue.
 
@@ -64,8 +79,13 @@ the code here is ours.
 - `interaction-audit.cjs`: `stress` added to `PROBE_KEYS`, one validation call, and an optional
   `options.stress` on `summarizeAudit` (default off: existing callers and captures are unaffected).
 - `interaction-capture-core.cjs`: `recordAudit` calls `recordStress` after the audit when the probe
-  declares stress. Open PR #252 also edits `recordAudit` (reduced-motion load and state passes); the
-  stress call belongs last in the viewport loop, after those passes, because it rewrites the page.
+  declares stress. Open PR #252 also edits `recordAudit` (reduced-motion load and state passes) and
+  changes the in-page call to `auditPage(options, pass)` built by `auditPass()`. Main has no pass
+  helper yet, so this change calls `auditPage(options)`; #274 merges after #252 and, on rebase,
+  `recordStress` calls the audit through `auditPass("audit", …)` with the reducedMotion field #252
+  passes, the stress call stays last in the viewport loop (after the reduced-motion load and the
+  state passes, because it rewrites the page), and the `coverage.push` line in `summarizeAudit`
+  keeps both #252's fields and `stress`.
 - `interaction-core.cjs`: `evaluateAudit` passes the probe's stress flag; `auditResultFailure`
   requires settled stress coverage when declared.
 - No CLI flag, schema, state id or audit code is added. Captures from before this change have no
