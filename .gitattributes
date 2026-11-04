@@ -11,7 +11,6 @@ skill/vendor/ff-tracking/upstream/** -text
 skill/vendor/emil-design-eng/upstream/** -text
 skill/vendor/make-interfaces-feel-better/upstream/** -text
 skill/vendor/fixing-accessibility/upstream/** -text
-skill/vendor/12-principles-of-animation/upstream/** -text
 skill/vendor/shadcn/upstream/** -text
 skill/vendor/playwright-cli/upstream/** -text
 # Preserve the reviewed source's original trailing blank line.

@@ -432,8 +432,7 @@ and `emil-design-eng` are built in:
    feedback, perceived quality, interaction details; no companion installation.
 
 The same [UI craft guide](ui-craft-sources.md) routes the other built-in sources
-(`make-interfaces-feel-better`, `fixing-accessibility`, `12-principles-of-animation`, `shadcn`,
-`playwright-cli`) and the reference-only React Doctor record by stage and precedence.
+(`make-interfaces-feel-better`, `fixing-accessibility`, `shadcn`, `playwright-cli`) and the reference-only React Doctor record by stage and precedence.
 
 For dynamic UI, interaction motion, and animation-specific work, apply these motion skills:
 

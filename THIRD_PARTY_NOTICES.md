@@ -694,19 +694,6 @@ CLI, sibling skills and repository-root agent files are excluded.
 MIT, Copyright (c) 2026 Julien Thibeaut. The complete original license is
 `skill/vendor/fixing-accessibility/upstream/LICENSE`.
 
-## raphaelsalaja/skill (12-principles-of-animation)
-
-The byte-preserved scoped snapshot under `skill/vendor/12-principles-of-animation/upstream/` is
-from https://github.com/raphaelsalaja/skill at reviewed commit
-`dc9eef22f13635df77d9b9e67c82aa85d52a97b7` (reviewed 2026-10-13).
-Only `skills/12-principles-of-animation/**` and the root `README.md` are retained (2 files);
-sibling skills are excluded.
-
-The repository contains no LICENSE file at this revision and publishes no copyright line. The
-only license evidence is the frontmatter line `license: MIT` in
-`skill/vendor/12-principles-of-animation/upstream/skills/12-principles-of-animation/SKILL.md`,
-which is retained unmodified. The manifest records that declaration as the license evidence.
-
 ## shadcn-ui/ui (shadcn skill)
 
 The byte-preserved scoped snapshot under `skill/vendor/shadcn/upstream/` is from

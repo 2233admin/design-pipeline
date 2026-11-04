@@ -4,27 +4,6 @@
   "description": "Single record of the upstream each bundle, adapted reference, catalog link and runtime pin follows. Written by npm run sources:update; checked by tests/sources-lock.test.cjs.",
   "sources": [
     {
-      "id": "12-principles-of-animation",
-      "kind": "vendored",
-      "repo": "https://github.com/raphaelsalaja/skill",
-      "revision": "dc9eef22f13635df77d9b9e67c82aa85d52a97b7",
-      "reviewedAt": "2026-10-13",
-      "bundle": "12-principles-of-animation",
-      "importer": [
-        "scripts/import-ui-craft-sources.cjs",
-        "--name",
-        "12-principles-of-animation",
-        "--source",
-        "{source}"
-      ],
-      "committedAt": "2026-03-17T15:27:21+00:00",
-      "held": {
-        "reason": "Upstream deleted the skill (e1df385) and restructured the repository into new skills; keeping, replacing or dropping the bundle and its routes is a product decision.",
-        "issue": "https://github.com/2233admin/design-pipeline/issues/264"
-      },
-      "treeSha256": "c836d17cb89f4c7d0cdd88829968db5484d9fd8f8e1762b4dc3fc29b067859e7"
-    },
-    {
       "id": "animejs",
       "kind": "npm",
       "package": "animejs",

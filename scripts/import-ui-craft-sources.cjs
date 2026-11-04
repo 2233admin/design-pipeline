@@ -26,15 +26,6 @@ const REVIEWED = {
     skill: "fixing-accessibility", rootFiles: ["LICENSE"],
     license: { kind: "mit-file", spdx: "MIT", file: "LICENSE", copyright: "Copyright (c) 2026 Julien Thibeaut" },
   },
-  "12-principles-of-animation": {
-    repository: "https://github.com/raphaelsalaja/skill",
-    skill: "12-principles-of-animation", rootFiles: ["README.md"],
-    // The repository ships no license file; the only license evidence is the skill frontmatter.
-    license: {
-      kind: "frontmatter", spdx: "MIT", evidence: "license: MIT",
-      note: "Declared only in the skill frontmatter; the upstream repository has no LICENSE file at the reviewed revision and publishes no copyright line.",
-    },
-  },
   shadcn: {
     repository: "https://github.com/shadcn-ui/ui",
     skill: "shadcn", rootFiles: ["LICENSE.md"],
@@ -51,7 +42,6 @@ const REVIEWED = {
   },
 };
 
-const LICENSE_NAME = /^(?:licen[cs]e|copying)(?:\.[^/]*)?$/i;
 const NOTICE_NAME = /^notice(?:\.[^/]*)?$/i;
 
 function parseArgs(argv) {
@@ -102,18 +92,11 @@ function skillMetadata(text) {
   const name = value("name");
   const description = value("description");
   if (!name || !description) fail("skill entry frontmatter is missing name or description");
-  const license = lines.find(line => /^license:/.test(line));
-  return { name, description, license: license ? unquote(license.slice("license:".length)) : null };
+  return { name, description };
 }
 
-function verifyLicense(name, reviewed, checkout, trackedPaths, entryText) {
+function verifyLicense(name, reviewed, checkout, trackedPaths) {
   const license = reviewed.license;
-  if (license.kind === "frontmatter") {
-    if (skillMetadata(entryText).license !== license.spdx || !entryText.includes(`\n${license.evidence}`)) fail(`source skill frontmatter does not declare the reviewed ${name} license: ${license.evidence}`);
-    const files = trackedPaths.filter(file => LICENSE_NAME.test(path.posix.basename(file)));
-    if (files.length) fail(`reviewed ${name} record expects no license file, but the source tracks ${files.join(", ")}`);
-    return { path: `upstream/skills/${reviewed.skill}/SKILL.md`, license: license.spdx, evidence: license.evidence, note: license.note };
-  }
   const text = checkout.blobs.get(license.file)?.toString("utf8") || "";
   const copyrightLine = new RegExp(`^\\s*${license.copyright.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "m");
   if (license.kind === "mit-file") {
@@ -142,7 +125,7 @@ function importSnapshot(name, source, reviewedAt) {
   const entryBlob = checkout.blobs.get(entry);
   if (!entryBlob) fail(`source does not track the ${name} skill entry: ${entry}`);
   const entryText = entryBlob.toString("utf8");
-  const licenseRecord = verifyLicense(name, reviewed, checkout, trackedPaths, entryText);
+  const licenseRecord = verifyLicense(name, reviewed, checkout, trackedPaths);
   const metadata = skillMetadata(entryText);
   if (metadata.name !== reviewed.skill) fail(`frontmatter name does not match reviewed ${name} entry: ${metadata.name}`);
   const entries = checkout.indexEntries;
