@@ -35,6 +35,7 @@
     "answer-html:build": "node scripts/build-answer-me-with-html-runtime.cjs"
   },
   "devDependencies": {
+    "@babel/parser": "^8.1.0",
     "@fission-ai/openspec": "1.16.0"
   }
 }

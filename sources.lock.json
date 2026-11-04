@@ -64,22 +64,31 @@
       "id": "astryx",
       "kind": "npm",
       "package": "@astryxdesign/core",
-      "version": "0.2.0",
-      "reviewedAt": "2026-10-07",
+      "version": "0.7.7",
+      "reviewedAt": "2026-11-04",
       "repo": "https://github.com/facebook/astryx",
-      "revision": "921d3db31ae4323e0625d2f5a95c32fe07a3d5d7",
+      "revision": "de4692eeedb5039f6b168dadb2ed2b4afcc70f8c",
       "tag": "v{version}",
       "sites": [
         {
           "file": "skill/references/astryx-design-system-snapshot.json",
           "json": "provenance.version"
+        },
+        {
+          "file": "THIRD_PARTY_NOTICES.md",
+          "pattern": "`@astryxdesign/core` and `@astryxdesign/cli` {version}"
         }
       ],
-      "committedAt": "2026-08-01T14:14:31+00:00",
-      "held": {
-        "reason": "The snapshot is the output of @astryxdesign/cli, which runs upstream code; moving from 0.2.0 to 0.7.x needs a reviewed regeneration path and a check of every component the routes name.",
-        "issue": "https://github.com/2233admin/design-pipeline/issues/263"
-      }
+      "committedAt": "2026-11-03T08:52:59-08:00",
+      "importer": [
+        "scripts/generate-astryx-snapshot.cjs",
+        "--core",
+        "{pack:@astryxdesign/core}",
+        "--cli",
+        "{pack:@astryxdesign/cli}",
+        "--revision",
+        "{revision}"
+      ]
     },
     {
       "id": "awesome-ux-ai-interaction",

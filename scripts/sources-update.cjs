@@ -10,10 +10,13 @@
 // (scripts/import-*.cjs) reads it. The importer regenerates the bundle and its integrity hashes; this
 // script then rewrites every derived pin (catalog links, companion profiles, adapted-reference
 // frontmatter, notices) and the lock. An upstream that moved or removed a file we cite, or changed
-// a license text we cite, fails loudly and is left at its locked revision.
+// a license text we cite, fails loudly and is left at its locked revision. An npm entry with an
+// importer (data derived from the release, such as the Astryx snapshot) has the release tarballs
+// fetched with `npm pack --ignore-scripts` and read by that importer; they are never installed.
 //
 // Test hooks (no network): SOURCES_REMOTE_BASE maps https://github.com/<owner>/<name> to
-// <base>/<owner>/<name>; SOURCES_NPM_VERSIONS is a JSON object of package -> latest version.
+// <base>/<owner>/<name>; SOURCES_NPM_VERSIONS is a JSON object of package -> latest version;
+// SOURCES_NPM_PACKS maps "package@version" to a local tarball.
 
 const crypto = require("node:crypto");
 const fs = require("node:fs");
@@ -106,6 +109,22 @@ function npmLatest(name) {
   const child = spawnSync("npm", ["view", name, "version", "--json"], { encoding: "utf8", windowsHide: true, shell: process.platform === "win32" });
   if (child.status !== 0) fail(`npm view ${name}: ${String(child.stderr).trim()}`);
   return JSON.parse(child.stdout);
+}
+
+// The release tarball of `name@version`, fetched (integrity-checked by npm) into `dir` without
+// running any lifecycle script. SOURCES_NPM_PACKS maps "name@version" to a local tarball in tests.
+function npmPack(name, version, dir) {
+  if (process.env.SOURCES_NPM_PACKS) {
+    const tarball = JSON.parse(process.env.SOURCES_NPM_PACKS)[`${name}@${version}`];
+    if (!tarball) fail(`SOURCES_NPM_PACKS has no ${name}@${version}`);
+    return path.resolve(tarball);
+  }
+  fs.mkdirSync(dir, { recursive: true });
+  const child = spawnSync("npm", ["pack", `${name}@${version}`, "--ignore-scripts", "--json", "--pack-destination", dir], { cwd: dir, encoding: "utf8", windowsHide: true, shell: process.platform === "win32", maxBuffer: 64 * 1024 * 1024 });
+  if (child.status !== 0) fail(`npm pack ${name}@${version}: ${String(child.stderr).trim().split("\n").slice(-3).join(" ")}`);
+  const [packed] = JSON.parse(child.stdout);
+  if (packed?.name !== name || packed?.version !== version || !packed.filename) fail(`npm pack ${name}@${version} returned ${packed?.name}@${packed?.version}`);
+  return path.join(dir, path.basename(packed.filename));
 }
 
 // Shallow, blob-filtered fetch of the wanted revisions into `dir`; `checkout` materializes one.
@@ -483,6 +502,36 @@ function update(options) {
           if (group) group.failed = true;
           report.failed.push({ id: entry.id, reason: error.message });
         }
+      }
+    }
+
+    // npm sources whose bundled data is derived from the release: the importer reads the release
+    // tarballs (`npm pack --ignore-scripts`, never installed or run) and rewrites its outputs, which
+    // are the entry's site files. A failing importer leaves them and the lock as they were.
+    for (const group of groups.values()) {
+      const npmEntry = group.entries.find((entry) => VERSIONED.has(entry.kind) && entry.importer);
+      if (!npmEntry || group.failed || !group.updates || !group.version) continue;
+      const outputs = [...new Set(npmEntry.sites.map((site) => site.file))];
+      const saved = new Map(outputs.map((file) => [file, fs.existsSync(path.join(root, file)) ? fs.readFileSync(path.join(root, file)) : null]));
+      try {
+        const packs = new Map();
+        const packOf = (name) => {
+          if (!packs.has(name)) packs.set(name, npmPack(name, group.version, path.join(tempRoot, `pack-${npmEntry.id}-${packs.size}`)));
+          return packs.get(name);
+        };
+        const [script, ...template] = npmEntry.importer;
+        const args = template.map((part) => part.replace(/\{pack:([^}]+)\}/g, (match, name) => packOf(name)).replaceAll("{revision}", group.target || "").replaceAll("{version}", group.version));
+        const child = spawnSync(process.execPath, [path.join(root, script), ...args, "--reviewed-at", today], { cwd: root, encoding: "utf8", windowsHide: true, maxBuffer: 64 * 1024 * 1024 });
+        if (child.status !== 0) fail(`${script} failed: ${String(child.stderr || child.stdout).trim().split("\n").slice(-3).join(" ")}`);
+        // Keyed `source`, not `id`: the from/to row is added with the lock update below.
+        report.bumped.push({ source: npmEntry.id, importer: child.stdout.trim() });
+      } catch (error) {
+        for (const [file, bytes] of saved) {
+          if (bytes === null) fs.rmSync(path.join(root, file), { force: true });
+          else fs.writeFileSync(path.join(root, file), bytes);
+        }
+        group.failed = true;
+        for (const entry of group.entries) report.failed.push({ id: entry.id, reason: error.message });
       }
     }
 

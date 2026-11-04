@@ -69,7 +69,8 @@ Playwright Chromium 与 HyperFrames browser。
 上游来源跟随最新：`sources.lock.json` 记录每个上游的 revision（npm 运行时为最新发布）；
 `npm run sources:update` 拉取上游 HEAD、用导入脚本重新导入并重算哈希、派生引用和锁文件，升级 PR
 的测试全绿即是审核。`sources:check` 离线校验快照与哈希，`-- --upstream` 列出落后的来源。不要手改
-vendored 字节或哈希；需要重新设计的来源在锁文件里标 `held` 并附后续 issue。运行时固定版本
+vendored 字节或哈希；需要重新设计的来源在锁文件里标 `held` 并附后续 issue。`npm` 条目可以指定导入脚本，
+从该发布派生数据（Astryx 快照）：`{pack:<包名>}` 参数是用 `npm pack --ignore-scripts` 取回的 tarball，只读不装不跑。运行时固定版本
 （GSAP、HyperFrames、Playwright）也是锁文件里 `npm` 类条目；
 pixelmatch 已升级到 8.0.0，新比较报告记录版本、OKLab/HyAB 算法与实际选项；旧数值与新算法之间
 需重新校准，旧黄金 HTML 和视频不因工具链刷新而重写或重新审批。命令清单以根

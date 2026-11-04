@@ -16,7 +16,8 @@ function semanticName(name) {
 
 function inferType(role, value) {
   const name = role.toLowerCase().replace(/[._]+/g, "-");
-  if (name.startsWith("color-") || name === "color") return "color";
+  if (name.startsWith("color-") || name === "color" || name.endsWith("-color")) return "color";
+  if (name.endsWith("-style") && /^(?:solid|dashed|dotted|double|groove|ridge|outset|inset)$/.test(String(value))) return "strokeStyle";
   if (name.startsWith("shadow-") || name === "shadow") return "shadow";
   if (name.startsWith("duration-") || name === "duration") return "duration";
   if (name.startsWith("ease-") || name.startsWith("easing-")) return "cubicBezier";

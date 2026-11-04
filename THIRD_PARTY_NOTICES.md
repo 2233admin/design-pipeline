@@ -57,8 +57,9 @@ remain the authority for full license text and runtime installation instructions
 The bundled Astryx provider profile and attributed design-system snapshot were derived from:
 
 - Source: https://github.com/facebook/astryx
-- Reviewed commit: `921d3db31ae4323e0625d2f5a95c32fe07a3d5d7`
-- Package version: `0.2.0`
+- Reviewed commit: `de4692eeedb5039f6b168dadb2ed2b4afcc70f8c`
+- Packages: `@astryxdesign/core` and `@astryxdesign/cli` 0.7.7 npm tarballs, read statically by
+  `scripts/generate-astryx-snapshot.cjs`
 - Original copyright: Copyright (c) 2026 Meta Platforms, Inc.
 - License: MIT
 

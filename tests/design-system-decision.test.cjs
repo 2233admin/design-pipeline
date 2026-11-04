@@ -50,11 +50,13 @@ test("projects light/dark tuples, CSS strings, and semantic roles without loss",
   assert.equal(validateTokens(result.tokens).tokenCount, 2);
 });
 
-test("bundled Astryx snapshot projects all 184 tokens without path collisions", () => {
+test("bundled Astryx snapshot projects every theme token without path collisions", () => {
   const snapshot = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../skill/references/astryx-design-system-snapshot.json"), "utf8"));
   const result = projectDesignSystemTokens(normalizeSnapshot(snapshot));
-  assert.notEqual(result.status, "blocked");
-  assert.equal(validateTokens(result.tokens).tokenCount, 184);
+  assert.equal(result.status, "ready", JSON.stringify(result.losses));
+  const source = snapshot.docs.find(({ id }) => id === "tokens").theme.tokens;
+  assert.ok(Object.keys(source).length >= 184);
+  assert.equal(validateTokens(result.tokens).tokenCount, Object.keys(source).length);
   assert.ok(!result.losses.some((loss) => loss.code === "path-collision"));
   assert.ok(result.losses.every((loss) => loss.path && loss.message));
   assert.equal(result.tokens.tokens.color.accent.$extensions["design-pipeline"].sourceName, "--color-accent");
@@ -62,6 +64,13 @@ test("bundled Astryx snapshot projects all 184 tokens without path collisions", 
   assert.equal(result.tokens.tokens.color["accent-muted"].$extensions["design-pipeline"].sourceName, "--color-accent-muted");
   assert.equal(result.tokens.tokens.font["weight-normal"].$type, "fontWeight");
   assert.equal(result.tokens.tokens.font["size-base"].$type, "dimension");
+});
+
+test("a -color suffix types a color and a CSS border style keyword types a strokeStyle", () => {
+  const result = projectDesignSystemTokens(catalog({ tokens: { "--focus-outline-color": "var(--color-accent)", "--focus-outline-style": "solid", "--rule-style": "wavy" } }));
+  assert.equal(result.tokens.tokens.focus["outline-color"].$type, "color");
+  assert.equal(result.tokens.tokens.focus["outline-style"].$type, "strokeStyle");
+  assert.deepEqual(result.losses.map(({ code, path: lossPath }) => [code, lossPath]), [["type-unresolved", "--rule-style"]]);
 });
 
 test("true normalized token-name duplicates remain blocked", () => {
