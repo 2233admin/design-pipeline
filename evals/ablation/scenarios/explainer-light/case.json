@@ -1,0 +1,9 @@
+{
+  "style": "broadsheet",
+  "deliverables": ["card.html", "card.svg"],
+  "width": 1080,
+  "height": 1920,
+  "minFontPx": 22,
+  "profile": "poster",
+  "controls": false
+}

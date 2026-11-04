@@ -1,0 +1,9 @@
+{
+  "style": "foundry-console",
+  "deliverables": ["cover.html", "cover.svg"],
+  "width": 1080,
+  "height": 1440,
+  "minFontPx": 20,
+  "profile": "poster",
+  "controls": false
+}

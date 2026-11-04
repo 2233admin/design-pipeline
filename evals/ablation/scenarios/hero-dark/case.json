@@ -1,0 +1,9 @@
+{
+  "style": "foundry-console",
+  "deliverables": ["hero.html"],
+  "width": 1440,
+  "height": 900,
+  "minFontPx": 16,
+  "profile": "ui",
+  "controls": true
+}

@@ -70,7 +70,7 @@ function extract() {
   return { viewport: { width: innerWidth, height: innerHeight }, background: effectiveBackground(document.body), items };
 }
 
-(async () => {
+async function main() {
   let browser;
   try {
     const options = parseArgs(process.argv.slice(2));
@@ -102,4 +102,9 @@ function extract() {
   } finally {
     if (browser) await browser.close();
   }
-})();
+}
+
+// `extract` runs in a page; evals/ablation/measure.mjs reuses it inside its own browser session.
+if (require.main === module) main();
+
+module.exports = { extract };

@@ -1,0 +1,72 @@
+{
+  "schema": "design-pipeline.ablation-layers.v1",
+  "note": "Paths are relative to skill/. A path ending in / removes the whole folder. Every entry must match at least one packaged file, so a stale entry fails the build instead of removing nothing. keptCode lists scripts that belong to the layer but stay because code that is kept requires them; the build fails if a removed script is still required.",
+  "layers": [
+    {
+      "id": "taste-skill",
+      "title": "Built-in Taste suite",
+      "remove": [
+        "references/taste-skill.md",
+        "vendor/taste-skill/"
+      ],
+      "keptCode": []
+    },
+    {
+      "id": "design-direction-library",
+      "title": "Design direction library (style specimens, three-direction method, brand protocol, critique guide)",
+      "remove": [
+        "references/design-direction-library.md",
+        "vendor/design-direction-library/"
+      ],
+      "keptCode": [
+        { "path": "scripts/design-direction-library-core.cjs", "reason": "required by cli-core.cjs and fetch-sources.cjs; reports the library as missing" },
+        { "path": "scripts/directions-core.cjs", "reason": "required by cli-core.cjs; `direction draw` fails with TOOL_MISSING without the library" }
+      ]
+    },
+    {
+      "id": "anti-slop-rubric",
+      "title": "Contextual anti-slop rubric and review",
+      "remove": [
+        "references/anti-slop-rubric.json",
+        "references/anti-slop-rubric.schema.json",
+        "references/anti-slop-review.md",
+        "references/anti-slop-review.schema.json",
+        "references/anti-slop-evidence.schema.json",
+        "scripts/evaluate-anti-slop.cjs"
+      ],
+      "keptCode": []
+    },
+    {
+      "id": "ui-craft",
+      "title": "UI craft rule index (ui-craft-sources) and the Impeccable design contract",
+      "remove": [
+        "references/ui-craft-sources.md",
+        "references/impeccable-contract.md",
+        "references/impeccable-product-design.md",
+        "references/impeccable-product-design.json",
+        "vendor/emil-design-eng/",
+        "vendor/make-interfaces-feel-better/",
+        "vendor/fixing-accessibility/",
+        "vendor/12-principles-of-animation/",
+        "vendor/shadcn/",
+        "vendor/playwright-cli/"
+      ],
+      "keptCode": [
+        { "path": "scripts/interaction-audit.cjs", "reason": "the measured page audit of `verify interaction`; also the eval's own measurement" }
+      ]
+    },
+    {
+      "id": "design-md-foundation",
+      "title": "DESIGN.md foundation step (requirements-driven synthesis guide and standalone checkers)",
+      "remove": [
+        "references/design-synthesis.md",
+        "scripts/check-design-foundation.cjs",
+        "scripts/advance-design-synthesis.cjs"
+      ],
+      "keptCode": [
+        { "path": "scripts/design-synthesis-core.cjs", "reason": "required by cli-core.cjs (`foundation check`) and the replicate workflow" },
+        { "path": "scripts/init-design-synthesis.cjs", "reason": "required by design-synthesis-core.cjs and check-spec-reconciliation.cjs" }
+      ]
+    }
+  ]
+}
