@@ -56,6 +56,7 @@ const { templates: filmTemplates } = require("../tools/prompt-motion/library.cjs
 const { scaffoldVisualCraft, TEMPLATES: scaffoldTemplates } = require("../tools/visual-craft/scaffold.cjs");
 const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
 const { evaluateProbeFile, validateProbeFile } = require("./interaction-core.cjs");
+const { scrollBudgetMs } = require("./interaction-scroll.cjs");
 const { scoreFilm } = require("./score-project-core.cjs");
 const { renderBlenderShot } = require("./blender-project-core.cjs");
 const { listTemplates } = require("./blender-core.cjs");
@@ -442,7 +443,7 @@ function publicHelp() {
     "    verify film-storyboard --storyboard <storyboard.json>",
     "    verify film-timeline --storyboard <storyboard.json> --timeline <timeline.json>",
     "    verify film-render --storyboard <storyboard.json> --video <out.mp4> [--output <evidence-dir>]",
-    "    verify interaction --probe <interaction.json> [--output <evidence-dir>] [--chrome <exe>] [--puppeteer-module <path>] [--project-root <dir>]   (motion, journey and audit probes; records the project's interaction gate)",
+    "    verify interaction --probe <interaction.json> [--output <evidence-dir>] [--chrome <exe>] [--puppeteer-module <path>] [--project-root <dir>]   (motion, journey, audit and scroll probes; records the project's interaction gate)",
     "  audio master --input <audio> --output <wav> [--target web|podcast|broadcast] [--fade-out <sec>]",
     "  composition capture --composition <html> | --url <url> --output <dir> [--width 1920 --height 1080] [--seek <sec>]",
     `  composition scaffold --output <new-dir> [--template ${scaffoldTemplates.join("|")}]`,
@@ -1116,7 +1117,10 @@ function observeInteraction(root, options = {}) {
   const args = ["--probe", context.probeFile];
   if (options.chrome) args.push("--chrome", options.chrome);
   if (options.puppeteer) args.push("--puppeteer-module", options.puppeteer);
-  const kernel = runKernel("capture-interaction.cjs", args, root);
+  if (options.framesDir && context.doc.probes.some(probe => probe.kind === "scroll")) args.push("--frames-dir", contained(root, options.framesDir, "scroll contact sheets", false));
+  // A scroll probe waits at every point it photographs; its validated plan is added to the usual minute.
+  const scrollBudget = context.doc.probes.filter(probe => probe.kind === "scroll").reduce((sum, probe) => sum + scrollBudgetMs(probe) * 2, 0);
+  const kernel = runKernel("capture-interaction.cjs", args, root, { timeout: 60000 + scrollBudget });
   const capture = kernel.value?.capture;
   if (kernel.exitCode !== 0 || capture?.schema !== "design-pipeline.interaction-capture.v1" || typeof capture.url !== "string") {
     fail("interaction capture", "capture kernel returned no valid capture", { code: "KERNEL_FAILED" });
@@ -1251,7 +1255,7 @@ function verifyCommand(parsed, root, action) {
     const { result, resultFile, localPage, kernel } = observeInteraction(root, {
       probe: probeFile, resultFile: path.join(outDir, "interaction.json"), project,
       protectedFiles: [...new Set([path.join(path.dirname(probeFile), workflow.STATE), path.join(project, workflow.STATE)])],
-      chrome: option(parsed, "--chrome"), puppeteer: option(parsed, "--puppeteer-module"),
+      chrome: option(parsed, "--chrome"), puppeteer: option(parsed, "--puppeteer-module"), framesDir: path.join(outDir, "scroll"),
     });
     // Lineage is read before the report is written: a request that resolves only once the report
     // exists, through any alias the filesystem accepts, stays absent and reopens the gate.

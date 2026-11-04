@@ -648,7 +648,8 @@ verification cannot complete this task. Report-only legacy plans remain readable
 add the binding and dispatch again. Unsupported verification does not become a pass.
 
 The same interaction-probe.v1 supports either a motion probe `{id, target, input, expect}` or
-an ordered state journey `{id, target, steps}`; never mix the two shapes. A journey navigates once
+an ordered state journey `{id, target, steps}`; never mix the two shapes. Named kinds `audit` and
+`scroll` sit beside them; a scroll probe is described in `workflow-web.md` under probe. A journey navigates once
 and retains state between steps. Each step has a unique `id`, optional real `input`, nonempty
 `assertions` and optional `timeoutMs` (default 1,000; range 1..5,000). At most 16 steps and 16
 assertions per step are supported; the step windows sum to at most 15,000 ms. Observe state at

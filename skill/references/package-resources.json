@@ -159,6 +159,7 @@
     "scripts/interaction-audit.cjs",
     "scripts/interaction-capture-core.cjs",
     "scripts/capture-interaction.cjs",
+    "scripts/interaction-scroll.cjs",
     "scripts/png-core.cjs",
     "scripts/composition-core.cjs",
     "scripts/capture-composition.cjs",

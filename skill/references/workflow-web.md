@@ -746,6 +746,29 @@ scrim. A CDN or dev-server URL, or a file outside the project, fails the verifie
 it locally. A file outside the project that a motion or journey probe's interaction loads fails
 that probe the same way. The audit fails on any `failed` or `indeterminate` result at any viewport.
 
+Add one scroll probe per scroll-driven scene (a section pinned or animated by scroll progress):
+
+```json
+{ "id": "story-scene", "kind": "scroll", "target": "#story" }
+```
+
+`target` is the element that spans the scroll distance the scene plays over: for CSS `position:
+sticky` the tall section around the sticky stage; for a GSAP ScrollTrigger pin the generated
+spacer, `.pin-spacer:has(> #story)`. Optional fields: `points` (2 to 20, default 10),
+`settleMs` (default 1200), `restWindowMs` (default 300) and `viewports` (default
+`[{ "width": 1440, "height": 900 }, { "width": 390, "height": 844, "mobile": true }]`); the
+planned waiting, viewports x 2 x (points + 3) x (settleMs + restWindowMs), may not exceed 120 s.
+Each viewport loads the page twice, with motion allowed and with `prefers-reduced-motion: reduce`,
+and visits before, 0 %, 10 % ... 100 % and after of the scene's progress. It fails
+`scroll-never-started` when, with motion allowed, no point after 0 % differs from the 0 % frame
+(element boxes within their pinned frame, transform, opacity, filter, clip-path, visibility, text,
+canvas and video pixels), and `scroll-never-rests` when a held position still moves after
+`settleMs` in either pass. A static reduced pass is a valid substitute and passes. No field skips
+a looping element: move a loop that is the point of the scene out of the target, or stop it while
+the scene is held. `verify interaction` writes one labelled contact sheet per viewport and pass to
+`<output>/scroll/`, named in the row's `coverage[].sheet`; whether each frame reads well is Visual
+Acceptance, judged from those sheets.
+
 Then run the `verify interaction` command `next` returns. It exits 2 when a probe fails, and 1 for a
 malformed probe, a page the audit cannot bind or a selector the page rejects; neither records a
 pass. In `evidence/interaction.json` each finding has its `code`, the element `selector` (a request

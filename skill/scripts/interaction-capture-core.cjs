@@ -12,6 +12,8 @@ const { fail } = require("./contract-utils.cjs");
 const { resolvePuppeteer } = require("./film-capture-core.cjs");
 const { browserIdentity, resolveBrowser } = require("./browser-locate.cjs");
 const { auditOptions, auditPage } = require("./interaction-audit.cjs");
+const { PASSES, changedPixelShare, mediaFingerprints, planScrollPoints, scrollSceneGeometry, scrollSceneRest, scrollSceneState, toImageRect } = require("./interaction-scroll.cjs");
+const { decodePng } = require("./png-core.cjs");
 
 const SCOPE = "interaction capture";
 const CAPTURE_SCHEMA = "design-pipeline.interaction-capture.v1";
@@ -232,7 +234,98 @@ async function recordAudit(page, probe, url, recordedRequests, timeoutMs, assert
   return { id: probe.id, kind: "audit", viewports, requests: recordedRequests.slice(mark) };
 }
 
-async function recordProbe(page, probe, url, recordedRequests, timeoutMs, viewport) {
+// A labelled contact sheet of one pass, drawn in a separate page of the same browser so the
+// probed page keeps its scroll state. The frames are the "settled" screenshots of each point.
+async function writeScrollSheet(browser, frames, labels, viewport, file) {
+  const cellWidth = viewport.width >= 1000 ? 360 : 180;
+  const cellHeight = Math.round((cellWidth * viewport.height) / viewport.width);
+  const columns = viewport.width >= 1000 ? 4 : 7;
+  const rows = Math.ceil(frames.length / columns);
+  const sheet = await browser.newPage();
+  try {
+    await sheet.setViewport({ width: columns * cellWidth, height: rows * (cellHeight + 20), deviceScaleFactor: 1 });
+    const figures = frames.map((frame, index) => `<figure><img src="data:image/png;base64,${frame.toString("base64")}"><figcaption>${labels[index]}</figcaption></figure>`).join("");
+    await sheet.setContent(`<!doctype html><style>body{margin:0;background:#666;display:grid;grid-template-columns:repeat(${columns},${cellWidth}px);font:12px/20px system-ui,sans-serif;color:#fff}figure{margin:0}img{display:block;width:${cellWidth}px;height:${cellHeight}px;outline:1px solid #666}figcaption{padding-left:6px;background:#111}</style>${figures}`, { waitUntil: "load" });
+    await sheet.evaluate(() => Promise.all([...document.images].map((image) => image.decode().catch(() => {}))));
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    await sheet.screenshot({ path: file, type: "jpeg", quality: 78, fullPage: true });
+  } finally {
+    await sheet.close();
+  }
+}
+
+// One scroll pass: a fresh load at this viewport with prefers-reduced-motion set, then for every
+// planned point an instant scroll, the settle wait, the scene state and a screenshot, the rest
+// window, and how much the scene still moved (its elements, and its visible pixels).
+async function recordScrollPass(page, browser, probe, url, viewport, passName, timeoutMs, framesDir, assertLocalTarget, pageErrors) {
+  await page.setViewport({ width: viewport.width, height: viewport.height, deviceScaleFactor: 1, isMobile: viewport.mobile, hasTouch: viewport.mobile });
+  await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: passName === "reduced" ? "reduce" : "no-preference" }]);
+  await page.goto(url, { waitUntil: "networkidle0", timeout: timeoutMs });
+  assertLocalTarget();
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
+  await sleep(probe.settleMs);
+  const geometry = await page.evaluate(scrollSceneGeometry, probe.target);
+  const at = `probe "${probe.id}" at ${viewport.width}x${viewport.height} (${passName})`;
+  if (!geometry.found) fail(SCOPE, `${at}: no element matches ${probe.target} on ${url}${pageErrors.length ? ` (page errors: ${pageErrors.slice(0, 3).join(" | ")})` : ""}. Fix: point "target" at the scroll scene's section, rendered by load; a target the scene's script creates (a GSAP .pin-spacer) is missing when that script did not run`);
+  if (!(geometry.height > 0)) fail(SCOPE, `${at}: ${probe.target} has no height. Fix: target the scene's section itself, which spans the scroll distance the scene plays over`);
+  const plan = planScrollPoints(geometry, geometry.viewportHeight, probe.points);
+  const points = [];
+  const frames = [];
+  for (const planned of plan.points) {
+    await page.evaluate((y) => new Promise((resolve) => {
+      window.scrollTo({ top: y, left: 0, behavior: "instant" });
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    }), planned.plannedY);
+    await sleep(probe.settleMs);
+    assertLocalTarget();
+    const state = await page.evaluate(scrollSceneState, probe.target);
+    if (!state.found) fail(SCOPE, `${at}: ${probe.target} disappeared at ${planned.label}. Fix: probe an element that stays in the page while it scrolls`);
+    const settled = Buffer.from(await page.screenshot({ type: "png", captureBeyondViewport: false }));
+    await sleep(probe.restWindowMs);
+    const rest = await page.evaluate(scrollSceneRest, probe.target);
+    if (!rest.found) fail(SCOPE, `${at}: ${probe.target} disappeared during the rest window at ${planned.label}. Fix: probe an element that stays in the page while it scrolls`);
+    const later = Buffer.from(await page.screenshot({ type: "png", captureBeyondViewport: false }));
+    const first = decodePng(settled, "scroll frame");
+    const second = decodePng(later, "scroll frame");
+    points.push({
+      label: planned.label,
+      progress: planned.progress,
+      plannedY: planned.plannedY,
+      scrollY: state.scrollY,
+      state: state.hash,
+      media: mediaFingerprints(first, state.media.map((rect) => toImageRect(rect, state.frame, first))),
+      elements: state.elements,
+      rest: { structural: rest.structural, shiftPx: rest.shiftPx, opacity: rest.opacity, pixelShare: Math.round(changedPixelShare(first, second, toImageRect(state.visible, state.frame, first)) * 10000) / 10000 },
+    });
+    frames.push(settled);
+  }
+  const entry = { viewport: { width: viewport.width, height: viewport.height, mobile: viewport.mobile }, pass: passName, range: plan.range, points };
+  if (framesDir) {
+    const name = `${String(probe.id).replace(/[^A-Za-z0-9._-]+/g, "-")}-${viewport.width}x${viewport.height}-${passName}.jpg`;
+    await writeScrollSheet(browser, frames, plan.points.map((point) => `${probe.id} ${point.label}`), viewport, path.join(framesDir, name));
+    entry.sheet = name;
+  }
+  return entry;
+}
+
+async function recordScroll(page, browser, probe, url, recordedRequests, timeoutMs, assertLocalTarget, restore, framesDir, pageErrors) {
+  const mark = recordedRequests.length;
+  const passes = [];
+  try {
+    for (const viewport of probe.viewports) {
+      for (const passName of PASSES) passes.push(await recordScrollPass(page, browser, probe, url, viewport, passName, timeoutMs, framesDir, assertLocalTarget, pageErrors));
+    }
+  } finally {
+    await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "no-preference" }]);
+    await page.setViewport(restore);
+  }
+  return { id: probe.id, kind: "scroll", passes, pageErrors: pageErrors.slice(0, 10), requests: recordedRequests.slice(mark) };
+}
+
+async function recordProbe(page, probe, url, recordedRequests, timeoutMs, viewport, browser, framesDir) {
   const mark = recordedRequests.length;
   const pageErrors = [];
   const onError = (error) => pageErrors.push(error.message);
@@ -246,6 +339,7 @@ async function recordProbe(page, probe, url, recordedRequests, timeoutMs, viewpo
   page.on("pageerror", onError);
   try {
     if (probe.kind === "audit") return await recordAudit(page, probe, url, recordedRequests, timeoutMs, assertLocalTarget, viewport);
+    if (probe.kind === "scroll") return await recordScroll(page, browser, probe, url, recordedRequests, timeoutMs, assertLocalTarget, viewport, framesDir, pageErrors);
     // A reload per probe is the reset: fresh DOM, fresh listeners, and its own load requests.
     await page.goto(url, { waitUntil: "networkidle0", timeout: timeoutMs });
     assertLocalTarget();
@@ -323,7 +417,7 @@ async function captureInteraction(probeFile, options = {}) {
     // remote runtime resource the gate downstream exists to catch.
     page.on("request", (request) => { if (isNetworkUrl(request.url())) requests.push(request.url()); });
     const probes = [];
-    for (const probe of doc.probes) probes.push(await recordProbe(page, probe, url, requests, options.timeoutMs || 30000, viewport));
+    for (const probe of doc.probes) probes.push(await recordProbe(page, probe, url, requests, options.timeoutMs || 30000, viewport, browser, options.framesDir ? path.resolve(options.framesDir) : null));
     // Every request of the run, in order: the gate binds the local files the page loaded. A probe's
     // log runs from its start to its return, and the next probe starts before another request event
     // can arrive (no await in between), so the probe logs cover this one. The snapshot keeps out

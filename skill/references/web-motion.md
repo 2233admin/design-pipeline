@@ -108,9 +108,13 @@ the target element every frame, then flags:
 - `linear-response` (warn) — a response declared as `spring` shows no overshoot and no
   acceleration/deceleration phase, i.e. it is linear in practice;
 - `opacity-only` — opacity changed while the box and transform stayed fixed;
-- `external-request` — any request during load or probing left the page's own origin.
+- `external-request` — any request during load or probing left the page's own origin;
+- `scroll-never-started` (scroll probe) — with motion allowed, a scroll scene measures the same at
+  every point of its progress from 0 % to 100 %;
+- `scroll-never-rests` (scroll probe) — at a held scroll position the scene is still moving after
+  the settle time, with motion allowed or under reduced motion.
 
-Each finding operationalizes a rule above: `dead-interaction`/`no-settle` are "responses settle",
+Each finding operationalizes a rule above: `dead-interaction`/`no-settle` and the two scroll findings are "responses settle",
 `rest-drift` is the rest-value guarantee, and the rest map to the material and self-contained-page rules.
 
 ## Provenance
