@@ -28,11 +28,11 @@ function parseArgs(argv) {
 (async () => {
   try {
     const options = parseArgs(process.argv.slice(2));
-    const measurement = await captureBuiltStyles(options["--project-root"], {
+    const { measurement, loaded } = await captureBuiltStyles(options["--project-root"], {
       chrome: options["--chrome"],
       puppeteerModule: options["--puppeteer-module"],
     });
-    process.stdout.write(`${JSON.stringify(jsonResult(true, { status: "measured", measurement }))}\n`);
+    process.stdout.write(`${JSON.stringify(jsonResult(true, { status: "measured", measurement, loaded }))}\n`);
   } catch (error) {
     process.stderr.write(`${error.message}\n`);
     process.exitCode = 1;

@@ -16,7 +16,8 @@ minor drift, and refuse an empty baseline rather than pass everything.
   browser, puppeteer resolution, settle and motion freeze as `evidence refs`), records each computed
   text, surface, border and SVG colour and each font family the page paints, with its share and
   whether the browser can render it, and writes change `built-styles.json`, bound to the page digest
-  and the DESIGN.md hash. It refuses a missing page, a DESIGN.md with no colour or font tokens, and a
+  the hashes of the local files it loaded and the DESIGN.md hash, plus a `scope` of what it does not
+  measure. On a change without a reference it says that drift will only warn. It refuses a missing page, a DESIGN.md with no colour or font tokens, and a
   page that moves during the capture.
 - `check-spec-reconciliation.cjs` reads `built-styles.json` when present and adds
   `specDrift.measured`: the comparison with the DESIGN.md front-matter `colors` and

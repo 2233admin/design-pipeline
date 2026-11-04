@@ -647,6 +647,9 @@ function reviewMeasurement(root, { projectRoot, designFoundation, rows, report }
     designFile: value.designFile,
     tolerance: drift.DELTA_E_TOLERANCE,
     majorShare: drift.MAJOR_SHARE,
+    loudDeltaE: drift.LOUD_DELTA_E,
+    loudElements: drift.LOUD_ELEMENTS,
+    scope: value.scope,
     current: true,
     findings: [],
     major: 0,
@@ -668,6 +671,16 @@ function reviewMeasurement(root, { projectRoot, designFoundation, rows, report }
   if (designText === null) stale.push(`${value.designFile} no longer exists`);
   else if (drift.designSha(designFile) !== value.designSha256) stale.push(`${value.designFile} changed since it was measured`);
   if (pageDigest(projectRoot) !== value.page) stale.push("the built page (index.html or a file it loads) changed since it was measured");
+  for (const [rel, hash] of Object.entries(value.lineage)) {
+    let file;
+    try {
+      file = resolveInside(projectRoot, rel, "loaded page file", { scope: "spec reconciliation" });
+    } catch {
+      stale.push(`${rel}, which the page loaded, is outside the project`);
+      continue;
+    }
+    if (drift.fileHash(file) !== hash) stale.push(`${rel}, which the page loaded, changed since it was measured`);
+  }
   if (stale.length) {
     record.current = false;
     report.block(REASONS.MEASUREMENT_STALE, `change ${drift.BUILT_STYLES_FILE} is stale: ${stale.join("; ")}. ${rerun}`);

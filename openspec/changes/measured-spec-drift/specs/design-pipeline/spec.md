@@ -23,11 +23,28 @@
 #### Scenario: A stray value
 
 - **WHEN** an off-token colour or family covers less than 1% of its kind, or a token is unused
+- **AND** the colour is not loud
 - **THEN** the gate SHALL warn `reconciliation-measured-minor` and SHALL NOT block.
+
+#### Scenario: A loud colour on a small area
+
+- **WHEN** a colour is more than CIEDE2000 10 from every token
+- **AND** it is the page background, on an interactive element, or a surface or border on 3 or more elements
+- **THEN** the gate SHALL report `reconciliation-measured-drift` whatever its share.
+
+#### Scenario: A token family reached through the stack
+
+- **WHEN** the first family named is unavailable and a token family later in the stack renders
+- **THEN** the text SHALL be compared by the rendered family and SHALL NOT be drift.
+
+#### Scenario: A row names a similar family
+
+- **WHEN** a row's `Implemented` cell names `sans-serif` and the measured family is `serif`
+- **THEN** the row SHALL NOT cover the drift; a font is covered only by a whole comma-separated entry.
 
 #### Scenario: The page or DESIGN.md changed after measuring
 
-- **WHEN** the page digest or the DESIGN.md hash differs from the measurement
+- **WHEN** the page digest, the hash of any local file the page loaded (font, CSS) or the DESIGN.md hash differs from the measurement
 - **THEN** the gate SHALL report `reconciliation-measurement-stale` and SHALL NOT compare it.
 
 #### Scenario: An empty baseline
@@ -40,6 +57,16 @@
 
 - **WHEN** an element is `display:none`, `visibility:hidden` or has a zero-opacity ancestor
 - **THEN** its colours and fonts SHALL NOT be measured.
+
+#### Scenario: Measuring a change without a reference
+
+- **WHEN** `reconciliation measure` runs on a change with no reference
+- **THEN** its output SHALL report `applicable: false` and a note that drift will only warn.
+
+#### Scenario: What was not measured
+
+- **WHEN** a measurement is recorded
+- **THEN** it SHALL carry a `scope` listing what it does not measure, including canvas and image pixels, shadows, the dark scheme and per-glyph font fallback.
 
 #### Scenario: No measurement yet
 

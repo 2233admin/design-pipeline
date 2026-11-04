@@ -16,6 +16,15 @@
 - [x] 3.1 `stages.md`, `design-spec.md`, CLI help, CHANGELOG; package resources.
 - [x] 3.2 `tests/measured-spec-drift.test.cjs` (Sharma pairs, tokens, comparison, gate lineage, and real headless Chromium pages: on-token, drifted, missing font, refusals) registered in the manifest; existing reconciliation tests (`round-two-findings`, `carried-forward-defects`) and full `npm test`.
 
-## 4. Follow-up
+## 4. Review fixes
 
-- [ ] 4.1 Dedupe the CIEDE2000 helper with PR #251's `deltaE2000` once both are on main.
+- [x] 4.1 Fonts compared by the rendered family, `first` kept for unloaded token fonts.
+- [x] 4.2 Root canvas out of the area denominator; loud rule (CIEDE2000 > 10 on a control, the background, or 3+ elements) with rationale in design.md.
+- [x] 4.3 Covering rows match whole comma-separated family entries and normalised hex.
+- [x] 4.4 Partial opacity composited; `scope` records what is not measured (design.md, stages.md).
+- [x] 4.5 Loaded local files (fonts, CSS) hashed into `lineage`; a swapped font file is stale.
+- [x] 4.6 `measure` reports `applicable` and a note on a change without a reference.
+
+## 5. Follow-up
+
+- [ ] 5.1 Dedupe the CIEDE2000 helper with PR #251's `deltaE2000` once both are on main.

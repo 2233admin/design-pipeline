@@ -742,12 +742,28 @@ function reconciliationMeasureCommand(parsed, root) {
   if (pageDigest(projectRoot) !== digest || drift.designSha(designFile) !== designSha256) {
     fail("reconciliation", "the page or DESIGN.md changed during the measurement. Fix: stop editing them, then run `reconciliation measure` again", { code: "PAGE_MOVED" });
   }
+  // The local files the browser actually loaded (fonts, CSS, @imports, images), project-relative:
+  // the gate re-hashes them, so a swapped font file makes the measurement stale.
+  const lineage = {};
+  const loaded = kernel.value.loaded && typeof kernel.value.loaded === "object" && !Array.isArray(kernel.value.loaded) ? kernel.value.loaded : {};
+  for (const [url, hash] of Object.entries(loaded)) {
+    let file;
+    try { file = fileURLToPath(url); } catch { continue; }
+    if (!pathInside(projectRoot, file)) continue;
+    const now = drift.fileHash(file);
+    if (now === undefined) continue;
+    const rel = path.relative(projectRoot, file).split(path.sep).join("/");
+    if (now !== hash) fail("reconciliation", `${rel} changed during the measurement. Fix: stop editing the page and its files, then run \`reconciliation measure\` again`, { code: "PAGE_MOVED" });
+    lineage[rel] = hash;
+  }
   const record = {
     schema: drift.BUILT_STYLES_SCHEMA,
     page: digest,
+    lineage,
     designFile: designRel,
     designSha256,
     capturedAt: new Date().toISOString(),
+    scope: drift.MEASUREMENT_SCOPE,
     ...measurement,
   };
   const problems = drift.validateMeasurement(record);
@@ -756,8 +772,25 @@ function reconciliationMeasureCommand(parsed, root) {
   const temp = `${target}.${process.pid}.tmp`;
   fs.writeFileSync(temp, `${JSON.stringify(record, null, 2)}\n`);
   fs.renameSync(temp, target);
+  // What the gate will make of it, so a change without a reference is told its drift only warns.
+  const gate = checkSpecReconciliation(changeRoot, reconciliationOptions(parsed, root));
+  const measured = gate.measured || {};
   return {
-    result: { status: "measured", file: path.relative(root, target).split(path.sep).join("/"), colors: record.colors.length, fonts: record.fonts.length, totals: record.totals },
+    result: {
+      status: "measured",
+      file: path.relative(root, target).split(path.sep).join("/"),
+      colors: record.colors.length,
+      fonts: record.fonts.length,
+      totals: record.totals,
+      lineage: Object.keys(lineage),
+      notMeasured: record.scope.notMeasured,
+      applicable: gate.applicable,
+      gate: { status: gate.status, reason: gate.reason, major: measured.major ?? 0, uncovered: measured.uncovered ?? 0, minor: measured.minor ?? 0 },
+      ...(gate.applicable ? {} : {
+        note: "this change has no reference (reference.md, reference-evidence.json, or a website-cloning.json / design-synthesis.json that records reference inputs), "
+          + "so `reconciliation check` reports measured drift as warnings, not blockers. Fix: add the change's reference if it reconstructs or follows one",
+      }),
+    },
     exitCode: 0,
   };
 }

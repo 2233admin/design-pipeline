@@ -87,14 +87,16 @@ function writeMeasurement({ dir, change }, measurement) {
     page: pageDigest(dir),
     designFile: "DESIGN.md",
     designSha256: drift.designSha(path.join(dir, "DESIGN.md")),
+    lineage: {},
     capturedAt: "2026-11-04T02:00:00Z",
+    scope: drift.MEASUREMENT_SCOPE,
     totals: { text: 100, surface: 1000000, border: 0, graphic: 0 },
     colors: [
       { hex: "#ffffff", weights: { surface: 900000 }, samples: ["canvas"] },
       { hex: "#1a1a2e", weights: { text: 100 }, samples: ["p"] },
       { hex: "#3366ff", weights: { surface: 100000 }, samples: ["button.cta"] },
     ],
-    fonts: [{ family: "Fixture Display", stack: "\"Fixture Display\", sans-serif", available: true, rendered: "Fixture Display", chars: 100, samples: ["p"] }],
+    fonts: [{ family: "Fixture Display", first: "Fixture Display", stack: "\"Fixture Display\", sans-serif", available: true, rendered: "Fixture Display", chars: 100, samples: ["p"] }],
     ...measurement,
   };
   fs.writeFileSync(path.join(change, drift.BUILT_STYLES_FILE), `${JSON.stringify(record, null, 2)}\n`);
@@ -184,12 +186,52 @@ test("a reconciliation row covers a drift only when its Implemented cell names t
   const rows = [
     { index: 1, implemented: "button fill measured darker on render" },
     { index: 2, implemented: "#ABC on the CTA" },
-    { index: 3, implemented: "dejavu serif fallback" },
+    { index: 3, implemented: "\"DejaVu Serif\", serif" },
   ];
   assert.equal(drift.coveringRow(colour, rows), 2);
   assert.equal(drift.coveringRow(font, rows), 3);
   assert.equal(drift.coveringRow(colour, rows.slice(0, 1)), null);
   assert.equal(drift.coveringRow({ kind: "color", implemented: "#abcdef" }, rows), null);
+});
+
+test("a font row covers only a whole family entry, never a substring", () => {
+  const rows = [
+    { index: 1, implemented: "sans-serif" },
+    { index: 2, implemented: "Interstate, Helvetica" },
+    { index: 3, implemented: "'Inter', sans-serif" },
+  ];
+  assert.equal(drift.coveringRow({ kind: "font", implemented: "serif" }, rows), null);
+  assert.equal(drift.coveringRow({ kind: "font", implemented: "Inter" }, rows), 3);
+  assert.equal(drift.coveringRow({ kind: "font", implemented: "Interstate" }, rows), 2);
+  assert.equal(drift.coveringRow({ kind: "font", implemented: "Helvetica Neue" }, rows), null);
+  // Hex is compared normalised: #ABC names #aabbcc; #aabbc0 is not covered by #aabbcc.
+  assert.equal(drift.coveringRow({ kind: "color", implemented: "#AABBCC" }, [{ index: 4, implemented: "#abc" }]), 4);
+  assert.equal(drift.coveringRow({ kind: "color", implemented: "#aabbc0" }, [{ index: 4, implemented: "#aabbcc" }]), null);
+});
+
+test("fonts are compared by the family that renders, while a token family that never loads stays drift", () => {
+  const tokens = drift.designTokens(fs.readFileSync(path.join(FIXTURES, "design-tokens.md"), "utf8"));
+  const base = { totals: { text: 100, surface: 0, border: 0, graphic: 0 }, colors: [] };
+  const viaStack = drift.compareBuiltStyles({ ...base, fonts: [{ family: "Fixture Display", first: "Zzqx Sans", available: false, rendered: "Fixture Display", chars: 100 }] }, tokens);
+  assert.deepEqual(viaStack.filter((item) => item.kind === "font"), []);
+  const unloaded = drift.compareBuiltStyles({ ...base, fonts: [{ family: "DejaVu Sans", first: "Fixture Display", available: false, rendered: "DejaVu Sans", chars: 100 }] }, tokens);
+  assert.deepEqual(unloaded.filter((item) => item.severity === "major").map((item) => [item.specified, item.implemented]), [["Fixture Display", "DejaVu Sans"]]);
+  // Nothing in the stack confirmed: the first family named stands in.
+  const unknown = drift.compareBuiltStyles({ ...base, fonts: [{ family: "Zzqx Sans", first: "Zzqx Sans", available: false, rendered: null, chars: 100 }] }, tokens);
+  assert.ok(unknown.some((item) => item.severity === "major" && item.implemented === "Zzqx Sans"));
+});
+
+test("a colour far from every token blocks on a control, as the background, or repeated, whatever its share", () => {
+  const tokens = drift.designTokens(fs.readFileSync(path.join(FIXTURES, "design-tokens.md"), "utf8"));
+  const totals = { text: 1000, surface: 10000000, border: 100, graphic: 0 };
+  const severity = (entry) => drift.compareBuiltStyles({ totals, fonts: [], colors: [entry] }, tokens).find((item) => item.implemented === entry.hex)?.severity;
+  assert.equal(severity({ hex: "#e0115f", weights: { surface: 7680 }, elements: { surface: 1 }, interactive: 1 }), "major");
+  assert.equal(severity({ hex: "#e0115f", weights: { surface: 7680 }, elements: { surface: 1 }, interactive: 0 }), "minor");
+  assert.equal(severity({ hex: "#ff00aa", weights: { border: 26 }, elements: { border: 3 }, interactive: 0 }), "major");
+  assert.equal(severity({ hex: "#ff00aa", weights: { border: 26 }, elements: { border: 2 }, interactive: 0 }), "minor");
+  assert.equal(severity({ hex: "#202020", weights: { canvas: 5000000 }, elements: {}, interactive: 0 }), "major");
+  // Near a token (CIEDE2000 2.8, not past 10): a small control stays a stray.
+  assert.equal(severity({ hex: "#3a6df0", weights: { surface: 7680 }, elements: { surface: 1 }, interactive: 1 }), "minor");
 });
 
 test("the project root of an OpenSpec change is inferred from its path", () => {
@@ -208,6 +250,7 @@ test("a current on-token measurement keeps the gate ready and lands in specDrift
   assert.equal(result.specDrift.measured.current, true);
   assert.equal(result.specDrift.measured.major, 0);
   assert.equal(result.specDrift.measured.tolerance, drift.DELTA_E_TOLERANCE);
+  assert.ok(result.specDrift.measured.scope.notMeasured.some((item) => /dark colour scheme/.test(item)));
   assert.equal(result.measured, result.specDrift.measured);
 });
 
@@ -285,6 +328,8 @@ test("an on-token page measures clean through color(), named colours and hidden 
   assert.deepEqual(record.colors.map((item) => item.hex).sort(), ["#1a1a2e", "#3366ff", "#ffffff"]);
   assert.ok(!record.colors.some((item) => ["#ff0000", "#00ff00"].includes(item.hex)), "hidden and transparent text does not paint");
   assert.deepEqual(record.fonts.map((font) => [font.family, font.available]), [["Fixture Display", true]]);
+  assert.deepEqual(Object.keys(record.lineage).sort(), ["fixture.woff", "index.html"]);
+  assert.deepEqual(record.scope, drift.MEASUREMENT_SCOPE);
   const result = check(fixture.dir);
   assert.equal(result.status, 0, result.stdout);
   assert.equal(result.output.status, "ready");
@@ -330,9 +375,10 @@ test("a token family the page names but never loads is drift, not a match", { sk
   const fixture = project("missing-font.html", { font: false });
   assert.equal(measure(fixture.dir).status, 0);
   const record = JSON.parse(fs.readFileSync(path.join(fixture.change, drift.BUILT_STYLES_FILE), "utf8"));
-  const display = record.fonts.find((font) => font.family === "Fixture Display");
+  const display = record.fonts.find((font) => font.first === "Fixture Display");
   assert.equal(display.available, false);
   assert.notEqual(display.rendered, "Fixture Display");
+  assert.equal(display.family, display.rendered);
   const result = check(fixture.dir);
   assert.equal(result.output.reason, "reconciliation-measured-drift");
   assert.ok(result.output.blockers.some((item) => /names Fixture Display .* has no such font/.test(item)));
@@ -350,4 +396,71 @@ test("measure refuses a DESIGN.md with no tokens and a project with no page, wri
   assert.equal(missing.status, 1);
   assert.equal(missing.output.error.code, "PAGE_MISSING");
   assert.ok(!fs.existsSync(path.join(unbuilt.change, drift.BUILT_STYLES_FILE)));
+});
+
+test("a token family reached through the stack is not drift, and the first family is kept", { skip }, () => {
+  const fixture = project("font-stack.html");
+  assert.equal(measure(fixture.dir).status, 0);
+  const record = JSON.parse(fs.readFileSync(path.join(fixture.change, drift.BUILT_STYLES_FILE), "utf8"));
+  assert.deepEqual(record.fonts.map((font) => [font.first, font.available, font.rendered, font.family]), [["Zzqx Sans", false, "Fixture Display", "Fixture Display"]]);
+  const result = check(fixture.dir);
+  assert.equal(result.status, 0, result.stdout);
+  assert.ok(!result.output.specDrift.measured.findings.some((item) => item.kind === "font"));
+});
+
+test("an off-token primary CTA blocks though it is a fraction of a percent of the page", { skip }, () => {
+  const fixture = project("loud-cta.html");
+  assert.equal(measure(fixture.dir).status, 0);
+  const result = check(fixture.dir);
+  assert.equal(result.output.reason, "reconciliation-measured-drift");
+  const cta = result.output.specDrift.measured.findings.find((item) => item.implemented === "#e0115f");
+  assert.equal(cta.severity, "major");
+  assert.ok(cta.share < drift.MAJOR_SHARE, `share ${cta.share}`);
+  assert.ok(cta.deltaE > drift.LOUD_DELTA_E);
+  assert.match(cta.loud, /interactive/);
+});
+
+test("26 cards with a 1px off-token border block, and partial opacity is composited", { skip }, () => {
+  const fixture = project("card-borders.html");
+  assert.equal(measure(fixture.dir).status, 0);
+  const record = JSON.parse(fs.readFileSync(path.join(fixture.change, drift.BUILT_STYLES_FILE), "utf8"));
+  const border = record.colors.find((item) => item.hex === "#ff00aa");
+  assert.equal(border.elements.border, 26);
+  // Black text under a 50% ancestor composites over white to mid grey.
+  const faded = record.colors.find((item) => item.samples.includes("p") && item.weights.text);
+  assert.ok(faded && /^#(7f|80)(7f|80)(7f|80)$/.test(faded.hex), JSON.stringify(record.colors));
+  const result = check(fixture.dir);
+  const finding = result.output.specDrift.measured.findings.find((item) => item.implemented === "#ff00aa");
+  assert.equal(finding.severity, "major");
+  assert.ok(finding.share < drift.MAJOR_SHARE);
+  assert.match(finding.loud, /26 elements/);
+  assert.equal(result.output.reason, "reconciliation-measured-drift");
+});
+
+test("swapping a font file the page loads makes the measurement stale", { skip }, () => {
+  const fixture = project("on-token.html");
+  assert.equal(measure(fixture.dir).status, 0);
+  // index.html names no font file, so the page digest alone cannot see this swap.
+  assert.equal(check(fixture.dir).output.status, "ready");
+  fs.copyFileSync(path.join(repoRoot, "skill/tools/art-motion/fonts/LilitaOne-400.woff"), path.join(fixture.dir, "fixture.woff"));
+  const stale = check(fixture.dir);
+  assert.equal(stale.output.reason, "reconciliation-measurement-stale");
+  assert.match(stale.output.blockers[0], /fixture\.woff, which the page loaded, changed/);
+});
+
+test("measure on a change without a reference says its drift will only warn", { skip }, () => {
+  const fixture = project("drifted.html");
+  fs.rmSync(path.join(fixture.change, "reference.md"));
+  const result = measure(fixture.dir);
+  assert.equal(result.status, 0);
+  assert.equal(result.output.applicable, false);
+  assert.match(result.output.note, /no reference .* warnings, not blockers/);
+  assert.equal(result.output.gate.status, "ready");
+  assert.ok(result.output.gate.major > 0);
+
+  const applicable = project("drifted.html");
+  const owed = measure(applicable.dir);
+  assert.equal(owed.output.applicable, true);
+  assert.equal(owed.output.note, undefined);
+  assert.equal(owed.output.gate.reason, "reconciliation-measured-drift");
 });
