@@ -85,13 +85,13 @@ For non-trivial motion, complete the opportunity screen and vocabulary/curve dec
 | --- | --- | --- |
 | CSS transitions/keyframes | One-element state feedback, simple enter/exit, no timeline control | The behavior needs orchestration, interruption control, layout transitions, scroll synchronization, or reusable runtime state |
 | Anime.js 4.5.0 | Modular timelines, layout transitions, text splitting, SVG, draggable interactions, scroll observers, WAAPI, seeded stagger, or non-DOM targets through its built-in Three.js adapter | The project already standardizes on GSAP and Anime.js adds no unique capability |
-| GSAP 3.15.0 | Existing GSAP project, deep timeline choreography, ScrollTrigger, mature plugin workflows, GSAP-specific framework integration, or reverse-direction easing with `easeReverse` | The task is a small isolated state transition that CSS or an existing runtime already handles |
+| GSAP 3.15.1 | Existing GSAP project, deep timeline choreography, ScrollTrigger, mature plugin workflows, GSAP-specific framework integration, or reverse-direction easing with `easeReverse` | The task is a small isolated state transition that CSS or an existing runtime already handles |
 | PixiJS 8.22.0 | Interactive 2D scenes, sprite or particle fields, filters, custom shaders, Canvas/WebGL/WebGPU rendering, or object counts beyond a practical DOM surface; 8.22.0 includes renderer-resize/nested-filter and keyboard accessibility fixes | The surface is primarily semantic text, navigation, forms, ordinary components, a small transition, or true 3D |
 | Phaser 4.2.1 | A 2D game needs engine-owned scenes, loop, input, cameras, scaling, audio, physics, and deterministic game-state transitions | The task only needs a renderer, semantic application UI, a small effect, or true 3D |
 | React View Transitions | Route/navigation continuity in a compatible React/Next.js surface | It is being used as a general animation engine |
 | Existing project runtime | The repo already has an accepted animation library and it satisfies the motion spec | It cannot meet accessibility, performance, interruption, or fidelity requirements |
 
-For GSAP 3.15.0, `easeReverse` selects an adaptive reverse-direction ease, including when the
+For GSAP 3.15.1, `easeReverse` selects an adaptive reverse-direction ease, including when the
 playhead changes direction mid-tween. `yoyoEase` is deprecated but remains backwards-compatible; the
 paused, seekable timeline contract does not change.
 

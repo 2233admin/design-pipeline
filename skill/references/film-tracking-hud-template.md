@@ -44,7 +44,7 @@ template for a task that only resembles a HUD.
 ## Make a film
 
 1. `designer-pipeline film scaffold --output <new-dir> --template tracking-hud`, then
-   `npm install` there once (or reuse an installed hyperframes 0.8.137 and gsap 3.15.0). The
+   `npm install` there once (or reuse an installed hyperframes 0.8.137 and gsap 3.15.1). The
    scaffold writes the template, fonts, license, `storyboard.json`, `index.html` and `tracks.json`.
 2. Edit `film.config.js` only, then `node build.cjs`:
 

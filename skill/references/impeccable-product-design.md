@@ -30,6 +30,8 @@ installed:
 - Fix: `clarify`, `adapt`, `optimize`
 - Iterate: `live`, `generate`
 
+Upstream lists 24 commands (README "24 commands" and the SKILL.md command table at the locked
+revision); the 24th, `craft`, is a deprecated alias, so 23 are core commands and all 23 are mapped.
 The deprecated `craft` alias maps to `shape` plus `new-work`; `teach` maps to `init`. They do not
 create a second workflow.
 

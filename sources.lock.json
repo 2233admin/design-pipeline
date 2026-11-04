@@ -285,7 +285,7 @@
       "id": "gsap",
       "kind": "npm",
       "package": "gsap",
-      "version": "3.15.0",
+      "version": "3.15.1",
       "reviewedAt": "2026-11-04",
       "sites": [
         {
@@ -295,6 +295,34 @@
         {
           "file": "skill/scripts/film-capture-core.cjs",
           "pattern": "const GSAP_VERSION = \"{version}\";"
+        },
+        {
+          "file": "skill/references/film-tracking-hud-template.md",
+          "pattern": "gsap {version}). The"
+        },
+        {
+          "file": "skill/references/hyperframes.md",
+          "pattern": "`gsap` {version} and loads"
+        },
+        {
+          "file": "skill/references/capability-routing.md",
+          "pattern": "| GSAP {version} |"
+        },
+        {
+          "file": "skill/references/capability-routing.md",
+          "pattern": "For GSAP {version}, `easeReverse`"
+        },
+        {
+          "file": "skill/references/workflow-film.md",
+          "pattern": "gsap {version}; run"
+        },
+        {
+          "file": "tests/film-project.test.cjs",
+          "pattern": "gsap: \"{version}\" }"
+        },
+        {
+          "file": "evals/cases/README.md",
+          "pattern": "(GSAP {version}, HyperFrames"
         }
       ]
     },
@@ -348,6 +376,30 @@
         {
           "file": "skill/references/hyperframes.md",
           "pattern": "`hyperframes@{version}`"
+        },
+        {
+          "file": "skill/references/film-tracking-hud-template.md",
+          "pattern": "installed hyperframes {version} and gsap"
+        },
+        {
+          "file": "skill/references/hyperframes.md",
+          "pattern": "pins `hyperframes` {version} and"
+        },
+        {
+          "file": "skill/references/workflow-film.md",
+          "pattern": "pins hyperframes {version} and gsap"
+        },
+        {
+          "file": "tests/film-project.test.cjs",
+          "pattern": "{ hyperframes: \"{version}\", sharp"
+        },
+        {
+          "file": "tests/film-project.test.cjs",
+          "pattern": "hyperframesCli(), \"hyperframes@{version}\""
+        },
+        {
+          "file": "tests/hyperframes-routing.test.cjs",
+          "pattern": "route.version, \"{version}\""
         }
       ],
       "committedAt": "2026-10-05T22:40:38-07:00",
@@ -367,6 +419,10 @@
         {
           "file": "evals/cases/package.json",
           "json": "devDependencies.hyperframes"
+        },
+        {
+          "file": "evals/cases/README.md",
+          "pattern": "HyperFrames {version})"
         }
       ]
     },
