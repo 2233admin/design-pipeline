@@ -18,7 +18,7 @@ by the visual problem; using a helper does not create a film project or select a
 | Find where a sampled reference video changes | [Visual diagnostics](visual-diagnostics/README.md) | `reference analyze-video`, timed frames and spatial motion maps |
 | Watercolor, impasto, flow fields, lighting, print and post effects | [Art Motion](art-motion/README.md) | Isolated, caller-sized Canvas runtime |
 | Charts, diagrams, collage, type treatments, cameras, character construction | [Art Motion](art-motion/README.md) | Callable namespaces, optional style/grammar studies and transitions |
-| Font subsets, glyph coverage, matte/sprite preparation, synthesis | [Asset/audio tools](art-motion/assets-audio.md) | Maintained tools with explicit inputs and fresh outputs |
+| Font subsets, glyph coverage, matte/sprite preparation, collage cutting, synthesis | [Asset/audio tools](art-motion/assets-audio.md) | Maintained tools with explicit inputs and fresh outputs |
 | Multi-world travel, interaction pauses and style boundaries | [Scroll helper](art-motion/scroll.md) | Caller-owned world, subject and camera callbacks |
 | Style recipes, cue-driven clips, exact-frame/alpha export, audiovisual reference breakdown | [Art Motion](art-motion/README.md) | 35 style studies, 8 clip grammars, full method routing |
 | Phone and tablet web: viewport units, safe areas, input zoom, touch targets, hover gating | [Mobile web](../references/mobile-web.md) | Project-owned rules with checks to run on a real device |

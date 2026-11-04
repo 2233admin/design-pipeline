@@ -16,6 +16,7 @@ const { checkAudio } = require("./audio-core.cjs");
 const { checkComposition } = require("./composition-core.cjs");
 const { decodePng } = require("./png-core.cjs");
 const { cliCommand, shellPath } = require("./workflows/shared.cjs");
+const { licenseOf, readRecords } = require("./material-core.cjs");
 
 const VIDEO = /\.(mp4|mov|webm|mkv|m4v)$/i;
 const ANALYSIS = path.join("edit", "analysis.json");
@@ -25,12 +26,11 @@ function sourceList(root, sourcesDir) {
   if (!fs.existsSync(dir)) fail("film edit", `no ${sourcesDir}/ directory. Fix: put the footage clips (mp4, mov, webm) in ${sourcesDir}/`, { code: "INPUT_MISSING" });
   const files = fs.readdirSync(dir).filter((name) => VIDEO.test(name)).sort();
   if (!files.length) fail("film edit", `${sourcesDir}/ has no video files`, { code: "INPUT_MISSING" });
-  const licensesFile = path.join(dir, "licenses.json");
-  const licenses = fs.existsSync(licensesFile) ? readJson(licensesFile, "source licenses") : {};
+  // Same licenses.json record shape as `materials` (license, commercialUse, optional provenance).
+  const licenses = readRecords(dir);
   return files.map((name) => {
     const id = name.replace(VIDEO, "").replace(/[^a-z0-9_-]+/gi, "-").toLowerCase();
-    const record = licenses[name] || licenses[id] || {};
-    return { id, file: path.posix.join(sourcesDir.split(path.sep).join("/"), name), path: path.join(dir, name), license: record.license || "unrecorded", commercialUse: record.commercialUse === true };
+    return { id, file: path.posix.join(sourcesDir.split(path.sep).join("/"), name), path: path.join(dir, name), ...licenseOf(licenses, name, id) };
   });
 }
 

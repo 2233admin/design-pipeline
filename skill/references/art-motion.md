@@ -14,7 +14,7 @@ configuration are not shipped. Start with the tool guide, then open one method n
 | Cameras, diagrams, charts, collage, type, UI treatments, IK and occlusion | [Art Motion runtime](../tools/art-motion/README.md#canvas-runtime) |
 | 35 art style studies, 8 parameterized grammars, transitions | [Style/grammar lookup](../tools/art-motion/styles.md) |
 | Multi-world continuity and boundary compositing | [Scroll helper](../tools/art-motion/scroll.md) |
-| Chroma key, sprite split/crop/registration, fonts, region diagnostics, sound | [Asset/audio tools](../tools/art-motion/assets-audio.md) |
+| Chroma key, sprite split/crop/registration, collage cutting (stickers, ink layers, plates), fonts, region diagnostics, sound | [Asset/audio tools](../tools/art-motion/assets-audio.md) |
 | Supplied images or task-authorized host image generation | [Image workflow](../tools/art-motion/assets-audio.md#choose-and-check-image-assets) |
 | Fit or level-match a supplied voice track | [Offline voice processing](../tools/art-motion/assets-audio.md#process-a-supplied-voice-track) |
 | Full creation workflow, first-frame routes, character production and review | [Methods](../tools/art-motion/methods.md) |
