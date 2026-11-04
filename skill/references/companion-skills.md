@@ -230,6 +230,17 @@ The bundled reference is a clean-room route summary, not a redistribution of the
 tree. Read `references/hyperframes.md` first and keep the project's existing MOTION.md and evidence
 gates authoritative for product motion and QA.
 
+## Listening and Film Sound Set
+
+| Skill | Source | Pipeline role |
+| --- | --- | --- |
+| `earshot` | `Leonxlnx/earshot` | Listening for an agent that cannot hear: describe, rank, find and A/B sounds; a film's listening timeline, annotated sheet and launch-film critique; a bank of effects made in code rendered as a kit with measured onsets |
+| `real-sound` | `Leonxlnx/earshot` | Soundtracks from real licensed recordings: cue list, sourcing with licence audit, deterministic mixer, measured QA, credits |
+
+earshot is a Python package (CPU, local). Its readings are evidence for creative review; they never
+pass a gate or count as Visual Acceptance. Without it, `verify audio` and `references/audio-gate.md`
+stay the check, and the soundtrack is reported as measured, not listened to.
+
 ## Optional Later
 
 | Skill | Source | Use when |

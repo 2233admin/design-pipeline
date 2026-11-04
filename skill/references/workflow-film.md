@@ -230,6 +230,8 @@ Pick the lowest-rung tool that reaches each beat:
 | Music as code | `film score --project-root . --bpm <n> --template <name>` | `film-score.md` |
 | Virtual camera filming an agent's terminal while a tracker locks onto typed glyphs | `film scaffold --template tracking-hud --output <new-dir>`, edit `film.config.js`, `node build.cjs` | `film-tracking-hud-template.md` |
 | Loudness and fades | `audio master --input <audio> --output <wav>` | `audio-gate.md` |
+| Hit cues on their frames | `verify audio --audio <film> --storyboard storyboard.json` (`film check` runs it) | `audio-gate.md#hit-cues` |
+| Effects made in code, listening review (optional earshot) | `earshot kit init --preset <name>`, `kit render`, `timeline`, `sheet` | `audio-gate.md#listening-and-effects-with-earshot-optional` |
 
 Product promo: build from the admitted captures cited in `beats[].source`. Place the recorded
 screens and clips, then crop, zoom, mask, sequence and caption them; never redraw the product's UI

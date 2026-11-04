@@ -146,6 +146,8 @@ gallery covers basic/web/game/text/scene studies alongside the four state-owned 
   curated recipe inputs and invariants; `film templates` provides offline read-only search/detail.
 - Runtime and audio: `references/hyperframes.md`, `references/film-blender.md`,
   `references/film-score.md`, `references/audio-gate.md`, `references/composition-gate.md`.
+  You cannot hear: report the audio gate's numbers, and for effects or listening use earshot when
+  `doctor` lists it (`references/audio-gate.md#listening-and-effects-with-earshot-optional`).
 - PV/MAD edits: `references/film-edit.md`.
 
 ### Captured runtime review
