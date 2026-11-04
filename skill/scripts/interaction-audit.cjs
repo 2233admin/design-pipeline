@@ -46,6 +46,7 @@
 
 const { fileURLToPath } = require("node:url");
 const { fail, isObject, nonEmpty, resolveInside } = require("./contract-utils.cjs");
+const { summarizeStress, validateStress } = require("./interaction-stress.cjs");
 
 const SCOPE = "interaction probe";
 
@@ -97,7 +98,7 @@ const AUDIT_DEFAULTS = Object.freeze({
   tolerances: Object.freeze({ alignmentPx: 1, radiusPx: 1, boundsPx: 1, fontSizePx: 0.1, digitWidthPx: 0.5 }),
 });
 
-const PROBE_KEYS = ["id", "kind", "viewports", "thresholds", "declare"];
+const PROBE_KEYS = ["id", "kind", "viewports", "thresholds", "declare", "stress"];
 const NUMBER_THRESHOLDS = ["minFontPx", "minTargetPx", "minControlGapPx", "minControlInsetPx", "minLayoutGapPx", "contrastNormal", "contrastLarge"];
 const THRESHOLD_KEYS = [...NUMBER_THRESHOLDS, "fonts", "fontSizes"];
 const SELECTOR_LISTS = ["numbers", "stacks", "controlContainers", "contentBoxes"];
@@ -213,6 +214,8 @@ function validateAuditProbe(probe, context = {}) {
       }
     } else error(".declare", "must be an object");
   }
+  // The long-content stress pass (interaction-stress.cjs): evidence for long-content and overflow.
+  if (probe.stress !== undefined) validateStress(probe.stress, error);
   return errors;
 }
 
@@ -1151,7 +1154,7 @@ function bindable(url, project) {
 // left not-declared, and any selector the page rejected (contract errors). Every URL in the
 // viewport logs and the probe's whole `requests` log that the gate cannot hash is listed once, in
 // request order, in one external-request finding that fails the row; `project` bounds the files.
-function summarizeAudit(probeId, viewportResults, project, requests = []) {
+function summarizeAudit(probeId, viewportResults, project, requests = [], options = {}) {
   if (!nonEmpty(probeId)) fail(SCOPE, "audit summary needs the probe id");
   if (!nonEmpty(project)) fail(SCOPE, `audit ${probeId} needs the project root that bounds the files its page may load`);
   if (!Array.isArray(viewportResults) || !viewportResults.length) fail(SCOPE, `audit ${probeId} has no viewport results`);
@@ -1184,7 +1187,19 @@ function summarizeAudit(probeId, viewportResults, project, requests = []) {
         ...(status === "not-declared" ? { hint: NOT_DECLARED_HINT[code] } : {}),
       };
     });
-    coverage.push({ viewport, elements: result.elements, checks });
+    // A probe that declares stress carries one stressed re-measurement per viewport; only what it
+    // newly breaks in the overflow checks is reported (interaction-stress.cjs).
+    let stress = null;
+    if (options.stress) {
+      const summary = summarizeStress(probeId, where, result.checks, entry.stress, readCheck);
+      if (summary.contractErrors) {
+        for (const message of summary.contractErrors) if (!contractErrors.includes(message)) contractErrors.push(message);
+        continue;
+      }
+      stress = summary.coverage;
+      findings.push(...summary.findings);
+    }
+    coverage.push({ viewport, elements: result.elements, checks, ...(stress ? { stress } : {}) });
   }
   if (!Array.isArray(requests) || !requests.every((url) => typeof url === "string")) fail(SCOPE, `audit ${probeId} has no request log`);
   for (const url of requests) requested.add(url);
@@ -1196,7 +1211,7 @@ function summarizeAudit(probeId, viewportResults, project, requests = []) {
   }
   // not-declared is reported, never passed and never failing; only an optional check can be it.
   const settled = (check) => PASSING.includes(check.status) || (check.status === "not-declared" && OPTIONAL_CODES.includes(check.code));
-  const status = !contractErrors.length && !unbound.length && coverage.length === viewportResults.length && coverage.every((entry) => entry.checks.every(settled)) ? "passed" : "failed";
+  const status = !contractErrors.length && !unbound.length && coverage.length === viewportResults.length && coverage.every((entry) => entry.checks.every(settled) && (!entry.stress || PASSING.includes(entry.stress.status))) ? "passed" : "failed";
   return { status, coverage, findings, contractErrors };
 }
 

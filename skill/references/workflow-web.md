@@ -727,6 +727,16 @@ the browser starts.
   `stacks`, `controlContainers`, `alignGroups` (`edge` is `start`, `center` or `end`),
   `radiusPairs` (`outer`, `inner`) and `contentBoxes`. A declared selector that matches nothing
   fails, so a typo cannot pass.
+- `stress` (optional): `{}` or `{ "textScale": 2.5, "scope": [".orders"] }`. After the normal audit
+  at each viewport, the loaded page's visible text inside `scope` (default `body`) is lengthened
+  `textScale` times (default 2.5, above 1 and at most 10), every fourth table-cell or list text becomes
+  one unbroken word and numbers become 9,999,999; the page is then audited again. Only what this
+  newly breaks in `audit.horizontal-overflow`, `audit.viewport-bounds`, `audit.content-clipping` and
+  `audit.content-overflow` is reported (`"pass": "stress"`); an ellipsis or line clamp passes only
+  when a `title`, link or `details` element reaches the full value. Each viewport's `coverage` entry
+  gains `stress` with its status, counts and the states it is evidence for (`long-content`,
+  `overflow`); see `worst-case-content.md#measured-evidence-the-stress-pass`. A `scope` selector the
+  page rejects or does not match exits 1.
 
 No probe field can skip a subtree, suppress a finding or waive a result; any other field is
 rejected before the browser starts. Unresolved results are fixed in the page, not in the probe.

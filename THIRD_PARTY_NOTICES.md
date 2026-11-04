@@ -861,3 +861,12 @@ Project-owned references written in this repository's words; no upstream text is
 - `skill/references/interface-defaults.md` and `skill/references/timeline-deconstruction.md`: from
   https://github.com/raphaelsalaja/skill (`defaults`, `deconstruct`) at `5e989857664e5fb5f2b1b4b319edf3a8b076048f`,
   MIT, Copyright (c) 2026 Raphael Salaja.
+
+## Concept distillations (2026-11-04)
+
+Project-owned code written in this repository's words; no upstream code or text is copied.
+
+- `skill/scripts/interaction-stress.cjs` (the audit probe's long-content stress pass): the 2.5x text
+  lengthening, the unbroken table-cell string, the huge number and truncation with no way back, from
+  https://github.com/feimacode/open-design-agent-kit (`packages/core/src/export/screenChecks.ts`) at
+  `927d4b6e6a29d8bfebdccadb4bb4a1b2a6438e73`, MIT, Copyright (c) 2026 Iven Xu.

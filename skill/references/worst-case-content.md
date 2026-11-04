@@ -24,6 +24,26 @@ Source: Distilled from jakubkrehel/skills `break` at 592aedc (MIT); wording and 
 | `loading`, `error`, `permission-denied`, `disabled`, `offline`, `partial` | state scenarios below, unchanged |
 | `reduced-motion`, `focus` | environment toggles, unchanged |
 
+## Measured evidence: the stress pass
+
+For a web page, `long-content` and `overflow` evidence can be measured instead of staged by hand. Add `"stress": {}` to the page's audit probe in `interaction.json` (`workflow-web.md`, probe stage). After the normal audit at each viewport, `verify interaction` rewrites the loaded page's visible text in place (the files are never touched) and audits it again:
+
+- prose and labels are lengthened 2.5 times (`textScale`, above 1 and at most 10) by repeating their own words (`long-text`, `long-translation`);
+- every fourth text in a table cell, list item or `dd` becomes one 59-letter word with no break opportunity (`unbroken-string`);
+- numbers become 9,999,999 (`huge-number`);
+- `scope` (a list of selectors, default `body`) limits the rewrite to text the page does not author; `aria-hidden` text, scripts, styles and SVG are left alone. Form values and placeholders are not rewritten.
+
+Only the overflow checks are read from the stressed page (`audit.horizontal-overflow`, `audit.viewport-bounds`, `audit.content-clipping`, and `audit.content-overflow` when `declare.contentBoxes` is set), and only what the stress newly breaks is reported, each with `"pass": "stress"`, a message starting `<viewport> with 2.5x text:` and a fix. Clipped text that is a deliberate truncation (`text-overflow: ellipsis` or a line clamp) passes when the full value is reachable from it (a `title`, a link or a `details` element) and fails otherwise. Any stress finding fails the audit like any other.
+
+A passing run is evidence for both states. Cite the audit row, and add the scenarios you added by hand:
+
+```json
+"long-content": { "applicable": true, "covered": true, "evidence": "evidence/interaction.json#page-audit stress 1280x800, 390x844" },
+"overflow": { "applicable": true, "covered": true, "evidence": "evidence/interaction.json#page-audit stress 1280x800, 390x844; qa/many-items.png" }
+```
+
+The stress pass covers text length only. `many-items`, `squeezed-sibling`, `narrow-container` inside a wider page and the shape axis (RTL, tall scripts, emoji) still need their own fixtures. When the scope holds no text the stress coverage is `not-applicable`: declare the states from other evidence or point `scope` at the data-driven text. The component state gate itself is unchanged; it still checks that each state is declared with evidence.
+
 The ids in the next sections are optional extras. Use one only when it adds a case the existing state does not name, for example `unbroken-string` is a sharper test than a generic `long-content`.
 
 ## Content length

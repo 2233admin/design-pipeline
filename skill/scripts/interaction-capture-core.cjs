@@ -12,6 +12,7 @@ const { fail } = require("./contract-utils.cjs");
 const { resolvePuppeteer } = require("./film-capture-core.cjs");
 const { browserIdentity, resolveBrowser } = require("./browser-locate.cjs");
 const { auditOptions, auditPage } = require("./interaction-audit.cjs");
+const { applyStress, classifyClipping, clippedItems, stressOptions } = require("./interaction-stress.cjs");
 
 const SCOPE = "interaction capture";
 const CAPTURE_SCHEMA = "design-pipeline.interaction-capture.v1";
@@ -206,6 +207,20 @@ async function settleForAudit() {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 
+// The long-content stress pass on the loaded page: lengthen its text, let layout and fonts settle,
+// measure it again with the same audit, then classify the clipped text as reachable truncation or not.
+async function recordStress(page, options, stressing, assertLocalTarget) {
+  const applied = await page.evaluate(applyStress, stressing);
+  assertLocalTarget();
+  if (applied.contractErrors.length || applied.changed === 0) return { applied };
+  await page.evaluate(settleForAudit);
+  const result = await page.evaluate(auditPage, options);
+  assertLocalTarget();
+  const truncation = result.contractErrors?.length ? [] : await page.evaluate(classifyClipping, clippedItems(result));
+  assertLocalTarget();
+  return { applied, result, truncation };
+}
+
 // One fresh navigation per declared viewport at device scale 1, then the in-page audit. Each
 // viewport keeps the requests of its own load, and the probe's whole log also holds what the page
 // requested while the document viewport was restored for the probes that follow; the audit fails
@@ -213,6 +228,7 @@ async function settleForAudit() {
 async function recordAudit(page, probe, url, recordedRequests, timeoutMs, assertLocalTarget, restore) {
   const mark = recordedRequests.length;
   const options = auditOptions(probe);
+  const stressing = stressOptions(probe);
   const viewports = [];
   try {
     for (const viewport of probe.viewports) {
@@ -224,7 +240,10 @@ async function recordAudit(page, probe, url, recordedRequests, timeoutMs, assert
       assertLocalTarget();
       const result = await page.evaluate(auditPage, options);
       assertLocalTarget();
-      viewports.push({ viewport: { width: viewport.width, height: viewport.height }, result, requests: recordedRequests.slice(viewportMark) });
+      // The stress pass runs last on this load: it rewrites the page's text in place, and the next
+      // viewport starts from a fresh navigation.
+      const stress = stressing && !result.contractErrors?.length ? await recordStress(page, options, stressing, assertLocalTarget) : null;
+      viewports.push({ viewport: { width: viewport.width, height: viewport.height }, result, ...(stress ? { stress } : {}), requests: recordedRequests.slice(viewportMark) });
     }
   } finally {
     await page.setViewport(restore);
