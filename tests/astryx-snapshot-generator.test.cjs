@@ -162,15 +162,25 @@ test("a non-literal value in a doc fails the run with its file and line, and wri
   assert.equal(fs.existsSync(out), false);
 });
 
-test("doc modules are parsed, never run: imports, functions and top-level statements stay inert", (t) => {
+test("doc modules are parsed, never run: any top-level statement besides import, const and export is refused", (t) => {
   const marker = path.join(os.tmpdir(), `astryx-generator-ran-${process.pid}`);
-  const hostile = `import fs from 'node:fs';\nfs.writeFileSync(${JSON.stringify(marker)}, 'ran');\nglobalThis.__astryxDocRan = true;\n${BUTTON_DOC}`;
-  const { coreTarball, cliTarball } = fixture(t, { core: { "package/src/Button/Button.doc.mjs": hostile } });
-  const snapshot = buildSnapshot({ coreTarball, cliTarball, revision: REVISION });
-  assert.equal(snapshot.components[0].name, "Button");
+  const refuse = (source, pattern) => {
+    const site = fixture(t, { core: { "package/src/Button/Button.doc.mjs": source } });
+    assert.throws(() => buildSnapshot({ coreTarball: site.coreTarball, cliTarball: site.cliTarball, revision: REVISION }), (error) => error instanceof SnapshotError && pattern.test(error.message), source.slice(0, 80));
+  };
+  refuse(`import fs from 'node:fs';\nfs.writeFileSync(${JSON.stringify(marker)}, 'ran');\n${BUTTON_DOC}`, /Button\.doc\.mjs:2: top-level ExpressionStatement is not allowed/);
+  refuse(`globalThis.__astryxDocRan = true;\n${BUTTON_DOC}`, /Button\.doc\.mjs:1: top-level ExpressionStatement/);
+  refuse(`let label = 'safe';\nlabel = process.env.HOME;\n${BUTTON_DOC}`, /Button\.doc\.mjs:1: top-level let declaration/);
+  refuse(`var label = 'safe';\n${BUTTON_DOC}`, /Button\.doc\.mjs:1: top-level var declaration/);
+  refuse(`${BUTTON_DOC}\nanatomy.push({name: 'Injected', description: process.env.HOME});\n`, /top-level ExpressionStatement/);
+  refuse(`${BUTTON_DOC}\ndocs.description = require('node:child_process').execSync('id').toString();\n`, /top-level ExpressionStatement/);
+  refuse(`${BUTTON_DOC.replace("export const docs", "const docs")}\nexport {docs};\n`, /top-level export list/);
+  refuse(`${BUTTON_DOC}\nif (true) { anatomy.length = 0; }\n`, /top-level IfStatement/);
+  refuse(`${BUTTON_DOC}\nfunction later() {}\n`, /top-level FunctionDeclaration/);
   assert.equal(fs.existsSync(marker), false);
   assert.equal(globalThis.__astryxDocRan, undefined);
 
+  // An import is allowed as a statement, but its binding is not data.
   const imported = fixture(t, { core: { "package/src/Button/Button.doc.mjs": `import {sharedProps} from './shared.mjs';\n${BUTTON_DOC.replace("props: [", "props: [...sharedProps, ")}` } });
   assert.throws(() => buildSnapshot({ coreTarball: imported.coreTarball, cliTarball: imported.cliTarball, revision: REVISION }), /sharedProps is not a top-level constant of this file/);
   const awaited = fixture(t, { cli: { "package/assets/docs/tree/quick-start.doc.mjs": "export const docs = {name: 'quick-start', sections: await load()};\n" } });

@@ -225,8 +225,10 @@ const path = require("node:path");
 const args = Object.fromEntries(process.argv.slice(2).reduce((pairs, item, index, all) => (index % 2 ? pairs : [...pairs, [item.slice(2), all[index + 1]]]), []));
 const bytes = fs.readFileSync(args.pack);
 if (bytes.toString("utf8").startsWith("broken")) { process.stderr.write("tarball has no docs\\n"); process.exit(1); }
-const version = bytes.toString("utf8").trim();
-const out = { url: "https://github.com/acme/gadgets", revision: args.revision, version, sha256: crypto.createHash("sha256").update(bytes).digest("hex") };
+const text = bytes.toString("utf8").trim();
+// "stale:<sha>" writes another revision; "noversion" drops the version site.
+const [version, revision] = text.startsWith("stale:") ? ["1.1.0", text.slice(6)] : [text, args.revision];
+const out = { url: "https://github.com/acme/gadgets", revision, ...(text === "noversion" ? {} : { version }), sha256: crypto.createHash("sha256").update(bytes).digest("hex") };
 fs.writeFileSync(path.resolve(__dirname, "../skill/references/gadgets.json"), JSON.stringify(out, null, 2) + "\\n");
 process.stdout.write("gadgets " + version + "\\n");
 `;
@@ -302,10 +304,38 @@ test("an npm importer that fails leaves its data and the lock as they were", (t)
   assert.equal(broken.status, 1);
   assert.match(broken.stderr, /FAIL gadgets: scripts\/generate-gadgets\.cjs failed: tarball has no docs/);
   assert.deepEqual({ lock: site.read("sources.lock.json"), data: site.read("skill/references/gadgets.json") }, before);
+  // Failures found after the importer succeeded restore its output too.
+  fs.writeFileSync(next.tarball, `stale:${site.first.revision}\n`);
+  const stale = site.update({ "@acme/gadgets@1.1.0": next.tarball });
+  assert.equal(stale.status, 1);
+  assert.match(stale.stderr, /FAIL gadgets: scripts\/generate-gadgets\.cjs output disagrees with the lock: skill\/references\/gadgets\.json: json \S+ pins [0-9a-f]{12}, not the release commit/);
+  assert.deepEqual({ lock: site.read("sources.lock.json"), data: site.read("skill/references/gadgets.json") }, before);
+  fs.writeFileSync(next.tarball, "noversion\n");
+  const unversioned = site.update({ "@acme/gadgets@1.1.0": next.tarball });
+  assert.equal(unversioned.status, 1);
+  assert.match(unversioned.stderr, /output disagrees with the lock: skill\/references\/gadgets\.json version is undefined, not 1\.1\.0/);
+  assert.deepEqual({ lock: site.read("sources.lock.json"), data: site.read("skill/references/gadgets.json") }, before);
   const missing = site.update({});
   assert.equal(missing.status, 1);
   assert.match(missing.stderr, /FAIL gadgets: SOURCES_NPM_PACKS has no @acme\/gadgets@1\.1\.0/);
   assert.deepEqual({ lock: site.read("sources.lock.json"), data: site.read("skill/references/gadgets.json") }, before);
+});
+
+test("a latest version that is not a plain semver is refused before any npm command or write", (t) => {
+  const site = npmFixture(t);
+  const before = { lock: site.read("sources.lock.json"), data: site.read("skill/references/gadgets.json") };
+  site.release("1.1.0", "2026-11-01T00:00:00Z");
+  for (const version of ["1.1.0 && touch pwned", "1.1.0;id", "latest", "1.1", "v1.1.0", "1.1.0\n"]) {
+    const result = run(process.execPath, [path.join(site.root, "scripts/sources-update.cjs"), "--root", site.root, "--today", "2026-11-04", "--no-npm-install"], site.root, {
+      SOURCES_REMOTE_BASE: `file://${path.join(path.dirname(site.root), "remote")}`,
+      SOURCES_NPM_VERSIONS: JSON.stringify({ "@acme/gadgets": version }),
+      SOURCES_NPM_PACKS: JSON.stringify({}),
+    });
+    assert.equal(result.status, 1, version);
+    assert.match(result.stderr, /FAIL gadgets: @acme\/gadgets: latest version .* is not a semver/, version);
+  }
+  assert.deepEqual({ lock: site.read("sources.lock.json"), data: site.read("skill/references/gadgets.json") }, before);
+  assert.equal(fs.existsSync(path.join(site.root, "pwned")), false);
 });
 
 test("an npm importer reads a {pack:} tarball and only an entry with a repo may ask for {revision}", () => {

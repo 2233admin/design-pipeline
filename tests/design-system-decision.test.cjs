@@ -66,11 +66,19 @@ test("bundled Astryx snapshot projects every theme token without path collisions
   assert.equal(result.tokens.tokens.font["size-base"].$type, "dimension");
 });
 
-test("a -color suffix types a color and a CSS border style keyword types a strokeStyle", () => {
-  const result = projectDesignSystemTokens(catalog({ tokens: { "--focus-outline-color": "var(--color-accent)", "--focus-outline-style": "solid", "--rule-style": "wavy" } }));
+test("a -color name with a colour value types a color and a border or outline style keyword types a strokeStyle", () => {
+  const result = projectDesignSystemTokens(catalog({ tokens: { "--focus-outline-color": "var(--color-accent)", "--focus-outline-style": "solid", "--border-bottom-style": "dashed", "--rule-style": "wavy" } }));
   assert.equal(result.tokens.tokens.focus["outline-color"].$type, "color");
   assert.equal(result.tokens.tokens.focus["outline-style"].$type, "strokeStyle");
+  assert.equal(result.tokens.tokens.border["bottom-style"].$type, "strokeStyle");
   assert.deepEqual(result.losses.map(({ code, path: lossPath }) => [code, lossPath]), [["type-unresolved", "--rule-style"]]);
+});
+
+test("a -color name with a non-colour value and a non-border -style name stay unresolved", () => {
+  const result = projectDesignSystemTokens(catalog({ tokens: { "--focus-ring-color": "inherit", "--text-decoration-style": "solid" } }));
+  assert.equal(result.status, "review");
+  assert.deepEqual(result.losses.map(({ code, path: lossPath }) => [code, lossPath]), [["type-unresolved", "--focus-ring-color"], ["type-unresolved", "--text-decoration-style"]]);
+  assert.equal(result.tokens.tokens.focus["ring-color"].$type, "number");
 });
 
 test("true normalized token-name duplicates remain blocked", () => {

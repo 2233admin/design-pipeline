@@ -2,7 +2,7 @@
 
 ### Requirement: Release-derived npm data is regenerated from release tarballs
 
-An npm lock entry MAY name an importer for data derived from its release. `npm run sources:update` SHALL fetch the named release tarballs with `npm pack --ignore-scripts`, pass them to that importer as data, never install or run them, and on importer failure SHALL restore the importer's outputs and leave the lock entry unchanged.
+An npm lock entry MAY name an importer for data derived from its release. `npm run sources:update` SHALL accept only a plain semver latest version, run npm without a shell, fetch the release tarballs with `npm pack --ignore-scripts`, never install or run them, and on any failure before the lock is written SHALL restore the importer's outputs and leave the lock entry unchanged.
 
 #### Scenario: A new Astryx release appears
 
@@ -11,8 +11,13 @@ An npm lock entry MAY name an importer for data derived from its release. `npm r
 
 #### Scenario: The importer cannot read the release
 
-- **WHEN** a tarball is missing, or the importer exits non-zero
+- **WHEN** a tarball is missing, the importer exits non-zero, or its output lacks the release version, pins another revision or leaves a version site ambiguous
 - **THEN** the update SHALL report the source as failed and SHALL leave the snapshot, notices and lock as they were.
+
+#### Scenario: The registry reports a malformed version
+
+- **WHEN** the latest version is not `MAJOR.MINOR.PATCH` with an optional prerelease
+- **THEN** the update SHALL fail that source before any npm command uses it.
 
 #### Scenario: An importer form is invalid
 
@@ -33,7 +38,7 @@ The package SHALL include an inert, MIT-attributed snapshot of the stable public
 
 #### Scenario: A doc module holds code
 
-- **WHEN** a doc module value is a call, function, import, await or other non-literal outside the named run-time-computed CLI topics
+- **WHEN** a doc module value is a call, function, import, await or other non-literal, or the module has a top-level statement other than import, `const`, `export const` or `export default`, outside the named run-time-computed CLI topics
 - **THEN** generation SHALL fail with the file and line and SHALL write no snapshot
 - **AND** no statement of any doc module SHALL be executed.
 
@@ -68,6 +73,6 @@ The package SHALL include an inert, MIT-attributed snapshot of the stable public
 
 #### Scenario: A token name states its type
 
-- **WHEN** a token name ends in `-color`, or ends in `-style` with a CSS border-style keyword value
+- **WHEN** a token name ends in `-color` with a colour value, or is a border or outline `-style` name with a CSS border-style keyword value
 - **THEN** the projection SHALL type it `color` or `strokeStyle` respectively
-- **AND** any other `-style` value SHALL remain a `type-unresolved` review loss.
+- **AND** a non-colour `-color` value or another `-style` name SHALL remain a `type-unresolved` review loss.

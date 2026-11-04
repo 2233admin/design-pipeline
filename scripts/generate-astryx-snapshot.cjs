@@ -9,7 +9,8 @@
 // memory (no extraction), every `*.doc.mjs` is parsed with @babel/parser, and only literal values
 // are evaluated: objects, arrays, strings, numbers, booleans, null, `undefined`, template literals
 // and arithmetic over them, and references to other literal top-level constants of the same file.
-// Anything else (calls, functions, imports, await) fails the run, except in the CLI topics listed
+// Anything else (calls, functions, imports, await) fails the run, as does any top-level statement
+// other than import, const, export const and export default, except in the CLI topics listed
 // in COMPUTED_TOPICS, which the CLI builds at runtime and the snapshot leaves out.
 //
 // The projection follows `astryx component|hook list --detail full`, `astryx docs` and
@@ -242,6 +243,22 @@ function plain(value) {
   return value;
 }
 
+// A doc module may only import, declare `const` values and export them. Any other top-level
+// statement (an assignment, a call such as `list.push(...)`, `let`/`var`, `export {x}`) could change a
+// value after its declaration, which a literal reading would miss, so the whole file is refused.
+function checkStatements(ast, label) {
+  for (const statement of ast.program.body) {
+    const declaration = statement.type === "ExportNamedDeclaration" ? statement.declaration : statement.type === "VariableDeclaration" ? statement : null;
+    const allowed = statement.type === "ImportDeclaration"
+      || statement.type === "ExportDefaultDeclaration"
+      || (declaration?.type === "VariableDeclaration" && declaration.kind === "const" && !(statement.type === "ExportNamedDeclaration" && statement.source));
+    if (!allowed) {
+      const what = declaration?.type === "VariableDeclaration" ? `${declaration.kind} declaration` : statement.type === "ExportNamedDeclaration" ? "export list" : statement.type;
+      fail(`${label}:${statement.loc?.start.line ?? "?"}: top-level ${what} is not allowed in a doc module (only import, const, export const and export default)`);
+    }
+  }
+}
+
 const moduleCache = new Map();
 
 // The module's exports that the CLI reads (`docs`, `docsZh`, `docsDense`, `doc`, default).
@@ -250,6 +267,7 @@ function loadModule(view, file, wanted) {
   if (!moduleCache.has(key)) {
     const label = `${view.label}/${file}`;
     const ast = parseModule(view.read(file), label);
+    checkStatements(ast, label);
     const exported = new Map();
     for (const statement of ast.program.body) {
       if (statement.type === "ExportDefaultDeclaration") exported.set("default", statement.declaration);
