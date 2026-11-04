@@ -152,7 +152,7 @@ const { inspectEnvironment, nodeAtLeast, renderDoctor } = require("./doctor-repo
 
 const referencesRoot = path.resolve(__dirname, "../references");
 const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots"]);
-const REPEATABLE_OPTIONS = new Set(["--set", "--param", "--mix", "--taste", "--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation"]);
+const REPEATABLE_OPTIONS = new Set(["--set", "--param", "--tone", "--mix", "--taste", "--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
   ...REPEATABLE_OPTIONS,
@@ -408,15 +408,17 @@ function publicHelp() {
     "  intake start --artifact <file> --json",
     "  intake answer --artifact <file> --answer <file> --json",
     "  intake confirm --artifact <file> --json",
-    "  template inventory --catalog <file> --json",
-    "  template search --catalog <file> --surface <file> --request <file> --json",
-    "  template select --selection <file> --json",
-    "  template adapt --receipt <file> --context <file> --json",
-    "  template review --plan <file> --review <file> --json",
-    "  template approve --plan <file> --approval <file> --json",
-    "  template list [--family kv|cover|card|banner|ui]   (template bank: parameterised SVG layouts with slots, knobs and provenance)",
-    "  template render <id> [--set slot=value ...] [--param name=value ...] [--seed <n>] [--size WxH] -o <out.svg> [--png <out.png>] [--chrome <exe>] [--puppeteer-module <path>]   (renders and audits the output; image slots take a file path; --seed varies the rhythm knobs; exit 2 when the check fails)",
-    "  template check <file.svg>   (measured: text fit, minimum size, contrast, figure and crop zones, accent budget, shared alignment lines; every finding has a fix; 0 pass, 2 fail)",
+    "  template: region templates (catalog of UI regions)",
+    "    template inventory --catalog <file> --json",
+    "    template search --catalog <file> --surface <file> --request <file> --json",
+    "    template select --selection <file> --json",
+    "    template adapt --receipt <file> --context <file> --json",
+    "    template review --plan <file> --review <file> --json",
+    "    template approve --plan <file> --approval <file> --json",
+    "  template: template bank (parameterised SVG layouts with slots, knobs and provenance; references/template-bank.md)",
+    "    template list [--family kv|cover|card|banner|ui]",
+    "    template render <id> [--set slot=value ...] [--param name=value ...] [--seed <n>] [--size WxH] [--tone <image-slot>=#RRGGBB ...] -o <out.svg> [--png <out.png>] [--chrome <exe>] [--puppeteer-module <path>]   (renders and checks the output; image slots take a file path; exit 2 when the check fails)",
+    "    template check <file.svg> [--tone <image-slot>=#RRGGBB ...] [--chrome <exe>]   (measured: text fit, minimum size, contrast (pixels under text on a real image, or a declared --tone), figure and crop zones, accent budget, shared alignment lines, lettering fallback, unsupported geometry; every finding has a fix; 0 pass, 2 fail)",
     "  doctor [--json]   (readable install and tool report; --json for machine output) | status --change-root <dir>",
     "  plan --manifest <file> --output <file>",
     "  run --plan <file> --to <phase>",
@@ -2174,6 +2176,31 @@ function templateBankCall(fn) {
   }
 }
 
+function templatePuppeteer(parsed, root) {
+  const explicit = option(parsed, "--puppeteer-module");
+  if (explicit !== null) return String(explicit);
+  try { return path.dirname(require.resolve("puppeteer-core/package.json", { paths: [root, process.cwd(), __dirname] })); } catch { return null; }
+}
+
+// Check a render; when text sits on a real image, sample the rendered pixels under it through the
+// browser. Without a browser the check keeps its contrast-unverified finding and says why.
+function templateAudit(parsed, root, svg) {
+  const tones = keyValues(parsed, "--tone");
+  const requests = templateBankCall(() => templateBank.pixelRequests(svg, { tones }));
+  const warnings = [];
+  let pixels = {};
+  if (Object.keys(requests.points).length) {
+    const request = { mode: "pixels", svg, width: requests.width, height: requests.height, points: requests.points, chrome: option(parsed, "--chrome") ?? undefined, puppeteerModule: templatePuppeteer(parsed, root) ?? undefined };
+    const child = spawnSync(process.execPath, [path.join(__dirname, "template-sample.cjs")], { cwd: root, input: JSON.stringify(request), encoding: "utf8", timeout: 120000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
+    let value = null;
+    try { value = child.status === 0 ? JSON.parse(child.stdout) : null; } catch { value = null; }
+    if (value?.ok) pixels = value.result;
+    else warnings.push(`pixel sampling unavailable: ${(child.stderr || child.error?.message || "no output").trim().split("\n")[0]}`);
+  }
+  const report = templateBankCall(() => templateBank.check(svg, { tones, pixels }));
+  return { report, warnings };
+}
+
 function templatePng(root, parsed, svg, size, pngFile) {
   const [width, height] = size.split("x");
   const work = fs.mkdtempSync(path.join(os.tmpdir(), "template-png-"));
@@ -2182,11 +2209,8 @@ function templatePng(root, parsed, svg, size, pngFile) {
     fs.writeFileSync(html, `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;padding:0;background:#fff}svg{display:block}</style></head><body>${svg}</body></html>`);
     const args = ["--composition", html, "--output", path.join(work, "capture"), "--width", width, "--height", height];
     if (option(parsed, "--chrome") !== null) args.push("--chrome", String(option(parsed, "--chrome")));
-    let puppeteerModule = option(parsed, "--puppeteer-module");
-    if (puppeteerModule === null) {
-      try { puppeteerModule = path.dirname(require.resolve("puppeteer-core/package.json", { paths: [root, process.cwd(), __dirname] })); } catch { puppeteerModule = null; }
-    }
-    if (puppeteerModule !== null) args.push("--puppeteer-module", String(puppeteerModule));
+    const puppeteerModule = templatePuppeteer(parsed, root);
+    if (puppeteerModule !== null) args.push("--puppeteer-module", puppeteerModule);
     runKernel("capture-composition.cjs", args, root, { timeout: 120000 });
     fs.copyFileSync(path.join(work, "capture", "screenshot.png"), pngFile);
   } finally {
@@ -2204,8 +2228,8 @@ function templateBankCommand(parsed, root, action, operand) {
   if (action === "check") {
     if (!operand) fail("template", "template check needs the rendered SVG: template check <file.svg>", { code: "OPTION_REQUIRED" });
     const file = contained(root, operand, "<file.svg>");
-    const report = templateBankCall(() => templateBank.check(fs.readFileSync(file, "utf8")));
-    return { result: { ...report, file }, exitCode: report.status === "passed" ? 0 : 2 };
+    const { report, warnings } = templateAudit(parsed, root, fs.readFileSync(file, "utf8"));
+    return { result: { ...report, file, ...(warnings.length ? { warnings } : {}) }, exitCode: report.status === "passed" ? 0 : 2 };
   }
   if (!operand) fail("template", `template render needs a template id: template render <id> -o <out.svg>; ids: ${templateBank.templateIds().join(", ")}`, { code: "OPTION_REQUIRED" });
   const outRaw = option(parsed, "-o") ?? option(parsed, "--output");
@@ -2218,6 +2242,9 @@ function templateBankCommand(parsed, root, action, operand) {
   if (seedRaw !== null && !/^\d{1,9}$/.test(String(seedRaw))) fail("template", `--seed must be a whole number, got ${seedRaw}`, { code: "OPTION_VALUE_INVALID" });
   const set = keyValues(parsed, "--set");
   const manifest = templateBankCall(() => templateBank.loadManifest(operand));
+  for (const [slot] of Object.entries(keyValues(parsed, "--tone"))) {
+    if (templateBank.slotSpec(manifest, slot)?.spec.kind !== "image") fail("template", `--tone ${slot}: not an image slot of ${operand}`, { code: "OPTION_VALUE_INVALID" });
+  }
   for (const [name, value] of Object.entries(set)) {
     const found = templateBank.slotSpec(manifest, name);
     if (found?.spec.kind !== "image") continue;
@@ -2230,14 +2257,19 @@ function templateBankCommand(parsed, root, action, operand) {
   const output = contained(root, outRaw, "-o", false);
   fs.mkdirSync(path.dirname(output), { recursive: true });
   fs.writeFileSync(output, rendered.svg);
-  const png = pngRaw === null ? null : templatePng(root, parsed, rendered.svg, rendered.size, contained(root, pngRaw, "--png", false));
-  const report = templateBank.check(rendered.svg);
+  const { report, warnings } = templateAudit(parsed, root, rendered.svg);
+  let png = null;
+  if (pngRaw !== null) {
+    const pngFile = contained(root, pngRaw, "--png", false);
+    try { png = templatePng(root, parsed, rendered.svg, rendered.size, pngFile); } catch (error) { warnings.push(`--png capture failed, the SVG and its check stand: ${String(error.message).split("\n")[0]}`); }
+  }
   return {
     result: {
       status: report.status === "passed" ? "rendered" : "rendered-with-findings",
       template: rendered.template, size: rendered.size, output, ...(png ? { png } : {}),
       ...(seedRaw === null ? {} : { seed: Number(seedRaw), varied: Object.fromEntries(rendered.varied.map((name) => [name, rendered.params[name]])) }),
       check: { status: report.status, summary: report.summary, findings: report.findings, notes: report.notes },
+      ...(warnings.length ? { warnings } : {}),
       next: report.status === "passed" ? `Inspect the pixels (--png) against the brief; the check covers technical conformance only.` : "Apply each finding's fix and render again.",
     },
     exitCode: report.status === "passed" ? 0 : 2,

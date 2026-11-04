@@ -878,7 +878,7 @@ roles were measured from a reference corpus; nothing from that corpus is bundled
 - ignoredone's space tutorials (© ignoredone): read for the study
   `docs/research/ignoredone-arknights-design.md`, which restates rules and structures in this
   repository's words and copies no artwork or tutorial images.
-- Display lettering: `skill/tools/template-bank/lettering.cjs` draws its 53 glyphs from stroke
+- Display lettering: `skill/tools/template-bank/lettering.cjs` draws its 58 glyphs (the study's 53 plus `, ; " &` and the euro sign) from stroke
   skeletons written for this repository. It is not derived from a font file.
 - Named, not bundled (SIL Open Font License 1.1): Source Han Sans SC and Source Han Serif SC
   (Adobe), Noto Sans CJK SC and Noto Serif CJK SC, Noto Sans SC and Noto Serif SC (Google). The

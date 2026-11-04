@@ -26,6 +26,16 @@ function cli(root, ...args) {
   return { status: child.status, payload, stdout: child.stdout, stderr: child.stderr };
 }
 
+function solidPng(r, g, b, w = 64, h = 40) {
+  const zlib = require("node:zlib");
+  const crcTable = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k += 1) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+  const crc = (buf) => { let c = 0xffffffff; for (const byte of buf) c = crcTable[(c ^ byte) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+  const chunk = (type, data) => { const len = Buffer.alloc(4); len.writeUInt32BE(data.length); const body = Buffer.concat([Buffer.from(type), data]); const sum = Buffer.alloc(4); sum.writeUInt32BE(crc(body)); return Buffer.concat([len, body, sum]); };
+  const header = Buffer.alloc(13); header.writeUInt32BE(w, 0); header.writeUInt32BE(h, 4); header[8] = 8; header[9] = 2;
+  const row = Buffer.concat([Buffer.from([0]), Buffer.from(Array.from({ length: w }, () => [r, g, b]).flat())]);
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk("IHDR", header), chunk("IDAT", zlib.deflateSync(Buffer.concat(Array(h).fill(row)))), chunk("IEND", Buffer.alloc(0))]);
+}
+
 const rules = (report) => report.findings.map((finding) => `${finding.rule}:${finding.slot || ""}`);
 
 test("every template renders at each listed size with its default slots and passes check", () => {
@@ -160,8 +170,11 @@ test("lettering widths are deterministic and match the original glyph program", 
     assert.ok(Math.abs(first.width - width) < 1e-6, `${text}: ${first.width} vs ${width}`);
     assert.equal(first.svg, second.svg);
   }
-  assert.equal(lettering.GLYPHS.length, 54, "53 glyphs plus the space");
-  const glyphSet = lettering.GLYPHS.map((ch) => `${ch}:${lettering.glyphPaths(ch, 1000, 0, 0, {}).paths.map((p) => `${p.d}/${p.rule}`).join("|")}`).join("\n");
+  assert.equal(lettering.STUDY_GLYPHS.length, 54, "the study's 53 glyphs plus the space");
+  assert.deepEqual(lettering.ADDED_GLYPHS, [",", ";", "\"", "&", "€"]);
+  for (const ch of ",.:;!?-'\"/&+%€") assert.ok(lettering.hasGlyph(ch), ch);
+  // The study's glyphs are unchanged by the additions.
+  const glyphSet = lettering.STUDY_GLYPHS.map((ch) => `${ch}:${lettering.glyphPaths(ch, 1000, 0, 0, {}).paths.map((p) => `${p.d}/${p.rule}`).join("|")}`).join("\n");
   assert.equal(crypto.createHash("sha256").update(glyphSet).digest("hex"), "551b9c56bda3d56de18b1ae613f76c5ac3cc71908fb40e8084f86a8e4cb63cb1");
   assert.throws(() => lettering.setText("A", 0, 0, 10, { stroke: 2 }), /stroke must be a number/);
   // Optical alignment puts the leftmost ink on x.
@@ -169,11 +182,84 @@ test("lettering widths are deterministic and match the original glyph program", 
   assert.ok(Math.abs(trimmed.left - 100) < 1e-9);
 });
 
-test("CJK in a lettering slot falls back to the named open font", () => {
-  const svg = bank.render("kv.outfit-title-left", { set: { title_latin_1: "时装" } }).svg;
-  assert.match(svg, /data-slot="title_latin_1"[^>]*data-fallback="cjk-font"/);
+test("characters the lettering cannot draw are a finding that names them; lowercase is a note", () => {
+  const svg = bank.render("kv.outfit-title-left", { set: { title_latin_1: "时装É" } }).svg;
   assert.match(svg, /data-fallback="cjk-font"><text [^>]*font-family="'Source Han Sans SC','Noto Sans CJK SC','Noto Sans SC',sans-serif"/);
-  assert.equal(bank.check(svg).status, "passed");
+  const report = bank.check(svg);
+  const finding = report.findings.find((f) => f.rule === "lettering-fallback" && f.slot === "title_latin_1");
+  assert.ok(finding, JSON.stringify(report.findings));
+  assert.deepEqual(finding.measured.characters, ["时", "装", "É"]);
+  assert.match(finding.message, /fallback font and its style changed/);
+  assert.match(finding.fix, /move this copy to a text slot/);
+  const punctuation = bank.check(bank.render("kv.outfit-title-left", { set: { title_latin_1: "R&D, \"Q\";" } }).svg);
+  assert.equal(punctuation.status, "passed", JSON.stringify(punctuation.findings));
+  const lower = bank.check(bank.render("kv.outfit-title-left", { set: { title_latin_1: "Epoque" } }).svg);
+  assert.equal(lower.status, "passed");
+  assert.ok(lower.notes.some((note) => /title_latin_1: lowercase is drawn as capitals/.test(note)));
+});
+
+test("geometry the check cannot measure fails as unsupported-geometry", () => {
+  const clean = bank.render("kv.outfit-title-left").svg;
+  const wrapped = bank.render("card.dossier-portrait", { set: { talent_body: "说明".repeat(30) } }).svg;
+  assert.equal(bank.check(wrapped).findings.filter((f) => f.rule === "unsupported-geometry").length, 0, "the renderer's own dy-only tspans are supported");
+  const cases = {
+    use: clean.replace("</svg>\n", "<use href=\"#guides\"/></svg>\n"),
+    nested: clean.replace("</svg>\n", "<svg width=\"10\" height=\"10\"><rect width=\"5\" height=\"5\" fill=\"#000\"/></svg></svg>\n"),
+    style: clean.replace(/data-slot="title_cjk"/, "style=\"transform: translate(800px,0)\" data-slot=\"title_cjk\""),
+    skew: clean.replace(/(<g data-slot="title_latin_1"[^>]*?)>/, "$1 transform=\"skewX(20)\">"),
+    dx: wrapped.replace(/<tspan x="([\d.]+)" dy="([\d.]+)">/, "<tspan dx=\"40\" dy=\"$2\">"),
+    tspanX: wrapped.replace(/<tspan x="([\d.]+)" dy="([\d.]+)">/, "<tspan x=\"900\" dy=\"$2\">"),
+  };
+  for (const [name, svg] of Object.entries(cases)) {
+    assert.notEqual(svg, name === "dx" || name === "tspanX" ? wrapped : clean, `${name} edit applied`);
+    const report = bank.check(svg);
+    const finding = report.findings.find((f) => f.rule === "unsupported-geometry");
+    assert.equal(report.status, "failed", name);
+    assert.ok(finding && /Flatten it/.test(finding.fix), `${name}: ${JSON.stringify(report.findings)}`);
+  }
+});
+
+test("text on a real image needs sampled pixels or a declared tone", (t) => {
+  const root = tempRoot(t);
+  fs.writeFileSync(path.join(root, "white.png"), solidPng(250, 250, 250));
+  const noBrowser = ["--chrome", path.join(root, "no-such-chrome")];
+  const rendered = cli(root, "template", "render", "cover.pv-lowerthird", "--set", "key_art=white.png", "-o", "w.svg", ...noBrowser);
+  assert.equal(rendered.status, 2, JSON.stringify(rendered.payload));
+  const unverified = rendered.payload.check.findings.filter((f) => f.rule === "contrast-unverified");
+  assert.deepEqual(unverified.map((f) => f.slot).sort(), ["copyright", "title_cjk", "title_latin"], "the plated label is not on the image");
+  assert.match(unverified[0].fix, /headless Chrome and puppeteer-core/);
+  assert.match(unverified[0].fix, /--tone key_art=#RRGGBB/);
+  assert.ok(rendered.payload.warnings.some((w) => /pixel sampling unavailable/.test(w)));
+  const declared = cli(root, "template", "check", "w.svg", "--tone", "key_art=#1A1A1A", ...noBrowser);
+  assert.equal(declared.status, 0, JSON.stringify(declared.payload));
+  assert.ok(declared.payload.notes.some((note) => /tone declared with --tone/.test(note)));
+  const bright = cli(root, "template", "check", "w.svg", "--tone", "key_art=#F5F5F5", ...noBrowser);
+  assert.equal(bright.status, 2);
+  assert.ok(bright.payload.findings.some((f) => f.rule === "contrast" && f.slot === "title_cjk"));
+  assert.equal(cli(root, "template", "check", "w.svg", "--tone", "title_cjk=#000000").payload.error.code, "OPTION_VALUE_INVALID");
+  // Bank API: sampled pixels decide when given.
+  const svg = fs.readFileSync(path.join(root, "w.svg"), "utf8");
+  const request = bank.pixelRequests(svg);
+  assert.deepEqual(Object.keys(request.points).sort(), ["copyright", "title_cjk", "title_latin"]);
+  const white = Object.fromEntries(Object.entries(request.points).map(([slot, points]) => [slot, points.map(() => [250, 250, 250])]));
+  const report = bank.check(svg, { pixels: white });
+  assert.ok(report.findings.some((f) => f.rule === "contrast" && f.slot === "title_cjk" && f.measured.from === "pixels"));
+});
+
+test("a placeholder image slot keeps its declared ground tone", () => {
+  const report = bank.check(bank.render("cover.pv-lowerthird").svg);
+  assert.equal(report.status, "passed");
+  assert.ok(report.notes.some((note) => /declared tone #/.test(note) && /no image in the slot yet/.test(note)));
+});
+
+test("a failed --png capture still returns the check", (t) => {
+  const root = tempRoot(t);
+  const { status, payload } = cli(root, "template", "render", "kv.outfit-title-left", "-o", "a.svg", "--png", "a.png", "--chrome", path.join(root, "no-such-chrome"));
+  assert.equal(status, 0, JSON.stringify(payload));
+  assert.equal(payload.check.status, "passed");
+  assert.ok(!payload.png);
+  assert.ok(payload.warnings.some((w) => /--png capture failed/.test(w)));
+  assert.ok(fs.existsSync(path.join(root, "a.svg")));
 });
 
 test("seeds vary rhythm knobs only, inside their ranges, and repeat", () => {
