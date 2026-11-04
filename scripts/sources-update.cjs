@@ -21,7 +21,7 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const {
-  BUNDLE_KINDS, VERSIONED, collectPins, escapeRegExp, fail, jsonSite, manifestFor, pinFiles,
+  BUNDLE_KINDS, VERSIONED, collectPins, escapeRegExp, fail, jsonSite, manifestFor, npmSiteVersions, pinFiles,
   readLock, releaseTag, replaceSiteVersion, repoKey, repoRoot, writeLock,
 } = require("./sources-lock.cjs");
 
@@ -179,7 +179,7 @@ function companionProblems(root, dir, revision, profileIds) {
   }
   const texts = new Map();
   const textOf = (folder) => {
-    if (!texts.has(folder)) texts.set(folder, tree.filter((item) => item.startsWith(`${folder}/`) && item.endsWith(".md")).slice(0, 80).map((item) => blobText(dir, revision, item) || "").join("\n"));
+    if (!texts.has(folder)) texts.set(folder, tree.filter((item) => item.startsWith(`${folder}/`) && item.endsWith(".md")).map((item) => blobText(dir, revision, item) || "").join("\n"));
     return texts.get(folder);
   };
   const problems = [];
@@ -194,6 +194,26 @@ function companionProblems(root, dir, revision, profileIds) {
     }
   }
   return problems;
+}
+
+// Root license files (LICENSE*, LICENCE*, COPYING*, NOTICE*) by name -> blob id; null when the
+// revision is not available locally.
+const ROOT_LICENSE = /^(licen[cs]e|copying|notice)([._-].*)?$/i;
+
+function rootLicenses(dir, revision) {
+  const listing = safeGit(dir, ["ls-tree", revision], { allowFailure: true });
+  if (listing === null) return null;
+  return new Map(listing.split("\n").filter(Boolean).map((line) => line.match(/^\d+ blob ([0-9a-f]{40,64})\t(.+)$/)).filter((match) => match && ROOT_LICENSE.test(match[2])).map((match) => [match[2], match[1]]));
+}
+
+// Every move is checked for a license change at the repository root, cited or not.
+function rootLicenseProblems(dir, from, to) {
+  const before = rootLicenses(dir, from);
+  const after = rootLicenses(dir, to);
+  if (!before) return [`the locked revision ${from.slice(0, 12)} is no longer fetchable, so its root license files cannot be compared with ${to.slice(0, 12)}`];
+  const names = [...new Set([...before.keys(), ...after.keys()])].sort();
+  const changed = names.filter((name) => before.get(name) !== after.get(name)).map((name) => (!before.has(name) ? `${name} added` : !after.has(name) ? `${name} removed` : `${name} changed`));
+  return changed.length ? [`root license files differ between ${from.slice(0, 12)} and ${to.slice(0, 12)} (${changed.join(", ")}); review the license before bumping`] : [];
 }
 
 function walkFiles(root, relative = "") {
@@ -345,11 +365,8 @@ function update(options) {
         continue;
       }
       if (!behind && !options.reimport) {
-        for (const entry of group.entries) {
-          report.current.push({ id: entry.id, at: entry.version || entry.revision });
-          lockUpdates.set(entry.id, { reviewedAt: today });
-          if (entry.documents || entry.profiles) adaptedDates.push(entry);
-        }
+        // Unchanged upstream: nothing is written, not even a review date, so a quiet week is no diff.
+        for (const entry of group.entries) report.current.push({ id: entry.id, at: entry.version || entry.revision });
         continue;
       }
       if (options.dryRun) {
@@ -376,6 +393,7 @@ function update(options) {
               if (before && before !== after) problems.push(`${at} changed between ${pin.revision.slice(0, 12)} and ${target.slice(0, 12)} (cited by ${pin.file}); review the license before bumping`);
             }
           }
+          problems.push(...rootLicenseProblems(fetched.dir, current, target));
           problems.push(...companionProblems(root, fetched.dir, target, [...new Set(group.entries.flatMap((entry) => entry.profiles || []))]));
           if (problems.length) fail([...new Set(problems)].join("; "));
           for (const revision of oldRevisions) groupReplacements.set(revision, revision.length === 40 ? target : target.slice(0, revision.length));
@@ -514,6 +532,14 @@ function update(options) {
     for (const group of groups.values()) {
       const npmEntry = group.entries.find((entry) => VERSIONED.has(entry.kind));
       if (!npmEntry || group.failed || !group.version || group.version === npmEntry.version) continue;
+      // A site whose pattern also matches some other version is too broad to rewrite safely.
+      const broad = npmEntry.sites.filter((site) => site.pattern).flatMap((site) => (npmSiteVersions(root, site).versions || []).filter((found) => found !== npmEntry.version).map((found) => `${site.file} "${site.pattern}" also matches ${found}`));
+      if (broad.length) {
+        report.failed.push({ id: npmEntry.id, reason: `version sites are ambiguous: ${broad.join("; ")}` });
+        lockUpdates.delete(npmEntry.id);
+        report.bumped = report.bumped.filter((item) => item.id !== npmEntry.id);
+        continue;
+      }
       for (const site of npmEntry.sites) {
         const absolute = path.join(root, site.file);
         if (site.json) {

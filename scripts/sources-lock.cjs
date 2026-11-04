@@ -24,7 +24,7 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
 // Files whose upstream pins are derived from the lock. Research notes, archived changes, change
 // records, examples and eval fixtures record history (what was studied or adapted at the time) and
 // are not dependencies, so they keep their original citations.
-const PIN_PREFIXES = ["skill/", "scripts/", "tests/", ".github/"];
+const PIN_PREFIXES = ["skill/", "tests/", "docs/", ".github/"];
 const PIN_FILES = new Set(["THIRD_PARTY_NOTICES.md", "README.md"]);
 const PIN_EXCLUDED = [/^skill\/vendor\/[^/]+\/upstream\//, /^skill\/vendor\/[^/]+\/(?:licenses|maintained)\//, /^skill\/vendor\/[^/]+\/LICENSES\.txt$/, /^docs\/research\//, /^docs\/archive\//, /^tests\/fixtures\//];
 const BINARY = /\.(png|jpe?g|webp|gif|ico|mp4|mov|webm|mp3|wav|ogg|woff2?|ttf|otf|glb|gltf|bin|zip|tgz|gz|pdf|psd|cube)$/i;

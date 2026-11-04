@@ -164,10 +164,13 @@ test("sources:update moves a vendored bundle, its lock entry and every derived p
     assert.equal(again.read(file).replaceAll(again.first, "FIRST"), site.read(file).replaceAll(site.first, "FIRST"), file);
   }
 
-  // A second run with nothing new only confirms the lock.
-  const quiet = site.update();
+  // A second run with nothing new writes nothing, not even a review date.
+  git(site.root, ["add", "--all"]);
+  git(site.root, ["commit", "--quiet", "-m", "bumped"]);
+  const quiet = run(process.execPath, [path.join(site.root, "scripts/sources-update.cjs"), "--root", site.root, "--today", "2026-12-24", "--no-npm-install"], site.root, { SOURCES_REMOTE_BASE: `file://${path.join(path.dirname(site.upstream), "..")}` });
   assert.equal(quiet.status, 0, quiet.stderr);
   assert.deepEqual(JSON.parse(quiet.stdout).current.map((item) => item.id), ["widgets"]);
+  assert.equal(git(site.root, ["status", "--porcelain"]), "");
 });
 
 test("an upstream that removes a file we cite fails loudly and leaves the bundle and lock as they were", (t) => {
@@ -198,6 +201,19 @@ test("an upstream that removes a file we cite fails loudly and leaves the bundle
   assert.equal(relicensed.status, 1);
   assert.match(relicensed.stderr, /LICENSE changed between [0-9a-f]{12} and [0-9a-f]{12}/);
   assert.equal(site.read("sources.lock.json"), before.lock);
+});
+
+test("an uncited root license file that changes, appears or disappears stops the source", (t) => {
+  const site = fixture(t);
+  const lock = site.read("sources.lock.json");
+  site.write("NOTICE", "Third-party notices\n");
+  site.write("docs/a.md", "second\n");
+  site.commit("add notice", "2026-11-01T00:00:00Z");
+  const added = site.update();
+  assert.equal(added.status, 1);
+  assert.match(added.stderr, /root license files differ between [0-9a-f]{12} and [0-9a-f]{12} \(NOTICE added\)/);
+  assert.equal(site.read("sources.lock.json"), lock);
+  assert.doesNotMatch(site.read("skill/references/widgets.md"), /NOTICE/, "the notice is not cited anywhere");
 });
 
 test("sources:check --upstream reports what is behind and what is held, without failing", () => {

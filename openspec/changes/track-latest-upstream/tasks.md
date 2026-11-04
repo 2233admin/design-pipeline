@@ -24,3 +24,13 @@
 
 - [x] 4.1 `tests/sources-lock.test.cjs` (agreement, file:// fixture bump, restructure, license change, fake upstream report) registered in `scripts/test-manifest.json`.
 - [x] 4.2 `npm run sources:check`, `npm run specs:check`, full `npm test`; CHANGELOG entry.
+
+## 5. Review fixes (PR #268)
+
+- [x] 5.1 Root license files compared on every move, cited or not; fixture test.
+- [x] 5.2 No date-only churn; never force-push over others' commits (dated branch and PR instead).
+- [x] 5.3 `docs/` in pin scope (`scripts/` out); `docs/agents/matt-skills.md` at the locked revision.
+- [x] 5.4 Workflow: patch recorded before QA, scope guard, not green on any unmoved source, draft conversion, code spans.
+- [x] 5.5 Companion marker check reads every Markdown file of the skill folder.
+- [x] 5.6 Impeccable command count checked against upstream (24 listed, `craft` deprecated, 23 core).
+- [x] 5.7 GSAP 3.15.1 released meanwhile: moved with new version sites; ambiguous sites stop the entry; product-film scaffold requirement follows the lock.

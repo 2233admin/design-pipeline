@@ -19,7 +19,10 @@ const coreCommands = [
 
 test("maps the complete Impeccable product-design command surface", () => {
   assert.equal(map.schema, "design-pipeline.impeccable-product-design.v1");
+  // Counted at pbakaus/impeccable 9fadc41: 24 rows in the SKILL.md command table, `craft` a deprecated alias.
+  assert.equal(map.coverage.upstreamListedCommandCount, 24);
   assert.equal(map.coverage.upstreamCoreCommandCount, 23);
+  assert.deepEqual(map.aliases.filter((alias) => alias.deprecated).map((alias) => alias.id).sort(), ["craft", "teach"]);
   assert.equal(map.coverage.mappedCoreCommandCount, coreCommands.length);
   assert.equal(map.coverage.productDesignOnly, true);
   assert.equal(map.coverage.skinThemeImported, false);

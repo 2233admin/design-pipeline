@@ -6,6 +6,7 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const test = require("node:test");
+const { readLock } = require("../scripts/sources-lock.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const registryPath = path.join(repoRoot, "skill", "references", "companion-capabilities.json");
@@ -264,7 +265,6 @@ const referenceSkills = {
 };
 
 test("non-commercial reference skills are pinned, ideas-only and fresh", () => {
-  const now = Date.parse(process.env.DESIGN_PIPELINE_NOW || new Date().toISOString());
   for (const [relativePath, expected] of Object.entries(referenceSkills)) {
     const metadata = frontmatter(relativePath);
     assert.equal(metadata.id, expected.sourceId);
@@ -277,8 +277,10 @@ test("non-commercial reference skills are pinned, ideas-only and fresh", () => {
     assert.equal(metadata.license, expected.license);
     assert.equal(metadata.codeCopied, "false");
     assert.match(metadata.useBoundary, /reference-only; ideas only/);
-    const due = Date.parse(metadata.reviewedAt) + Number(metadata.freshnessDays) * 86_400_000;
-    assert.ok(now <= due, `${relativePath} review expired on ${new Date(due).toISOString().slice(0, 10)}: re-review the upstream revision, hash and license, then update reviewedAt`);
+    // Freshness is the lock's job now: the weekly sources:update compares the locked revision with
+    // upstream HEAD and moves reviewedAt only when the revision moves, so a quiet upstream is current.
+    assert.equal(metadata.reviewedRevision, readLock(repoRoot).sources.find((entry) => (entry.documents || []).includes(relativePath)).revision);
+    assert.ok(Number.isFinite(Date.parse(metadata.reviewedAt)), relativePath);
   }
 });
 
