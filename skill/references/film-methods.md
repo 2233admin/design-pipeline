@@ -240,7 +240,7 @@ lacked landed in the existing guides, in our words, with no new gate or command:
 | Strips of consecutive frames around fast moves, phone-width sheet, loop seam strip | [workflow-film.md](workflow-film.md#review) | Viewed by the reviewer; the seam strip adds speed and direction to `loop-seam-jump` |
 | A reader who did not build the film states it in one sentence, muted | [workflow-film.md](workflow-film.md#review) | Review only |
 | Named reference style instead of adjectives (director's brief) | [product-film-direction.md](product-film-direction.md) section 2 | Review only |
-| Sound effects placed by their measured peak, not their start | [film-score.md](film-score.md#sound-effects-on-measured-peaks) | Audio gate after mastering |
+| Sound effects anchored by shape: hits by onset on the cue frame, swells by their loudest RMS window (`riser` cue), never by file start | [film-score.md](film-score.md#placing-sound-effects-hits-by-onset-swells-by-peak) | Audio gate after mastering; hit cues are timed by onset |
 | Style library with reference stills | Companion route in [prompt-motion.md](prompt-motion.md#code-animation-style-library-companion-not-bundled) | None; not vendored |
 
 Already covered here, so not added again: the paused-timeline clock and its adapters

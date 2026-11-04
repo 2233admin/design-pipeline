@@ -22,7 +22,7 @@ The game UI guide SHALL provide review lenses for world-branded UI and key art (
 
 ### Requirement: Film guides carry the audited code-video mechanisms
 
-The film guides SHALL describe order-independent drawing from time with a worker-split render check, optional subframe motion blur that keeps cuts on whole frames, review strips for fast moves, phone width and loop seams, and sound effects placed by measured peak. They SHALL reuse existing commands and add no gate, and SHALL record the audit with sources, skipped items and #260 ablation candidacy.
+The film guides SHALL describe order-independent drawing from time with a worker-split render check, optional subframe motion blur that keeps cuts on whole frames, review strips for fast moves, phone width and loop seams, and sound effects anchored by onset for hits and by peak for swells. They SHALL reuse existing commands and add no gate, and SHALL record the audit with sources, skipped items and #260 ablation candidacy.
 
 #### Scenario: A composition keeps state between frames
 

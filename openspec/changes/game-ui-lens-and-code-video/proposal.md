@@ -8,7 +8,7 @@ top of it), material, depth in flat UI, decorative type that fits the world, foc
 logic and input-driven feedback. The film workflow renders HTML frame by frame, but lacks several
 mechanisms the public code-video libraries rely on: order-independent drawing from time checked
 on real renders, motion blur from subframes, frame strips around fast moves and loop seams, sound
-effects placed by their measured peak, a named-reference rule for the brief, and a route to a
+effects anchored by onset or peak, a named-reference rule for the brief, and a route to a
 large style library with reference stills.
 
 ## What Changes
@@ -25,7 +25,9 @@ large style library with reference stills.
     sheet, a loop seam strip, and a muted one-sentence read by someone who did not build it.
   - `workflow-film.md` deliver: optional motion blur by rendering subframes with HyperFrames
     `--fps` and averaging them with FFmpeg `tmix` (180° shutter, cuts on whole frames).
-  - `film-score.md`: sound effects placed so their measured peak lands on the cue.
+  - `film-score.md`: hits (taps, clicks, pops, impacts) put their onset on the cue frame under an
+    `impact`/`accent`/`downbeat` cue, which the audio gate times by onset; swells (whooshes,
+    risers) put their loudest RMS window on the moment under a `riser` cue, which it does not time.
   - `product-film-direction.md`: name a style by a concrete work, not adjectives.
   - `prompt-motion.md`: XiaoyeCodes/code-animation-prompts routed as a companion style library,
     not vendored or fetched (licence decision recorded).

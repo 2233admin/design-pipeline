@@ -20,8 +20,10 @@ Sources read on 2026-11-04:
    code. Taste stays with the owner. A lens names a check only where an existing tool measures part
    of it, and states the tool's limit (the composition gate skips text over image or gradient
    backgrounds and reads a translucent panel's first opaque ancestor; `verify interaction` measures
-   DOM boxes and transforms, not canvas particles; `composition capture --seek` positions GSAP
-   timelines but does not run HyperFrames clip visibility, so it was not used for film checks).
+   DOM boxes and transforms, not canvas particles). `composition capture --seek` positions GSAP
+   timelines but does not apply HyperFrames clip windows: a clip outside its window still shows
+   (extra content, not a blank frame), while the render shows nothing there. Film frames in the
+   guides therefore come from `hyperframes render --format png-sequence`. Tracked in #269.
 2. **Each lens and each adopted film mechanism is a #260 ablation candidate.** The guides say so;
    none is kept by default.
 3. **Film mechanisms land in the guides that own the step**, not in a new guide: seek discipline
@@ -58,6 +60,11 @@ Run on this host (FFmpeg 6.1.1, HyperFrames 0.8.164 from the root workspace; the
 - Order independence: the same composition rendered with `--workers 1` and `--workers 3` as PNG
   sequences, 60 of 60 hashes equal; a copy that counted its own `onUpdate` calls differed on 10 of
   60 frames.
+- Effect anchors: a tick after 20 ms of silence had its onset (first 1 ms window within 20 dB of
+  the peak) at 0.020 s; a whoosh with a short click at 0 s had its instantaneous peak at 0 s but its
+  loudest 10 ms RMS window at 0.29 s, hence RMS plus listening for swells. Hits are anchored by
+  onset to match the audio gate's onset timing of `impact`/`accent`/`downbeat` cues (PR #234);
+  swells by peak under a `riser` cue, which that timing skips.
 - Effect peak: a 0.6 s synthetic effect peaking at 0.299 s measured 0.299 s in 1 ms windows;
   delayed by 1701 ms into a 3 s bed it peaked at 2.000 s.
 - Review sheets: the strip, phone and seam commands produced 3840×180, 1800×609 and 1920×180

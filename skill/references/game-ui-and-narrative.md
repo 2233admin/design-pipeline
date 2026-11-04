@@ -147,8 +147,9 @@ scale (larger, nearer subjects move more).
 - Bad sign: every card on the same shadow; shadows that contradict the light direction of the art;
   parallax where small background items move faster than the foreground.
 - Check: `verify composition` warnings `flat-hierarchy`, `weak-separation` and `no-focal-point`
-  are review prompts for this lens. Parallax order needs a capture at two scroll or tilt positions
-  (`verify interaction` probe, or two `composition capture --seek` frames for a film).
+  are review prompts for this lens. Parallax order needs frames at two scroll or tilt positions:
+  a `verify interaction` probe in a page; in a film, two frames from
+  `npx --no-install hyperframes render --format png-sequence` (the renderer applies clip windows).
 
 ### L4 Decorative typography coherence
 

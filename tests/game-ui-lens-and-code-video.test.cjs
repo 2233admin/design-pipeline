@@ -46,7 +46,13 @@ test("film guides carry the audited code-video mechanisms without a new gate", (
   assert.match(film, /-stream_loop 1/);
   assert.match(film, /\*\*Motion blur \(optional\)\.\*\*/);
   assert.match(film, /Put cut times on whole frames/);
-  assert.match(flat("skill/references/film-score.md"), /## Sound effects on measured peaks/);
+  const score = flat("skill/references/film-score.md");
+  assert.match(score, /## Placing sound effects: hits by onset, swells by peak/);
+  assert.match(score, /Put the onset on the cue frame and declare the cue `impact`, `accent` or `downbeat`/);
+  assert.match(score, /declare the cue `riser`/);
+  assert.match(score, /audio-gate\.md#hit-cues/);
+  assert.match(score, /confirm the anchor by listening/);
+  assert.doesNotMatch(flat("skill/references/game-ui-and-narrative.md"), /composition capture --seek/);
   assert.match(flat("skill/references/product-film-direction.md"), /Name a style by a concrete work/);
   const prompt = flat("skill/references/prompt-motion.md");
   assert.match(prompt, /## Code-animation style library \(companion, not bundled\)/);

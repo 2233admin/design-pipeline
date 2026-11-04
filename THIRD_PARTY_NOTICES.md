@@ -873,7 +873,7 @@ copied or shipped.
   are paraphrased and linked.
 - Film mechanisms in `skill/references/hyperframes.md`, `workflow-film.md`, `film-score.md` and
   `product-film-direction.md` (drawing from time, subframe motion blur, review strips, effects on
-  measured peaks, named reference styles): informed by https://github.com/howseen-ai/claude-motion-design
+  onsets and peaks, named reference styles): informed by https://github.com/howseen-ai/claude-motion-design
   at `3d90d349ef3fdde9b7e89de4df4a2159c9e8697f`, MIT, Copyright (c) 2026 Howseen AI (Raphaël Aubry).
   Commands and numbers in the guides were measured in this repository.
 - `skill/references/prompt-motion.md` routes to https://github.com/XiaoyeCodes/code-animation-prompts

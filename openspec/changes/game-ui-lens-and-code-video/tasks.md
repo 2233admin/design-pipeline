@@ -13,7 +13,7 @@
 ## 3. Part B: code-video audit
 
 - [x] 3.1 Shallow-clone both libraries read-only; record commits and licences; execute none of their scripts.
-- [x] 3.2 Land missing mechanisms: `hyperframes.md` (drawing from time, worker-split check), `workflow-film.md` (review strips, muted read, motion blur), `film-score.md` (effects on measured peaks), `product-film-direction.md` (named reference), `prompt-motion.md` (companion style library and licence decision), `film-methods.md` (audit record and #260 candidates).
+- [x] 3.2 Land missing mechanisms: `hyperframes.md` (drawing from time, worker-split check), `workflow-film.md` (review strips, muted read, motion blur), `film-score.md` (hits by onset, swells by peak on a `riser` cue), `product-film-direction.md` (named reference), `prompt-motion.md` (companion style library and licence decision), `film-methods.md` (audit record and #260 candidates).
 - [x] 3.3 Measure each recipe on real renders before writing it (design.md, Measurements).
 
 ## 4. Tests and docs
