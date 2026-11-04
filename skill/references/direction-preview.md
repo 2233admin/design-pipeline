@@ -90,6 +90,16 @@ review accept, web `deliver`); the direction stage reads the last three deliveri
 roulette and the three versions from repeating them. A failed or empty measurement records nothing
 and never blocks delivery.
 
+The appearance also carries a look signature measured from the delivered page's computed styles (via
+the `composition capture` elements.json): `accent` (the most repeated chromatic colour on buttons,
+small fills and coloured text, or `null`), `displayFont`, `bodyFont`, `theme` (`light` or `dark`) and
+`hero` (`centred`, `split`, `full-bleed-image`, `left`, `right`, `none`; `unmeasured` without a
+browser). The directions `run` action and the owner's ask carry `recentLooks`: the last five
+signatures of other projects, newest first, shown as "you used these recently"; on the ask each
+version also carries its own `look` and `repeatsRecent` (the parts it shares, accents within 48 RGB
+units counting as the same). This is advice for the pick, never a finding or a block: repeating a
+look the brief or the owner wants is fine.
+
 ## Preview Surface
 
 Create these change-local artifacts:

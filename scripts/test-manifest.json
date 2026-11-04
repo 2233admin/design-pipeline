@@ -105,6 +105,7 @@
     "web-concept-screening.test.cjs",
     "brand-facts-first.test.cjs",
     "directions-three-sources.test.cjs",
+    "look-signature.test.cjs",
     "palette-foundation.test.cjs",
     "package-release.test.cjs",
     "pending-source.test.cjs",

@@ -5,6 +5,11 @@
 // and sources only, never project text: a project hash, the date, the measured palette family, fonts,
 // layout skeleton signature and motion posture, and the sources the direction came from.
 //
+// The look signature (OpenSpec change direction-look-signature) adds, inside the same appearance, the
+// five things a person recognises a page by: accent hex, display and body font families, light or
+// dark theme and hero layout class. The direction stage shows the last LOOKS signatures as advisory
+// "you used these recently" information; nothing about a signature blocks.
+//
 // Location: ~/.design-pipeline/ledger.json, or the file DESIGN_PIPELINE_LEDGER names (tests, CI).
 // Measurement reuses `composition capture`'s elements.json (visible text and blocks with box, font and
 // effective colors); with no browser it falls back to the page's own CSS, and says so (`measured`).
@@ -18,6 +23,7 @@ const { spawnSync } = require("node:child_process");
 const SCHEMA = "design-pipeline.appearance-ledger.v1";
 const KEEP = 200;
 const RECENT = 3;
+const LOOKS = 5;
 
 function ledgerPath() {
   return process.env.DESIGN_PIPELINE_LEDGER ? path.resolve(process.env.DESIGN_PIPELINE_LEDGER) : path.join(os.homedir(), ".design-pipeline", "ledger.json");
@@ -159,9 +165,146 @@ function fromElements(elements) {
   return { lightness: top(backgrounds, 1)[0] || "light", hues: top(hues, 2), fonts: top(fonts, 2), skeleton };
 }
 
+// ---- look signature ------------------------------------------------------------------------------
+
+const hex = (rgb) => `#${rgb.map((value) => Math.max(0, Math.min(255, Math.round(value))).toString(16).padStart(2, "0")).join("")}`;
+const unhex = (value) => [1, 3, 5].map((at) => parseInt(value.slice(at, at + 2), 16));
+// WCAG relative luminance; below 0.179 white text reads better than black, so the page is dark.
+function luminance(rgb) {
+  const [r, g, b] = rgb.map((value) => {
+    const c = value / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+const themeOf = (rgb) => (luminance(rgb) < 0.179 ? "dark" : "light");
+const overlap = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+const HERO_CLASSES = ["centred", "split", "full-bleed-image", "left", "right", "none", "unmeasured"];
+
+// The hero is the largest text whose top is in the first viewport. Media covering most of the viewport
+// under it is a full-bleed image; media or a filled panel beside it, across the centre line, is a split;
+// otherwise its own text alignment names the class. No text of 24px or more up there is no hero.
+function heroLayout(elements, texts, pageFill) {
+  const { width, height } = elements.viewport;
+  const heading = texts.filter((text) => text.box.y < height && text.box.y + text.box.h > 0).sort((a, b) => b.fontSize - a.fontSize || a.box.y - b.box.y)[0];
+  if (!heading || heading.fontSize < 24) return "none";
+  const media = (Array.isArray(elements.media) ? elements.media : []).filter((item) => item.box && item.box.y < height && item.box.w > 0 && item.box.h > 0);
+  if (media.some((item) => item.box.w >= width * 0.6 && item.box.h >= height * 0.4 && overlap(item.box, heading.box) > 0)) return "full-bleed-image";
+  const panels = elements.items.filter((item) => item.kind === "block" && item.box && Array.isArray(item.fill) && hex(item.fill) !== pageFill && item.box.w < width * 0.6);
+  const side = (box) => {
+    const cx = box.x + box.w / 2;
+    return cx < width * 0.45 ? -1 : cx > width * 0.55 ? 1 : 0;
+  };
+  const headingSide = side(heading.box);
+  const beside = (box) => box.w * box.h >= width * height * 0.08 && box.y < height
+    && Math.min(box.y + box.h, heading.box.y + heading.box.h + height * 0.25) > Math.max(box.y, heading.box.y - height * 0.25)
+    && overlap(box, heading.box) < heading.box.w * heading.box.h * 0.2
+    && headingSide !== 0 && side(box) === -headingSide;
+  if ([...media, ...panels].some((item) => beside(item.box))) return "split";
+  const align = String(heading.align || "");
+  if (align === "center") return "centred";
+  if (align === "right" || align === "end") return "right";
+  if (align) return "left";
+  const cx = heading.box.x + heading.box.w / 2;
+  return cx < width * 0.4 ? "left" : cx > width * 0.6 ? "right" : "centred";
+}
+
+// The accent is the most repeated chromatic colour on small things: a button's own fill counts three,
+// a small filled block two, coloured text one. Large fills are the theme, not the accent.
+function accentOf(elements, texts) {
+  const { width, height } = elements.viewport;
+  const counts = new Map();
+  const add = (rgb, weight) => {
+    if (Array.isArray(rgb) && chromatic(rgbToHsl(rgb))) tally(counts, hex(rgb), weight);
+  };
+  for (const text of texts) {
+    if (text.box.w * text.box.h < width * height * 0.15) add(text.fill, 3);
+    add(text.color, 1);
+  }
+  for (const block of elements.items) if (block.kind === "block" && block.box && block.box.w * block.box.h < width * height * 0.15) add(block.fill, 2);
+  const saturation = (value) => rgbToHsl(unhex(value)).s;
+  return [...counts.entries()].sort((a, b) => b[1] - a[1] || saturation(b[0]) - saturation(a[0]) || a[0].localeCompare(b[0]))[0]?.[0] || null;
+}
+
+function signatureFromElements(elements) {
+  const { width, height } = elements.viewport;
+  const texts = elements.items.filter((item) => item.kind === "text" && item.box);
+  const fills = new Map();
+  for (const block of elements.items) if (block.kind === "block" && block.box && Array.isArray(block.fill)) tally(fills, hex(block.fill), Math.max(1, block.box.w * block.box.h));
+  if (Array.isArray(elements.background)) tally(fills, hex(elements.background), width * height * 0.5);
+  const pageFill = top(fills, 1)[0] || null;
+  const display = [...texts].sort((a, b) => b.fontSize - a.fontSize)[0];
+  const body = new Map();
+  for (const text of texts) if (text.fontSize <= 22) tally(body, family(text.fontFamily), String(text.text).length);
+  return {
+    accent: accentOf(elements, texts),
+    displayFont: family(display?.fontFamily),
+    bodyFont: top(body, 1)[0] || null,
+    theme: pageFill ? themeOf(unhex(pageFill)) : "light",
+    hero: heroLayout(elements, texts, pageFill),
+  };
+}
+
+// Without a browser: the accent token the CSS declares, the fonts and lightness fromSource found.
+function signatureFromSource(source, base) {
+  const token = source.match(/--(?:color-)?(?:accent|primary|brand)\s*:\s*([^;}{]+)/i);
+  const [rgb] = token ? colorLiterals(token[1]) : [];
+  return {
+    accent: rgb && chromatic(rgbToHsl(rgb)) ? hex(rgb) : null,
+    displayFont: base.fonts[0] || null,
+    bodyFont: base.fonts[1] || base.fonts[0] || null,
+    theme: base.lightness === "dark" ? "dark" : "light",
+    hero: "unmeasured",
+  };
+}
+
 function summarizeAppearance({ elements, source }) {
-  const base = elements && Array.isArray(elements.items) && elements.viewport ? { ...fromElements(elements), measured: "browser" } : { ...fromSource(source), measured: "source" };
-  return { measured: base.measured, lightness: base.lightness, hues: base.hues, fonts: base.fonts, skeleton: base.skeleton, motion: motionPosture(source) };
+  const browser = elements && Array.isArray(elements.items) && elements.viewport;
+  const base = browser ? { ...fromElements(elements), measured: "browser" } : { ...fromSource(source), measured: "source" };
+  const signature = browser ? signatureFromElements(elements) : signatureFromSource(source, base);
+  return { measured: base.measured, lightness: base.lightness, hues: base.hues, fonts: base.fonts, skeleton: base.skeleton, motion: motionPosture(source), signature };
+}
+
+// ---- recent looks (advisory) ----------------------------------------------------------------------
+
+const HERO_WORDS = { centred: "centred hero", split: "split hero", "full-bleed-image": "full-bleed image hero", left: "left-aligned hero", right: "right-aligned hero", none: "no hero", unmeasured: "hero unmeasured" };
+
+// One line a person reads: "dark theme, split hero, display fraunces, body inter, accent #e4572e".
+function describeLook(look) {
+  if (!look || typeof look !== "object") return "";
+  return [
+    look.theme ? `${look.theme} theme` : null,
+    HERO_WORDS[look.hero] || null,
+    look.displayFont ? `display ${look.displayFont}` : null,
+    look.bodyFont && look.bodyFont !== look.displayFont ? `body ${look.bodyFont}` : null,
+    look.accent ? `accent ${look.accent}` : null,
+  ].filter(Boolean).join(", ");
+}
+
+const validLook = (look) => look && typeof look === "object" && (look.accent === null || /^#[0-9a-f]{6}$/.test(look.accent)) && HERO_CLASSES.includes(look.hero) && ["light", "dark"].includes(look.theme);
+
+// The last `count` delivered looks, newest first, without the given project's own entry. Entries from
+// before the signature existed, or with a malformed one, are left out rather than guessed.
+function recentLooks(entries, { count = LOOKS, exclude = null } = {}) {
+  return [...entries].reverse()
+    .filter((entry) => entry.project !== exclude && validLook(entry.appearance?.signature))
+    .slice(0, count)
+    .map((entry) => ({ date: entry.date, look: entry.appearance.signature, says: describeLook(entry.appearance.signature) }));
+}
+
+// Which parts of a look a recent one repeats. Accents within 48 RGB units read as the same colour.
+function lookOverlap(look, recent) {
+  if (!validLook(look) || !validLook(recent)) return [];
+  const shared = [];
+  if (look.accent && recent.accent) {
+    const [a, b] = [unhex(look.accent), unhex(recent.accent)];
+    if (Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) <= 48) shared.push(`accent ${recent.accent}`);
+  }
+  if (look.displayFont && look.displayFont === recent.displayFont) shared.push(`display ${recent.displayFont}`);
+  if (look.bodyFont && look.bodyFont === recent.bodyFont && look.bodyFont !== look.displayFont) shared.push(`body ${recent.bodyFont}`);
+  if (look.theme === recent.theme) shared.push(`${recent.theme} theme`);
+  if (!["none", "unmeasured"].includes(look.hero) && look.hero === recent.hero) shared.push(HERO_WORDS[recent.hero]);
+  return shared;
 }
 
 // A page's own source: the HTML and the local stylesheets and scripts it names (a bounded read).
@@ -234,4 +377,4 @@ const collides = (a, b) => {
 // The sources the last deliveries used, as the keys cards and roulette draws are compared by.
 const recentSources = (entries) => new Set(entries.flatMap((entry) => entry.sources));
 
-module.exports = { RECENT, SCHEMA, collides, ledgerPath, measurePage, motionPosture, paletteKey, projectId, readLedger, recentEntries, recentSources, recordDelivery, recordEntry, sharedAspects, summarizeAppearance, pageSource };
+module.exports = { LOOKS, RECENT, SCHEMA, collides, describeLook, lookOverlap, recentLooks, ledgerPath, measurePage, motionPosture, paletteKey, projectId, readLedger, recentEntries, recentSources, recordDelivery, recordEntry, sharedAspects, summarizeAppearance, pageSource };

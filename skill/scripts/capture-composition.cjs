@@ -2,8 +2,9 @@
 "use strict";
 
 // Kernel for `composition capture`: loads a page (local HTML file or http(s) URL) in headless
-// Chrome, writes screenshot.png and elements.json (visible text with box, font and effective
-// colors; block boxes for alignment). Reuses the browser stack resolved for film capture.
+// Chrome, writes screenshot.png and elements.json (visible text with box, font, alignment, own fill
+// and effective colors; block boxes for alignment; media boxes for the look signature). Reuses the
+// browser stack resolved for film capture.
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -50,6 +51,10 @@ function extract() {
     return rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.display !== "none" && Number(style.opacity) > 0.05;
   };
   const items = [];
+  // Images, video, canvas and svg, and elements painted with a url() background: what the appearance
+  // ledger's look signature reads a hero's media from. Kept apart from items, which alignment reads.
+  const media = [];
+  const MEDIA_TAGS = new Set(["IMG", "PICTURE", "VIDEO", "CANVAS", "SVG", "IFRAME"]);
   let index = 0;
   for (const element of document.body.querySelectorAll("*")) {
     if (["SCRIPT", "STYLE", "NOSCRIPT", "TEMPLATE", "AUDIO"].includes(element.tagName)) continue;
@@ -59,15 +64,18 @@ function extract() {
     const style = getComputedStyle(element);
     const id = element.id ? `#${element.id}` : `${element.tagName.toLowerCase()}:${index += 1}`;
     const box = { x: rect.x, y: rect.y, w: rect.width, h: rect.height };
+    const tag = element.tagName.toUpperCase();
+    if (MEDIA_TAGS.has(tag) || /url\(/i.test(style.backgroundImage || "")) media.push({ tag: tag.toLowerCase(), box });
     if (text) {
       const color = parse(style.color);
-      items.push({ kind: "text", id, text: text.slice(0, 80), box, fontSize: parseFloat(style.fontSize), fontWeight: Number(style.fontWeight) || 400, fontFamily: style.fontFamily, color: color ? color.slice(0, 3) : null, background: effectiveBackground(element) });
+      const own = parse(style.backgroundColor);
+      items.push({ kind: "text", id, text: text.slice(0, 80), box, fontSize: parseFloat(style.fontSize), fontWeight: Number(style.fontWeight) || 400, fontFamily: style.fontFamily, color: color ? color.slice(0, 3) : null, background: effectiveBackground(element), align: style.textAlign, ...(own && own[3] >= 0.99 ? { fill: own.slice(0, 3) } : {}) });
     } else if (element.children.length === 0 || (parse(style.backgroundColor) || [0, 0, 0, 0])[3] > 0.5 || style.borderStyle !== "none") {
       const fill = parse(style.backgroundColor);
       items.push({ kind: "block", id, box, ...(fill && fill[3] >= 0.99 ? { fill: fill.slice(0, 3) } : {}) });
     }
   }
-  return { viewport: { width: innerWidth, height: innerHeight }, background: effectiveBackground(document.body), items };
+  return { viewport: { width: innerWidth, height: innerHeight }, background: effectiveBackground(document.body), items, media };
 }
 
 (async () => {
