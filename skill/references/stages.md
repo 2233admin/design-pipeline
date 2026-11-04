@@ -1091,6 +1091,18 @@ review; a conflicting checklist rule is not applicable, and none of it is Visual
   `reconciliation-manifest-unreadable`, `reconciliation-manifest-malformed`, or
   `reconciliation-manifest-contradictory`, because a broken manifest leaves applicability itself
   undecidable.
+- Measured spec drift: `reconciliation measure` loads the built `index.html` in headless Chromium
+  and writes change `built-styles.json` (the computed text, surface, border and SVG colours and the
+  font families the page paints, with their share, bound to the page digest and the DESIGN.md
+  hash). `reconciliation check` compares it with the DESIGN.md front-matter `colors` and
+  `typography.fontFamily` tokens: a colour further than CIEDE2000 2 from every token, a family no
+  token names, or a token family the browser cannot render is major drift when it covers at least
+  1% of its kind, and blocks as `reconciliation-measured-drift` unless a Spec Reconciliation row's
+  `Implemented` cell names the measured hex or family. Smaller strays and unused tokens are
+  `reconciliation-measured-minor` warnings. A measurement whose page or DESIGN.md changed is
+  `reconciliation-measurement-stale`; a DESIGN.md without colour or font tokens is
+  `reconciliation-baseline-empty`, never a clean pass. Without `built-styles.json` the gate warns
+  `reconciliation-unmeasured` when a built page and DESIGN.md tokens both exist.
 - Exact reconstruction gate: `reconstruction.json` separates image/canonical/world/camera spaces;
   binds rectification, front elevation, locked camera, distributed landmarks, and overlay; and
   passes `designer-pipeline reconstruction check --stage geometry`.

@@ -242,6 +242,8 @@
     "scripts/reconstruction-core.cjs",
     "scripts/check-reconstruction.cjs",
     "scripts/check-spec-reconciliation.cjs",
+    "scripts/built-style-drift-core.cjs",
+    "scripts/capture-built-styles.cjs",
     "scripts/direction-preview-core.cjs",
     "scripts/playground-core.cjs",
     "scripts/adaptation-core.cjs",

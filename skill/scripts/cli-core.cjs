@@ -429,7 +429,8 @@ function publicHelp() {
     "    --help/-h shows public help; built/matched/recorded exit 0, stale/blocked exit 2",
     "  component-first check|stack|components|playground|page|verify|select|promote",
     "  design-skill route|manifest|run|select|promote",
-    "  reconciliation check",
+    "  reconciliation check --change-root <dir> [--project-root <dir>] [--design-foundation DESIGN.md]",
+    "  reconciliation measure --change-root <dir> [--project-root <dir>] [--design-foundation DESIGN.md] [--chrome <exe>] [--puppeteer-module <path>]   (measures the built index.html's computed colours and font families at 1440x900 and writes change built-styles.json; reconciliation check compares it with the DESIGN.md front-matter tokens by CIEDE2000)",
     "  feedback record|prepare|reconcile",
     "  evidence check --receipt <file> | evidence capture --adapter-path <file> --output-root <dir> --url <url> [--playwright-module <path>] [--agent-browser <path> [--agent-browser-state <file>]] [--chrome <exe>]",
     "  evidence refs --project-root <dir> [--chrome <exe>] [--puppeteer-module <path>]   (numbers the built index.html's visible elements at 1440x900 and as an emulated 390x844 phone: writes evidence/refs.json and a badged evidence/refs.png, and evidence/refs-mobile.json and refs-mobile.png with m: references; each current capture is kept, never rewritten; index.html is not changed)",
@@ -700,11 +701,65 @@ function foundationCommand(parsed, root) {
 // and reports blocked when a change that has a reference carries no reconciliation section.
 function reconciliationCommand(parsed, root) {
   const changeRoot = changeRootFrom(parsed, root);
-  const result = checkSpecReconciliation(changeRoot, {
+  const result = checkSpecReconciliation(changeRoot, reconciliationOptions(parsed, root));
+  return { result, exitCode: result.status === "ready" ? 0 : 2 };
+}
+
+// The built page and DESIGN.md the measured drift is read against: --project-root (default --root)
+// and --design-foundation (default DESIGN.md), the same flags `foundation check` and `design` use.
+function reconciliationOptions(parsed, root) {
+  const projectRoot = option(parsed, "--project-root") ? contained(root, option(parsed, "--project-root"), "--project-root") : root;
+  return {
     designFile: option(parsed, "--design-file", "design.md"),
     artifact: option(parsed, "--artifact"),
-  });
-  return { result, exitCode: result.status === "ready" ? 0 : 2 };
+    projectRoot,
+    designFoundation: option(parsed, "--design-foundation", "DESIGN.md"),
+  };
+}
+
+// Measures what the built page paints (computed colours and font families) in headless Chromium and
+// writes it, bound to the page digest and the DESIGN.md hash, as change built-styles.json. The kernel
+// runs the browser; this side refuses a missing page, an empty DESIGN.md baseline and a page that moved
+// during the capture, so a written measurement always describes the files on disk.
+function reconciliationMeasureCommand(parsed, root) {
+  const { pageDigest } = require("./workflows/web.cjs");
+  const drift = require("./built-style-drift-core.cjs");
+  const changeRoot = changeRootFrom(parsed, root);
+  const projectRoot = option(parsed, "--project-root") ? contained(root, option(parsed, "--project-root"), "--project-root") : root;
+  const designFile = contained(projectRoot, option(parsed, "--design-foundation", "DESIGN.md"), "--design-foundation", false);
+  const designRel = path.relative(projectRoot, designFile).split(path.sep).join("/");
+  if (!fs.existsSync(designFile)) fail("reconciliation", `${designRel} not found in --project-root. Fix: write the DESIGN.md the page is built from, or pass --design-foundation <path>`, { code: "DESIGN_MISSING" });
+  const gaps = drift.baselineGaps(drift.designTokens(fs.readFileSync(designFile, "utf8")));
+  if (gaps.length) fail("reconciliation", `${designRel} front matter has ${gaps.join(" and ")}, so a measurement could not be compared with anything. Fix: write the colors and typography tokens the page is built from into the DESIGN.md front matter`, { code: "BASELINE_EMPTY" });
+  const digest = pageDigest(projectRoot);
+  if (!digest) fail("reconciliation", "index.html not found in --project-root. Fix: build the page before measuring it", { code: "PAGE_MISSING" });
+  const designSha256 = drift.designSha(designFile);
+  const args = ["--project-root", projectRoot];
+  for (const flag of ["--chrome", "--puppeteer-module"]) if (option(parsed, flag)) args.push(flag, option(parsed, flag));
+  const kernel = runKernel("capture-built-styles.cjs", args, projectRoot, { timeout: 180000, maxBuffer: 64 * 1024 * 1024 });
+  const measurement = kernel.value?.measurement;
+  if (kernel.exitCode !== 0 || !measurement || !Array.isArray(measurement.colors)) fail("reconciliation", "measurement kernel returned no valid measurement", { code: "KERNEL_FAILED" });
+  if (pageDigest(projectRoot) !== digest || drift.designSha(designFile) !== designSha256) {
+    fail("reconciliation", "the page or DESIGN.md changed during the measurement. Fix: stop editing them, then run `reconciliation measure` again", { code: "PAGE_MOVED" });
+  }
+  const record = {
+    schema: drift.BUILT_STYLES_SCHEMA,
+    page: digest,
+    designFile: designRel,
+    designSha256,
+    capturedAt: new Date().toISOString(),
+    ...measurement,
+  };
+  const problems = drift.validateMeasurement(record);
+  if (problems.length) fail("reconciliation", `the measurement ${problems.join("; ")}. Fix: check that index.html renders visible text and surfaces`, { code: "MEASUREMENT_EMPTY" });
+  const target = path.join(changeRoot, drift.BUILT_STYLES_FILE);
+  const temp = `${target}.${process.pid}.tmp`;
+  fs.writeFileSync(temp, `${JSON.stringify(record, null, 2)}\n`);
+  fs.renameSync(temp, target);
+  return {
+    result: { status: "measured", file: path.relative(root, target).split(path.sep).join("/"), colors: record.colors.length, fonts: record.fonts.length, totals: record.totals },
+    exitCode: 0,
+  };
 }
 
 function directionCommand(parsed, root) {
@@ -829,11 +884,8 @@ function reconciliationStage(changeRoot, options) {
   }
 }
 
-function foldReconciliation(result, changeRoot, parsed) {
-  const stage = reconciliationStage(changeRoot, {
-    designFile: option(parsed, "--design-file", "design.md"),
-    artifact: option(parsed, "--artifact"),
-  });
+function foldReconciliation(result, changeRoot, parsed, root) {
+  const stage = reconciliationStage(changeRoot, reconciliationOptions(parsed, root));
   const blocked = stage.status !== "ready";
   return {
     ...result,
@@ -860,6 +912,7 @@ function spatialCommand(parsed, root, command) {
       checkReferenceEvidence(changeRoot, { artifact: option(parsed, "--artifact") }),
       changeRoot,
       parsed,
+      root,
     );
   } else {
     result = checkReconstruction(changeRoot, {
@@ -2339,7 +2392,12 @@ const COMMANDS = {
       record: { run: ({ parsed, root, action }) => runtimeReviewCommand(parsed, root, action) },
     },
   },
-  reconciliation: { actions: { check: { run: ({ parsed, root }) => reconciliationCommand(parsed, root) } } },
+  reconciliation: {
+    actions: {
+      check: { run: ({ parsed, root }) => reconciliationCommand(parsed, root) },
+      measure: { run: ({ parsed, root }) => reconciliationMeasureCommand(parsed, root) },
+    },
+  },
   reference: {
     actions: {
       check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) },
