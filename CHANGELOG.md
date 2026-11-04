@@ -32,6 +32,10 @@ All notable changes to Design Pipeline are documented here.
 - A relative `--project-root` that does not exist now says it was resolved against `--root`; the `MOTION.md` source-decisions error says that `Adopted:` and `Rejected:` must each start a line.
 - The owner can answer later, and is caught up when asked again (change `owner-attention-away`, phase 4a of `design-owner-attention`). `decide --later [--until <time>]` records that the owner will answer the current owner ask later: until the time, a change to what is asked or the page it is about, another current ask, or the owner's next recorded answer, `next` returns `blocked` (kind `owner`, exit 2) with the deferred question, so the agent neither asks again nor builds on a guess. An owner ask now carries `away` when the agent decided anything or a check ran since the owner's last recorded answer, and its `first` tells the agent to say so in a line or two before asking.
 
+### Fixed
+
+- `composition capture --seek` shows what the render shows on HyperFrames compositions (change `capture-seek-hyperframes-clips`, #269). It used to seek only the registered GSAP timelines, so a clip outside its `data-start`/`data-duration` window stayed on screen (a 5-8 s clip appeared at 0.5 s and at 11 s, where `hyperframes render` draws nothing). On a page with a `data-composition-id` root it now seeks through the HyperFrames runtime's `renderSeek`, the call the renderer makes for each frame, loading the runtime from the project's `hyperframes` install for a local `index.html`; without a runtime it refuses and names `hyperframes render --format png-sequence`. The result records `seek: {atSec, clock}`. A non-numeric or negative `--seek` is rejected.
+
 ## [0.12.0] - 2026-10-15
 
 ### Changed

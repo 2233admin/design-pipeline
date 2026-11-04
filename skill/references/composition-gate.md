@@ -19,8 +19,14 @@ HyperFrames headless shell, else an installed Chrome, Edge or Chromium; see inst
 needs `puppeteer-core` in the project or `--puppeteer-module <absolute path to puppeteer-core>`
 on the call; without either it fails with `puppeteer-core not found`. It writes `screenshot.png`
 plus `elements.json` (visible text with box, size, weight and effective colors).
-`--seek` positions registered GSAP timelines first. Without
-`--elements` the gate runs on pixels alone.
+`--seek <sec>` positions the page first. On a HyperFrames composition (a `data-composition-id`
+root) it seeks through the HyperFrames runtime, as `hyperframes render` does for each frame, so
+clips outside their `data-start`/`data-duration` window are hidden and the capture matches the
+rendered frame; a local `index.html` uses the runtime from the project's `hyperframes` install
+(`film scaffold` pins it), a preview URL its own. Without the runtime, `--seek` on such a page is
+refused with the PNG-sequence render command instead. Other pages seek their registered GSAP
+timelines. The result names the clock: `seek.clock` is `hyperframes-runtime` or `timeline`.
+Without `--elements` the gate runs on pixels alone.
 
 Errors fail the gate: `blank-frame`, `low-contrast`, `text-contrast` (WCAG 4.5:1, 3:1 large),
 `text-off-canvas`. Warnings are review prompts: `weak-separation`, `off-balance`, `dead-band`,

@@ -33,6 +33,21 @@ function resolvePuppeteer(compositionDir, explicit) {
   fail(SCOPE, "puppeteer-core not found. Fix: run `npm i hyperframes` in the composition project (it installs puppeteer-core), or pass --puppeteer-module <path to puppeteer-core>", { code: "TOOL_MISSING" });
 }
 
+// The HyperFrames runtime script the renderer injects into every frame it captures (it applies
+// clip windows and seeks the timelines). Resolved from the project's own hyperframes install, the
+// same bases as puppeteer-core; null when the project has none.
+function resolveHyperframesRuntime(compositionDir) {
+  for (const base of [compositionDir, process.cwd()]) {
+    try {
+      const file = path.join(path.dirname(require.resolve("hyperframes/package.json", { paths: [base] })), "dist", "hyperframe.runtime.iife.js");
+      if (fs.existsSync(file)) return file;
+    } catch {
+      // try next base
+    }
+  }
+  return null;
+}
+
 // Runs npx without a shell: npm's npx-cli.js through the current node when present (Windows
 // cannot spawn npx.cmd without a shell), otherwise the npx binary. PWD follows cwd because
 // HyperFrames resolves the project from PWD, which a parent shell may have set elsewhere.
@@ -135,4 +150,4 @@ function canvasSize(html) {
   return { width: read("width", 1920), height: read("height", 1080) };
 }
 
-module.exports = { GSAP_VERSION, HYPERFRAMES_VERSION, canvasSize, captureLayout, captureTimeline, hyperframesCli, hyperframesPreview, resolvePuppeteer, runNpx };
+module.exports = { GSAP_VERSION, HYPERFRAMES_VERSION, canvasSize, captureLayout, captureTimeline, hyperframesCli, hyperframesPreview, resolveHyperframesRuntime, resolvePuppeteer, runNpx };
