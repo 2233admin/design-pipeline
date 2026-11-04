@@ -12,7 +12,9 @@ import { demos } from "./demos/index.js";
 
    The panel is dark unless the URL asks for `?panel=light`. The page asks
    for it in a dark band, and a link that opens the specimen in its own tab
-   keeps it. */
+   keeps it.
+
+   A specimen is a page of its own too, so it has an icon and a description. */
 export function specimenPage(slug) {
   const entry = readPractices().entries.find((entry) => entry.slug === slug);
   const demo = demos[slug];
@@ -20,13 +22,17 @@ export function specimenPage(slug) {
   if (!entry || !demo) return null;
 
   const viewport = ["width=device-width", "initial-scale=1", demo.viewport].filter(Boolean).join(", ");
+  const description = entry.lede.replace(/<[^>]*>/g, "").replaceAll('"', "&quot;");
 
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="${viewport}">
-<title>${entry.slug}</title>
+<title>${entry.slug} · good-css frame</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="${description}">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
 <script>
   if (new URLSearchParams(location.search).get("panel") === "light") document.documentElement.dataset.panel = "light";
 </script>

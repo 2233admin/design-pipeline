@@ -5,8 +5,8 @@ another monospace screen while a tracker locks onto the glyphs being typed: shak
 hatched tracker boxes with live coordinates, depth of field racking along the line, one palette
 per shot, a lock ping and a final `Done`. The template is a HyperFrames composition, ported from
 the MIT project
-[mrsarac/ff-tracking](https://github.com/mrsarac/ff-tracking/tree/cc7f4e192eccefb55ae7f18f5a370955122b651b)
-at `cc7f4e192eccefb55ae7f18f5a370955122b651b`. It is made, checked and reviewed with the existing
+[mrsarac/ff-tracking](https://github.com/mrsarac/ff-tracking/tree/579f5be9e10023164bc2fe7e5b955dea20ddd1c9)
+at `579f5be9e10023164bc2fe7e5b955dea20ddd1c9`. It is made, checked and reviewed with the existing
 film route: `film scaffold`, `audio master`, HyperFrames render, `film check`, frame review and
 `decide`.
 

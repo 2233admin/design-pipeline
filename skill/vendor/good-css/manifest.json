@@ -2,11 +2,11 @@
   "schema": "design-pipeline.good-css-source.v1",
   "source": {
     "repository": "https://github.com/vojtaholik/good-css",
-    "revision": "6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef",
-    "gitTree": "a14bae52fb7bd2374faefaf6c62f575aeff8dad5",
-    "committedAt": "2026-10-07T20:56:17+02:00",
+    "revision": "a6804e75b5ee946d6b007ac20734f958d7938bca",
+    "gitTree": "24e09738cb61dd42078c5054aabd2ac970eb1c49",
+    "committedAt": "2026-11-03T19:56:34+01:00",
     "license": "MIT",
-    "reviewedAt": "2026-10-08",
+    "reviewedAt": "2026-11-04",
     "scope": [
       "**"
     ]
@@ -30,9 +30,9 @@
   ],
   "snapshot": {
     "root": "upstream",
-    "fileCount": 133,
-    "byteCount": 881927,
-    "treeSha256": "fe50d90bf5b9bcbd30d9696886f8f1c67fb3d3cfadc4a4a564f321adc7929a08",
+    "fileCount": 139,
+    "byteCount": 908213,
+    "treeSha256": "bfe7189dd6f562e34e24e34b6869b95ca507ea1a8da38ccca938821b4571c430",
     "executableFiles": [],
     "objects": [
       {
@@ -66,16 +66,22 @@
         "size": 12583
       },
       {
+        "path": "CONTRIBUTING.md",
+        "mode": "100644",
+        "oid": "932027d7f9d748aa30a798fe361ff0491f0759f1",
+        "size": 1151
+      },
+      {
         "path": "deploy/agent-files.js",
         "mode": "100644",
-        "oid": "15dfb3f2a605911c08da2ea4193b25ffdae10a9f",
-        "size": 4363
+        "oid": "a55093d6b297fb5f635d36aaca2645233781ca5b",
+        "size": 4454
       },
       {
         "path": "deploy/build.js",
         "mode": "100644",
-        "oid": "7396639a1006ca641fc70c0a72c3a798bffbbcb8",
-        "size": 12113
+        "oid": "8316f6fcdef46b04b645c7f4624add8d3536a0b8",
+        "size": 19472
       },
       {
         "path": "deploy/og.png",
@@ -86,8 +92,8 @@
       {
         "path": "deploy/page.js",
         "mode": "100644",
-        "oid": "e691465c728af13292e70a0ebcbb65bcb5b99a11",
-        "size": 6390
+        "oid": "81756fced136774b0b45faf32784ab0d2998311f",
+        "size": 6556
       },
       {
         "path": "deploy/pages/about.md",
@@ -110,14 +116,20 @@
       {
         "path": "deploy/pages/privacy.md",
         "mode": "100644",
-        "oid": "10499329c717da0c0dd45ad853f203ebf5adbb88",
-        "size": 783
+        "oid": "0867efdeccd39572e88da0e63f354bcd5187f121",
+        "size": 936
       },
       {
         "path": "deploy/site.js",
         "mode": "100644",
         "oid": "495efb4faa8603ae6a96862f7455dce5fb488615",
         "size": 513
+      },
+      {
+        "path": "harness/carousel.js",
+        "mode": "100644",
+        "oid": "013e25370b47c957143d906fc41831cb5a99cd8a",
+        "size": 5559
       },
       {
         "path": "harness/categories/foundations.svg",
@@ -212,8 +224,8 @@
       {
         "path": "harness/demos/content-grid-with-breakouts.html",
         "mode": "100644",
-        "oid": "9efe40d6554eb42b58d63dcda354015e627cc3a8",
-        "size": 960
+        "oid": "ee0bef5e2ba0ab50f7e84b031e878a5e36df16b4",
+        "size": 1093
       },
       {
         "path": "harness/demos/cross-document-view-transitions.html",
@@ -320,8 +332,8 @@
       {
         "path": "harness/demos/oklch-color.html",
         "mode": "100644",
-        "oid": "cc8cf512420fde36ce5db945c3e215e6856a2a2d",
-        "size": 2594
+        "oid": "b9102d44d5a0844ccc1e98cbd5e4f808f1e95905",
+        "size": 4002
       },
       {
         "path": "harness/demos/one-fluid-scale-for-type-and-space.html",
@@ -416,8 +428,8 @@
       {
         "path": "harness/demos/stack-layers-with-grid.html",
         "mode": "100644",
-        "oid": "1eee37ad156285cfc2b34cc571cd5be596186939",
-        "size": 1399
+        "oid": "caf2da922e25795976df1218d7a4c21cd8be4c3b",
+        "size": 1521
       },
       {
         "path": "harness/demos/styles-that-apply-only-when-a-scroller-overflows.html",
@@ -462,16 +474,28 @@
         "size": 1400
       },
       {
+        "path": "harness/draw.js",
+        "mode": "100644",
+        "oid": "64e5c9431e8e6160ac865ed1cbff348237b784d7",
+        "size": 10809
+      },
+      {
+        "path": "harness/expand.js",
+        "mode": "100644",
+        "oid": "cbff284a2b677d8de405492c425a01f43e219668",
+        "size": 4730
+      },
+      {
         "path": "harness/frame.js",
         "mode": "100644",
-        "oid": "a04f9f6e29c46b6e4017dce6a48ad2d55b4b6f59",
-        "size": 1543
+        "oid": "45420b8bd159b2bea931a957412aaf851e17b01c",
+        "size": 1869
       },
       {
         "path": "harness/harness.css",
         "mode": "100644",
-        "oid": "09999e25bff9a577d794b77cc388285cd00bb7aa",
-        "size": 61619
+        "oid": "dbf795cb3954d2da35b0b810207fef6b21203c34",
+        "size": 64071
       },
       {
         "path": "harness/hero.svg",
@@ -482,14 +506,20 @@
       {
         "path": "harness/index.html",
         "mode": "100644",
-        "oid": "cea0ff28c20599db7be5ae39103c171071ba2682",
-        "size": 9136
+        "oid": "a3284aa1dc3003016f4adb2565d3c966c0847a37",
+        "size": 10175
       },
       {
         "path": "harness/main.js",
         "mode": "100644",
-        "oid": "ba838f76cf6946f2c47d0e8498f771f0cfca7cef",
-        "size": 14953
+        "oid": "c428cac79e34001f3e446c64707bc46d8800d2b4",
+        "size": 1192
+      },
+      {
+        "path": "harness/menu.js",
+        "mode": "100644",
+        "oid": "c685aaf64c07c029b027a130573a9104df1e3e89",
+        "size": 225
       },
       {
         "path": "harness/practices.js",
@@ -722,14 +752,20 @@
       {
         "path": "harness/README.md",
         "mode": "100644",
-        "oid": "c8518f69920c507d07fecbfbd993a4be8801d655",
-        "size": 5742
+        "oid": "701c4c774ac403120e8e5402bcbbed68471dee1c",
+        "size": 5879
       },
       {
         "path": "harness/tokens.css",
         "mode": "100644",
         "oid": "b7f98d02006f3f45043cbb526003ddfae2466af8",
         "size": 1711
+      },
+      {
+        "path": "harness/viewport.js",
+        "mode": "100644",
+        "oid": "fe78e3e589465393fd1aa13d8ec5d6b54cb5c594",
+        "size": 3099
       },
       {
         "path": "LICENSE",
@@ -746,14 +782,14 @@
       {
         "path": "PRACTICES.md",
         "mode": "100644",
-        "oid": "66fb5dc6a56bf613c2f8f10a14ca2458efc31db3",
-        "size": 93719
+        "oid": "b8a6cb6e6a30331d852e151504d2c7b5567dfc20",
+        "size": 94303
       },
       {
         "path": "README.md",
         "mode": "100644",
-        "oid": "1dccee3b8809a3df02c63c5479f2b87dd948953a",
-        "size": 2588
+        "oid": "7558acdf20cef74fdf6340d50197ab65366dce04",
+        "size": 2732
       },
       {
         "path": "scripts/build-skill.js",
@@ -782,8 +818,8 @@
       {
         "path": "skills/good-css/references/layout.md",
         "mode": "100644",
-        "oid": "bc4f7dc1105fd811a532e269afac9c597b54b968",
-        "size": 6771
+        "oid": "7b996cedadfed9875c7460d6702a9baf75d671f2",
+        "size": 7115
       },
       {
         "path": "skills/good-css/references/motion.md",
@@ -794,8 +830,8 @@
       {
         "path": "skills/good-css/references/scroll-and-viewport.md",
         "mode": "100644",
-        "oid": "a930702b8ce39c23eccd50ef825b72598bb79dcc",
-        "size": 6949
+        "oid": "67be3715cc161927a91e34e04f9e2f6d51e70d76",
+        "size": 7054
       },
       {
         "path": "skills/good-css/references/show-and-hide.md",
@@ -818,20 +854,20 @@
       {
         "path": "skills/good-css/SKILL.md",
         "mode": "100644",
-        "oid": "4abdfc3cb8edb33a9ceb1259b8613e41922fe7c5",
-        "size": 4661
+        "oid": "a88866522ace9c66213dc696d5b244a0eb61b58c",
+        "size": 4867
       },
       {
         "path": "vercel.json",
         "mode": "100644",
-        "oid": "9d06948c51c8cc1e492e919943c3d3125646e5bc",
-        "size": 1503
+        "oid": "f84374848929b416b2d185b923bf63ab0d680a3f",
+        "size": 1213
       },
       {
         "path": "vite.config.js",
         "mode": "100644",
-        "oid": "586619c9b4857878499a9c97d31825dd0f04df36",
-        "size": 2311
+        "oid": "aa1b96e9c90f51bb1af912515318817d52c60b47",
+        "size": 2306
       }
     ]
   },

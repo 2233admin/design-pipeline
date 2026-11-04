@@ -3,11 +3,11 @@
   "bundle": "design-direction-library",
   "source": {
     "repository": "https://github.com/alchaincyf/huashu-design",
-    "revision": "798c4235ebff03d5c45e3c8affdf5e9d18f9dfa7",
-    "gitTree": "cf7e7baaf14ed1331ee1bb06cff2bc8e1af344de",
-    "committedAt": "2026-10-17T19:39:33+08:00",
+    "revision": "9b01ee8751679724dd43d855a532944aaa2c2b59",
+    "gitTree": "90bc6a8d9ed7a419b4b8436b24d635ba3a53ce08",
+    "committedAt": "2026-10-31T02:50:57+09:00",
     "license": "MIT",
-    "reviewedAt": "2026-10-19",
+    "reviewedAt": "2026-11-04",
     "scope": [
       "**"
     ]
@@ -21,9 +21,9 @@
   ],
   "snapshot": {
     "root": "upstream",
-    "fileCount": 181,
-    "byteCount": 1594218,
-    "treeSha256": "00f8af6104de1fed3f732dab5cda61fa60acd6e052490fdb6e169e9912c63542",
+    "fileCount": 195,
+    "byteCount": 1681706,
+    "treeSha256": "ce60b19a7016ab62ec204c8a6c66c8a5684cd18ce1ee5239491e4f1c202824f5",
     "executableFiles": [
       "scripts/add-music.sh",
       "scripts/cloud/tts-doubao.mjs",
@@ -724,6 +724,62 @@
         "sha256": "4d5bab9d1b3a33baba2c09fd9e8be704191925db5e6eb8558b92bc76abb1a3f9"
       },
       {
+        "path": "assets/style-specimens/xhs/01-specimen-journal.html",
+        "mode": "100644",
+        "oid": "871b040657947915315458eb3f7929bec7c94b8d",
+        "size": 5924,
+        "sha256": "2f6bfb29988c1e58afe7d14de1930c98315fa4793cc6499704d42a1c53f5b673"
+      },
+      {
+        "path": "assets/style-specimens/xhs/02-sticker-notebook.html",
+        "mode": "100644",
+        "oid": "93dac9af47143129efdd37092fbdbe9dbad72f02",
+        "size": 6303,
+        "sha256": "7c4a730e488eaa89a76b7e35ddb3132dc9e3e94ac84caea91858b8291c117d28"
+      },
+      {
+        "path": "assets/style-specimens/xhs/03-index-ink.html",
+        "mode": "100644",
+        "oid": "96e23d7f1d1aa7cf8246e09b57896564404c7c5e",
+        "size": 4675,
+        "sha256": "20ebc8f07ef8d918e715b062e7f261aa6c6f97c6a1cd8baed26aa951e7d96a2a"
+      },
+      {
+        "path": "assets/style-specimens/xhs/04-panorama-strip.html",
+        "mode": "100644",
+        "oid": "aeecd37601777e9a42cfdd321b1202b2f382d848",
+        "size": 4193,
+        "sha256": "dc47fae80b3299976f70b2e755d3156500386a592ca8beb03c05eff1b3cb625b"
+      },
+      {
+        "path": "assets/style-specimens/xhs/05-daily-paper.html",
+        "mode": "100644",
+        "oid": "23c7cac3491db7d1ca1e9e4a900ade5d0759e371",
+        "size": 5994,
+        "sha256": "7db41416bea8ab0f7421a2e0098a8b0605a111f6250bc7d7db813902f0458eab"
+      },
+      {
+        "path": "assets/style-specimens/xhs/06-trading-cards.html",
+        "mode": "100644",
+        "oid": "ade689464196f1d1d016caa87dc75fe15aab4233",
+        "size": 5402,
+        "sha256": "a308bc61e2326641dde2a67355196d029cffbb5166f65e41050b3c939e0ef95b"
+      },
+      {
+        "path": "assets/style-specimens/xhs/07-blank-vertical.html",
+        "mode": "100644",
+        "oid": "1263ae849fd7ea96511faa583293e5794d53e252",
+        "size": 2876,
+        "sha256": "bdc2452fc201b89151b6c322bdeb2bdc775f3e0a37a7584b169e506fabbe1a06"
+      },
+      {
+        "path": "assets/style-specimens/xhs/08-area-infographic.html",
+        "mode": "100644",
+        "oid": "97a1c3f8365741d1074935b634e4a0d512866d1c",
+        "size": 5098,
+        "sha256": "27ebe2936c2f59b9b58b447fe09ce85b53a6ca2092a70a0f7676369d35944c6f"
+      },
+      {
         "path": "LICENSE",
         "mode": "100644",
         "oid": "ed67368a2a79ed7be97b2a4852330cdac5b8b12a",
@@ -733,23 +789,23 @@
       {
         "path": "README.en.md",
         "mode": "100644",
-        "oid": "37ef4f46e771fc1888899176fa9c5335d1d5aac4",
-        "size": 23679,
-        "sha256": "e4e967278fc309e8c3b6282fc76b85cf8bde72c7ed22a90f9a7ebb190047f354"
+        "oid": "ec064235faa80c29b8c4d55480dfb05ba444466e",
+        "size": 29948,
+        "sha256": "66908c76b256431a18a0300d1ba0d4accfe37910f6a1bdd5bdfb72599f6f874c"
       },
       {
         "path": "README.md",
         "mode": "100644",
-        "oid": "7f1323864202f6cba87cb6d281a292f6baf01f6b",
-        "size": 24055,
-        "sha256": "a7d19cd385154fb81c953a2ff0dfe682d3dbde2bf849c408c6b9797c056e7208"
+        "oid": "2e00918d256635162362d56b2325ea8df4cce581",
+        "size": 30113,
+        "sha256": "5931dcd0ee6aec5b4cfe27fe970ba1887e438a45f5da0a55d55f9c56f7687c67"
       },
       {
         "path": "references/about-author.md",
         "mode": "100644",
-        "oid": "171ab35fc0ae4c8aa42248416168106b8892c71c",
-        "size": 9941,
-        "sha256": "4bb3dd5b67560d039762abf695b92701348fbdfd488f4f5428cd8383b2c107c5"
+        "oid": "b471e8fda7a82ea2af0bc4387f30064033cd2156",
+        "size": 10459,
+        "sha256": "f53cdc9ca43881fd95f75b16b9176190708117b138c3d4ff2560e78b9ca2b945"
       },
       {
         "path": "references/ai-video-review.md",
@@ -845,16 +901,16 @@
       {
         "path": "references/design-styles.md",
         "mode": "100644",
-        "oid": "26e72717ef666655e47ec214a2863734602566bf",
-        "size": 101285,
-        "sha256": "4bcf890ee28415684ad889a53cac1d6fcd8c2f09b460dad9069edc73b3a2a23a"
+        "oid": "51da30ae5fed96cc0e206aed7b0d64ededc3f526",
+        "size": 108231,
+        "sha256": "8a6c6003ea3217fe20889d758894a537b84cea1eb5a064284fd3814b1220ac80"
       },
       {
         "path": "references/directions.md",
         "mode": "100644",
-        "oid": "aaca083c13ee9ba311a0af8c0b8b84deeea78b19",
-        "size": 12670,
-        "sha256": "78ad5a0df1536ad19cb9049f1a90d027c6c30a4a44acde657a0d4b410ad8efa7"
+        "oid": "ee1025f96cd3af4f7af055c1368d103d0b1d230a",
+        "size": 12686,
+        "sha256": "9d4410ab3da9ffa636943292a09c61cd85a7cd9c7421989974bde67db992b583"
       },
       {
         "path": "references/editable-pptx.md",
@@ -922,9 +978,9 @@
       {
         "path": "references/modules/infographic.md",
         "mode": "100644",
-        "oid": "f5f997bf8878b732c2b8257bf537ee0a6a91dfff",
-        "size": 2459,
-        "sha256": "714ca08b997f1a50daec10e5f4f8b1d63833ac111a096f87358c6bf77904f33f"
+        "oid": "2bb27cb35c76847910bdea6394fa844043a341d5",
+        "size": 2526,
+        "sha256": "d262c515d7ccf8843e5128a416588e968f237a07a4e2299ff0a30685f4d3734c"
       },
       {
         "path": "references/modules/motion.md",
@@ -939,6 +995,13 @@
         "oid": "960e5c7095b034ce2fa4fe9990ed4cdb6eb15cc7",
         "size": 2467,
         "sha256": "73733f02f6fa3c19ed56e1949f4f0c5511a09a5f45a98c8298a1222ddc9c3591"
+      },
+      {
+        "path": "references/modules/xiaohongshu.md",
+        "mode": "100644",
+        "oid": "b9922acd01f0a9df9cc45f27d61bc9b41cc84c93",
+        "size": 6573,
+        "sha256": "1c4fa2930e801581229ade6b0d19483d14f13c070f57dfc4203f9f4025689396"
       },
       {
         "path": "references/multi-perspective-parallel-case-study.md",
@@ -964,9 +1027,9 @@
       {
         "path": "references/scene-templates.md",
         "mode": "100644",
-        "oid": "d6fe18d60989a839a9d1b9953a870017bc2e27a5",
-        "size": 7144,
-        "sha256": "c91852062d923787896076368fff883bed2eb8b53087f1efdc2f81ed3014a314"
+        "oid": "63ccb320ebac6f1eee99d4d21e12913e6c57ef6f",
+        "size": 7314,
+        "sha256": "3313531ed1a5dccbb1717944ad8acc4cfabf13ae7726bee6372359cb852230d1"
       },
       {
         "path": "references/sfx-library.md",
@@ -1083,9 +1146,9 @@
       {
         "path": "scripts/design_lint.py",
         "mode": "100644",
-        "oid": "d995433dcc8cc9da766d7597e481ac3bf99a14d1",
-        "size": 28396,
-        "sha256": "46d649cd5a655a6f97dba3d8d5837ac8461bed7b3bfca8a5eb0c634917b3c3b2"
+        "oid": "6c0516928d8219edb15e4b4e547ce3ce08b7502c",
+        "size": 28487,
+        "sha256": "9146951a55d17781ae635ebef8d2c36d795f46587e55505d1883a45c8b1bedd1"
       },
       {
         "path": "scripts/design-gate-hook.sh",
@@ -1160,9 +1223,9 @@
       {
         "path": "scripts/pptx_from_rendered.py",
         "mode": "100644",
-        "oid": "f6f082995a96b0173f95442e7f8b5d8366650aba",
-        "size": 29541,
-        "sha256": "e8c4dcdc712ad8cbe6e9cd17e8c454ecb2edea7e22e77ca4246578c86f6a0a00"
+        "oid": "1e04de08b17d558146826df80e64e192a94f9c59",
+        "size": 29623,
+        "sha256": "9c81eac40cafcbd0c213267a0c37419c7fe16811a4da9aa7e3b9bc707aa50315"
       },
       {
         "path": "scripts/ref_board.py",
@@ -1256,6 +1319,27 @@
         "sha256": "1d74749163760e65f138d77443f81a7adf7326348c22eb187ec631ec13e513f3"
       },
       {
+        "path": "scripts/tests/fixtures/xhs_bad.html",
+        "mode": "100644",
+        "oid": "7f4f0b0d2fd3fd62e80fbf9a29625597224ea175",
+        "size": 1520,
+        "sha256": "234e7ee29e9263a26f662bcaa058ddf3d2637f7d60a74d1006865e5638b0eb43"
+      },
+      {
+        "path": "scripts/tests/fixtures/xhs_ok.html",
+        "mode": "100644",
+        "oid": "ff665d0bc1a761a2da23b3fd6e3833ef9ce14bed",
+        "size": 702,
+        "sha256": "e5c84b017e53c6fe3e2fa7f8eb9d4f51a42f90562875b73677037858c07ed3ba"
+      },
+      {
+        "path": "scripts/tests/test_compare_failures.py",
+        "mode": "100644",
+        "oid": "890708134baf262d894effbb765f63036d366282",
+        "size": 3065,
+        "sha256": "5bc3b1e3c50603caa018bdbb076daf877b62a636a4fe1c3270bb2a6b43109b4e"
+      },
+      {
         "path": "scripts/tests/test_design_lint.py",
         "mode": "100644",
         "oid": "530b4279d9d974381071e3e56f0e9518b0a23329",
@@ -1265,9 +1349,16 @@
       {
         "path": "scripts/tests/test_pptx_from_rendered.py",
         "mode": "100644",
-        "oid": "2f94a17d0874c87badc3506800fe01beac249afd",
-        "size": 3213,
-        "sha256": "eeefcc7e1a58ccb21c1da7974ca945057691911f6ea0be30893fff64045ee6d0"
+        "oid": "fd8850bc2cf5ca97927b112f875630d3105202d5",
+        "size": 4099,
+        "sha256": "d915b6083b377010315ab8dfa00418e9cf26ce1c7912219cb44d7429ec020d73"
+      },
+      {
+        "path": "scripts/tests/test_xhs_render.py",
+        "mode": "100644",
+        "oid": "3043398da92269efbe0249c95f1a3c326bccef5c",
+        "size": 2062,
+        "sha256": "15e68f18ccaa483d0d60a08ac6da9346956e9e2fb4ff648859c7f906d7dd8161"
       },
       {
         "path": "scripts/verify-video.sh",
@@ -1284,6 +1375,13 @@
         "sha256": "7a0a3243f51a1c816944a948a5caba239c63c9890327a60d80934d493153e9e4"
       },
       {
+        "path": "scripts/xhs_render.py",
+        "mode": "100644",
+        "oid": "10f19b6bf19da51376681ae54e645cdd43d046c7",
+        "size": 10925,
+        "sha256": "789cdeb1a2d5a56e4e65f9f4b4de2ed6f4d554b2fe385619c66cbbaf1ca404ce"
+      },
+      {
         "path": "SECURITY.md",
         "mode": "100644",
         "oid": "63bdc478d1f579b9a455127c26894101a60cf122",
@@ -1293,24 +1391,24 @@
       {
         "path": "SKILL.md",
         "mode": "100644",
-        "oid": "9d12d2702091ac5f8bda1464cb4146724c83930f",
-        "size": 15558,
-        "sha256": "63cbc2ffcfd99f7b8acb6ff92adbbbba4bfaeec84373703d81df6a6fc6055a23"
+        "oid": "23f09262546164b63c04fbca36b04d77a9fc1618",
+        "size": 15699,
+        "sha256": "095ffe5c156e0f299233f7bed44080ce0654c191b9a97ca580c5d798cf45eaf8"
       },
       {
         "path": "test-prompts.json",
         "mode": "100644",
-        "oid": "00c50e904e13a804c883b831d243ac78deaf523f",
-        "size": 3086,
-        "sha256": "25294eef2e98b7013caa28c0e3bae077e9fac2a4c24ee43bf095da136d776536"
+        "oid": "e9d3d13d75c7837458554527ef15d09a23d47e16",
+        "size": 4018,
+        "sha256": "75fa52dd41ec6d04119ee74fb93f49655a12e3780176bf0ddd14c5328d53a1d8"
       }
     ]
   },
   "fetched": {
     "root": "fetched",
-    "fileCount": 208,
-    "byteCount": 40136313,
-    "treeSha256": "94c0ed573aea3620ecba6d304c9fcfa2a38cdd4a24c1301f8973055fef74b573",
+    "fileCount": 244,
+    "byteCount": 41738191,
+    "treeSha256": "d569e575d65729e9c18cecbb6bea60c02558138b41d966756373ad87780a9821",
     "executableFiles": [],
     "objects": [
       {
@@ -2448,6 +2546,13 @@
         "sha256": "08f51463f68aacb88e1b4db44fce17cbe03bdb336bc75a169eade13f2618535e"
       },
       {
+        "path": "assets/style-specimens/sheet-xhs.jpg",
+        "mode": "100644",
+        "oid": "761dd3a32943bd6d13106e01d7f13d85983e946f",
+        "size": 110570,
+        "sha256": "a955d8c9e4c6d5c51a43393048b4cd0c37b3241efc24ced3a2f3432ed8711f9f"
+      },
+      {
         "path": "assets/style-specimens/web/01-editorial-brutalism.jpg",
         "mode": "100644",
         "oid": "804c81c21b59bce6996dfd87f0512f3f3717bcc2",
@@ -2586,6 +2691,251 @@
         "oid": "a53edfb911d7008ab5b94ebe5fe9edd8f88539df",
         "size": 35039,
         "sha256": "ce229d702a9674a48bba239aaa862ba01cd6e0bf18f674a742b1924b323136f0"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/birds.js",
+        "mode": "100644",
+        "oid": "436a2e8d8ec219b1faca476b4cb5de18fd89f33d",
+        "size": 3716,
+        "sha256": "6306562bcaee349088f7bc1d9d06c14eee357ad087ca99b09c575e610f83d529"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/README.md",
+        "mode": "100644",
+        "oid": "cfbf8c2724ea3d333a99811827c455eb813ba84e",
+        "size": 867,
+        "sha256": "29ae540a143f01789ae972ab18c5b911750877261d51a8f0c33415048394e90a"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Accipiter_nisus.webp",
+        "mode": "100644",
+        "oid": "1084e8bf10b58499be71cea14c8a72b0dc2d5432",
+        "size": 23678,
+        "sha256": "e34a3067b73069c96c0e69ddf44cfb0537e29b66c246f84123ba4866ade14b15"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Agapornis_pullarius.webp",
+        "mode": "100644",
+        "oid": "a6ae666506e72517d9cd36dcb64dcbc9884caea2",
+        "size": 28328,
+        "sha256": "e3741167a00064fd1611b1214401b6b59166bfaf300de7d124ec29cff5edcd96"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Aix_galericulata.webp",
+        "mode": "100644",
+        "oid": "7b1da89ae2083953b0700f49de671238811f89f1",
+        "size": 34872,
+        "sha256": "930c2ef415159b18f996d44da726932868b1fc0edb774cbf0322b4f715f34938"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Alcedo_atthis.webp",
+        "mode": "100644",
+        "oid": "57dae8e025364d91c8dfa4885bd623d1d493c08b",
+        "size": 24452,
+        "sha256": "ce177fe8cb37e88c13fd1733cce30353bd735f6ccefbfb5ef51be0f5bd252d4a"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Ara_macao.webp",
+        "mode": "100644",
+        "oid": "3658e07e01094b0ee5c7a5f486c84a9f046e80b7",
+        "size": 18770,
+        "sha256": "845351a4f0520223e43eb76f35a8474acd724d2b56bb48388e2cfbd50a6369b0"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Bubo_bubo.webp",
+        "mode": "100644",
+        "oid": "108ab6359a9d5eadd5b0c3a3048d35c21c2c2dec",
+        "size": 39888,
+        "sha256": "9c2e2313acc5eea77b7dbfeb453f34f46b6fb79bcb10f60f4c883396cee9743a"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Cacatua_galerita.webp",
+        "mode": "100644",
+        "oid": "85e9b9f630eb3305135cc92aa3e6e5b8426b577d",
+        "size": 16160,
+        "sha256": "877635df9530f4b6a17b03f88eae91e000f139fe8d51327120ba996eb5b48334"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Calyptorhynchus_banksii.webp",
+        "mode": "100644",
+        "oid": "4489094a711ff1d93ee7b6d7c0d3e92c9bf412a2",
+        "size": 31174,
+        "sha256": "0344af015c203cd9bf954b3c82f0de6e3a2b982ffe8b2dccf3dd9f4804820679"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Carpodacus_erythrinus.webp",
+        "mode": "100644",
+        "oid": "c65eb5845b5038818f1c5e7c61275c50bd0c80f4",
+        "size": 29236,
+        "sha256": "2b55aa0f3f260ce469aee98e3249fbf23a213ce97e03cf06df11fe3df20ba421"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Chrysolophus_pictus.webp",
+        "mode": "100644",
+        "oid": "4059cd68dd11a151a1508a75b32361ffcd856a49",
+        "size": 25828,
+        "sha256": "34d84ffcb2fa7d480c9beb6daa5ee75c3eac46eabee87fa638dc24fcda1388fe"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Coracias_caudatus.webp",
+        "mode": "100644",
+        "oid": "8c96796e004bcab9ddcc7e0c25282cd8fc84a4a7",
+        "size": 31028,
+        "sha256": "1ce72c3b771d26e6b8fc0c32855d65a59784094a14b68d46a5a20bdd245eeb73"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Ensifera_ensifera.webp",
+        "mode": "100644",
+        "oid": "7e5b1d4cc6c30c30f3f1045a38364d176f4a74c5",
+        "size": 20906,
+        "sha256": "e1377454dfdb31bc5f0067280555e2e9a3a450393c06bf0eb835118fb4bfa8ba"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Eolophus_roseicapilla.webp",
+        "mode": "100644",
+        "oid": "8645f3dc3a133b4bd2a5e8e01957895a1178530d",
+        "size": 25960,
+        "sha256": "2347bf55f2422cabb435e32157f40e6b5d7a370e13b0b4d0daf079a60b43d2ec"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Grus_japonensis.webp",
+        "mode": "100644",
+        "oid": "39a56a76f406c60a19c620dfac107f231fe2dee5",
+        "size": 16018,
+        "sha256": "a2dbed7ec04ef32cf6d6fab329e599a4f5cc3ec5993309b75f851199ab8507c4"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/LICENSE.md",
+        "mode": "100644",
+        "oid": "5ee19b9d74f525c85d3a675e0c2319ded2b950ca",
+        "size": 343,
+        "sha256": "25baacd2723698fa35a2e0e4119a9e5f8a51769c81735c1c8cd3cc20eb17cf24"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Merops_apiaster.webp",
+        "mode": "100644",
+        "oid": "c1ba6e32f0651040b54190e5e87cfdc0fca49753",
+        "size": 23060,
+        "sha256": "8e435cc4c56ee1510ac576af5fd758f4ec0e7feb032aec1a053194c15a53f994"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Nestor_notabilis.webp",
+        "mode": "100644",
+        "oid": "51b0f4a4cde737945a4a8ff462791cfff45bce40",
+        "size": 40610,
+        "sha256": "22aa9936bb1bd056115dbd23c32ea086933580b7c3262e5538d37be2e7dddc98"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Platycercus_icterotis.webp",
+        "mode": "100644",
+        "oid": "0d8cfd2a9609b4a4449aca78c22438c410dc480a",
+        "size": 24216,
+        "sha256": "7b2a00d09a556d5687710fc3dde40b8759d551cad842eb5618f8a4f068ccc11b"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Psephotellus_chrysopterygius.webp",
+        "mode": "100644",
+        "oid": "0bf1a86e20f4feefde01e3045f14b2fb6c8e6966",
+        "size": 27002,
+        "sha256": "54272c2329eab44b348bb2123a49b5307926b6edafdaa4ea6803291c813e32d5"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Psittacus_erithacus.webp",
+        "mode": "100644",
+        "oid": "b18df4152dd6dbf335ed741253cd04765ec61e1c",
+        "size": 28358,
+        "sha256": "b205e9082bc9fdd20454cc38b60c17d3eb926620810e2b12d778027e73d88c5c"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Trichoglossus_moluccanus.webp",
+        "mode": "100644",
+        "oid": "4e596ab19af25a5b23deb0f55ee8b3a2c099b644",
+        "size": 25454,
+        "sha256": "5d1a84ded782fa1e69939bef66e5e2f780e8c968a74bbfb8f6b6641ce3205c73"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Upupa_epops.webp",
+        "mode": "100644",
+        "oid": "1867c04900610b23c57ac513d3bffdc3e2d5b991",
+        "size": 25422,
+        "sha256": "e2b96c7e85fc351c6bcda0427b41bf3b4f497b01a25cf34800c09537d8356a0c"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/stickers/Vini_kuhlii.webp",
+        "mode": "100644",
+        "oid": "19490d1ff75c9c67c1a1c11a345c54cc430c1868",
+        "size": 27374,
+        "sha256": "87a236291de052b554575344aa465cb0d4b6b3bbb989e8b11dd513641dea4876"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/xhs.css",
+        "mode": "100644",
+        "oid": "42ceaed5ae89955e101567a4fc3fc0c571153694",
+        "size": 2547,
+        "sha256": "5a1fb10d14ed7328a515a6f1741ca0f3e19a7fb3e7ee70a7ec86d35e8284af7b"
+      },
+      {
+        "path": "assets/style-specimens/xhs/_kit/xhs.js",
+        "mode": "100644",
+        "oid": "9666b0c5904c9f0a0c918064a9d502871ea25688",
+        "size": 1819,
+        "sha256": "5b7704abe07ae4bd9f47f17a509dda7eb28e45fc5ba06734f935da2c5a5659ba"
+      },
+      {
+        "path": "assets/style-specimens/xhs/01-specimen-journal.jpg",
+        "mode": "100644",
+        "oid": "38636f3307ea147f41a06ee1c4d63f17c2f26422",
+        "size": 128411,
+        "sha256": "ac976141dccc4c364e1d6d0e64dd77821000ac6bb86d60ab48d21343b908a6bc"
+      },
+      {
+        "path": "assets/style-specimens/xhs/02-sticker-notebook.jpg",
+        "mode": "100644",
+        "oid": "dcc5be8a633ab070552ab86f5056f0ca182db2e1",
+        "size": 117202,
+        "sha256": "56dd53f332b251ff5154e1a9cb3300abb153ee82b786996c4a2c746efb2c10ed"
+      },
+      {
+        "path": "assets/style-specimens/xhs/03-index-ink.jpg",
+        "mode": "100644",
+        "oid": "380d534390915157e993a15b797a341c9fc48fec",
+        "size": 97791,
+        "sha256": "387de4fac2be10a66854ea5b23c01399bb90edd927bc8a81eda9af1d920a9aa2"
+      },
+      {
+        "path": "assets/style-specimens/xhs/04-panorama-strip.jpg",
+        "mode": "100644",
+        "oid": "28a6c5bdcb99de0db16dc0563e7371f0d77778a3",
+        "size": 103905,
+        "sha256": "c04e416e4ccfc545017f997ef27996a3d1ee341077e3323959e87b1b77ba894b"
+      },
+      {
+        "path": "assets/style-specimens/xhs/05-daily-paper.jpg",
+        "mode": "100644",
+        "oid": "3d16faf01d3a1c0347ecce9cf57e36d8391dafd1",
+        "size": 125334,
+        "sha256": "0ad4701ad515133021d409ad999fedd98efe491f0799a39cb8ce0c9fa86975df"
+      },
+      {
+        "path": "assets/style-specimens/xhs/06-trading-cards.jpg",
+        "mode": "100644",
+        "oid": "ab499045301df9b283a31fa6a6d122fc6a989bb2",
+        "size": 131267,
+        "sha256": "79679cc4a92a114ccf60ceba1d7967b15866c181c1aa382f5638bdb2a11f119a"
+      },
+      {
+        "path": "assets/style-specimens/xhs/07-blank-vertical.jpg",
+        "mode": "100644",
+        "oid": "2b544de0d44818af4170c0eb4b278bdfc3809aa9",
+        "size": 57747,
+        "sha256": "3dd9b235cace90f37723e1ef75d00a750c44be36347a2a9836389d7ed96d09b2"
+      },
+      {
+        "path": "assets/style-specimens/xhs/08-area-infographic.jpg",
+        "mode": "100644",
+        "oid": "34213e4e7a7fbd437f97e0316dfc060bf3cc9aac",
+        "size": 132565,
+        "sha256": "c4e49e9ffe7f00b93414117c608362a826ac6970ecd13cdbe56f4c19907beb7e"
       },
       {
         "path": "demos/c1-ios-prototype-en.html",
@@ -3359,6 +3709,62 @@
       "title": "20 日式留白白盒画廊",
       "path": "upstream/assets/style-specimens/web/20-kenya-hara-white-gallery.html",
       "preview": "assets/style-specimens/web/20-kenya-hara-white-gallery.jpg"
+    },
+    {
+      "id": "xhs/01-specimen-journal",
+      "family": "xhs",
+      "title": "01 标本志：博物馆图版",
+      "path": "upstream/assets/style-specimens/xhs/01-specimen-journal.html",
+      "preview": "assets/style-specimens/xhs/01-specimen-journal.jpg"
+    },
+    {
+      "id": "xhs/02-sticker-notebook",
+      "family": "xhs",
+      "title": "02 贴纸本：产品自己的纸面",
+      "path": "upstream/assets/style-specimens/xhs/02-sticker-notebook.html",
+      "preview": "assets/style-specimens/xhs/02-sticker-notebook.jpg"
+    },
+    {
+      "id": "xhs/03-index-ink",
+      "family": "xhs",
+      "title": "03 索引：墨底黄数字",
+      "path": "upstream/assets/style-specimens/xhs/03-index-ink.html",
+      "preview": "assets/style-specimens/xhs/03-index-ink.jpg"
+    },
+    {
+      "id": "xhs/04-panorama-strip",
+      "family": "xhs",
+      "title": "04 长卷：滑动时连成一幅",
+      "path": "upstream/assets/style-specimens/xhs/04-panorama-strip.html",
+      "preview": "assets/style-specimens/xhs/04-panorama-strip.jpg"
+    },
+    {
+      "id": "xhs/05-daily-paper",
+      "family": "xhs",
+      "title": "05 日报：报纸头版",
+      "path": "upstream/assets/style-specimens/xhs/05-daily-paper.html",
+      "preview": "assets/style-specimens/xhs/05-daily-paper.jpg"
+    },
+    {
+      "id": "xhs/06-trading-cards",
+      "family": "xhs",
+      "title": "06 集换卡：一项一卡",
+      "path": "upstream/assets/style-specimens/xhs/06-trading-cards.html",
+      "preview": "assets/style-specimens/xhs/06-trading-cards.jpg"
+    },
+    {
+      "id": "xhs/07-blank-vertical",
+      "family": "xhs",
+      "title": "07 留白：竖排与印章",
+      "path": "upstream/assets/style-specimens/xhs/07-blank-vertical.html",
+      "preview": "assets/style-specimens/xhs/07-blank-vertical.jpg"
+    },
+    {
+      "id": "xhs/08-area-infographic",
+      "family": "xhs",
+      "title": "08 信息图：面积即数量",
+      "path": "upstream/assets/style-specimens/xhs/08-area-infographic.html",
+      "preview": "assets/style-specimens/xhs/08-area-infographic.jpg"
     }
   ],
   "boundary": {
