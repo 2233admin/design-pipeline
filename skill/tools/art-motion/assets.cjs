@@ -677,17 +677,38 @@ function cutCollage(input, options) {
       if (touches) findings.push({ code: "matte-touches-frame", severity: "warn", piece: k, message: `piece ${k} runs into the ${params.roi ? "roi" : "image"} edge; it probably carries backdrop, plate border or a neighbour`, fix: "Inspect the piece; narrow params.roi or add params.exclude rectangles around the frame, then cut again" });
       // Cast shadow: a smooth, neutral region only slightly off the backdrop, inside the piece.
       // Engraving hatching is also near the paper tone but is not smooth, so it does not count.
+      // A smooth neutral object (silver, porcelain, grey enamel) is shadow-like all over, so the
+      // warning needs the region to be a minority of the piece AND to meet a distinctly darker or
+      // brighter object body across a luminance step at their shared boundary.
+      const shadowMask = new Uint8Array(n);
       let shadowLike = 0;
       for (let i = 0; i < n; i += 1) {
         if (!piece[i]) continue;
         const d = distance[i];
-        if (d > params.threshold && d < params.threshold * 4 && Math.hypot(lab.A[i], lab.B[i]) < 6 && Math.abs(lab.L[i] - smoothL[i]) < 1.5 && lab.L[i] < backgroundL) shadowLike += 1;
+        if (d > params.threshold && d < params.threshold * 4 && Math.hypot(lab.A[i], lab.B[i]) < 6 && Math.abs(lab.L[i] - smoothL[i]) < 1.5 && lab.L[i] < backgroundL) { shadowMask[i] = 1; shadowLike += 1; }
       }
       const shadowFraction = Number((shadowLike / components.sizes[label - 1]).toFixed(4));
-      if (shadowFraction > 0.1) findings.push({ code: "matte-cast-shadow", severity: "warn", piece: k, message: `${Math.round(shadowFraction * 100)}% of piece ${k} is a smooth neutral area just darker than the backdrop (likely a cast shadow)`, fix: mode === "paper" ? "Raise params.threshold until the shadow drops out, or erase it from the cut by hand" : "Rerun with --mode paper (it models soft backdrop shading) or raise params.threshold; erase leftovers by hand" });
+      // Compare the object body 2-6 px beyond the region with the region's own edge: the mask
+      // boundary itself is gradual, so immediate neighbours look alike even across a real step.
+      let boundaryPairs = 0, shadowStep = 0, shadowBodyTexture = 0;
+      if (shadowFraction > 0.1 && shadowFraction <= 0.5) {
+        const near = dilate(shadowMask, image.width, image.height, 2), far = dilate(shadowMask, image.width, image.height, 6);
+        const ring = new Uint8Array(n);
+        let bodySum = 0, bodyCount = 0, bodyTexture = 0;
+        for (let i = 0; i < n; i += 1) if (far[i] && !near[i] && piece[i] && !shadowMask[i]) { ring[i] = 1; bodySum += lab.L[i]; bodyTexture += Math.abs(lab.L[i] - smoothL[i]); bodyCount += 1; }
+        const reach = dilate(ring, image.width, image.height, 6);
+        let edgeSum = 0, edgeCount = 0;
+        for (let i = 0; i < n; i += 1) if (shadowMask[i] && reach[i]) { edgeSum += lab.L[i]; edgeCount += 1; }
+        boundaryPairs = Math.min(bodyCount, edgeCount);
+        if (boundaryPairs) {
+          shadowStep = Number(Math.abs(bodySum / bodyCount - edgeSum / edgeCount).toFixed(2));
+          shadowBodyTexture = Number((bodyTexture / bodyCount).toFixed(2));
+        }
+      }
+      if (shadowFraction > 0.1 && shadowFraction <= 0.5 && boundaryPairs >= 20 && (shadowStep >= 8 || shadowBodyTexture >= 2)) findings.push({ code: "matte-cast-shadow", severity: "warn", piece: k, message: `${Math.round(shadowFraction * 100)}% of piece ${k} is a smooth neutral area just darker than the backdrop, next to an object body that differs from it (luminance step ${shadowStep} L, body texture ${shadowBodyTexture} L against under 1.5 in the region): likely a cast shadow`, fix: "Confirm a cast shadow exists in the piece first; if so rerun with --mode paper (it models soft backdrop shading) or raise params.threshold, and erase leftovers by hand" });
       const cut = rgbaFromMask(image, alpha, rect);
       const id = `piece-${k}`;
-      pieces.push({ piece: k, area: components.sizes[label - 1], touchesFrame: touches, shadowFraction });
+      pieces.push({ piece: k, area: components.sizes[label - 1], touchesFrame: touches, shadowFraction, shadowStep, shadowBodyTexture });
       if (finishes.includes("cut")) outputs.push({ name: `${id}.png`, finish: "cut", piece: k, image: cut, placement: rect });
       if (finishes.includes("sticker")) {
         const sticker = stickerImage(cut, { edgePx: params.edgePx ?? undefined, shadow: params.shadow, paper: params.paper });

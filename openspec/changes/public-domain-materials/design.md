@@ -70,12 +70,16 @@ typed arrays and the existing PNG codec; JPEG downloads are converted by ffmpeg,
 8. **Dirty-matte flags are warnings with a fix, not a gate.** `matte-uneven-background` (90th percentile of the
    border's distance from its reference above 0.6 × threshold), `matte-touches-frame`, `matte-empty` (error),
    `ink-low-contrast`, `matte-dropped-component` (a discarded component at least 25% of the smallest kept piece)
-   and `matte-cast-shadow` (over 10% of a piece is neutral, smooth at σ=2 and just darker than the backdrop,
-   within 1-4 × threshold). A plain "soft halo" fraction was tried first and dropped: it fired on every
+   and `matte-cast-shadow` (10-50% of a piece is neutral, smooth at σ=2 and just darker than the backdrop,
+   within 1-4 × threshold, and the object body 2-6 px beyond it differs: a mean step of at least 8 L or a
+   body texture, mean |L - blur|, of at least 2 L). The first version warned on any region over 10% and
+   fired at about 91% coverage on clean smooth neutral objects (grey 200 on white, grey 180 on cream,
+   silver gradients), which are core material; those are now tested as no-warning cases, and the fix asks
+   to confirm the shadow before switching to `paper`, since `paper` can drop a pale low-contrast object. A plain "soft halo" fraction was tried first and dropped: it fired on every
    engraving because light hatching sits near the paper tone; requiring smoothness and neutrality removes that.
-   Measured on the study's sources: the shadow flag fires on Met key 200615 (16%) and the padlock (28%, 20%),
-   both with visible cast shadows, and stays under 8% on the other objects and under 6% on all engravings and
-   botanical plates. Results report `creativeAcceptance: not-assessed`, the repository's gate-result field.
+   Measured on the study's sources: the shadow flag fires on Met key 200615 (16%, body texture 11.1) and both
+   padlock pieces (28% / texture 5.9; 20% / step 8.1, texture 8.7), all with visible cast shadows, and stays
+   off on the other objects and on every engraving and botanical plate. Results report `creativeAcceptance: not-assessed`, the repository's gate-result field.
 9. **Lineage.** Each piece's record holds `derivedFrom` {file, sha256, finish, placement, mode, params} and
    inherits the source licence. `check` reports `material-derived-stale` when the source hash moved,
    `material-derived-orphan` when the source is gone, `material-changed` when a recorded source was edited, and

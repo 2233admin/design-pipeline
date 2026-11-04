@@ -114,10 +114,13 @@ dirty mattes with a fix: `matte-uneven-background` (gradient, vignette or textur
 `border` matte: switch to `paper`), `matte-touches-frame` (a piece runs into the image or roi
 edge and probably carries plate border or a neighbour), `matte-dropped-component` (a component
 left out is at least a quarter of the smallest kept piece: raise `keep` if it is a wanted wing or
-motif), `matte-cast-shadow` (more than 10% of a piece is smooth, neutral and just darker than the
-backdrop: rerun with `paper`, which models soft shading, or raise `threshold`), `matte-empty` and
-`ink-low-contrast`. They do not catch everything: a shadow under a grey metal object can pass as
-the object, very pale watercolour washes fall below the threshold or break into partial pieces,
+motif), `matte-cast-shadow` (10-50% of a piece is smooth, neutral and just darker than the
+backdrop, next to an object body that is textured or a clearly different tone: confirm the shadow
+is really there, then rerun with `paper`, which models soft shading, or raise `threshold`),
+`matte-empty` and `ink-low-contrast`. They do not catch everything: a shadow beside an equally
+smooth grey object is not told apart from it (smooth silver, porcelain and enamel are deliberately
+not flagged), a pale low-contrast object on white can vanish in `paper` mode (`matte-empty`: use
+`border`), very pale watercolour washes fall below the threshold or break into partial pieces,
 and touching motifs come out as one piece. Look
 at every piece at its use size; the flags are not visual acceptance.
 

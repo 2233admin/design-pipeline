@@ -56,7 +56,7 @@ The skill SHALL list public-domain/CC0 image sources with query route, licence f
 #### Scenario: Dropped part and cast shadow
 
 - **WHEN** a second wing as large as the kept piece is discarded by `keep`, or a soft grey shadow is cut with the object in `border` mode
-- **THEN** the result SHALL include `matte-dropped-component` naming the `keep` to use, or `matte-cast-shadow` whose fix names `--mode paper`
+- **THEN** the result SHALL include `matte-dropped-component` naming the `keep` to use, or `matte-cast-shadow` whose fix asks to confirm the shadow before `--mode paper`; a smooth neutral grey or silver object with no shadow SHALL not get `matte-cast-shadow`
 
 #### Scenario: Stale piece
 

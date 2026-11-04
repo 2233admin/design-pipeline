@@ -375,3 +375,29 @@ test("cut warns about a dropped wing and a cast shadow; paper mode removes the s
   const hatched = cutCollage(encodePng(print()), { mode: "paper", finishes: ["cut"], params: { threshold: 18, keep: 2, close: 3 } });
   assert.ok(!hatched.findings.some((f) => f.code === "matte-cast-shadow"));
 });
+
+test("smooth neutral objects (silver, porcelain, grey enamel) are not reported as cast shadows", () => {
+  const disc = (x, y) => (x - 150) ** 2 + (y - 150) ** 2 < 4900;
+  const cases = {
+    "mid-grey 200 on white": (x, y) => (disc(x, y) ? [200, 200, 200] : [250, 250, 250]),
+    "grey 180 on cream paper": (x, y) => (disc(x, y) ? [180, 180, 180] : [250, 247, 240]),
+    "silver gradient 160-200 on white": (x, y) => { const v = Math.round(160 + 40 * ((y - 80) / 140)); return disc(x, y) ? [v, v, v] : [255, 255, 255]; },
+    "porcelain gradient on white": (x, y) => { const v = Math.round(215 + 20 * ((x - 80) / 140)); return disc(x, y) ? [v, v, v] : [250, 250, 250]; },
+    "dark disc on white": (x, y) => (disc(x, y) ? [40, 35, 30] : [245, 245, 245]),
+    "red on white": (x, y) => (disc(x, y) ? [200, 40, 40] : [255, 255, 255]),
+  };
+  for (const [name, fill] of Object.entries(cases)) for (const mode of ["border", "paper"]) {
+    const result = cutCollage(encodePng(canvas(300, 300, fill)), { mode, finishes: ["cut"] });
+    assert.ok(!result.findings.some((f) => f.code === "matte-cast-shadow"), `${name} (${mode}): ${JSON.stringify(result.measurements.pieces)}`);
+  }
+  // A real shadow beside a textured body still warns, and the fix asks to confirm it first.
+  const textured = canvas(300, 300, (x, y) => {
+    if ((x - 150) ** 2 + (y - 130) ** 2 < 3600) return (x + y) % 6 < 3 ? [150, 150, 150] : [90, 90, 90];
+    const d = ((x - 185) / 80) ** 2 + ((y - 185) / 35) ** 2;
+    const v = d < 1 ? Math.round(245 - 60 * (1 - d)) : 245;
+    return [v, v, v];
+  });
+  const warned = cutCollage(encodePng(textured), { mode: "border", finishes: ["cut"] }).findings.find((f) => f.code === "matte-cast-shadow");
+  assert.ok(warned, "textured silver body with a grey cast shadow");
+  assert.match(warned.fix, /^Confirm a cast shadow exists/);
+});
