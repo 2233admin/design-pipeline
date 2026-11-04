@@ -1,0 +1,328 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "kv.operator-nameplate-ll",
+  "family": "kv",
+  "title": "New-character key visual, name block lower-left, rank and credits lower-right",
+  "use": "Introduce one character: figure centred with effects, name block lower-left, rank and credits lower-right, a watermark band behind.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "fonts": {
+    "sans": [
+      "Source Han Sans SC",
+      "Noto Sans CJK SC",
+      "Noto Sans SC"
+    ],
+    "serif": [
+      "Source Han Serif SC",
+      "Noto Serif CJK SC",
+      "Noto Serif SC"
+    ],
+    "latinDisplay": "lettering.cjs: code-drawn glyphs (A-Z, 0-9, / \\ - _ + . : [ ] < > | # % ! ? ' and space), rendered as paths",
+    "licence": "Source Han Sans/Serif and Noto Sans/Serif CJK: SIL Open Font License 1.1",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. Install them where the SVG or PNG is rendered; check measures <text> with an advance model at or above their bold widths."
+  },
+  "palette": {
+    "bg": {
+      "value": "#F2F1EF",
+      "use": "light neutral ground (largest cluster L* ~89)"
+    },
+    "ink": {
+      "value": "#141416",
+      "use": "near-black"
+    },
+    "ink2": {
+      "value": "#5C5C60",
+      "use": "secondary text"
+    },
+    "accent": {
+      "value": "#E0344F",
+      "use": "one high-chroma colour (red in the example; replaceable)"
+    },
+    "water": {
+      "value": "#E0344F",
+      "use": "watermark band, same hue as accent"
+    },
+    "plate": {
+      "value": "#141416",
+      "use": "class icon base"
+    },
+    "rule": {
+      "value": "#141416",
+      "use": "rules"
+    }
+  },
+  "accent": {
+    "roles": [
+      "accent",
+      "water"
+    ],
+    "maxShare": 0.05
+  },
+  "params": {
+    "margin_x": {
+      "default": 0.035,
+      "min": 0.03,
+      "max": 0.05,
+      "class": "proportion",
+      "note": "margin and shared left line (AK003: about 0.03W)"
+    },
+    "margin_y": {
+      "default": 0.045,
+      "min": 0.035,
+      "max": 0.06,
+      "class": "proportion"
+    },
+    "block_x0": {
+      "default": 0.035,
+      "min": 0.03,
+      "max": 0.05,
+      "class": "proportion",
+      "note": "name block left edge; keep equal to margin_x"
+    },
+    "block_y0": {
+      "default": 0.665,
+      "min": 0.62,
+      "max": 0.7,
+      "class": "proportion",
+      "note": "name block top (AK003 0.67H)"
+    },
+    "block_w": {
+      "default": 0.22,
+      "min": 0.19,
+      "max": 0.25,
+      "class": "proportion"
+    },
+    "latin_h": {
+      "default": 0.05,
+      "min": 0.042,
+      "max": 0.054,
+      "class": "rhythm"
+    },
+    "cjk_h": {
+      "default": 0.058,
+      "min": 0.05,
+      "max": 0.064,
+      "class": "rhythm"
+    },
+    "watermark_y0": {
+      "default": 0.53,
+      "min": 0.5,
+      "max": 0.56,
+      "class": "rhythm",
+      "note": "watermark band top (AK003 0.53H)"
+    },
+    "watermark_y1": {
+      "default": 0.66,
+      "min": 0.63,
+      "max": 0.68,
+      "class": "rhythm",
+      "note": "watermark band bottom (AK003 0.66H)"
+    },
+    "fig_cx": {
+      "default": 0.53,
+      "min": 0.5,
+      "max": 0.56,
+      "class": "proportion",
+      "note": "figure centre x (median 0.50)"
+    },
+    "fig_w": {
+      "default": 0.56,
+      "min": 0.48,
+      "max": 0.58,
+      "class": "proportion",
+      "note": "figure width (median 0.525W)"
+    },
+    "rarity": {
+      "type": "integer",
+      "default": 6,
+      "min": 1,
+      "max": 6,
+      "class": "decoration",
+      "note": "rank marks"
+    },
+    "watermark": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration"
+    },
+    "letter_width": {
+      "default": 0.66,
+      "min": 0.58,
+      "max": 0.7,
+      "class": "rhythm",
+      "note": "code-drawn display lettering: glyph width / cap height"
+    },
+    "letter_stroke": {
+      "default": 0.19,
+      "min": 0.14,
+      "max": 0.22,
+      "class": "rhythm",
+      "note": "display lettering stroke / cap height"
+    },
+    "letter_chamfer": {
+      "default": 0.05,
+      "min": 0,
+      "max": 0.12,
+      "class": "rhythm",
+      "note": "display lettering corner cut / cap height"
+    },
+    "letter_stencil": {
+      "default": 0,
+      "min": 0,
+      "max": 0.07,
+      "class": "rhythm",
+      "note": "display lettering stencil gap / cap height (0 = off)"
+    },
+    "accent_max_share": {
+      "default": 0.05,
+      "min": 0.005,
+      "max": 0.2,
+      "class": "proportion",
+      "note": "accent-colour area budget as a share of the canvas; measured on the render"
+    },
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "show safe zones, figure zones and alignment lines in the output"
+    }
+  },
+  "slots": {
+    "watermark_word": {
+      "kind": "lettering",
+      "default": "CODENAME",
+      "maxChars": 10,
+      "fallbackFont": "sans",
+      "decor": true,
+      "bleed": true,
+      "note": "band across the full width, behind the figure"
+    },
+    "figure": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "figure + effects, overlaps the watermark"
+    },
+    "logo": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "logo",
+      "fit": "contain"
+    },
+    "faction_mark": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "faction mark",
+      "fit": "contain"
+    },
+    "kicker": {
+      "kind": "lettering",
+      "default": "NEW",
+      "maxChars": 8,
+      "fallbackFont": "sans"
+    },
+    "kicker2": {
+      "kind": "lettering",
+      "default": "OPERATOR",
+      "maxChars": 10,
+      "fallbackFont": "sans"
+    },
+    "name_cjk": {
+      "kind": "text",
+      "default": "角色名",
+      "maxChars": 6,
+      "title": true,
+      "font": "serif",
+      "sizeParam": "cjk_h"
+    },
+    "name_latin": {
+      "kind": "lettering",
+      "default": "CODENAME",
+      "maxChars": 9,
+      "fallbackFont": "sans",
+      "title": true,
+      "sizeParam": "latin_h"
+    },
+    "class_latin": {
+      "kind": "lettering",
+      "default": "SPECIALIST",
+      "maxChars": 10,
+      "fallbackFont": "sans"
+    },
+    "class_cjk": {
+      "kind": "text",
+      "default": "职业-分支",
+      "maxChars": 8
+    },
+    "credit_label_{j}": {
+      "kind": "text",
+      "default": [
+        "<CV-A>:",
+        "<CV-B>:"
+      ],
+      "maxChars": 8
+    },
+    "credit_value_{j}": {
+      "kind": "text",
+      "default": "<name>",
+      "maxChars": 8
+    },
+    "disclaimer": {
+      "kind": "text",
+      "default": "<disclaimer, ≤40>",
+      "maxChars": 40
+    },
+    "copyright": {
+      "kind": "text",
+      "default": "© <owner>",
+      "maxChars": 30
+    }
+  },
+  "relations": [
+    "Name block and rank/credit block sit in the same lower band (0.67-0.80H), at opposite corners.",
+    "Watermark band sits right above the name block and passes behind the figure.",
+    "Names never cover the figure (0/6 samples overlap > 30%)."
+  ],
+  "decoration": [
+    "Short black rule under the kicker, class icons, disclaimer line."
+  ],
+  "changesFromStudy": [
+    "class_latin budget 12 -> 10 characters: the box ends before the class icons.",
+    "Lettering is placed by its ink edge so the name sits on the shared left line."
+  ],
+  "provenance": {
+    "corpus": "ignoredone's space gallery of official Arknights / Arknights: Endfield promotional art (© HYPERGRYPH), reference only, never redistributed",
+    "gallery": "https://www.ignoredone.space/index.php/arknights_design/",
+    "accessed": "2026-11-04",
+    "study": "docs/research/arknights-endfield-template-study.md",
+    "provenanceCsv": "docs/research/arknights-endfield-provenance.csv",
+    "method": "Our own structural skeleton from measured proportions (median of eye-annotated layout boxes, Lab colour measurements). No traced artwork, logos or official text; image and logo areas are hatched placeholder slots.",
+    "samples": "Arknights KV_OPERATOR, 6 images; AK003 measured at full size",
+    "sampleIds": [
+      "AK002",
+      "AK003",
+      "AK012",
+      "AK014",
+      "XAK14",
+      "XAK17"
+    ],
+    "measured": [
+      "name on the left 6/6, in the lower half 5/6; title centre median (0.126W, 0.735H); area median 4.2%",
+      "AK003: name block 0.03-0.225W x 0.67-0.84H; watermark band 0.53-0.66H; rank row 0.84-0.98W x 0.67-0.72H",
+      "title/figure overlap > 30%: 0/6; figure centre x median 0.50, width 0.525W",
+      "hue circular std median 48° (effects + one accent)"
+    ],
+    "summary": "Arknights KV_OPERATOR, 6 images; AK003 measured at full size; docs/research/arknights-endfield-template-study.md"
+  }
+}

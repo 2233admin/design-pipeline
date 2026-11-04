@@ -1,0 +1,331 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.dossier-portrait",
+  "family": "card",
+  "title": "Portrait dossier card: identity top-left, figure centre, notes panel below a divider",
+  "use": "One image that explains one subject: name, attributes, full figure, abilities. Social portrait post or the first screen of a long image.",
+  "canvas": {
+    "width": 1000,
+    "height": 1500
+  },
+  "sizes": [
+    "1000x1500",
+    "1200x1800",
+    "2000x3000"
+  ],
+  "aspect": "2:3",
+  "fonts": {
+    "sans": [
+      "Source Han Sans SC",
+      "Noto Sans CJK SC",
+      "Noto Sans SC"
+    ],
+    "serif": [
+      "Source Han Serif SC",
+      "Noto Serif CJK SC",
+      "Noto Serif SC"
+    ],
+    "latinDisplay": "lettering.cjs: code-drawn glyphs (A-Z, 0-9, / \\ - _ + . : [ ] < > | # % ! ? ' and space), rendered as paths",
+    "licence": "Source Han Sans/Serif and Noto Sans/Serif CJK: SIL Open Font License 1.1",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. Install them where the SVG or PNG is rendered; check measures <text> with an advance model at or above their bold widths."
+  },
+  "palette": {
+    "bg": {
+      "value": "#DCDBD8",
+      "use": "neutral ground (neutral pixels median 92%)"
+    },
+    "frame": {
+      "value": "#C9C8C4",
+      "use": "frame and value bars"
+    },
+    "ink": {
+      "value": "#232325",
+      "use": "text"
+    },
+    "ink2": {
+      "value": "#5A5A5E",
+      "use": "secondary"
+    },
+    "chip": {
+      "value": "#3A3A3E",
+      "use": "label chips"
+    },
+    "chip_ink": {
+      "value": "#FFFFFF",
+      "use": "text on chips"
+    },
+    "accent": {
+      "value": "#E7B416",
+      "use": "accent marks"
+    },
+    "accent_text": {
+      "value": "#5A4100",
+      "use": "highlight sentence (the accent hue darkened to pass 4.5:1 on the panel)"
+    },
+    "panel": {
+      "value": "#3B3B3E",
+      "use": "notes panel tint"
+    },
+    "panel_ink": {
+      "value": "#F0F0F0",
+      "use": "text on a dark panel"
+    },
+    "icon": {
+      "value": "#202022",
+      "use": "outline icons"
+    }
+  },
+  "accent": {
+    "roles": [
+      "accent",
+      "accent_text"
+    ],
+    "maxShare": 0.02
+  },
+  "params": {
+    "frame": {
+      "default": 0.042,
+      "min": 0.03,
+      "max": 0.05,
+      "class": "proportion",
+      "note": "frame inset (AK038 0.042W)"
+    },
+    "name_y": {
+      "default": 0.15,
+      "min": 0.13,
+      "max": 0.16,
+      "class": "proportion"
+    },
+    "name_h": {
+      "default": 0.045,
+      "min": 0.038,
+      "max": 0.048,
+      "class": "rhythm"
+    },
+    "attr_y0": {
+      "default": 0.24,
+      "min": 0.23,
+      "max": 0.25,
+      "class": "proportion"
+    },
+    "attr_rows": {
+      "type": "integer",
+      "default": 4,
+      "min": 1,
+      "max": 4,
+      "class": "decoration"
+    },
+    "attr_h": {
+      "default": 0.016,
+      "min": 0.015,
+      "max": 0.018,
+      "class": "rhythm"
+    },
+    "fig_y0": {
+      "default": 0.08,
+      "min": 0.06,
+      "max": 0.1,
+      "class": "proportion"
+    },
+    "fig_y1": {
+      "default": 0.71,
+      "min": 0.68,
+      "max": 0.71,
+      "class": "proportion"
+    },
+    "divider_y": {
+      "default": 0.712,
+      "min": 0.7,
+      "max": 0.72,
+      "class": "proportion"
+    },
+    "panel_y1": {
+      "default": 0.93,
+      "min": 0.9,
+      "max": 0.93,
+      "class": "proportion"
+    },
+    "skill_rows": {
+      "type": "integer",
+      "default": 3,
+      "min": 1,
+      "max": 3,
+      "class": "decoration"
+    },
+    "accent_max_share": {
+      "default": 0.02,
+      "min": 0.005,
+      "max": 0.2,
+      "class": "proportion",
+      "note": "accent-colour area budget as a share of the canvas; measured on the render"
+    },
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "show safe zones, figure zones and alignment lines in the output"
+    }
+  },
+  "slots": {
+    "figure": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "full body, feet near the divider"
+    },
+    "logo": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "logo",
+      "fit": "contain"
+    },
+    "series_latin": {
+      "kind": "lettering",
+      "default": "SERIES NAME",
+      "maxChars": 15,
+      "fallbackFont": "sans"
+    },
+    "series_cjk": {
+      "kind": "text",
+      "default": "系列名",
+      "maxChars": 6
+    },
+    "name_cjk": {
+      "kind": "text",
+      "default": "角色名",
+      "maxChars": 4,
+      "title": true,
+      "sizeParam": "name_h"
+    },
+    "name_latin": {
+      "kind": "lettering",
+      "default": "CODENAME",
+      "maxChars": 14,
+      "fallbackFont": "sans"
+    },
+    "tag_new": {
+      "kind": "lettering",
+      "default": "NEW",
+      "maxChars": 4,
+      "fallbackFont": "sans"
+    },
+    "class_line": {
+      "kind": "text",
+      "default": "<CLASS / 职业>",
+      "maxChars": 18
+    },
+    "attr_label_{i}": {
+      "kind": "text",
+      "default": "属性",
+      "maxChars": 2
+    },
+    "attr_value_{i}": {
+      "kind": "text",
+      "default": "<值, ≤13字>",
+      "maxChars": 13,
+      "sizeParam": "attr_h"
+    },
+    "quote": {
+      "kind": "text",
+      "default": "<一句台词，两行以内>",
+      "maxChars": 32,
+      "lines": 2
+    },
+    "credit_{j}": {
+      "kind": "text",
+      "default": [
+        "<CV-A> <name>",
+        "<CV-B> <name>",
+        "<ILLUST> <name>"
+      ],
+      "maxChars": 16
+    },
+    "range_label": {
+      "kind": "text",
+      "default": "<范围图>",
+      "maxChars": 6
+    },
+    "talent_title": {
+      "kind": "text",
+      "default": "<天赋名>",
+      "maxChars": 10
+    },
+    "talent_body": {
+      "kind": "text",
+      "default": "<说明, ≤4行×22字>",
+      "maxChars": 88,
+      "lines": 4
+    },
+    "skill_icon_{k}": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "skill icon",
+      "fit": "contain"
+    },
+    "skill_text_{k}": {
+      "kind": "text",
+      "default": "<技能说明 ≤3行×20字>",
+      "maxChars": 60,
+      "lines": 3
+    },
+    "skill_note_{k}": {
+      "kind": "text",
+      "default": "<高亮一句>",
+      "maxChars": 20
+    },
+    "maker_mark": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "publisher mark slot",
+      "fit": "contain"
+    },
+    "disclaimer": {
+      "kind": "text",
+      "default": "<免责说明>",
+      "maxChars": 30
+    }
+  },
+  "relations": [
+    "Three bands: identity in the top third, figure in the middle, notes below one divider (0.712H).",
+    "All text left-aligned to the frame's inner edge + 1%."
+  ],
+  "decoration": [
+    "Range grid icon, corner tag; the large geometric watermark of the samples is not drawn."
+  ],
+  "changesFromStudy": [
+    "Credits moved 0.81W -> 0.76W: at 0.81W the 18-character budget ran past the frame.",
+    "skill_text budget 78 -> 60 (3 lines x 20 fit the column); skill_note moved below the third line (it overlapped it).",
+    "skill_note colour accent -> accent_text #5A4100: the yellow measured below 2:1 on the panel.",
+    "Attribute chips start on the shared left line 0.052W (study 0.042W); attr_value budget 18 -> 13; name_cjk 5 -> 4 (5 characters cover the figure); series_latin 16 -> 15."
+  ],
+  "provenance": {
+    "corpus": "ignoredone's space gallery of official Arknights / Arknights: Endfield promotional art (© HYPERGRYPH), reference only, never redistributed",
+    "gallery": "https://www.ignoredone.space/index.php/arknights_design/",
+    "accessed": "2026-11-04",
+    "study": "docs/research/arknights-endfield-template-study.md",
+    "provenanceCsv": "docs/research/arknights-endfield-provenance.csv",
+    "method": "Our own structural skeleton from measured proportions (median of eye-annotated layout boxes, Lab colour measurements). No traced artwork, logos or official text; image and logo areas are hatched placeholder slots.",
+    "samples": "Arknights DOSSIER_PORTRAIT, 6 images (AK038 measured); Endfield weapon dossiers, 3 images (EF084)",
+    "sampleIds": [
+      "AK034",
+      "AK036",
+      "AK037",
+      "AK038",
+      "AK039",
+      "AK041",
+      "EF084",
+      "EF085",
+      "EF086"
+    ],
+    "measured": [
+      "frame inset 0.042W (AK038); name x 0.052W, y 0.15-0.19H; attribute rows 0.042-0.30W x 0.24-0.30H; divider 0.712H; skills 0.73-0.91H",
+      "name top-left 5/6; title area median 1.4%; figure takes 55% of the width",
+      "neutral pixels median 92%; the only chroma is red skill icons"
+    ],
+    "summary": "Arknights DOSSIER_PORTRAIT, 6 images (AK038 measured); Endfield weapon dossiers, 3 images (EF084); docs/research/arknights-endfield-template-study.md"
+  }
+}

@@ -1,0 +1,215 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "kv.vertical-title-column",
+  "family": "kv",
+  "title": "Vertical CJK title column at the right, figure group left",
+  "use": "Chapter or release key visual that wants an inscription-like vertical title; short CJK title (2-4 characters).",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "fonts": {
+    "sans": [
+      "Source Han Sans SC",
+      "Noto Sans CJK SC",
+      "Noto Sans SC"
+    ],
+    "serif": [
+      "Source Han Serif SC",
+      "Noto Serif CJK SC",
+      "Noto Serif SC"
+    ],
+    "latinDisplay": "lettering.cjs: code-drawn glyphs (A-Z, 0-9, / \\ - _ + . : [ ] < > | # % ! ? ' and space), rendered as paths",
+    "licence": "Source Han Sans/Serif and Noto Sans/Serif CJK: SIL Open Font License 1.1",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. Install them where the SVG or PNG is rendered; check measures <text> with an advance model at or above their bold widths."
+  },
+  "palette": {
+    "bg": {
+      "value": "#F6F5F2",
+      "use": "light ground"
+    },
+    "ink": {
+      "value": "#151515",
+      "use": "title"
+    },
+    "ink2": {
+      "value": "#5E5E5E",
+      "use": "Latin line"
+    },
+    "accent": {
+      "value": "#B3202A",
+      "use": "tag plate, subtitle, separators"
+    },
+    "ink_on_accent": {
+      "value": "#FFFFFF",
+      "use": "text on the tag plate"
+    },
+    "rule": {
+      "value": "#151515",
+      "use": "rules"
+    }
+  },
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.03
+  },
+  "params": {
+    "col_x": {
+      "default": 0.86,
+      "min": 0.83,
+      "max": 0.88,
+      "class": "proportion",
+      "note": "title column centre (EF053 0.80-0.90W)"
+    },
+    "col_y0": {
+      "default": 0.23,
+      "min": 0.2,
+      "max": 0.26,
+      "class": "proportion"
+    },
+    "col_y1": {
+      "default": 0.74,
+      "min": 0.7,
+      "max": 0.76,
+      "class": "proportion"
+    },
+    "char_h": {
+      "default": 0.125,
+      "min": 0.1,
+      "max": 0.128,
+      "class": "rhythm"
+    },
+    "sub_col_x": {
+      "default": 0.755,
+      "min": 0.74,
+      "max": 0.77,
+      "class": "proportion"
+    },
+    "tag_x": {
+      "default": 0.915,
+      "min": 0.905,
+      "max": 0.93,
+      "class": "proportion"
+    },
+    "tag_y0": {
+      "default": 0.21,
+      "min": 0.2,
+      "max": 0.25,
+      "class": "proportion"
+    },
+    "fig_x1": {
+      "default": 0.62,
+      "min": 0.55,
+      "max": 0.66,
+      "class": "proportion",
+      "note": "figure group ends about 0.62W"
+    },
+    "accent_max_share": {
+      "default": 0.03,
+      "min": 0.005,
+      "max": 0.2,
+      "class": "proportion",
+      "note": "accent-colour area budget as a share of the canvas; measured on the render"
+    },
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "show safe zones, figure zones and alignment lines in the output"
+    }
+  },
+  "slots": {
+    "figure_group": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "main figure front, group behind"
+    },
+    "logo": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "wordmark + event mark",
+      "fit": "contain"
+    },
+    "title_vertical": {
+      "kind": "text",
+      "default": "纵排题",
+      "maxChars": 4,
+      "title": true,
+      "font": "serif",
+      "sizeParam": "char_h"
+    },
+    "tag_vertical": {
+      "kind": "text",
+      "default": "版本标签",
+      "maxChars": 6
+    },
+    "sub_vertical": {
+      "kind": "text",
+      "default": "副题五字",
+      "maxChars": 5,
+      "title": true,
+      "font": "serif"
+    },
+    "line_vertical": {
+      "kind": "text",
+      "default": "短句一 短句二",
+      "maxChars": 10,
+      "font": "serif"
+    },
+    "latin_vertical": {
+      "kind": "lettering",
+      "default": "HOMECOMING",
+      "maxChars": 14,
+      "fallbackFont": "sans"
+    },
+    "copyright": {
+      "kind": "text",
+      "default": "© <owner>",
+      "maxChars": 30
+    }
+  },
+  "relations": [
+    "Vertical CJK is set upright (writing-mode), never rotated.",
+    "Columns read right to left: title, subtitle, line.",
+    "Title area and figure area are separated left/right."
+  ],
+  "decoration": [
+    "Four short black bars top-right, diamond separators."
+  ],
+  "changesFromStudy": [
+    "sub_vertical budget 6 -> 5: six characters ran into the line column.",
+    "The second diamond separator follows the line text (the study's fixed 0.725H overlapped it)."
+  ],
+  "provenance": {
+    "corpus": "ignoredone's space gallery of official Arknights / Arknights: Endfield promotional art (© HYPERGRYPH), reference only, never redistributed",
+    "gallery": "https://www.ignoredone.space/index.php/arknights_design/",
+    "accessed": "2026-11-04",
+    "study": "docs/research/arknights-endfield-template-study.md",
+    "provenanceCsv": "docs/research/arknights-endfield-provenance.csv",
+    "method": "Our own structural skeleton from measured proportions (median of eye-annotated layout boxes, Lab colour measurements). No traced artwork, logos or official text; image and logo areas are hatched placeholder slots.",
+    "samples": "Endfield EF053 measured; same type AK017, EF058, AK010 (8 vertical titles among 63 layout-annotated images)",
+    "sampleIds": [
+      "EF053",
+      "AK017",
+      "EF058",
+      "AK010"
+    ],
+    "measured": [
+      "title column 0.80-0.90W x 0.23-0.73H; red vertical tag 0.905-0.93W x 0.21-0.38H; subtitle column 0.74-0.77W",
+      "reading order right to left: title, subtitle, line",
+      "figure group ends about 0.62W"
+    ],
+    "summary": "Endfield EF053 measured; same type AK017, EF058, AK010 (8 vertical titles among 63 layout-annotated images); docs/research/arknights-endfield-template-study.md"
+  }
+}

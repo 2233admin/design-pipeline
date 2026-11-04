@@ -861,3 +861,27 @@ Project-owned references written in this repository's words; no upstream text is
 - `skill/references/interface-defaults.md` and `skill/references/timeline-deconstruction.md`: from
   https://github.com/raphaelsalaja/skill (`defaults`, `deconstruct`) at `5e989857664e5fb5f2b1b4b319edf3a8b076048f`,
   MIT, Copyright (c) 2026 Raphael Salaja.
+
+## Template bank: measured references and named fonts (2026-11-04)
+
+`skill/tools/template-bank/` holds project-owned layout templates. Their proportions and colour
+roles were measured from a reference corpus; nothing from that corpus is bundled.
+
+- Reference corpus: official Arknights and Arknights: Endfield promotional art, © HYPERGRYPH, as
+  re-hosted in the gallery of ignoredone's space (https://www.ignoredone.space/index.php/arknights_design/),
+  accessed 2026-11-04. 119 images were sampled for measurement only. No image, crop, trace, logo,
+  official text or font is redistributed; image and logo areas in the templates are hatched
+  placeholder slots. The sample list (URLs, sizes, categories) is
+  `docs/research/arknights-endfield-provenance.csv`; the method and numbers are in
+  `docs/research/arknights-endfield-template-study.md`. Each template's `manifest.json` names its
+  samples. No licence for the referenced artwork is asserted.
+- ignoredone's space tutorials (© ignoredone): read for the study
+  `docs/research/ignoredone-arknights-design.md`, which restates rules and structures in this
+  repository's words and copies no artwork or tutorial images.
+- Display lettering: `skill/tools/template-bank/lettering.cjs` draws its 53 glyphs from stroke
+  skeletons written for this repository. It is not derived from a font file.
+- Named, not bundled (SIL Open Font License 1.1): Source Han Sans SC and Source Han Serif SC
+  (Adobe), Noto Sans CJK SC and Noto Serif CJK SC, Noto Sans SC and Noto Serif SC (Google). The
+  study also names OFL Latin near-matches for reference (Montserrat, Outfit, Urbanist, Archivo
+  Black, Bebas Neue, Oswald, Big Shoulders Display and Stencil, Saira Stencil One, Chakra Petch,
+  Oxanium, Teko, Michroma, Cinzel, Playfair Display, Bodoni Moda); none is bundled or required.

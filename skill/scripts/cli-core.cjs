@@ -1,6 +1,7 @@
 "use strict";
 
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const { fileURLToPath } = require("node:url");
 const { spawnSync } = require("node:child_process");
@@ -53,6 +54,7 @@ const { evaluateFilmRuns } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
 const { prepareFilmMethods } = require("../tools/film-methods/prepare.cjs");
 const { templates: filmTemplates } = require("../tools/prompt-motion/library.cjs");
+const templateBank = require("../tools/template-bank/bank.cjs");
 const { scaffoldVisualCraft, TEMPLATES: scaffoldTemplates } = require("../tools/visual-craft/scaffold.cjs");
 const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
 const { evaluateProbeFile, validateProbeFile } = require("./interaction-core.cjs");
@@ -150,7 +152,7 @@ const { inspectEnvironment, nodeAtLeast, renderDoctor } = require("./doctor-repo
 
 const referencesRoot = path.resolve(__dirname, "../references");
 const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots"]);
-const REPEATABLE_OPTIONS = new Set(["--mix", "--taste", "--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation"]);
+const REPEATABLE_OPTIONS = new Set(["--set", "--param", "--mix", "--taste", "--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
   ...REPEATABLE_OPTIONS,
@@ -163,6 +165,7 @@ const KNOWN_OPTIONS = new Set([
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--start", "--end", "--fps", "--max-frames", "--cut-threshold", "--min-shot", "--by", "--page-review", "--until", "--assisted-by", "--tradeoff", "--revision", "--affects",
   "--spec", "--stills", "--ffmpeg", "--ffprobe", "--medium", "--second", "--pool", "--east-pool",
+  "--family", "--size", "--seed", "--png", "-o",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
 ]);
 function parseArgs(argv) {
@@ -411,6 +414,9 @@ function publicHelp() {
     "  template adapt --receipt <file> --context <file> --json",
     "  template review --plan <file> --review <file> --json",
     "  template approve --plan <file> --approval <file> --json",
+    "  template list [--family kv|cover|card|banner|ui]   (template bank: parameterised SVG layouts with slots, knobs and provenance)",
+    "  template render <id> [--set slot=value ...] [--param name=value ...] [--seed <n>] [--size WxH] -o <out.svg> [--png <out.png>] [--chrome <exe>] [--puppeteer-module <path>]   (renders and audits the output; image slots take a file path; --seed varies the rhythm knobs; exit 2 when the check fails)",
+    "  template check <file.svg>   (measured: text fit, minimum size, contrast, figure and crop zones, accent budget, shared alignment lines; every finding has a fix; 0 pass, 2 fail)",
     "  doctor [--json]   (readable install and tool report; --json for machine output) | status --change-root <dir>",
     "  plan --manifest <file> --output <file>",
     "  run --plan <file> --to <phase>",
@@ -765,7 +771,8 @@ const RUNTIME_REVIEW_EXIT_CODES = { built: 0, matched: 0, recorded: 0, stale: 2,
 function validateRuntimeReviewOptions(parsed) {
   const [, action] = parsed.positionals;
   const help = option(parsed, "--help") === true || option(parsed, "-h") === true;
-  if (parsed.positionals.length > 2) {
+  const operandEntry = parsed.positionals.length === 3 ? resolveCommand(parsed.positionals[0], parsed.positionals[1]) : null;
+  if (parsed.positionals.length > 2 && !operandEntry?.operand) {
     fail("cli", `unexpected positional arguments: ${parsed.positionals.slice(2).join(" ")}`, { code: "UNKNOWN_ARGUMENT" });
   }
   if ((action && !Object.hasOwn(RUNTIME_REVIEW_ACTION_OPTIONS, action)) || (!action && !help)) {
@@ -2144,6 +2151,99 @@ function requireTemplatePreviewRoot(receipt, root) {
 }
 
 
+const TEMPLATE_IMAGE_TYPES = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".svg": "image/svg+xml" };
+
+function keyValues(parsed, flag) {
+  const values = {};
+  for (const raw of optionList(parsed, flag)) {
+    const index = String(raw).indexOf("=");
+    if (index <= 0) fail("template", `${flag} takes name=value, got ${raw}`, { code: "OPTION_VALUE_INVALID" });
+    const name = raw.slice(0, index);
+    if (Object.hasOwn(values, name)) fail("template", `${flag} ${name} is given twice`, { code: "DUPLICATE_OPTION" });
+    values[name] = raw.slice(index + 1);
+  }
+  return values;
+}
+
+function templateBankCall(fn) {
+  try {
+    return fn();
+  } catch (error) {
+    if (error instanceof templateBank.BankError) fail("template", error.message, { code: error.code });
+    throw error;
+  }
+}
+
+function templatePng(root, parsed, svg, size, pngFile) {
+  const [width, height] = size.split("x");
+  const work = fs.mkdtempSync(path.join(os.tmpdir(), "template-png-"));
+  try {
+    const html = path.join(work, "index.html");
+    fs.writeFileSync(html, `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;padding:0;background:#fff}svg{display:block}</style></head><body>${svg}</body></html>`);
+    const args = ["--composition", html, "--output", path.join(work, "capture"), "--width", width, "--height", height];
+    if (option(parsed, "--chrome") !== null) args.push("--chrome", String(option(parsed, "--chrome")));
+    let puppeteerModule = option(parsed, "--puppeteer-module");
+    if (puppeteerModule === null) {
+      try { puppeteerModule = path.dirname(require.resolve("puppeteer-core/package.json", { paths: [root, process.cwd(), __dirname] })); } catch { puppeteerModule = null; }
+    }
+    if (puppeteerModule !== null) args.push("--puppeteer-module", String(puppeteerModule));
+    runKernel("capture-composition.cjs", args, root, { timeout: 120000 });
+    fs.copyFileSync(path.join(work, "capture", "screenshot.png"), pngFile);
+  } finally {
+    fs.rmSync(work, { recursive: true, force: true });
+  }
+  return pngFile;
+}
+
+// Template bank (skill/tools/template-bank): list, render with knobs and audit, check a render.
+function templateBankCommand(parsed, root, action, operand) {
+  if (action === "list") {
+    if (operand) fail("cli", "template list takes no positional argument", { code: "UNKNOWN_ARGUMENT" });
+    return { result: templateBankCall(() => templateBank.listTemplates({ family: option(parsed, "--family") })), exitCode: 0 };
+  }
+  if (action === "check") {
+    if (!operand) fail("template", "template check needs the rendered SVG: template check <file.svg>", { code: "OPTION_REQUIRED" });
+    const file = contained(root, operand, "<file.svg>");
+    const report = templateBankCall(() => templateBank.check(fs.readFileSync(file, "utf8")));
+    return { result: { ...report, file }, exitCode: report.status === "passed" ? 0 : 2 };
+  }
+  if (!operand) fail("template", `template render needs a template id: template render <id> -o <out.svg>; ids: ${templateBank.templateIds().join(", ")}`, { code: "OPTION_REQUIRED" });
+  const outRaw = option(parsed, "-o") ?? option(parsed, "--output");
+  if (option(parsed, "-o") !== null && option(parsed, "--output") !== null) fail("template", "give -o or --output, not both", { code: "DUPLICATE_OPTION" });
+  if (typeof outRaw !== "string" || !outRaw.trim()) fail("template", "template render needs -o <out.svg>", { code: "OPTION_REQUIRED" });
+  if (!/\.svg$/i.test(outRaw)) fail("template", `-o must end in .svg, got ${outRaw}`, { code: "OPTION_VALUE_INVALID" });
+  const pngRaw = option(parsed, "--png");
+  if (pngRaw !== null && !/\.png$/i.test(String(pngRaw))) fail("template", `--png must end in .png, got ${pngRaw}`, { code: "OPTION_VALUE_INVALID" });
+  const seedRaw = option(parsed, "--seed");
+  if (seedRaw !== null && !/^\d{1,9}$/.test(String(seedRaw))) fail("template", `--seed must be a whole number, got ${seedRaw}`, { code: "OPTION_VALUE_INVALID" });
+  const set = keyValues(parsed, "--set");
+  const manifest = templateBankCall(() => templateBank.loadManifest(operand));
+  for (const [name, value] of Object.entries(set)) {
+    const found = templateBank.slotSpec(manifest, name);
+    if (found?.spec.kind !== "image") continue;
+    const image = contained(root, value, `--set ${name}`);
+    const type = TEMPLATE_IMAGE_TYPES[path.extname(image).toLowerCase()];
+    if (!type) fail("template", `--set ${name} must be a ${Object.keys(TEMPLATE_IMAGE_TYPES).join(", ")} file, got ${value}`, { code: "OPTION_VALUE_INVALID" });
+    set[name] = `data:${type};base64,${fs.readFileSync(image).toString("base64")}`;
+  }
+  const rendered = templateBankCall(() => templateBank.render(operand, { set, params: keyValues(parsed, "--param"), size: option(parsed, "--size"), seed: seedRaw === null ? null : Number(seedRaw) }));
+  const output = contained(root, outRaw, "-o", false);
+  fs.mkdirSync(path.dirname(output), { recursive: true });
+  fs.writeFileSync(output, rendered.svg);
+  const png = pngRaw === null ? null : templatePng(root, parsed, rendered.svg, rendered.size, contained(root, pngRaw, "--png", false));
+  const report = templateBank.check(rendered.svg);
+  return {
+    result: {
+      status: report.status === "passed" ? "rendered" : "rendered-with-findings",
+      template: rendered.template, size: rendered.size, output, ...(png ? { png } : {}),
+      ...(seedRaw === null ? {} : { seed: Number(seedRaw), varied: Object.fromEntries(rendered.varied.map((name) => [name, rendered.params[name]])) }),
+      check: { status: report.status, summary: report.summary, findings: report.findings, notes: report.notes },
+      next: report.status === "passed" ? `Inspect the pixels (--png) against the brief; the check covers technical conformance only.` : "Apply each finding's fix and render again.",
+    },
+    exitCode: report.status === "passed" ? 0 : 2,
+  };
+}
+
 function templateCommand(parsed, root, action) {
   if (action === "inventory") {
     const catalogArtifact = readJson(artifact(parsed, root, "--catalog"), "region-template catalog");
@@ -2300,6 +2400,9 @@ const COMMANDS = {
       adapt: { required: ["--receipt", "--context"], run: ({ parsed, root }) => templateCommand(parsed, root, "adapt") },
       review: { required: ["--plan", "--review"], run: ({ parsed, root }) => templateCommand(parsed, root, "review") },
       approve: { required: ["--plan", "--approval"], run: ({ parsed, root }) => templateCommand(parsed, root, "approve") },
+      list: { run: ({ parsed }) => templateBankCommand(parsed, null, "list") },
+      render: { operand: true, run: ({ parsed, root, operand }) => templateBankCommand(parsed, root, "render", operand) },
+      check: { operand: true, run: ({ parsed, root, operand }) => templateBankCommand(parsed, root, "check", operand) },
     },
   },
   doctor: { run: doctorCommand },
@@ -2683,7 +2786,8 @@ function dispatch(argv) {
   if (option(parsed, "--help") === true || option(parsed, "-h") === true || !parsed.positionals.length || parsed.positionals[0] === "help") {
     return { result: { status: "help", help: publicHelp() }, exitCode: 0, json };
   }
-  if (parsed.positionals.length > 2) {
+  const operandEntry = parsed.positionals.length === 3 ? resolveCommand(parsed.positionals[0], parsed.positionals[1]) : null;
+  if (parsed.positionals.length > 2 && !operandEntry?.operand) {
     fail("cli", `unexpected positional arguments: ${parsed.positionals.slice(2).join(" ")}`, { code: "UNKNOWN_ARGUMENT" });
   }
   const [command, action] = parsed.positionals;
@@ -2698,7 +2802,7 @@ function dispatch(argv) {
   const root = rootFrom(parsed);
   const entry = resolveCommand(command, action);
   if (!entry) fail("cli", `unknown command: ${[command, action].filter(Boolean).join(" ")}`, { code: "UNKNOWN_COMMAND" });
-  const outcome = entry.run({ parsed, root, command, action, file: fileResolver(parsed, root, entry) });
+  const outcome = entry.run({ parsed, root, command, action, operand: parsed.positionals[2] ?? null, file: fileResolver(parsed, root, entry) });
   return { ...outcome, json };
 }
 
