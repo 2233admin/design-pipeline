@@ -651,7 +651,16 @@ function cutCollage(input, options) {
     if (backgroundSpread > unevenLimit) {
       findings.push({ code: "matte-uneven-background", severity: "warn", message: `background spread ${backgroundSpread} exceeds ${unevenLimit.toFixed(1)} (gradient, vignette or texture); the matte keeps backdrop or bites the object`, fix: mode === "border" ? "Rerun with --mode paper, narrow params.roi to the object, or use a plain-background photograph of the object" : "Narrow params.roi, raise params.threshold, or retouch the mask by hand before using the piece" });
     }
+    // A sizeable component left out (keep too low, or it fell under minFraction) is usually a wing,
+    // a second motif or a detached part the caller wanted.
+    if (order.length) {
+      const smallestKept = order[order.length - 1].size, keptLabels = new Set(order.map(({ label }) => label));
+      const dropped = components.sizes.map((size, index) => ({ size, label: index + 1 })).filter(({ size, label }) => !keptLabels.has(label) && size >= smallestKept * 0.25);
+      if (dropped.length) findings.push({ code: "matte-dropped-component", severity: "warn", message: `${dropped.length} discarded component(s) of ${dropped.map(({ size }) => size).join(", ")} px are at least 25% of the smallest kept piece (${smallestKept} px)`, fix: `Raise params.keep to ${order.length + dropped.length} (and lower params.minFraction if needed) if they are wanted parts, or exclude them with params.roi / params.exclude` });
+    }
     if (!order.length) findings.push({ code: "matte-empty", severity: "error", message: "no foreground component met minFraction", fix: "Lower params.threshold or params.minFraction, or check that the object differs from its background" });
+    const smoothL = gaussianBlur(lab.L, image.width, image.height, 2);
+    const backgroundL = median(borderIndices(image.width, image.height, 2).map((i) => lab.L[i]));
     const roiPx = [roi[0] * image.width, roi[1] * image.height, roi[2] * image.width, roi[3] * image.height];
     order.forEach(({ label }, k) => {
       const piece = new Float32Array(n);
@@ -666,9 +675,19 @@ function cutCollage(input, options) {
       rect.width = Math.min(image.width, maxX + 1 + pad) - rect.x; rect.height = Math.min(image.height, maxY + 1 + pad) - rect.y;
       const touches = minX <= roiPx[0] + 1 || minY <= roiPx[1] + 1 || maxX >= roiPx[2] - 2 || maxY >= roiPx[3] - 2;
       if (touches) findings.push({ code: "matte-touches-frame", severity: "warn", piece: k, message: `piece ${k} runs into the ${params.roi ? "roi" : "image"} edge; it probably carries backdrop, plate border or a neighbour`, fix: "Inspect the piece; narrow params.roi or add params.exclude rectangles around the frame, then cut again" });
+      // Cast shadow: a smooth, neutral region only slightly off the backdrop, inside the piece.
+      // Engraving hatching is also near the paper tone but is not smooth, so it does not count.
+      let shadowLike = 0;
+      for (let i = 0; i < n; i += 1) {
+        if (!piece[i]) continue;
+        const d = distance[i];
+        if (d > params.threshold && d < params.threshold * 4 && Math.hypot(lab.A[i], lab.B[i]) < 6 && Math.abs(lab.L[i] - smoothL[i]) < 1.5 && lab.L[i] < backgroundL) shadowLike += 1;
+      }
+      const shadowFraction = Number((shadowLike / components.sizes[label - 1]).toFixed(4));
+      if (shadowFraction > 0.1) findings.push({ code: "matte-cast-shadow", severity: "warn", piece: k, message: `${Math.round(shadowFraction * 100)}% of piece ${k} is a smooth neutral area just darker than the backdrop (likely a cast shadow)`, fix: mode === "paper" ? "Raise params.threshold until the shadow drops out, or erase it from the cut by hand" : "Rerun with --mode paper (it models soft backdrop shading) or raise params.threshold; erase leftovers by hand" });
       const cut = rgbaFromMask(image, alpha, rect);
       const id = `piece-${k}`;
-      pieces.push({ piece: k, area: components.sizes[label - 1], touchesFrame: touches });
+      pieces.push({ piece: k, area: components.sizes[label - 1], touchesFrame: touches, shadowFraction });
       if (finishes.includes("cut")) outputs.push({ name: `${id}.png`, finish: "cut", piece: k, image: cut, placement: rect });
       if (finishes.includes("sticker")) {
         const sticker = stickerImage(cut, { edgePx: params.edgePx ?? undefined, shadow: params.shadow, paper: params.paper });

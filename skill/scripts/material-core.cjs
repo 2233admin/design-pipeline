@@ -43,17 +43,18 @@ function listSources() {
     status: "ready",
     registry: "references/material-sources.json",
     sources: registry.sources.map(({ id, name, adapter, license, reachability, fix, strengths }) => ({ id, name, automated: Boolean(adapter), licenseField: license.field, reachability, ...(fix ? { fix } : {}), strengths })),
-    next: ["Re-measure with `materials sources --probe`; search the automated sources with `materials search --query \"key,butterfly\"`."],
+    next: ["Re-measure with `materials probe`; search the automated sources with `materials search --query \"key,butterfly\"`."],
   };
 }
 
 // ---- licence records (shared with film-edit) ------------------------------------------------
 
-function readRecords(dir) {
+// `scope` names the caller in errors (film-edit reads footage licences through the same function).
+function readRecords(dir, scope = SCOPE) {
   const file = path.join(dir, RECORDS);
   if (!fs.existsSync(file)) return {};
-  const records = readJson(file, "material licenses");
-  if (!records || typeof records !== "object" || Array.isArray(records)) fail(SCOPE, `${RECORDS} must be an object keyed by file`, { code: "CONTRACT_INVALID" });
+  const records = readJson(file, `${scope} licenses`);
+  if (!records || typeof records !== "object" || Array.isArray(records)) fail(scope, `${path.basename(dir)}/${RECORDS} must be an object keyed by file name, like {"<file>": {"license": "...", "commercialUse": true}}`, { code: "CONTRACT_INVALID" });
   return records;
 }
 
@@ -184,7 +185,7 @@ function cutMaterial(project, options) {
     outputs: written,
     measurements: result.measurements,
     findings,
-    visualAcceptance: "not-assessed",
+    creativeAcceptance: "not-assessed",
     next: ["Look at every piece at its use size before placing it: the measurements flag likely dirty mattes, they do not prove a clean one."],
   };
 }
@@ -252,11 +253,15 @@ class SourceError extends Error {
   }
 }
 
+// A bot challenge is an HTML page (Cloudflare, Incapsula); a JSON record that mentions "captcha" is content.
+function isChallenge(body) {
+  return /^\s*</.test(body) && /just a moment|cf-chl|_incapsula_resource|captcha/i.test(body);
+}
+
 function classify(httpStatus, body = "") {
-  const challenge = /just a moment|cf-chl|_incapsula_resource|captcha/i.test(body);
-  if (httpStatus >= 200 && httpStatus < 400) return challenge ? "blocked" : "reachable";
+  if (httpStatus >= 200 && httpStatus < 400) return isChallenge(body) ? "blocked" : "reachable";
   if (httpStatus === 429) return "rate-limited";
-  if (httpStatus === 401 || /api_key_missing|api key/i.test(body)) return "needs-key";
+  if (httpStatus === 401 || ((httpStatus === 403 || httpStatus === 400) && /api_key_missing|api[ _]key/i.test(body))) return "needs-key";
   if (httpStatus === 410) return "retired";
   if (httpStatus === 403) return "blocked";
   if (httpStatus === 404) return "not-found";
@@ -278,7 +283,13 @@ function httpClient(fetchImpl = globalThis.fetch) {
     return response;
   };
   return {
-    json: async (url, headers) => (await request(url, { Accept: "application/json", ...headers })).json(),
+    // Read text first: a challenge page answers 200 with HTML, which must report blocked, not a JSON SyntaxError.
+    json: async (url, headers) => {
+      const response = await request(url, { Accept: "application/json", ...headers });
+      const body = await response.text();
+      if (isChallenge(body)) throw new SourceError("blocked", `${url}: HTTP ${response.status} bot challenge page instead of data`, response.status);
+      try { return JSON.parse(body); } catch { throw new SourceError("error", `${url}: HTTP ${response.status} answered non-JSON: ${body.slice(0, 80).replace(/\s+/g, " ")}`, response.status); }
+    },
     bytes: async (url) => Buffer.from(await (await request(url)).arrayBuffer()),
     status: async (url) => {
       try {
@@ -290,6 +301,19 @@ function httpClient(fetchImpl = globalThis.fetch) {
       }
     },
   };
+}
+
+const RIJKS_OPEN = /^https?:\/\/creativecommons\.org\/publicdomain\/(zero|mark)\/1\.0\/?$/i;
+
+// Anchored allow-list for Commons LicenseShortName: CC0, "Public domain" (optionally "mark" or a
+// jurisdiction such as "in the United States"), or a PD-* template. Trademark and logo templates
+// (PD-textlogo, PD-trademark) say the copyright is void, not that the mark may be reused: refused.
+function commonsLicense(short) {
+  const value = String(short).trim();
+  if (/^cc0(\s|$|-)/i.test(value) || /^cc0$/i.test(value)) return "CC0";
+  if (/^pd-/i.test(value)) return /textlogo|trademark|logo|shape|insignia/i.test(value) ? value : "public-domain";
+  if (/^public domain( mark( 1\.0)?| in [a-z .]+)?$/i.test(value)) return "public-domain";
+  return value;
 }
 
 const firstText = (value) => (Array.isArray(value) ? value.map(firstText).find(Boolean) : typeof value === "string" ? value : null);
@@ -309,7 +333,9 @@ const ADAPTERS = {
       return (data.data || []).map((item) => ADAPTERS.cleveland.normalize(item));
     },
     async object(http, id) {
-      return ADAPTERS.cleveland.normalize((await http.json(`https://openaccess-api.clevelandart.org/api/artworks/${encodeURIComponent(id)}`)).data);
+      const data = (await http.json(`https://openaccess-api.clevelandart.org/api/artworks/${encodeURIComponent(id)}`))?.data;
+      if (!data || typeof data !== "object") throw new SourceError("error", `cleveland ${id}: no artwork record`);
+      return ADAPTERS.cleveland.normalize(data);
     },
     normalize(item) {
       const image = item.images?.print || item.images?.web || null;
@@ -353,11 +379,17 @@ const ADAPTERS = {
       let imageUrl = null, rights = null, pageUrl = null;
       for (const subject of item.subject_of || []) for (const carrier of subject.digitally_carried_by || []) {
         const point = carrier.access_point?.[0]?.id;
-        if (point && /iiif/.test(point) && !imageUrl) { imageUrl = point; rights = firstText((carrier.referred_to_by || []).map((entry) => entry.content)); }
+        if (point && /iiif/.test(point) && !imageUrl) {
+          imageUrl = point;
+          const statements = (carrier.referred_to_by || []).map((entry) => entry.content).filter((value) => typeof value === "string");
+          rights = statements.find((value) => RIJKS_OPEN.test(value.trim())) || firstText(statements);
+        }
         if (point && carrier.format === "text/html" && !pageUrl) pageUrl = point;
       }
       const names = (item.identified_by || []).filter((entry) => entry.type === "Name").map((entry) => entry.content);
-      const license = /publicdomain\/zero/.test(rights || "") ? "CC0" : /publicdomain\/mark/.test(rights || "") ? "PDM" : rights || "unknown";
+      // Only an exact Creative Commons public-domain URL counts; text that merely mentions one does not.
+      const match = RIJKS_OPEN.exec((rights || "").trim());
+      const license = match ? (match[1] === "zero" ? "CC0" : "PDM") : rights || "unknown";
       return {
         id: String(id), title: names[0] || id, author: findStatement(item.produced_by) || "unknown", date: null,
         pageUrl: pageUrl || item.id, imageUrl, imageSize: null, license, licenseEvidence: `image rights=${rights}`,
@@ -376,11 +408,14 @@ const ADAPTERS = {
       if (!info) throw new SourceError("error", `${title}: no such file on Commons`);
       const meta = info.extmetadata || {}, value = (key) => (meta[key]?.value ? String(meta[key].value).replace(/<[^>]+>/g, "").trim() : null);
       const short = value("LicenseShortName") || "unknown";
-      const license = /^cc0/i.test(short) ? "CC0" : /public domain|^pd\b|^pd-/i.test(short) ? "public-domain" : short;
+      const license = commonsLicense(short);
+      // Restrictions (trademarked, personality rights, insignia...) limit reuse whatever the copyright status.
+      const restrictions = value("Restrictions");
       return {
         id: page.title, title: value("ObjectName") || page.title, author: value("Artist") || "unknown", date: value("DateTimeOriginal"),
         pageUrl: info.descriptionurl, imageUrl: info.thumburl || info.url, imageSize: info.thumbwidth ? `${info.thumbwidth}x${info.thumbheight}` : null,
-        license, licenseEvidence: `LicenseShortName=${short}`,
+        license, licenseEvidence: `LicenseShortName=${short}${restrictions ? `; Restrictions=${restrictions}` : ""}`,
+        ...(restrictions ? { restrictions } : {}),
       };
     },
   },
@@ -409,7 +444,7 @@ async function searchSources({ query, sources, limit = 5, http = httpClient() })
     }
   }
   return {
-    status: results.length ? "found" : "empty",
+    status: results.length ? "found" : unavailable.length ? "blocked" : "empty",
     terms,
     candidates: results,
     unavailable,
@@ -442,6 +477,9 @@ async function fetchMaterial({ project, sourceId, id, use, name, width = 1200, r
   }
   if (!isOpenLicense(item.license)) {
     return { status: "refused", source: sourceId, id: item.id, license: item.license, licenseEvidence: item.licenseEvidence, message: `${item.title} is ${item.license}, not CC0 or public domain`, fix: "Pick a CC0 / public-domain object; attribution or non-commercial licences are not fetched automatically" };
+  }
+  if (item.restrictions) {
+    return { status: "refused", source: sourceId, id: item.id, license: item.license, restrictions: item.restrictions, licenseEvidence: item.licenseEvidence, message: `${item.title} is ${item.license} but carries restrictions: ${item.restrictions}`, fix: "Pick a file without restrictions; if the owner has cleared this use, download it and record it with materials add --license <licence> --by <author> (commercialUse stays false unless --commercial-use)" };
   }
   if (!item.imageUrl) return { status: "refused", source: sourceId, id: item.id, message: "the record has no downloadable image", fix: "Pick another object" };
   const rel = `raw/${name ? slug(name) : `${source.id}-${slug(item.id)}`}.png`;
@@ -500,6 +538,7 @@ function summarize(routes) {
 
 async function probeSources({ http = httpClient(), sources } = {}) {
   const registry = loadRegistry(), checkedAt = today(), out = [];
+  for (const id of sources || []) sourceById(id);
   for (const source of registry.sources.filter((entry) => !sources?.length || sources.includes(entry.id))) {
     const routes = {};
     for (const [route, url] of Object.entries(source.probes || {})) routes[route] = { url, ...(await http.status(url)) };
@@ -507,6 +546,15 @@ async function probeSources({ http = httpClient(), sources } = {}) {
     // An intermittent rate limit answers either way on a single probe; only another status is drift.
     const drift = source.reachability.intermittent ? !["reachable", "rate-limited"].includes(measured) : measured !== recorded;
     out.push({ id: source.id, recorded, measured, drift, ...(source.reachability.intermittent ? { intermittent: true } : {}), routes });
+  }
+  // Every route failing at the network level says nothing about the sources: the environment is offline.
+  if (out.every((entry) => Object.values(entry.routes).every((route) => route.status === "unreachable"))) {
+    return {
+      status: "unreachable-env",
+      checkedAt,
+      sources: out,
+      next: ["No route answered at the network level (DNS, proxy or offline). Fix the network and probe again; the registry is unchanged and must not be edited from this result."],
+    };
   }
   return {
     status: out.some((entry) => entry.drift) ? "drift" : "matches",

@@ -235,6 +235,7 @@ test("owner-supplied files register in the same records; cut pieces inherit lice
   assert.equal(added.record.sourceUrl, "owner-supplied");
   const cut = cli(["materials", "cut", ...base, "--file", "materials/owner/key-photo.png", "--mode", "paper", "--finish", "cut,sticker", "--params", '{"threshold":14}']);
   assert.equal(cut.exitCode, 0, JSON.stringify(cut));
+  assert.equal(cut.creativeAcceptance, "not-assessed");
   assert.deepEqual(cut.outputs.map((o) => o.file), ["materials/cut/key-photo/piece-0.png", "materials/cut/key-photo/piece-0-sticker.png"]);
   const records = materials.readRecords(dir);
   assert.equal(records["cut/key-photo/piece-0.png"].license, "owner-photo");
@@ -279,4 +280,98 @@ test("film-edit footage licences still read through the shared records", () => {
   const records = { "bars.mp4": { license: "generated", commercialUse: true } };
   assert.deepEqual(materials.licenseOf(records, "bars.mp4", "bars"), { license: "generated", commercialUse: true });
   assert.deepEqual(materials.licenseOf(records, "other.mp4", "other"), { license: "unrecorded", commercialUse: false });
+});
+
+// ---- review fixes (#289): exact licence matching, restrictions, probe exits, challenges, film-edit scope ----
+
+const metaHttp = (meta) => ({ json: async () => meta, bytes: async () => { throw new Error("must not download"); } });
+const commonsMeta = (short, restrictions) => ({ query: { pages: { 1: { title: "File:X.jpg", imageinfo: [{ url: "https://upload.wikimedia.org/x.jpg", descriptionurl: "d", extmetadata: { LicenseShortName: { value: short }, ...(restrictions ? { Restrictions: { value: restrictions } } : {}) } }] } } } });
+
+test("licence fields match exactly: look-alikes, logo templates and credit lines are not open", async () => {
+  const commonsCases = { "Public domain": "public-domain", "Public domain in the United States": "public-domain", "PD-old-100": "public-domain", CC0: "CC0", "Not public domain": "Not public domain", "PD-textlogo": "PD-textlogo", "PD-trademark": "PD-trademark", "PDM-owner": "PDM-owner", "CC BY-SA 4.0": "CC BY-SA 4.0" };
+  for (const [short, expected] of Object.entries(commonsCases)) {
+    const item = await materials.ADAPTERS.wikimedia.object(metaHttp(commonsMeta(short)), "X.jpg");
+    assert.equal(item.license, expected, short);
+  }
+  const rights = async (statements) => (await materials.ADAPTERS.rijksmuseum.object(metaHttp({ id: "x", subject_of: [{ digitally_carried_by: [{ access_point: [{ id: "https://iiif.micr.io/a/full/max/0/default.jpg" }], referred_to_by: statements.map((content) => ({ content })) }] }] }), "x")).license;
+  assert.equal(await rights(["© Photo: X, all rights reserved", "https://creativecommons.org/publicdomain/zero/1.0/"]), "CC0", "the open URL wins over a credit line listed first");
+  assert.ok(!materials.isOpenLicense(await rights(["Not under https://creativecommons.org/publicdomain/mark/1.0/ ; rights reserved"])));
+  assert.equal(await rights([]), "unknown");
+  assert.equal((await materials.ADAPTERS.met.object(metaHttp({ objectID: 1, isPublicDomain: "true", primaryImage: "u" }), 1)).license, "not-public-domain");
+  assert.equal((await materials.ADAPTERS.cleveland.object(metaHttp({ data: { id: 1, share_license_status: "cc0", images: {} } }), 1)).license, "cc0");
+  await assert.rejects(materials.ADAPTERS.cleveland.object(metaHttp({}), 1), (error) => error instanceof materials.SourceError);
+});
+
+test("a Commons file with Restrictions is refused with the restriction, even when public domain", async () => {
+  const root = project("restricted");
+  const { http } = stubFetch({ "https://commons.wikimedia.org/w/api.php": commonsMeta("Public domain", "trademarked"), "https://upload.wikimedia.org/": encodePng(flat()) });
+  const result = await materials.fetchMaterial({ project: root, sourceId: "wikimedia", id: "File:X.jpg", http });
+  assert.equal(result.status, "refused");
+  assert.equal(result.restrictions, "trademarked");
+  assert.match(result.fix, /materials add/);
+  assert.ok(!fs.existsSync(path.join(root, "materials")));
+});
+
+test("probe: offline is an environment failure, unknown source a usage error; classification is content-aware", async () => {
+  const offline = await materials.probeSources({ http: { status: async () => ({ httpStatus: null, status: "unreachable", error: "ENOTFOUND" }) } });
+  assert.equal(offline.status, "unreachable-env");
+  assert.ok(!offline.next.join(" ").includes("Update reachability"));
+  assert.match(offline.next[0], /must not be edited/);
+  const down = await materials.probeSources({ http: { status: async () => ({ httpStatus: 503, status: materials.classify(503, "") }) }, sources: ["cleveland"] });
+  assert.deepEqual([down.status, down.sources[0].measured], ["drift", "error"]);
+  await assert.rejects(materials.probeSources({ sources: ["nope"] }), (error) => error.code === "OPTION_VALUE_INVALID");
+  const cli = execute(["materials", "probe", "--source", "nope", "--json"]);
+  assert.equal(cli.exitCode, 1);
+  assert.match(cli.output.error.message, /unknown source nope/);
+  assert.equal(materials.classify(200, '{"data":[{"title":"Captcha study"}]}'), "reachable");
+  assert.equal(materials.classify(500, "internal error while checking API key"), "error");
+  assert.equal(materials.classify(400, "Invalid api key format"), "needs-key");
+});
+
+test("a 200 bot-challenge page reports blocked instead of a JSON parse error", async () => {
+  const challenge = () => new Response("<html><title>Just a moment...</title></html>", { status: 200, headers: { "content-type": "text/html" } });
+  const { http } = stubFetch({ "https://": challenge });
+  const root = project("challenge");
+  const fetched = await materials.fetchMaterial({ project: root, sourceId: "cleveland", id: "1", http });
+  assert.deepEqual([fetched.status, fetched.reason], ["blocked", "blocked"]);
+  const searched = await materials.searchSources({ query: "key", sources: ["cleveland", "met"], http });
+  assert.equal(searched.status, "blocked");
+  assert.deepEqual(searched.unavailable.map((entry) => entry.status), ["blocked", "blocked"]);
+});
+
+test("film-edit licence errors name film edit and show the expected shape", () => {
+  const { sourceList } = require("../skill/scripts/edit-project-core.cjs");
+  for (const body of ["[]", "null", '"hello"']) {
+    const root = project(`film-${body.length}-${body[0] === "[" ? "a" : body[0] === "n" ? "n" : "s"}`);
+    fs.mkdirSync(path.join(root, "sources"));
+    fs.writeFileSync(path.join(root, "sources", "Clip A.mp4"), "x");
+    fs.writeFileSync(path.join(root, "sources", "licenses.json"), body);
+    assert.throws(() => sourceList(root, "sources"), (error) => /^film edit: sources\/licenses\.json must be an object/.test(error.message), body);
+  }
+  const root = project("film-ok");
+  fs.mkdirSync(path.join(root, "sources"));
+  fs.writeFileSync(path.join(root, "sources", "Clip A.mp4"), "x");
+  fs.writeFileSync(path.join(root, "sources", "licenses.json"), JSON.stringify({ "Clip A.mp4": null, "clip-a": { license: "PD", commercialUse: "yes" } }));
+  assert.deepEqual(sourceList(root, "sources").map(({ license, commercialUse }) => ({ license, commercialUse })), [{ license: "PD", commercialUse: false }]);
+});
+
+test("cut warns about a dropped wing and a cast shadow; paper mode removes the shadow", () => {
+  const twoWings = paint(canvas(300, 300, () => [250, 247, 240]), (x, y) => ((x - 100) / 45) ** 2 + ((y - 150) / 70) ** 2 < 1 || ((x - 205) / 45) ** 2 + ((y - 150) / 70) ** 2 < 1, [200, 215, 180]);
+  const dropped = cutCollage(encodePng(twoWings), { mode: "border", finishes: ["cut"] });
+  assert.ok(dropped.findings.some((f) => f.code === "matte-dropped-component" && /params\.keep to 2/.test(f.fix)), JSON.stringify(dropped.findings));
+  assert.ok(!cutCollage(encodePng(twoWings), { mode: "border", finishes: ["cut"], params: { keep: 2 } }).findings.some((f) => f.code === "matte-dropped-component"));
+  const shadowed = canvas(300, 300, (x, y) => {
+    if ((x - 150) ** 2 + (y - 130) ** 2 < 3600) return [40, 35, 30];
+    const d = ((x - 185) / 80) ** 2 + ((y - 185) / 35) ** 2;
+    const v = d < 1 ? Math.round(245 - 60 * (1 - d)) : 245;
+    return [v, v, v];
+  });
+  const border = cutCollage(encodePng(shadowed), { mode: "border", finishes: ["cut"] });
+  assert.ok(border.findings.some((f) => f.code === "matte-cast-shadow" && /--mode paper/.test(f.fix)), JSON.stringify(border.measurements));
+  const paper = cutCollage(encodePng(shadowed), { mode: "paper", finishes: ["cut"] });
+  assert.ok(!paper.findings.some((f) => f.code === "matte-cast-shadow"));
+  assert.ok(paper.measurements.pieces[0].area < border.measurements.pieces[0].area);
+  // Engraving-like hatching near the paper tone is not a shadow.
+  const hatched = cutCollage(encodePng(print()), { mode: "paper", finishes: ["cut"], params: { threshold: 18, keep: 2, close: 3 } });
+  assert.ok(!hatched.findings.some((f) => f.code === "matte-cast-shadow"));
 });

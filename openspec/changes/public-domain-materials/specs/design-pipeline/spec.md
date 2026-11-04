@@ -14,6 +14,11 @@ The skill SHALL list public-domain/CC0 image sources with query route, licence f
 - **WHEN** a Met object has `isPublicDomain` false or a Commons file is CC BY-SA
 - **THEN** fetch SHALL return `refused` with the licence evidence, write no file and exit 2
 
+#### Scenario: Look-alike or restricted licence
+
+- **WHEN** a Commons file's licence is "Not public domain" or `PD-textlogo`, a Rijksmuseum rights text only mentions a public-domain URL, or a Commons file lists Restrictions such as trademarked
+- **THEN** fetch SHALL refuse it with the evidence (and the restriction), and SHALL never record `commercialUse: true` for it
+
 #### Scenario: Blocked or keyed source
 
 - **WHEN** fetch or search targets NYPL, BHL, Smithsonian or a source answering 429 or a bot challenge
@@ -23,6 +28,16 @@ The skill SHALL list public-domain/CC0 image sources with query route, licence f
 
 - **WHEN** `materials probe` measures a status other than the registry's recorded one
 - **THEN** it SHALL report the source as drift with the HTTP evidence and exit 2
+
+#### Scenario: Offline environment
+
+- **WHEN** no probed route answers at the network level, or `--source` names an unknown source
+- **THEN** probe SHALL exit 1 as an environment or usage error and SHALL not suggest editing the registry
+
+#### Scenario: Challenge page with 200
+
+- **WHEN** search or fetch receives an HTML bot-challenge page with status 200
+- **THEN** the source SHALL be reported `blocked` and the command SHALL exit 2, not fail on JSON parsing
 
 #### Scenario: Owner-supplied material
 
@@ -38,6 +53,11 @@ The skill SHALL list public-domain/CC0 image sources with query route, licence f
 - **WHEN** an object on a studio gradient is cut with `--mode border`
 - **THEN** the result SHALL include `matte-uneven-background` whose fix names `--mode paper`, and the same image cut with `--mode paper` SHALL separate the object without that finding
 
+#### Scenario: Dropped part and cast shadow
+
+- **WHEN** a second wing as large as the kept piece is discarded by `keep`, or a soft grey shadow is cut with the object in `border` mode
+- **THEN** the result SHALL include `matte-dropped-component` naming the `keep` to use, or `matte-cast-shadow` whose fix names `--mode paper`
+
 #### Scenario: Stale piece
 
 - **WHEN** a raw source is replaced after its pieces were cut
@@ -51,4 +71,4 @@ The skill SHALL list public-domain/CC0 image sources with query route, licence f
 #### Scenario: Not visual acceptance
 
 - **WHEN** a cut reports no findings
-- **THEN** the result SHALL still state `visualAcceptance: not-assessed`
+- **THEN** the result SHALL still state `creativeAcceptance: not-assessed`

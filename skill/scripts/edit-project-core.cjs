@@ -27,7 +27,7 @@ function sourceList(root, sourcesDir) {
   const files = fs.readdirSync(dir).filter((name) => VIDEO.test(name)).sort();
   if (!files.length) fail("film edit", `${sourcesDir}/ has no video files`, { code: "INPUT_MISSING" });
   // Same licenses.json record shape as `materials` (license, commercialUse, optional provenance).
-  const licenses = readRecords(dir);
+  const licenses = readRecords(dir, "film edit");
   return files.map((name) => {
     const id = name.replace(VIDEO, "").replace(/[^a-z0-9_-]+/gi, "-").toLowerCase();
     return { id, file: path.posix.join(sourcesDir.split(path.sep).join("/"), name), path: path.join(dir, name), ...licenseOf(licenses, name, id) };

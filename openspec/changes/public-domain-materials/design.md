@@ -11,9 +11,17 @@ typed arrays and the existing PNG codec; JPEG downloads are converted by ffmpeg,
    footage. Materials use the same file name and shape under `materials/`, keyed by path relative to that
    directory, with optional provenance fields: `kind`, `source`, `sourceId`, `title`, `author`, `date`,
    `sourceUrl`, `fileUrl`, `licenseEvidence`, `retrieved`, `use`, `sha256`, `width`, `height`, `derivedFrom`.
-   `material-core.cjs` owns the reader; `edit-project-core.cjs` now calls `readRecords` + `licenseOf` instead of
-   its inline reader, so footage behaviour is unchanged (unrecorded → `unrecorded`, non-commercial).
-2. **Open licences only for automated fetch.** `fetch` accepts `CC0`, `PDM` (public domain mark) and
+   `material-core.cjs` owns the reader; `edit-project-core.cjs` now calls `readRecords(dir, "film edit")` +
+   `licenseOf` instead of its inline reader. Valid files behave as before (unrecorded → `unrecorded`,
+   non-commercial); a `licenses.json` that is an array, null or a string now fails with a `film edit:` error
+   that shows the expected shape (before: an array was silently ignored and null crashed with a TypeError).
+2. **Open licences only for automated fetch, matched exactly.** Commons `LicenseShortName` goes through an anchored
+   allow-list (`CC0`, `Public domain` with optional "mark" or jurisdiction, `PD-*` except textlogo, trademark,
+   logo, shape and insignia templates); "Not public domain" is not a match. A non-empty Commons `Restrictions`
+   field (trademarked, personality rights) refuses the file with the restriction shown, whatever its licence.
+   Rijksmuseum counts only a rights statement that is exactly a CC zero or mark URL; credit lines and text that
+   mentions such a URL do not. A Cleveland answer without a record is a source error, not a crash.
+    `fetch` accepts `CC0`, `PDM` (public domain mark) and
    `public-domain`, read from each source's own field (Cleveland `share_license_status`, Met `isPublicDomain`,
    Rijksmuseum the image's rights statement, Commons `LicenseShortName`). The Met's search filter
    `isPublicDomain=true` still returns non-PD objects (measured: object 14548), so the object record decides.
@@ -23,6 +31,12 @@ typed arrays and the existing PNG codec; JPEG downloads are converted by ffmpeg,
    Incapsula challenge → blocked), 429 → rate-limited, 401 or a missing-API-key body → needs-key, 403 → blocked,
    410 → retired, 404 on the API with a reachable site → html-only. Commons is marked `intermittent` so a single
    probe answering 200 or 429 is not drift. Updating the registry is a reviewed edit, not something probe writes.
+   When no route answers at the network level (DNS, proxy, offline), probe reports `unreachable-env` and exits 1
+   without suggesting a registry edit; an unknown `--source` is a usage error (exit 1). Exit 2 is reserved for
+   per-source drift. A challenge is recognised only in an HTML body, so a JSON record that mentions "captcha" is
+   content; `needs-key` from the body only on 400/401/403. Search and fetch read the body as text first, so a
+   200 challenge page reports `blocked` (exit 2) instead of a JSON parse error; search with no candidates and
+   unavailable sources is `blocked`.
 4. **Measured on 2026-11-05 (this environment):**
 
    | Source | Result |
@@ -55,8 +69,13 @@ typed arrays and the existing PNG codec; JPEG downloads are converted by ffmpeg,
    (seeded jittered polygon). Deterministic for a seed.
 8. **Dirty-matte flags are warnings with a fix, not a gate.** `matte-uneven-background` (90th percentile of the
    border's distance from its reference above 0.6 × threshold), `matte-touches-frame`, `matte-empty` (error),
-   `ink-low-contrast`. A "soft halo" fraction was tried and dropped: it fired on every engraving because light
-   hatching sits near the paper tone. Cast shadows on plain grounds are documented as not detected.
+   `ink-low-contrast`, `matte-dropped-component` (a discarded component at least 25% of the smallest kept piece)
+   and `matte-cast-shadow` (over 10% of a piece is neutral, smooth at σ=2 and just darker than the backdrop,
+   within 1-4 × threshold). A plain "soft halo" fraction was tried first and dropped: it fired on every
+   engraving because light hatching sits near the paper tone; requiring smoothness and neutrality removes that.
+   Measured on the study's sources: the shadow flag fires on Met key 200615 (16%) and the padlock (28%, 20%),
+   both with visible cast shadows, and stays under 8% on the other objects and under 6% on all engravings and
+   botanical plates. Results report `creativeAcceptance: not-assessed`, the repository's gate-result field.
 9. **Lineage.** Each piece's record holds `derivedFrom` {file, sha256, finish, placement, mode, params} and
    inherits the source licence. `check` reports `material-derived-stale` when the source hash moved,
    `material-derived-orphan` when the source is gone, `material-changed` when a recorded source was edited, and

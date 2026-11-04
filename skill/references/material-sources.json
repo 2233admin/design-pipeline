@@ -1,6 +1,6 @@
 {
   "schema": "design-pipeline.material-sources.v1",
-  "purpose": "Public-domain and CC0 image sources for collage, sticker and print-texture materials. Reachability is what this environment measured on the stated date; rerun `materials sources --probe` before relying on it.",
+  "purpose": "Public-domain and CC0 image sources for collage, sticker and print-texture materials. Reachability is what this environment measured on the stated date; rerun `materials probe` before relying on it.",
   "openLicenses": [
     "CC0",
     "PDM",
