@@ -8,16 +8,13 @@ const { canonicalTree, copyTrackedFiles, fail, frontmatter, inspectCheckout } = 
 
 const destination = path.resolve(__dirname, "../skill/vendor/taste-skill");
 const repository = "https://github.com/Leonxlnx/taste-skill";
-const reviewedRevision = "12af471f627f866411b4bd785b19646d3672784c";
-const reviewedGitTree = "db698c9093437ee7daea871f70b48d06a838038e";
-const reviewedTreeSha256 = "e12cc2e63faba012ac716039de7cdd26da29cf1b2b48e065eca81aec910fc91e";
+// The revision comes from the checkout: sources.lock.json records which upstream HEAD was imported
+// (scripts/sources-update.cjs). The checks below are structural, so an upstream restructure fails.
 // Upstream v2.1.3 made the repository one skill. The classic styles now live in
 // Leonxlnx/taste-skill-classics and the image-generation skills in Leonxlnx/imagegen-skills.
 const reviewedSkills = new Map([
   ["taste-skill", "design-taste-frontend"],
 ]);
-const reviewedFileCount = 72;
-const reviewedByteCount = 3093372;
 const reviewedTools = ["draw.mjs", "inspect.mjs", "lint.mjs", "assets.mjs", "scenes.mjs"].map(file => `skills/taste-skill/scripts/${file}`);
 
 // The reviewed entry's description is a folded YAML block scalar (`description: >-`), which the shared
@@ -68,13 +65,11 @@ function importSnapshot(source, reviewedAt) {
   const checkout = inspectCheckout(source);
   const license = checkout.blobs.get("LICENSE")?.toString("utf8") || "";
   if (!license.startsWith("MIT License") || !license.includes("Copyright (c) 2026 Leonxlnx")) fail("source LICENSE does not match reviewed Taste-Skill MIT attribution");
-  if (checkout.revision !== reviewedRevision) fail(`source revision must be the reviewed ${reviewedRevision}; received ${checkout.revision}`);
-  if (checkout.gitTree !== reviewedGitTree) fail("source Git tree does not match reviewed Taste-Skill tree");
   const files = checkout.indexEntries.map(entry => entry.path);
   const byteCount = checkout.indexEntries.reduce((sum, entry) => sum + entry.size, 0);
   const skillFiles = files.filter(file => /^skills\/[^/]+\/SKILL\.md$/.test(file));
-  if (files.length !== reviewedFileCount || byteCount !== reviewedByteCount || skillFiles.length !== reviewedSkills.size) {
-    fail(`reviewed source inventory does not match ${reviewedFileCount} files, ${reviewedByteCount} bytes and ${reviewedSkills.size} skill`);
+  if (skillFiles.length !== reviewedSkills.size) {
+    fail(`upstream ships ${skillFiles.length} skills (${skillFiles.join(", ")}); the importer maps ${[...reviewedSkills.keys()].join(", ")}`);
   }
 
   fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -88,7 +83,6 @@ function importSnapshot(source, reviewedAt) {
     fs.mkdirSync(upstream);
     copyTrackedFiles(upstream, checkout.indexEntries, checkout.blobs);
     const treeSha256 = canonicalTree(upstream, files);
-    if (treeSha256 !== reviewedTreeSha256) fail("source content does not match reviewed Taste-Skill tree hash");
     const skills = skillFiles.map(file => {
       const directory = file.split("/")[1];
       const entry = path.join(upstream, storedPath(file));
@@ -124,7 +118,7 @@ function importSnapshot(source, reviewedAt) {
 
 if (require.main === module) try {
   const options = parseArgs(process.argv.slice(2));
-  if (options.help) process.stdout.write("Usage: node scripts/import-taste-skill.cjs --source <clean-reviewed-checkout> --reviewed-at YYYY-MM-DD\n");
+  if (options.help) process.stdout.write("Usage: node scripts/import-taste-skill.cjs --source <clean-checkout> --reviewed-at YYYY-MM-DD\n");
   else {
     const manifest = importSnapshot(options.source, options.reviewedAt);
     process.stdout.write(`${JSON.stringify({ status: "imported", revision: manifest.source.revision, files: manifest.snapshot.fileCount, skills: manifest.skills.length, treeSha256: manifest.snapshot.treeSha256 })}\n`);

@@ -14,9 +14,22 @@ function semanticName(name) {
   return name.replace(/^--/, "").replace(/[^A-Za-z0-9_-]+/g, ".").replace(/[-_]+/g, ".").replace(/^\.+|\.+$/g, "");
 }
 
+// Hex, CSS color functions, the two keywords, or an alias to a `--color-*` token.
+function isColorValue(value) {
+  if (typeof value !== "string") return false;
+  const text = value.trim();
+  return /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(text)
+    || /^(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|color-mix|light-dark)\(.*\)$/i.test(text)
+    || /^(?:transparent|currentcolor)$/i.test(text)
+    || /^var\(--color-[A-Za-z0-9-]+\)$/.test(text);
+}
+
 function inferType(role, value) {
   const name = role.toLowerCase().replace(/[._]+/g, "-");
   if (name.startsWith("color-") || name === "color") return "color";
+  // A `-color` name elsewhere (for example `focus-outline-color`) is a color only when its value is one.
+  if (name.endsWith("-color") && isColorValue(value)) return "color";
+  if (/(?:^|-)(?:border|outline)(?:-[a-z]+)*-style$/.test(name) && /^(?:solid|dashed|dotted|double|groove|ridge|outset|inset)$/.test(String(value))) return "strokeStyle";
   if (name.startsWith("shadow-") || name === "shadow") return "shadow";
   if (name.startsWith("duration-") || name === "duration") return "duration";
   if (name.startsWith("ease-") || name.startsWith("easing-")) return "cubicBezier";

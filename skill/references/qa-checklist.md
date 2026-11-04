@@ -112,9 +112,9 @@ For UI, interaction and film changes, continue the real journey or play the chan
 audio after technical checks; retain applicable owner review. A deterministic regression does
 not establish creative quality or replace playback and Visual Acceptance.
 
-Methods adapted from Matt Pocock's pinned [TDD](https://github.com/mattpocock/skills/blob/f3fc5632f401156837ee3872f14fe33ccf1024ea/skills/engineering/tdd/SKILL.md),
-[diagnosis](https://github.com/mattpocock/skills/blob/f3fc5632f401156837ee3872f14fe33ccf1024ea/skills/engineering/diagnosing-bugs/SKILL.md) and
-[module design](https://github.com/mattpocock/skills/blob/f3fc5632f401156837ee3872f14fe33ccf1024ea/skills/engineering/codebase-design/SKILL.md).
+Methods adapted from Matt Pocock's pinned [TDD](https://github.com/mattpocock/skills/blob/4ae2317ddb22b046e26455e4f9c9b3aaaf62212d/skills/engineering/tdd/SKILL.md),
+[diagnosis](https://github.com/mattpocock/skills/blob/4ae2317ddb22b046e26455e4f9c9b3aaaf62212d/skills/engineering/diagnosing-bugs/SKILL.md) and
+[module design](https://github.com/mattpocock/skills/blob/4ae2317ddb22b046e26455e4f9c9b3aaaf62212d/skills/engineering/codebase-design/SKILL.md).
 
 ## Self-Check
 

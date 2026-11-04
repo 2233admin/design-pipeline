@@ -35,7 +35,7 @@ A token may raise a floor, never lower it below the WCAG values (24px targets, 4
 | `audit.font-size` | Visible and generated text is at least `minFontPx`; with `fontSizes`, on that scale within 0.1px | 12px | `typography` scale → `thresholds.fontSizes`, `thresholds.minFontPx` | LA `font-size`; `ID/better-typography/spacing-and-sizing.md` |
 | `audit.tabular-numbers` | Digits 0-9 of declared numbers and inferred numeric cells render at equal advance within 0.5px | none | `declare.numbers` | LA `tabular-numbers`; `MI/typography.md`, `ID/better-typography/variable-fonts-and-opentype.md` |
 | `audit.numeric-alignment` | Inferred numeric table cells align to the end edge | none | none | LA `numeric-alignment`; `ID/better-layout/grouping-and-alignment.md` |
-| `audit.text-contrast` | WCAG 2 ratio of visible and generated text over a resolved solid background (generated text over its own background, or the one behind its box, placed by its insets and margins); gradient, image, translucent, shadowed or overlapped paint, generated text that is transformed, relatively offset, sticky or unplaceable, even on its own background, and opacity, a filter or blending on the text or any ancestor, are `indeterminate` | 4.5:1; 3:1 at ≥24px or bold ≥18.67px | `colors` roles are what is measured; stricter targets → `thresholds.contrastNormal`, `contrastLarge` | LA `text-contrast`; `FA`, `ID/better-colors/accessibility-contrast.md` |
+| `audit.text-contrast` | WCAG 2 ratio of visible and generated text over a resolved solid background (generated text over its own background, or the one behind its box, placed by its insets and margins); gradient, image, translucent, shadowed or overlapped paint, generated text that is transformed, relatively offset, sticky or unplaceable, even on its own background, and opacity, a filter or blending on the text or any ancestor, are `indeterminate` | 4.5:1; 3:1 at ≥24px or bold ≥18.67px | `colors` roles are what is measured; stricter targets → `thresholds.contrastNormal`, `contrastLarge` | LA `text-contrast`; `FA`, `ID/better-colors/contrast.md` |
 | `audit.root-background` | The root paints an opaque background color | none | `colors` background | LA `root-background` |
 | `audit.horizontal-overflow` | The document is no wider than the viewport | 1px | none | LA `horizontal-overflow`; `ID/better-accessibility/motion-and-zoom.md` (reflow) |
 | `audit.viewport-bounds` | Visible boxes and text stay inside the viewport horizontally, overlays also vertically | 1px | none | LA `viewport-bounds`; `ID/better-interface/UPSTREAM-SKILL.md`, `ID/better-layout/spacing-and-adaptivity.md` |
@@ -121,7 +121,7 @@ finding status, removed signals) in [interface-discipline.md](interface-discipli
 Resolved conflicts:
 
 - Contrast: the WCAG 2 ratio decides pass or fail; the APCA levels in
-  `ID/better-colors/accessibility-contrast.md` are advisory. Large bold text uses the exact 14pt
+  `ID/better-colors/contrast.md` are advisory. Large bold text uses the exact 14pt
   value, 18.67px.
 - Targets: 24×24px is the floor (`audit.target-size`). 40px desktop and 44px touch are advice that
   product density may waive; 48dp is not adopted.

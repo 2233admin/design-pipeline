@@ -238,7 +238,7 @@ or invent screens, data or cards. Motion and type support the product's own mate
 For a new movement choice, render a short study before extending the film. Inspect key poses,
 spacing, contact and handoff at speed and by frame; a smooth ease alone does not design an action.
 Then render the draft: `npx --no-install hyperframes render --output out.mp4` (the scaffold's
-`package.json` pins hyperframes 0.8.137 and gsap 3.15.0; run `npm install` once first).
+`package.json` pins hyperframes 0.8.137 and gsap 3.15.1; run `npm install` once first).
 Before a full material shot, verify shader compilation, reverse seeking and fixed-time angle
 response, and inspect actual frames at `rendering.samples`. Reuse `film-materials/enamel.mjs`.
 

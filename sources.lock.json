@@ -1,0 +1,1065 @@
+{
+  "schema": "design-pipeline.sources-lock.v1",
+  "policy": "track-upstream-head",
+  "description": "Single record of the upstream each bundle, adapted reference, catalog link and runtime pin follows. Written by npm run sources:update; checked by tests/sources-lock.test.cjs.",
+  "sources": [
+    {
+      "id": "12-principles-of-animation",
+      "kind": "vendored",
+      "repo": "https://github.com/raphaelsalaja/skill",
+      "revision": "dc9eef22f13635df77d9b9e67c82aa85d52a97b7",
+      "reviewedAt": "2026-10-13",
+      "bundle": "12-principles-of-animation",
+      "importer": [
+        "scripts/import-ui-craft-sources.cjs",
+        "--name",
+        "12-principles-of-animation",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-03-17T15:27:21+00:00",
+      "held": {
+        "reason": "Upstream deleted the skill (e1df385) and restructured the repository into new skills; keeping, replacing or dropping the bundle and its routes is a product decision.",
+        "issue": "https://github.com/2233admin/design-pipeline/issues/264"
+      },
+      "treeSha256": "c836d17cb89f4c7d0cdd88829968db5484d9fd8f8e1762b4dc3fc29b067859e7"
+    },
+    {
+      "id": "animejs",
+      "kind": "npm",
+      "package": "animejs",
+      "version": "4.5.0",
+      "reviewedAt": "2026-11-04",
+      "repo": "https://github.com/juliangarnier/anime",
+      "revision": "2c9cf8ea00329f6768c7d7902252ed977d75ce42",
+      "tag": "v{version}",
+      "sites": [
+        {
+          "file": "skill/references/companion-capabilities.json",
+          "json": "profiles[id=animejs-v4-5].sourceMeta.reviewedVersion"
+        }
+      ],
+      "committedAt": "2026-06-22T16:37:19+02:00"
+    },
+    {
+      "id": "answer-me-with-html",
+      "kind": "vendored",
+      "repo": "https://github.com/2233admin/answer-me-with-html",
+      "revision": "4da5ae89ac435683110aa1b8707d9d4170184c55",
+      "reviewedAt": "2026-11-04",
+      "bundle": "answer-me-with-html",
+      "importer": [
+        "scripts/import-answer-me-with-html.cjs",
+        "--source",
+        "{source}"
+      ],
+      "note": "The runtime build pins the importer's bytes and this revision (scripts/build-answer-me-with-html-runtime.cjs); a new upstream revision needs the importer constant and npm run answer-html:build.",
+      "committedAt": "2026-10-12T16:48:26+08:00",
+      "treeSha256": "612fdee283ec1b05b4be35de4bfef712ecfe3a4abab5c91f428aab57252413d8",
+      "profiles": [
+        "answer-me-with-html"
+      ]
+    },
+    {
+      "id": "astryx",
+      "kind": "npm",
+      "package": "@astryxdesign/core",
+      "version": "0.7.7",
+      "reviewedAt": "2026-11-04",
+      "repo": "https://github.com/facebook/astryx",
+      "revision": "de4692eeedb5039f6b168dadb2ed2b4afcc70f8c",
+      "tag": "v{version}",
+      "sites": [
+        {
+          "file": "skill/references/astryx-design-system-snapshot.json",
+          "json": "provenance.version"
+        },
+        {
+          "file": "THIRD_PARTY_NOTICES.md",
+          "pattern": "`@astryxdesign/core` and `@astryxdesign/cli` {version}"
+        }
+      ],
+      "committedAt": "2026-11-03T08:52:59-08:00",
+      "importer": [
+        "scripts/generate-astryx-snapshot.cjs",
+        "--core",
+        "{pack:@astryxdesign/core}",
+        "--cli",
+        "{pack:@astryxdesign/cli}",
+        "--revision",
+        "{revision}"
+      ]
+    },
+    {
+      "id": "awesome-ux-ai-interaction",
+      "kind": "adapted-reference",
+      "repo": "https://github.com/tommyjepsen/awesome-ux-skills",
+      "revision": "4e5d0925e1a0d34894734611b225205aa10e5a2f",
+      "reviewedAt": "2026-11-04",
+      "documents": [
+        "skill/references/ai-interaction-patterns.md"
+      ],
+      "profiles": [
+        "awesome-ux-ai-interaction"
+      ],
+      "committedAt": "2026-08-10T11:27:19+02:00"
+    },
+    {
+      "id": "awesome-ux-research-methods",
+      "kind": "adapted-reference",
+      "repo": "https://github.com/tommyjepsen/awesome-ux-skills",
+      "revision": "4e5d0925e1a0d34894734611b225205aa10e5a2f",
+      "reviewedAt": "2026-11-04",
+      "documents": [
+        "skill/references/ux-research-methods.md"
+      ],
+      "profiles": [
+        "awesome-ux-research-methods"
+      ],
+      "committedAt": "2026-08-10T11:27:19+02:00"
+    },
+    {
+      "id": "cinetic",
+      "kind": "vendored",
+      "repo": "https://github.com/Leonxlnx/cinetic",
+      "revision": "ecfa6605de1adb9345ce937724810dc32267d068",
+      "reviewedAt": "2026-11-04",
+      "bundle": "cinetic",
+      "importer": [
+        "scripts/import-film-sources.cjs",
+        "--name",
+        "cinetic",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-10-18T02:18:57+02:00",
+      "treeSha256": "8111a02372d84d697e409babe370325c03442a0f0ff8d3fa970dde87ec4fe09a"
+    },
+    {
+      "id": "deepclonewebsite",
+      "kind": "vendored",
+      "repo": "https://github.com/hi5jeff/deepclonewebsite",
+      "revision": "ab180fbe14a0f86c478bf033b375b1d40fabe6b1",
+      "reviewedAt": "2026-11-04",
+      "bundle": "deepclonewebsite",
+      "importer": [
+        "scripts/import-scoped-snapshot.cjs",
+        "--name",
+        "deepclonewebsite",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-08-07T19:18:40+09:00",
+      "treeSha256": "367261a81cf3ef5a3cf4c087664af8a7fafbc8d422ef63a064ab233970006658"
+    },
+    {
+      "id": "design-direction-library",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/alchaincyf/huashu-design",
+      "revision": "9b01ee8751679724dd43d855a532944aaa2c2b59",
+      "reviewedAt": "2026-11-04",
+      "bundle": "design-direction-library",
+      "importer": [
+        "scripts/import-design-direction-library.cjs",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-10-31T02:50:57+09:00",
+      "treeSha256": "ce60b19a7016ab62ec204c8a6c66c8a5684cd18ce1ee5239491e4f1c202824f5",
+      "fetchedTreeSha256": "d569e575d65729e9c18cecbb6bea60c02558138b41d966756373ad87780a9821"
+    },
+    {
+      "id": "design-md",
+      "kind": "vendored",
+      "repo": "https://github.com/dimabraven/design-md",
+      "revision": "f74ca151f92af178f1e0b93f2191e5ec77b33203",
+      "reviewedAt": "2026-11-04",
+      "bundle": "design-md",
+      "importer": [
+        "scripts/import-design-md.cjs",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-07-21T17:24:32+03:00",
+      "treeSha256": "dbddce90459c6bb62889cdf23f616e180ff479486ea19024e0f320e63f5a02d4"
+    },
+    {
+      "id": "emil-design-eng",
+      "kind": "vendored",
+      "repo": "https://github.com/emilkowalski/skills",
+      "revision": "f1090bec277140d02ed202440185ad9d02ac1490",
+      "reviewedAt": "2026-11-04",
+      "bundle": "emil-design-eng",
+      "importer": [
+        "scripts/import-ui-craft-sources.cjs",
+        "--name",
+        "emil-design-eng",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-11-02T10:21:52+01:00",
+      "treeSha256": "6a117e5bda9e135fb4b68b407fc49dbac2705a1fd52cac5445e2004932c5d258"
+    },
+    {
+      "id": "emilkowalski-animation-review",
+      "kind": "adapted-reference",
+      "repo": "https://github.com/emilkowalski/skills",
+      "revision": "f1090bec277140d02ed202440185ad9d02ac1490",
+      "reviewedAt": "2026-11-04",
+      "documents": [
+        "skill/references/animation-opportunity-and-review.md"
+      ],
+      "profiles": [
+        "emilkowalski-animation-review",
+        "motion-review-skill-contracts"
+      ],
+      "committedAt": "2026-11-02T10:21:52+01:00"
+    },
+    {
+      "id": "ff-tracking",
+      "kind": "vendored",
+      "repo": "https://github.com/mrsarac/ff-tracking",
+      "revision": "579f5be9e10023164bc2fe7e5b955dea20ddd1c9",
+      "reviewedAt": "2026-11-04",
+      "bundle": "ff-tracking",
+      "importer": [
+        "scripts/import-film-sources.cjs",
+        "--name",
+        "ff-tracking",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-10-22T14:51:38+02:00",
+      "treeSha256": "93fddd17220fdd8e24e4a367b1af88473cc9ece56af17ce6eb524bcaa72caf63"
+    },
+    {
+      "id": "fixing-accessibility",
+      "kind": "vendored",
+      "repo": "https://github.com/ibelick/ui-skills",
+      "revision": "73fb128d046d1f0d74c2909cd26eb616e3415567",
+      "reviewedAt": "2026-11-04",
+      "bundle": "fixing-accessibility",
+      "importer": [
+        "scripts/import-ui-craft-sources.cjs",
+        "--name",
+        "fixing-accessibility",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-11-03T07:54:32+01:00",
+      "treeSha256": "bc4375b2fce2417ccf354e00b08cc7365e7bd11cd3ce6b5d501ff82a7d15fcd4"
+    },
+    {
+      "id": "frog",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/wevm/frog",
+      "revision": "cbe18b192b59a8770466ee9f193b17294778c8a9",
+      "reviewedAt": "2026-11-04",
+      "committedAt": "2026-10-31T13:05:32-04:00"
+    },
+    {
+      "id": "gepa",
+      "kind": "vendored",
+      "repo": "https://github.com/gepa-ai/gepa",
+      "revision": "8c7b697a71977980afc7537dac0881e784eef99f",
+      "reviewedAt": "2026-11-04",
+      "bundle": "gepa",
+      "importer": [
+        "scripts/import-gepa.cjs",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-10-31T12:40:38-07:00",
+      "treeSha256": "6d549f5cbb4eac9ed00ae5fa618d0e51a8cc617b930313d05f71b4b019fc1e78"
+    },
+    {
+      "id": "good-css",
+      "kind": "vendored",
+      "repo": "https://github.com/vojtaholik/good-css",
+      "revision": "a6804e75b5ee946d6b007ac20734f958d7938bca",
+      "reviewedAt": "2026-11-04",
+      "bundle": "good-css",
+      "importer": [
+        "scripts/import-good-css.cjs",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-11-03T19:56:34+01:00",
+      "treeSha256": "bfe7189dd6f562e34e24e34b6869b95ca507ea1a8da38ccca938821b4571c430",
+      "profiles": [
+        "good-css"
+      ]
+    },
+    {
+      "id": "gsap",
+      "kind": "npm",
+      "package": "gsap",
+      "version": "3.15.1",
+      "reviewedAt": "2026-11-04",
+      "sites": [
+        {
+          "file": "evals/cases/package.json",
+          "json": "devDependencies.gsap"
+        },
+        {
+          "file": "skill/scripts/film-capture-core.cjs",
+          "pattern": "const GSAP_VERSION = \"{version}\";"
+        },
+        {
+          "file": "skill/references/film-tracking-hud-template.md",
+          "pattern": "gsap {version}). The"
+        },
+        {
+          "file": "skill/references/hyperframes.md",
+          "pattern": "`gsap` {version} and loads"
+        },
+        {
+          "file": "skill/references/capability-routing.md",
+          "pattern": "| GSAP {version} |"
+        },
+        {
+          "file": "skill/references/capability-routing.md",
+          "pattern": "For GSAP {version}, `easeReverse`"
+        },
+        {
+          "file": "skill/references/workflow-film.md",
+          "pattern": "gsap {version}; run"
+        },
+        {
+          "file": "tests/film-project.test.cjs",
+          "pattern": "gsap: \"{version}\" }"
+        },
+        {
+          "file": "evals/cases/README.md",
+          "pattern": "(GSAP {version}, HyperFrames"
+        }
+      ]
+    },
+    {
+      "id": "gsap-skills",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/greensock/gsap-skills",
+      "revision": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "reviewedAt": "2026-11-04",
+      "committedAt": "2026-04-21T18:47:02-05:00"
+    },
+    {
+      "id": "holosticker",
+      "kind": "vendored",
+      "repo": "https://github.com/jal-co/holosticker",
+      "revision": "34688eb3fd2986c6721ff270a00ca9267f8a195c",
+      "reviewedAt": "2026-11-04",
+      "bundle": "holosticker",
+      "importer": [
+        "scripts/import-scoped-snapshot.cjs",
+        "--name",
+        "holosticker",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-08-03T20:03:48-04:00",
+      "treeSha256": "6c9d99ab2b7b77cc7b4d036c5c8727ec44a29dcdd1b498e5cb974129b5eaccb3"
+    },
+    {
+      "id": "hyperframes",
+      "kind": "npm",
+      "package": "hyperframes",
+      "version": "0.8.137",
+      "reviewedAt": "2026-10-07",
+      "repo": "https://github.com/heygen-com/hyperframes",
+      "revision": "d09e003b17610177b71e340ec0bac95c9dde3e64",
+      "tag": "v{version}",
+      "sites": [
+        {
+          "file": "skill/scripts/film-capture-core.cjs",
+          "pattern": "const HYPERFRAMES_VERSION = \"{version}\";"
+        },
+        {
+          "file": "skill/references/frontend-stack-registry.json",
+          "json": "tools[id=heygen-com/hyperframes].version"
+        },
+        {
+          "file": "skill/references/companion-capabilities.json",
+          "json": "profiles[id=hyperframes-html-composition].sourceMeta.reviewedVersion"
+        },
+        {
+          "file": "skill/references/hyperframes.md",
+          "pattern": "`hyperframes@{version}`"
+        },
+        {
+          "file": "skill/references/film-tracking-hud-template.md",
+          "pattern": "installed hyperframes {version} and gsap"
+        },
+        {
+          "file": "skill/references/hyperframes.md",
+          "pattern": "pins `hyperframes` {version} and"
+        },
+        {
+          "file": "skill/references/workflow-film.md",
+          "pattern": "pins hyperframes {version} and gsap"
+        },
+        {
+          "file": "tests/film-project.test.cjs",
+          "pattern": "{ hyperframes: \"{version}\", sharp"
+        },
+        {
+          "file": "tests/film-project.test.cjs",
+          "pattern": "hyperframesCli(), \"hyperframes@{version}\""
+        },
+        {
+          "file": "tests/hyperframes-routing.test.cjs",
+          "pattern": "route.version, \"{version}\""
+        }
+      ],
+      "committedAt": "2026-10-05T22:40:38-07:00",
+      "held": {
+        "reason": "HyperFrames 0.9 retires the eight workflow skills our routes name, adds check rules our scaffolds and goldens do not meet and changes seek and encoder behaviour; openspec/changes/hyperframes-0-8-221 is that redesign.",
+        "issue": "https://github.com/2233admin/design-pipeline/issues/262"
+      }
+    },
+    {
+      "id": "hyperframes-maintenance",
+      "kind": "npm",
+      "package": "hyperframes",
+      "version": "0.9.9",
+      "reviewedAt": "2026-11-04",
+      "note": "The golden-case workspace and browser:install use this copy; the version scaffolded into target projects is the hyperframes entry.",
+      "sites": [
+        {
+          "file": "evals/cases/package.json",
+          "json": "devDependencies.hyperframes"
+        },
+        {
+          "file": "evals/cases/README.md",
+          "pattern": "HyperFrames {version})"
+        }
+      ]
+    },
+    {
+      "id": "iart-ad-video-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/ad-video-skills",
+      "revision": "0de0f2a1c1f42a98103fc0ec436509276428372c",
+      "committedAt": "2026-06-22T21:23:58+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-data-animation-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/data-animation-skills",
+      "revision": "8ce2709c3992490251e8a991535b1945f01c6865",
+      "committedAt": "2026-06-22T21:24:02+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-ecommerce-video-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/ecommerce-video-skills",
+      "revision": "2bd0dd19c9b2df5230f5d8f7453861b9681e49b4",
+      "committedAt": "2026-06-22T21:24:04+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-explainer-video-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/explainer-video-skills",
+      "revision": "3e2d411b725d9a72939cf8e5eb81579e751373e7",
+      "committedAt": "2026-06-22T21:24:06+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-freelance-motion-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/freelance-motion-skills",
+      "revision": "d85c2b484693d0387333c778d9c95230fa1856ce",
+      "committedAt": "2026-06-22T21:24:08+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-generative-illustration-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/generative-illustration-skills",
+      "revision": "e7d62437c875fc8ad5eff6e90fe0e25b30e43933",
+      "committedAt": "2026-06-30T22:47:25+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "excludedFromBundle": "The repository has no LICENSE file; the importer fails once one appears so the pack can be reviewed.",
+      "notice": "manifest"
+    },
+    {
+      "id": "iart-kinetic-typography-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/kinetic-typography-skills",
+      "revision": "fccc94bd325d824235ee9e715e65abde57b6513a",
+      "committedAt": "2026-06-22T21:24:10+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-manim-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/manim-skills",
+      "revision": "a15833c44de5108a3ee68f178a1fca126aa7c6d8",
+      "committedAt": "2026-06-22T21:24:12+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-map-animation-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/map-animation-skills",
+      "revision": "390ca98bbcf2ea88a430a69c0dcbf423e43d075d",
+      "committedAt": "2026-06-22T21:24:14+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-motion-design-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/motion-design-skills",
+      "revision": "3c129f769d90a1328c209c386492333c9ac62312",
+      "committedAt": "2026-06-22T21:24:16+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-motion-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/motion-skills",
+      "revision": "238dfc55aac123d4649be39adfe58c43193ca349",
+      "committedAt": "2026-10-25T22:18:32+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-text-message-video-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/text-message-video-skills",
+      "revision": "3a800e1e9b9635fa196a07b0143c80f7e9648558",
+      "committedAt": "2026-06-22T21:24:20+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-tiktok-video-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/tiktok-video-skills",
+      "revision": "2a775336b5a638cbf8a61dbd785f9a1b649be016",
+      "committedAt": "2026-06-22T21:24:22+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-web-animation-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/web-animation-skills",
+      "revision": "b6dba3eb759726845a44163ff0bad70dd9e7fbb6",
+      "committedAt": "2026-06-22T21:24:23+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-webgl-animation-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/webgl-animation-skills",
+      "revision": "50697d659fbf70152f48f9f8aadf1efe78bbdde1",
+      "committedAt": "2026-06-22T21:24:25+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "iart-youtube-video-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/iart-ai/youtube-video-skills",
+      "revision": "f3df381d65abe5078f5ed410bbc3ed72e7cb92bd",
+      "committedAt": "2026-06-22T21:24:27+08:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "iart-motion-skills",
+      "importer": [
+        "scripts/import-iart-motion-skills.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "notice": "manifest",
+      "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
+    },
+    {
+      "id": "impeccable",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/pbakaus/impeccable",
+      "revision": "9fadc41729c38fd47d7ae622b501558653f9d2e9",
+      "reviewedAt": "2026-11-04",
+      "committedAt": "2026-11-02T14:38:11-08:00",
+      "profiles": [
+        "impeccable-skill-v4"
+      ]
+    },
+    {
+      "id": "interface-discipline",
+      "kind": "vendored",
+      "repo": "https://github.com/jakubkrehel/skills",
+      "revision": "60bf140e43c98b248e6594487384ec967e89d98a",
+      "reviewedAt": "2026-11-04",
+      "bundle": "interface-discipline",
+      "importer": [
+        "scripts/import-scoped-snapshot.cjs",
+        "--name",
+        "interface-discipline",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-11-01T20:29:42-05:00",
+      "treeSha256": "61dc34e854081e3dba00bc07a91d41b45c7bf7b13bb7e3ada17246e7ed921896"
+    },
+    {
+      "id": "make-interfaces-feel-better",
+      "kind": "vendored",
+      "repo": "https://github.com/jakubkrehel/make-interfaces-feel-better",
+      "revision": "35545ea1512ad59fa463e6b1f95ca9c052981fe6",
+      "reviewedAt": "2026-11-04",
+      "bundle": "make-interfaces-feel-better",
+      "importer": [
+        "scripts/import-ui-craft-sources.cjs",
+        "--name",
+        "make-interfaces-feel-better",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-08-29T18:59:35+02:00",
+      "treeSha256": "d60a83f0eccb7d6e5b6a1e4eab47e1e1ee9d0a985f4737c8d34decc88db16961"
+    },
+    {
+      "id": "mattpocock-skills",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/mattpocock/skills",
+      "revision": "4ae2317ddb22b046e26455e4f9c9b3aaaf62212d",
+      "reviewedAt": "2026-11-04",
+      "committedAt": "2026-10-31T14:23:30+00:00"
+    },
+    {
+      "id": "mengto-skills",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/MengTo/skills",
+      "revision": "1de14e21b2ba8937c0f7f6ddca581cf7cd9d94af",
+      "reviewedAt": "2026-11-04",
+      "bundle": "mengto-skills",
+      "importer": [
+        "scripts/import-mengto-skills.cjs",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-11-03T14:26:41+08:00",
+      "treeSha256": "086de3eb7cece47628c80571a7f7184b0d6eab19a20ba8227196823e19cd01d5",
+      "derive": [
+        "scripts/project-mengto-catalog.cjs"
+      ]
+    },
+    {
+      "id": "millionco-react-doctor",
+      "kind": "adapted-reference",
+      "repo": "https://github.com/millionco/react-doctor",
+      "revision": "9791c32f61fb1477a4f8dd596ff80184ad26b2e3",
+      "reviewedAt": "2026-11-04",
+      "documents": [
+        "skill/references/react-doctor.md"
+      ],
+      "committedAt": "2026-11-01T18:39:39-08:00"
+    },
+    {
+      "id": "motion",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/motiondivision/motion",
+      "revision": "7415b6cd14dfdb35d91dfc5b9758994444cc228b",
+      "reviewedAt": "2026-11-04",
+      "committedAt": "2026-10-30T11:22:53+01:00"
+    },
+    {
+      "id": "motion-web-reference-skill",
+      "kind": "adapted-reference",
+      "repo": "https://github.com/feitangyuan/motion-web",
+      "revision": "5f4e40f1253e11e28850d08dce28b9b7e4320115",
+      "reviewedAt": "2026-11-04",
+      "documents": [
+        "skill/references/reference-skill-motion-web.md"
+      ],
+      "committedAt": "2026-09-15T06:11:33-07:00"
+    },
+    {
+      "id": "onetake-reference-skill",
+      "kind": "adapted-reference",
+      "repo": "https://github.com/feitangyuan/onetake",
+      "revision": "013a61ac8d98883c73733f59c06e49e9ba444f14",
+      "reviewedAt": "2026-11-04",
+      "documents": [
+        "skill/references/reference-skill-onetake.md"
+      ],
+      "committedAt": "2026-10-21T11:56:36-06:00"
+    },
+    {
+      "id": "openspec",
+      "kind": "npm",
+      "package": "@fission-ai/openspec",
+      "version": "1.16.0",
+      "reviewedAt": "2026-11-04",
+      "sites": [
+        {
+          "file": "package.json",
+          "json": "devDependencies.@fission-ai/openspec"
+        }
+      ]
+    },
+    {
+      "id": "phaser",
+      "kind": "npm",
+      "package": "phaser",
+      "version": "4.2.1",
+      "reviewedAt": "2026-11-04",
+      "repo": "https://github.com/phaserjs/phaser",
+      "revision": "41be1e462bc600064e498cba370bfa8c5c055a22",
+      "tag": "v{version}",
+      "sites": [
+        {
+          "file": "skill/references/phaser-v4.md",
+          "pattern": "Phaser {version} on"
+        },
+        {
+          "file": "skill/references/capability-routing.md",
+          "pattern": "| Phaser {version} |"
+        },
+        {
+          "file": "skill/references/adapter-registry.json",
+          "pattern": "\"https://github.com/phaserjs/phaser\",\"reviewedVersion\":\"{version}\""
+        }
+      ],
+      "committedAt": "2026-07-09T15:28:26+01:00"
+    },
+    {
+      "id": "pixelmatch",
+      "kind": "npm",
+      "package": "pixelmatch",
+      "version": "8.0.0",
+      "reviewedAt": "2026-11-04",
+      "sites": [
+        {
+          "file": "tools/browser-automation/package.json",
+          "json": "dependencies.pixelmatch"
+        }
+      ]
+    },
+    {
+      "id": "pixijs-skills",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/pixijs/pixijs-skills",
+      "revision": "83760c6f53462ca9cecd68055041f5a8c94758ce",
+      "reviewedAt": "2026-11-04",
+      "committedAt": "2026-10-01T21:48:49+00:00",
+      "profiles": [
+        "pixijs-skills-v8"
+      ]
+    },
+    {
+      "id": "playwright",
+      "kind": "npm",
+      "package": "playwright",
+      "version": "1.64.1",
+      "reviewedAt": "2026-11-04",
+      "sites": [
+        {
+          "file": "tools/browser-automation/package.json",
+          "json": "dependencies.playwright"
+        }
+      ]
+    },
+    {
+      "id": "playwright-cli",
+      "kind": "vendored",
+      "repo": "https://github.com/microsoft/playwright-cli",
+      "revision": "db2a0fad3a768319a16e3a2bb8078cf62e690b07",
+      "reviewedAt": "2026-11-04",
+      "bundle": "playwright-cli",
+      "importer": [
+        "scripts/import-ui-craft-sources.cjs",
+        "--name",
+        "playwright-cli",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-11-03T09:14:04-08:00",
+      "treeSha256": "b09d73b7064556c4db737afa8b126bf7b47cf215f4dc9c48c346851fb7b53e29"
+    },
+    {
+      "id": "pngjs",
+      "kind": "npm",
+      "package": "pngjs",
+      "version": "7.0.0",
+      "reviewedAt": "2026-11-04",
+      "sites": [
+        {
+          "file": "tools/browser-automation/package.json",
+          "json": "dependencies.pngjs"
+        }
+      ]
+    },
+    {
+      "id": "prism-system",
+      "kind": "vendored",
+      "repo": "https://github.com/appariciojunior/PrismSystem",
+      "revision": "e93f2a3019162f1da19a9a8c3a5db0f1fba48631",
+      "reviewedAt": "2026-11-04",
+      "bundle": "prism-system",
+      "importer": [
+        "scripts/import-scoped-snapshot.cjs",
+        "--name",
+        "prism-system",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-07-27T10:11:55+01:00",
+      "treeSha256": "bebf354edf8a1849089c37fefe908d9e49ca3b7a4918ec56894c03c641e88a14"
+    },
+    {
+      "id": "product-film-skill",
+      "kind": "vendored",
+      "repo": "https://github.com/Rieranthony/product-film-skill",
+      "revision": "fe11efc429d5903e37274d0b294e1b95745b2881",
+      "reviewedAt": "2026-11-04",
+      "bundle": "product-film-skill",
+      "importer": [
+        "scripts/import-film-sources.cjs",
+        "--name",
+        "product-film-skill",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-09-26T12:58:48+02:00",
+      "treeSha256": "6ed8d4b4e6da3e00c82b7e86472c01c23d7c5748a4d2e063bf28b563cf559089"
+    },
+    {
+      "id": "react-bits",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/DavidHDev/react-bits",
+      "revision": "4dc7b5b7772e1217c8fb8d2a7aa074302180e5b4",
+      "reviewedAt": "2026-11-04",
+      "committedAt": "2026-10-31T09:02:37+09:00"
+    },
+    {
+      "id": "reflex-xy",
+      "kind": "release",
+      "version": "0.0.8",
+      "reviewedAt": "2026-11-04",
+      "repo": "https://github.com/reflex-dev/xy",
+      "revision": "6483032a7947e1f44ced1a560ac08f1025637529",
+      "tag": "v{version}",
+      "sites": [
+        {
+          "file": "skill/references/xy-charting.md",
+          "pattern": "`reflex-dev/xy` v{version} at commit"
+        },
+        {
+          "file": "skill/references/adapter-registry.json",
+          "pattern": "\"https://github.com/reflex-dev/xy\",\"revision\":\"{revision}\",\"reviewedVersion\":\"{version}\""
+        }
+      ],
+      "committedAt": "2026-10-13T11:41:40-07:00"
+    },
+    {
+      "id": "shadcn",
+      "kind": "vendored",
+      "repo": "https://github.com/shadcn-ui/ui",
+      "revision": "4aaea19d9cff3e0908e12a8c1d504b8c5ec34610",
+      "reviewedAt": "2026-11-04",
+      "bundle": "shadcn",
+      "importer": [
+        "scripts/import-ui-craft-sources.cjs",
+        "--name",
+        "shadcn",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-11-02T11:02:07+04:00",
+      "treeSha256": "b95ba26ff8d9f25a347176a8949d45ab1beb8bb71a11b553cd0a06b9d101f63e"
+    },
+    {
+      "id": "shadcnio-react-components",
+      "kind": "vendored",
+      "repo": "https://github.com/shadcnio/react-shadcn-components",
+      "revision": "2dc66e0e7b159fa92e761c84f3c5325c9700c415",
+      "reviewedAt": "2026-11-04",
+      "bundle": "shadcnio-react-components",
+      "importer": [
+        "scripts/import-scoped-snapshot.cjs",
+        "--name",
+        "shadcnio-react-components",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2025-08-25T07:53:37+03:00",
+      "treeSha256": "7c198506533a7aea74de1f7e71bae2a09a2f090c5c039419e0582e84deb5242c"
+    },
+    {
+      "id": "taste-skill",
+      "kind": "vendored",
+      "repo": "https://github.com/Leonxlnx/taste-skill",
+      "revision": "12af471f627f866411b4bd785b19646d3672784c",
+      "reviewedAt": "2026-11-04",
+      "bundle": "taste-skill",
+      "importer": [
+        "scripts/import-taste-skill.cjs",
+        "--source",
+        "{source}"
+      ],
+      "committedAt": "2026-10-25T01:42:19+02:00",
+      "treeSha256": "e12cc2e63faba012ac716039de7cdd26da29cf1b2b48e065eca81aec910fc91e",
+      "profiles": [
+        "taste-skill"
+      ]
+    },
+    {
+      "id": "three",
+      "kind": "npm",
+      "package": "three",
+      "version": "0.187.0",
+      "reviewedAt": "2026-11-04",
+      "repo": "https://github.com/mrdoob/three.js",
+      "revision": "7e89746a687bb88271253698fa108b1dd59825d0",
+      "tag": "r{minor}",
+      "sites": [
+        {
+          "file": "skill/references/graphics-runtime-routing.md",
+          "pattern": "Three.js {version}, release tag commit"
+        },
+        {
+          "file": "skill/references/adapter-registry.json",
+          "pattern": "\"https://github.com/mrdoob/three.js\",\"reviewedVersion\":\"{version}\""
+        }
+      ],
+      "committedAt": "2026-10-30T16:56:52+09:00"
+    },
+    {
+      "id": "transitions-dev",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/Jakubantalik/transitions.dev",
+      "revision": "e3aefb554d8fd2cb3e91e773e82a0f2d5a4f82a0",
+      "reviewedAt": "2026-11-04",
+      "committedAt": "2026-10-29T11:48:25+01:00"
+    },
+    {
+      "id": "ui-ux-pro-max",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+      "revision": "713eef51b04efc98d6fa565323b495f7c9c89fd4",
+      "reviewedAt": "2026-11-04",
+      "committedAt": "2026-11-02T23:10:22+07:00",
+      "profiles": [
+        "ui-ux-pro-max"
+      ]
+    }
+  ]
+}
