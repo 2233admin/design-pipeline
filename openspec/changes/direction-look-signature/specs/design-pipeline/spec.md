@@ -14,6 +14,11 @@ Each delivered ledger entry SHALL carry `appearance.signature` with accent hex o
 - **WHEN** a page's whole background is teal and its small buttons are pink
 - **THEN** the signature SHALL record the pink as accent and `dark` as theme, not teal as accent.
 
+#### Scenario: Cards, footers and textures do not mislead
+
+- **WHEN** a dark body holds white cards, a white page ends in a tall dark footer, or a hero is painted with a small tiled texture or a decorative svg
+- **THEN** the theme SHALL follow the body's background and the hero SHALL NOT be `full-bleed-image`.
+
 #### Scenario: No browser
 
 - **WHEN** no browser resolves at delivery

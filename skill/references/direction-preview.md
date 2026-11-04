@@ -92,8 +92,10 @@ and never blocks delivery.
 
 The appearance also carries a look signature measured from the delivered page's computed styles (via
 the `composition capture` elements.json): `accent` (the most repeated chromatic colour on buttons,
-small fills and coloured text, or `null`), `displayFont`, `bodyFont`, `theme` (`light` or `dark`) and
-`hero` (`centred`, `split`, `full-bleed-image`, `left`, `right`, `none`; `unmeasured` without a
+gradient buttons' first stop, small fills and coloured text; `null` when those are neutral, as with a
+white button on a dark page), `displayFont`, `bodyFont`, `theme` (`light` or `dark`, from the body's
+background) and `hero` (`centred`, `split`, `full-bleed-image` for a photograph of at least 640x360
+under the title, never a texture tile, svg or canvas; `left`, `right`, `none`; `unmeasured` without a
 browser). The directions `run` action and the owner's ask carry `recentLooks`: the last five
 signatures of other projects, newest first, shown as "you used these recently"; on the ask each
 version also carries its own `look` and `repeatsRecent` (the parts it shares, accents within 48 RGB

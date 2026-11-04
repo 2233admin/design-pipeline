@@ -30,7 +30,8 @@ function parseArgs(argv) {
 
 // Runs in the page. Effective background walks ancestors to the first opaque background color;
 // a background image or gradient on the way makes the background unknown (contrast skipped).
-function extract() {
+// Async only to read the natural size of url() backgrounds, which says a photograph from a texture.
+async function extract() {
   const parse = (value) => {
     const m = String(value).match(/rgba?\(([^)]+)\)/);
     if (!m) return null;
@@ -55,6 +56,26 @@ function extract() {
   // ledger's look signature reads a hero's media from. Kept apart from items, which alignment reads.
   const media = [];
   const MEDIA_TAGS = new Set(["IMG", "PICTURE", "VIDEO", "CANVAS", "SVG", "IFRAME"]);
+  const pending = [];
+  const urlOf = (value) => (String(value || "").match(/url\(\s*["']?([^"')]+)["']?\s*\)/i) || [])[1] || null;
+  // A url() background's natural size, when the image loads within a short wait.
+  const addBackgroundMedia = (tag, box, value) => {
+    const entry = { tag, box, background: true };
+    media.push(entry);
+    const url = urlOf(value);
+    if (!url) return;
+    const image = new Image();
+    pending.push(Promise.race([
+      new Promise((resolve) => { image.onload = resolve; image.onerror = resolve; image.src = url; }),
+      new Promise((resolve) => setTimeout(resolve, 3000)),
+    ]).then(() => { if (image.naturalWidth > 0) entry.natural = { w: image.naturalWidth, h: image.naturalHeight }; }));
+  };
+  // The first colour stop of an element's own background gradient (a gradient button's colour).
+  const gradientStop = (style) => (/gradient\(/i.test(style.backgroundImage || "") ? parse(style.backgroundImage) : null);
+  for (const root of [document.documentElement, document.body]) {
+    const style = getComputedStyle(root);
+    if (/url\(/i.test(style.backgroundImage || "")) addBackgroundMedia(root.tagName.toLowerCase(), { x: 0, y: 0, w: innerWidth, h: Math.max(innerHeight, document.documentElement.scrollHeight) }, style.backgroundImage);
+  }
   let index = 0;
   for (const element of document.body.querySelectorAll("*")) {
     if (["SCRIPT", "STYLE", "NOSCRIPT", "TEMPLATE", "AUDIO"].includes(element.tagName)) continue;
@@ -65,16 +86,22 @@ function extract() {
     const id = element.id ? `#${element.id}` : `${element.tagName.toLowerCase()}:${index += 1}`;
     const box = { x: rect.x, y: rect.y, w: rect.width, h: rect.height };
     const tag = element.tagName.toUpperCase();
-    if (MEDIA_TAGS.has(tag) || /url\(/i.test(style.backgroundImage || "")) media.push({ tag: tag.toLowerCase(), box });
+    if (/url\(/i.test(style.backgroundImage || "")) addBackgroundMedia(tag.toLowerCase(), box, style.backgroundImage);
+    else if (MEDIA_TAGS.has(tag)) media.push({ tag: tag.toLowerCase(), box, ...(tag === "IMG" && element.naturalWidth > 0 ? { natural: { w: element.naturalWidth, h: element.naturalHeight } } : {}), ...(tag === "VIDEO" && element.videoWidth > 0 ? { natural: { w: element.videoWidth, h: element.videoHeight } } : {}) });
     if (text) {
       const color = parse(style.color);
       const own = parse(style.backgroundColor);
-      items.push({ kind: "text", id, text: text.slice(0, 80), box, fontSize: parseFloat(style.fontSize), fontWeight: Number(style.fontWeight) || 400, fontFamily: style.fontFamily, color: color ? color.slice(0, 3) : null, background: effectiveBackground(element), align: style.textAlign, ...(own && own[3] >= 0.99 ? { fill: own.slice(0, 3) } : {}) });
+      // Own gradient, or a small parent's (a label inside a gradient button), never a section's.
+      const parent = element.parentElement;
+      const parentRect = parent && parent !== document.body ? parent.getBoundingClientRect() : null;
+      const stop = gradientStop(style) || (parentRect && parentRect.width * parentRect.height < innerWidth * innerHeight * 0.15 ? gradientStop(getComputedStyle(parent)) : null);
+      items.push({ kind: "text", id, text: text.slice(0, 80), box, fontSize: parseFloat(style.fontSize), fontWeight: Number(style.fontWeight) || 400, fontFamily: style.fontFamily, color: color ? color.slice(0, 3) : null, background: effectiveBackground(element), align: style.textAlign, ...(own && own[3] >= 0.99 ? { fill: own.slice(0, 3) } : {}), ...(stop && stop[3] >= 0.99 ? { gradient: stop.slice(0, 3) } : {}) });
     } else if (element.children.length === 0 || (parse(style.backgroundColor) || [0, 0, 0, 0])[3] > 0.5 || style.borderStyle !== "none") {
       const fill = parse(style.backgroundColor);
       items.push({ kind: "block", id, box, ...(fill && fill[3] >= 0.99 ? { fill: fill.slice(0, 3) } : {}) });
     }
   }
+  await Promise.all(pending);
   return { viewport: { width: innerWidth, height: innerHeight }, background: effectiveBackground(document.body), items, media };
 }
 

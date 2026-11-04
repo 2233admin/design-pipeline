@@ -181,15 +181,21 @@ const themeOf = (rgb) => (luminance(rgb) < 0.179 ? "dark" : "light");
 const overlap = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
 const HERO_CLASSES = ["centred", "split", "full-bleed-image", "left", "right", "none", "unmeasured"];
 
-// The hero is the largest text whose top is in the first viewport. Media covering most of the viewport
-// under it is a full-bleed image; media or a filled panel beside it, across the centre line, is a split;
-// otherwise its own text alignment names the class. No text of 24px or more up there is no hero.
+// A photograph, not a texture: a raster (img, video or url() background, the body's and html's
+// included) whose natural size is at least 640x360. A tiled noise or paper tile is smaller; an svg or
+// canvas under the heading is a decorative background, so neither makes a full-bleed image.
+const RASTER_MIN = { w: 640, h: 360 };
+const photographic = (item) => (item.background || ["img", "video"].includes(item.tag)) && item.natural && item.natural.w >= RASTER_MIN.w && item.natural.h >= RASTER_MIN.h;
+
+// The hero is the largest text whose top is in the first viewport. A photograph covering most of the
+// viewport under it is a full-bleed image; media or a filled panel beside it, across the centre line, is
+// a split; otherwise its own text alignment names the class. No text of 24px or more up there is no hero.
 function heroLayout(elements, texts, pageFill) {
   const { width, height } = elements.viewport;
   const heading = texts.filter((text) => text.box.y < height && text.box.y + text.box.h > 0).sort((a, b) => b.fontSize - a.fontSize || a.box.y - b.box.y)[0];
   if (!heading || heading.fontSize < 24) return "none";
   const media = (Array.isArray(elements.media) ? elements.media : []).filter((item) => item.box && item.box.y < height && item.box.w > 0 && item.box.h > 0);
-  if (media.some((item) => item.box.w >= width * 0.6 && item.box.h >= height * 0.4 && overlap(item.box, heading.box) > 0)) return "full-bleed-image";
+  if (media.some((item) => photographic(item) && item.box.w >= width * 0.6 && item.box.h >= height * 0.4 && overlap(item.box, heading.box) > 0)) return "full-bleed-image";
   const panels = elements.items.filter((item) => item.kind === "block" && item.box && Array.isArray(item.fill) && hex(item.fill) !== pageFill && item.box.w < width * 0.6);
   const side = (box) => {
     const cx = box.x + box.w / 2;
@@ -200,17 +206,21 @@ function heroLayout(elements, texts, pageFill) {
     && Math.min(box.y + box.h, heading.box.y + heading.box.h + height * 0.25) > Math.max(box.y, heading.box.y - height * 0.25)
     && overlap(box, heading.box) < heading.box.w * heading.box.h * 0.2
     && headingSide !== 0 && side(box) === -headingSide;
-  if ([...media, ...panels].some((item) => beside(item.box))) return "split";
+  if ([...media.filter((item) => !["body", "html"].includes(item.tag)), ...panels].some((item) => beside(item.box))) return "split";
   const align = String(heading.align || "");
+  const cx = heading.box.x + heading.box.w / 2;
   if (align === "center") return "centred";
   if (align === "right" || align === "end") return "right";
+  // A start-aligned title that a flex or grid parent shrank and centred is centred: its box sits in the
+  // middle fifth and is narrower than 80% of the viewport (a full-width block box says nothing).
+  if (cx >= width * 0.4 && cx <= width * 0.6 && heading.box.w < width * 0.8) return "centred";
   if (align) return "left";
-  const cx = heading.box.x + heading.box.w / 2;
   return cx < width * 0.4 ? "left" : cx > width * 0.6 ? "right" : "centred";
 }
 
-// The accent is the most repeated chromatic colour on small things: a button's own fill counts three,
-// a small filled block two, coloured text one. Large fills are the theme, not the accent.
+// The accent is the most repeated chromatic colour on small things: a button's own fill (or its
+// gradient's first stop) counts three, a small filled block two, coloured text one. Large fills are the
+// theme, not the accent. Neutrals never are: a white button on a dark page leaves the accent null.
 function accentOf(elements, texts) {
   const { width, height } = elements.viewport;
   const counts = new Map();
@@ -218,7 +228,7 @@ function accentOf(elements, texts) {
     if (Array.isArray(rgb) && chromatic(rgbToHsl(rgb))) tally(counts, hex(rgb), weight);
   };
   for (const text of texts) {
-    if (text.box.w * text.box.h < width * height * 0.15) add(text.fill, 3);
+    if (text.box.w * text.box.h < width * height * 0.15) add(text.fill || text.gradient, 3);
     add(text.color, 1);
   }
   for (const block of elements.items) if (block.kind === "block" && block.box && block.box.w * block.box.h < width * height * 0.15) add(block.fill, 2);
@@ -229,10 +239,16 @@ function accentOf(elements, texts) {
 function signatureFromElements(elements) {
   const { width, height } = elements.viewport;
   const texts = elements.items.filter((item) => item.kind === "text" && item.box);
-  const fills = new Map();
-  for (const block of elements.items) if (block.kind === "block" && block.box && Array.isArray(block.fill)) tally(fills, hex(block.fill), Math.max(1, block.box.w * block.box.h));
-  if (Array.isArray(elements.background)) tally(fills, hex(elements.background), width * height * 0.5);
-  const pageFill = top(fills, 1)[0] || null;
+  // The page colour is the body's effective background. Cards on it, or a tall footer below the fold,
+  // do not change it. Without one (an image or gradient on the way), the fills seen in the first
+  // viewport decide, by the area they cover there.
+  let pageFill = Array.isArray(elements.background) ? hex(elements.background) : null;
+  if (!pageFill) {
+    const fills = new Map();
+    const first = { x: 0, y: 0, w: width, h: height };
+    for (const block of elements.items) if (block.kind === "block" && block.box && Array.isArray(block.fill)) tally(fills, hex(block.fill), overlap(block.box, first));
+    pageFill = [...fills.entries()].filter(([, area]) => area > 0).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] || null;
+  }
   const display = [...texts].sort((a, b) => b.fontSize - a.fontSize)[0];
   const body = new Map();
   for (const text of texts) if (text.fontSize <= 22) tally(body, family(text.fontFamily), String(text.text).length);

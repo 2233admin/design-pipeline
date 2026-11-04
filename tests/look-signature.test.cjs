@@ -43,7 +43,7 @@ test("the signature reads accent, fonts, theme and hero from captured elements",
   assert.deepEqual(split, { accent: "#e4572e", displayFont: "fraunces", bodyFont: "inter", theme: "dark", hero: "split" });
 
   // A full-bleed photograph under the headline, light page.
-  assert.equal(look(page([text("h1", { x: 0, y: 300, w: W, h: 120 }, 96, "Syne", [255, 255, 255], { align: "center" })], { media: [{ tag: "div", box: { x: 0, y: 0, w: W, h: H } }] })).hero, "full-bleed-image");
+  assert.equal(look(page([text("h1", { x: 0, y: 300, w: W, h: 120 }, 96, "Syne", [255, 255, 255], { align: "center" })], { media: [{ tag: "div", background: true, natural: { w: 2400, h: 1600 }, box: { x: 0, y: 0, w: W, h: H } }] })).hero, "full-bleed-image");
   // Centred text only; the heading's own alignment decides, not its full-width box.
   assert.equal(look(page([text("h1", { x: 0, y: 200, w: W, h: 120 }, 96, "Syne", [0, 0, 0], { align: "center" })])).hero, "centred");
   assert.equal(look(page([text("h1", { x: 0, y: 200, w: W, h: 120 }, 96, "Syne", [0, 0, 0], { align: "start" })])).hero, "left");
@@ -67,6 +67,57 @@ test("a large chromatic field is the theme, not the accent; a small repeated col
   assert.equal(sig.theme, "dark", "white text reads better than black on #127f78");
   // Neutral pages have no accent rather than a grey one.
   assert.equal(look(page([text("h1", { x: 80, y: 80, w: 400, h: 100 }, 80, "Syne", [17, 17, 17]), block("rule", { x: 80, y: 200, w: 400, h: 2 }, [200, 200, 200])])).accent, null);
+});
+
+test("theme is the body's background: white cards on a dark body stay dark, a dark footer on a white page stays light", () => {
+  const cards = page([
+    block("card1", { x: 80, y: 120, w: 600, h: 700 }, [255, 255, 255]),
+    block("card2", { x: 760, y: 120, w: 600, h: 700 }, [255, 255, 255]),
+    text("h1", { x: 100, y: 140, w: 400, h: 80 }, 64, "Syne", [17, 17, 17]),
+  ], { background: [14, 16, 20] });
+  assert.equal(look(cards).theme, "dark");
+  const footer = page([
+    text("h1", { x: 80, y: 120, w: 600, h: 100 }, 72, "Syne", [17, 17, 17]),
+    block("footer", { x: 0, y: 2000, w: W, h: 700 }, [12, 12, 12]),
+  ], { background: [255, 255, 255] });
+  assert.equal(look(footer).theme, "light");
+  // No body background (an image or gradient on the way): the first viewport's fills decide, by area.
+  const noBody = page([
+    block("hero", { x: 0, y: 0, w: W, h: H }, [10, 12, 30]),
+    block("footer", { x: 0, y: 2000, w: W, h: 2000 }, [250, 250, 250]),
+    text("h1", { x: 80, y: 120, w: 600, h: 100 }, 72, "Syne", [240, 240, 240]),
+  ], { background: null });
+  assert.equal(look(noBody).theme, "dark", "a big fill below the fold does not outvote the first viewport");
+});
+
+test("a start-aligned title shrunk and centred by its flex parent is centred, not left", () => {
+  assert.equal(look(page([text("h1", { x: 470, y: 300, w: 500, h: 110 }, 96, "Syne", [0, 0, 0], { align: "start" })])).hero, "centred");
+  // Off-centre or wide boxes keep their alignment's class.
+  assert.equal(look(page([text("h1", { x: 80, y: 300, w: 500, h: 110 }, 96, "Syne", [0, 0, 0], { align: "start" })])).hero, "left");
+  assert.equal(look(page([text("h1", { x: 40, y: 300, w: 1360, h: 110 }, 96, "Syne", [0, 0, 0], { align: "start" })])).hero, "left");
+});
+
+test("full-bleed needs a photograph: a texture tile, an svg or a canvas behind the title is not one", () => {
+  const title = text("h1", { x: 0, y: 300, w: W, h: 120 }, 96, "Syne", [0, 0, 0], { align: "center" });
+  const full = { x: 0, y: 0, w: W, h: H };
+  assert.equal(look(page([title], { media: [{ tag: "div", background: true, natural: { w: 200, h: 200 }, box: full }] })).hero, "centred", "a 200px tiled texture");
+  assert.equal(look(page([title], { media: [{ tag: "div", background: true, box: full }] })).hero, "centred", "an image whose size is unknown");
+  assert.equal(look(page([title], { media: [{ tag: "svg", box: full }, { tag: "canvas", box: full }] })).hero, "centred", "decorative svg and canvas");
+  assert.equal(look(page([title], { background: null, media: [{ tag: "body", background: true, natural: { w: 1920, h: 1280 }, box: { x: 0, y: 0, w: W, h: 3000 } }] })).hero, "full-bleed-image", "a photograph on the body");
+  assert.equal(look(page([title], { media: [{ tag: "img", natural: { w: 1920, h: 1280 }, box: full }] })).hero, "full-bleed-image");
+});
+
+test("a gradient button's first stop is the accent; a white button on a dark page leaves it null", () => {
+  const gradient = look(page([
+    text("h1", { x: 80, y: 120, w: 600, h: 100 }, 72, "Syne", [255, 255, 255]),
+    text("cta", { x: 80, y: 300, w: 180, h: 48 }, 16, "Inter", [255, 255, 255], { gradient: [124, 58, 237] }),
+  ], { background: [10, 10, 14] }));
+  assert.equal(gradient.accent, "#7c3aed");
+  const white = look(page([
+    text("h1", { x: 80, y: 120, w: 600, h: 100 }, 72, "Syne", [255, 255, 255]),
+    text("cta", { x: 80, y: 300, w: 180, h: 48 }, 16, "Inter", [10, 10, 14], { fill: [255, 255, 255] }),
+  ], { background: [10, 10, 14] }));
+  assert.equal(white.accent, null);
 });
 
 test("without a browser the signature comes from the CSS tokens and says the hero is unmeasured", () => {
@@ -151,6 +202,22 @@ test("the direction stage lists recent looks and what each version repeats, and 
   reset();
 });
 
+test("the same ledger entry with and without a signature gives byte-identical direction check findings", () => {
+  reset();
+  const root = project();
+  writeDirectionSet(root);
+  // A colliding entry (same source and palette and display font as dir-1), so there are findings to compare.
+  const appearance = { lightness: "light", hues: [], fonts: ["fraunces"], skeleton: "unmeasured", motion: "none" };
+  const entry = { project: "p-same", date: "2026-10-22", appearance, sources: ["designer:experimental jetset", "style:web/18"] };
+  const signed = { ...entry, appearance: { ...appearance, signature: { accent: "#e4572e", displayFont: "fraunces", bodyFont: "inter", theme: "light", hero: "left" } } };
+  const without = checkDirectionPreview(root, { stage: "preview", recentEntries: [entry] });
+  const withSig = checkDirectionPreview(root, { stage: "preview", recentEntries: [signed] });
+  assert.ok(without.findings.length > 0);
+  assert.equal(JSON.stringify(withSig.findings), JSON.stringify(without.findings));
+  assert.equal(JSON.stringify(withSig.blockers), JSON.stringify(without.blockers));
+  reset();
+});
+
 test("a foreign or broken ledger shows no recent looks and the stage proceeds", () => {
   reset();
   const root = project();
@@ -174,6 +241,21 @@ function browserSkip() {
   }
 }
 
+// A real solid-colour PNG of the given size, so images load offline with a known natural size.
+function png(width, height, [r, g, b]) {
+  const zlib = require("node:zlib");
+  const crcTable = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k += 1) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+  const crc = (buf) => { let c = 0xffffffff; for (const byte of buf) c = crcTable[(c ^ byte) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+  const chunk = (type, data) => { const out = Buffer.alloc(12 + data.length); out.writeUInt32BE(data.length, 0); out.write(type, 4, "latin1"); data.copy(out, 8); out.writeUInt32BE(crc(out.subarray(4, 8 + data.length)), 8 + data.length); return out; };
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(width, 0); header.writeUInt32BE(height, 4); header[8] = 8; header[9] = 2;
+  const row = Buffer.alloc(1 + width * 3);
+  for (let x = 0; x < width; x += 1) row.set([r, g, b], 1 + x * 3);
+  const raw = Buffer.concat(Array.from({ length: height }, () => row));
+  return `data:image/png;base64,${Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", header), chunk("IDAT", zlib.deflateSync(raw)), chunk("IEND", Buffer.alloc(0))]).toString("base64")}`;
+}
+const PHOTO = png(1600, 1000, [90, 110, 130]);
+const TILE = png(120, 120, [200, 190, 170]);
 // One pixel PNG, so an <img> loads offline.
 const PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 const PAGES = {
@@ -186,7 +268,7 @@ const PAGES = {
     <section><p>More body copy about the product sits under the fold and reads in the body face.</p></section>`,
   // Light page, centred headline over a full-bleed background image (a gradient-free url()).
   fullBleed: `<!doctype html><style>body{margin:0;background:#fafaf7;color:#111;font-family:"IBM Plex Sans",sans-serif}
-    .hero{height:100vh;background:url(${PIXEL}) center/cover;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+    .hero{height:100vh;background:url(${PHOTO}) center/cover;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
     h1{font-family:"Syne",sans-serif;font-size:110px;margin:0}.btn{background:#2f6bff;color:#fff;padding:12px 20px}</style>
     <div class="hero"><h1>Open water</h1><p>Body copy under the headline, long enough to be the body face.</p><span class="btn">Plan a trip</span></div>`,
   // Text only, left aligned, warm paper; the accent lives in links alone.
@@ -202,6 +284,30 @@ const PAGES = {
     .hero{display:flex;align-items:center;justify-content:space-between;padding:100px 80px}h1{font-size:76px;font-family:"Space Grotesk",sans-serif;max-width:600px}</style>
     <div class="hero"><div><h1>Plot every route</h1><p>Body copy on the left half beside the drawing for the body face.</p></div>
     <svg width="560" height="460" viewBox="0 0 560 460"><circle cx="280" cy="230" r="200" fill="#ffd166"/></svg></div>`,
+  // Review findings (#276): a dark body with white cards; a white page with a 700px dark footer.
+  cards: `<!doctype html><style>body{margin:0;background:#0e1014;font-family:Inter,sans-serif;padding:60px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+    .card{background:#fff;color:#111;padding:40px;min-height:640px}h1{font-family:"Syne";font-size:64px}</style>
+    <div class="grid"><div class="card"><h1>Two cards</h1><p>Body copy inside the first white card for reading.</p></div><div class="card"><p>Body copy inside the second white card.</p></div></div>`,
+  footer: `<!doctype html><style>body{margin:0;background:#fff;color:#111;font-family:Inter,sans-serif}main{padding:120px 80px;min-height:1200px}h1{font-family:"Syne";font-size:72px}
+    footer{background:#0c0c0c;color:#ddd;height:700px}</style><main><h1>White page</h1><p>Body copy on the white page for reading.</p></main><footer><p>Footer copy</p></footer>`,
+  // A centred hero whose title is start-aligned but shrunk and centred by flex align-items:center.
+  flexCentred: `<!doctype html><style>body{margin:0;background:#fff;font-family:Inter,sans-serif}.hero{display:flex;flex-direction:column;align-items:center;padding:200px 0}
+    h1{font-family:"Syne";font-size:96px;margin:0}</style><div class="hero"><h1>Middle</h1><p>Body copy under the title for reading.</p></div>`,
+  // A hero wrapper painted with a small tiled texture: not a full-bleed image.
+  texture: `<!doctype html><style>body{margin:0;background:#fff;font-family:Inter,sans-serif}.hero{height:100vh;background:url(${TILE}) repeat;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+    h1{font-family:"Syne";font-size:96px;margin:0}</style><div class="hero"><h1>Paper</h1><p>Body copy on a paper texture for reading.</p></div>`,
+  // A big decorative svg blob absolutely positioned behind a centred title.
+  decorativeSvg: `<!doctype html><style>body{margin:0;background:#fff;font-family:Inter,sans-serif}.hero{position:relative;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+    .hero svg{position:absolute;inset:0;width:100%;height:100%;z-index:0}h1,p{position:relative;font-family:"Syne";z-index:1}h1{font-size:96px;margin:0}</style>
+    <div class="hero"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><circle cx="50" cy="50" r="40" fill="#f2f2f2"/></svg><h1>Blob</h1><p>Body copy over the blob for reading.</p></div>`,
+  // A photograph on the body itself.
+  bodyPhoto: `<!doctype html><style>html,body{margin:0;height:100%}body{background:#222 url(${PHOTO}) center/cover;color:#fff;font-family:Inter,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+    h1{font-family:"Syne";font-size:96px;margin:0}</style><h1>Body photo</h1><p>Body copy over the photograph for reading.</p>`,
+  // A gradient CTA (label inside the gradient anchor) on a dark page, and a white CTA on a dark page.
+  gradientCta: `<!doctype html><style>body{margin:0;background:#0a0a0e;color:#fff;font-family:Inter,sans-serif;padding:120px 80px}h1{font-family:"Syne";font-size:80px}
+    .cta{display:inline-block;padding:14px 24px;background:linear-gradient(90deg,#7c3aed,#db2777)}</style><h1>Gradient</h1><p>Body copy for reading on the dark page.</p><a class="cta"><span>Get started</span></a>`,
+  whiteCta: `<!doctype html><style>body{margin:0;background:#0a0a0e;color:#fff;font-family:Inter,sans-serif;padding:120px 80px}h1{font-family:"Syne";font-size:80px}
+    .cta{display:inline-block;padding:14px 24px;background:#fff;color:#0a0a0e}</style><h1>White button</h1><p>Body copy for reading on the dark page.</p><span class="cta">Get started</span>`,
 };
 
 test("real pages measured in a browser give the expected signature", { skip: browserSkip(), timeout: 600000 }, (t) => {
@@ -223,6 +329,15 @@ test("real pages measured in a browser give the expected signature", { skip: bro
   assert.equal(svg.hero, "split");
   assert.equal(svg.accent, null, "an illustration's fill is not read as an accent");
   assert.equal(svg.theme, "light");
+  // Review findings (#276), measured in the browser.
+  assert.equal(measure("cards").signature.theme, "dark");
+  assert.equal(measure("footer").signature.theme, "light");
+  assert.equal(measure("flexCentred").signature.hero, "centred");
+  assert.equal(measure("texture").signature.hero, "centred");
+  assert.equal(measure("decorativeSvg").signature.hero, "centred");
+  assert.equal(measure("bodyPhoto").signature.hero, "full-bleed-image");
+  assert.equal(measure("gradientCta").signature.accent, "#7c3aed");
+  assert.equal(measure("whiteCta").signature.accent, null);
 });
 
 test("delivery records the signature in the ledger entry", { skip: browserSkip(), timeout: 300000 }, (t) => {
