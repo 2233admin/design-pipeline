@@ -34,6 +34,29 @@ font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
 - Use `400` for body copy and a real available `500` or `600` face for emphasis. Do not assume an
   intermediate or italic CJK face exists, and do not synthesize italic CJK text.
 
+## Check Coverage Before Choosing a Family
+
+A site's "supports Chinese" label is not coverage. Japanese OFL mincho faces, for example, lack
+simplified-only characters such as 钥, 证 and 记. Before a CJK family is chosen for a string, check
+the font's own cmap against that string:
+
+```bash
+designer-pipeline fonts query --text-file copy.txt --style mincho --weight 700 [--contrast high] [--path assets/fonts]
+```
+
+The command needs no network: it reads the packaged catalog (`references/fonts/catalog.json`: Google
+Fonts CJK families and LXGW WenKai at pinned commits) plus any local files in `--path`. It returns
+`candidates` that cover every character, and `missing` near misses with the exact characters each one
+lacks. Every candidate comes with its licence, the source file that declares it, and whether
+commercial use, embedding and modification are allowed. Exit 2 means nothing in the requested style
+covers the text. Then set the **whole string** in a face that covers it, not glyph by glyph.
+`fonts measure --path <file|dir>` reports a local file's coverage of 通用规范汉字表 (3500 and 8105),
+GB 2312, JIS level 1, Big5 common and Latin, plus its weights, stroke contrast and style.
+`fonts refresh` re-measures the pinned sources into the user cache. Styles are `mincho`
+(明朝/宋), `gothic` (黑), `kai`, `fangsong`, `round`, `display`, `handwriting` and `mono`. The
+catalog has no fangsong face yet, because the only reviewed open fangsong is published only as
+GitHub Release files, which this environment cannot download.
+
 ## Size, Line Height, and Measure
 
 - Dense product UI body copy starts at `14px`; reading surfaces normally start at `16px`.
