@@ -5451,13 +5451,13 @@
         "source": "Astryx",
         "license": "MIT",
         "url": "https://github.com/facebook/astryx",
-        "revision": "921d3db31ae4323e0625d2f5a95c32fe07a3d5d7"
+        "revision": "de4692eeedb5039f6b168dadb2ed2b4afcc70f8c"
       },
       "license": {
         "state": "verified",
         "id": "MIT",
         "evidence": [
-          "https://github.com/facebook/astryx/blob/921d3db31ae4323e0625d2f5a95c32fe07a3d5d7/LICENSE"
+          "https://github.com/facebook/astryx/blob/de4692eeedb5039f6b168dadb2ed2b4afcc70f8c/LICENSE"
         ]
       },
       "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Official Astryx source snapshot provenance; not a blanket grant for site assets or third-party integrations. Alias https://astryx.atmeta.com unifies repository identity only; it does not expand licensed scope. Snapshot provenance attribution mentions Meta Platforms, Inc. and affiliates; fetched LICENSE instead states Copyright (c) 2026 Meta Platforms, Inc."
