@@ -1,0 +1,867 @@
+{
+  "schema": "design-pipeline.material-calibration.v1",
+  "measured": "2026-11-05",
+  "method": "L* statistics (texture-stats.cjs): Welch-averaged Hann-windowed power spectrum in octave bands of physical period (mm), centred L* quantiles, orientation, laid-line peak; halftone: screen period/angle, coverage, off-lattice variance share above 0.6x the screen frequency. Fit on region A, natural variation = distance(A, held-out region B).",
+  "rebuild": "node scripts/build-material-calibration.cjs --project-root .design-pipeline/cal --fetch",
+  "profiles": {
+    "laid-cream": {
+      "kind": "paper",
+      "description": "Arches modern laid paper (Caillebotte drawing, blank areas)",
+      "sample": {
+        "source": "cleveland",
+        "sourceId": "396848",
+        "title": "Study of a Man with Hands in His Pockets",
+        "author": "Gustave Caillebotte (French, 1848–1894)",
+        "sourceUrl": "https://clevelandart.org/art/2020.260",
+        "fileUrl": "https://openaccess-cdn.clevelandart.org/2020.260/2020.260_print.jpg",
+        "license": "CC0",
+        "licenseEvidence": "share_license_status=CC0",
+        "retrieved": "2026-11-05",
+        "sha256": "6cbba769cb5763671b42831720511f4f134e1b8753eca703a2ceb982f0980340",
+        "width": 2276,
+        "height": 3400
+      },
+      "pxPerMm": 7.143,
+      "pxPerMmEvidence": "sheet 47.6 x 31.5 cm (Cleveland measurements), 3400 px long side",
+      "fitRoi": [
+        0.72,
+        0.07,
+        0.93,
+        0.42
+      ],
+      "heldOutRoi": [
+        0.05,
+        0.62,
+        0.3,
+        0.88
+      ],
+      "stats": {
+        "kind": "paper",
+        "units": "mm",
+        "pxPerMm": 7.143,
+        "region": {
+          "x": 1639,
+          "y": 238,
+          "width": 478,
+          "height": 1190,
+          "tile": 256,
+          "tiles": 4
+        },
+        "meanLab": [
+          80.02,
+          0.81,
+          9.73
+        ],
+        "rmsL": 4.876,
+        "visibleRmsL": 3.535,
+        "bands": {
+          "0.5-1mm": 2.2298,
+          "1-2mm": 2.5291,
+          "2-4mm": 0.8648,
+          "4-8mm": 0.615,
+          "8-16mm": 0.4947
+        },
+        "quantiles": {
+          "p1": -11.917,
+          "p5": -8.233,
+          "p10": -6.312,
+          "p25": -3.172,
+          "p50": 0.203,
+          "p75": 3.341,
+          "p90": 5.901,
+          "p95": 7.31,
+          "p99": 9.698
+        },
+        "anisotropy": 0.602,
+        "orientationDeg": 88.2,
+        "line": {
+          "periodPx": 9.14,
+          "periodMm": 1.28,
+          "angleDeg": 90,
+          "amplitude": 1.004,
+          "peakRatio": 1015
+        },
+        "lightFraction": 0.0067
+      },
+      "heldOut": {
+        "kind": "paper",
+        "units": "mm",
+        "pxPerMm": 7.143,
+        "region": {
+          "x": 114,
+          "y": 2108,
+          "width": 569,
+          "height": 884,
+          "tile": 512,
+          "tiles": 1
+        },
+        "meanLab": [
+          79.46,
+          0.26,
+          10.45
+        ],
+        "rmsL": 4.763,
+        "visibleRmsL": 3.736,
+        "bands": {
+          "0.5-1mm": 2.1558,
+          "1-2mm": 2.9088,
+          "2-4mm": 0.8222,
+          "4-8mm": 0.4167,
+          "8-16mm": 0.2445,
+          "16-32mm": 0.3292
+        },
+        "quantiles": {
+          "p1": -11.064,
+          "p5": -7.764,
+          "p10": -5.977,
+          "p25": -2.999,
+          "p50": 0.251,
+          "p75": 3.282,
+          "p90": 5.813,
+          "p95": 7.235,
+          "p99": 9.758
+        },
+        "anisotropy": 0.662,
+        "orientationDeg": 90.9,
+        "line": {
+          "periodPx": 9.31,
+          "periodMm": 1.303,
+          "angleDeg": 90,
+          "amplitude": 1.3,
+          "peakRatio": 10206.3
+        },
+        "lightFraction": 0.0068
+      },
+      "natural": {
+        "comparable": true,
+        "bands": [
+          "0.5-1mm",
+          "1-2mm",
+          "2-4mm",
+          "4-8mm",
+          "8-16mm"
+        ],
+        "spectralDb": 3.024,
+        "bandDb": {
+          "0.5-1mm": 0.29,
+          "1-2mm": -1.21,
+          "2-4mm": 0.43,
+          "4-8mm": 3.25,
+          "8-16mm": 5.78
+        },
+        "histogramL": 0.24,
+        "visibleRmsRatio": 0.946,
+        "anisotropy": 0.06,
+        "meanDeltaE": 1.07
+      }
+    },
+    "wove-cream": {
+      "kind": "paper",
+      "description": "cream wove paper (Ingres circle graphite portrait, top margin)",
+      "sample": {
+        "source": "cleveland",
+        "sourceId": "109295",
+        "title": "Madame Désiré Raoul-Rochette",
+        "author": "Jean-Auguste-Dominique Ingres (French, 1780–1867)",
+        "sourceUrl": "https://clevelandart.org/art/1927.437",
+        "fileUrl": "https://openaccess-cdn.clevelandart.org/1927.437/1927.437_print.jpg",
+        "license": "CC0",
+        "licenseEvidence": "share_license_status=CC0",
+        "retrieved": "2026-11-05",
+        "sha256": "3158a4dedb30a6176bb383a0ae1ce99d3612cf151b242fb6444b015228a587fe",
+        "width": 2692,
+        "height": 3400
+      },
+      "pxPerMm": 10.559,
+      "pxPerMmEvidence": "sheet 32.2 x 24 cm, 3400 px long side",
+      "fitRoi": [
+        0.02,
+        0.02,
+        0.3,
+        0.14
+      ],
+      "heldOutRoi": [
+        0.6,
+        0.02,
+        0.98,
+        0.2
+      ],
+      "stats": {
+        "kind": "paper",
+        "units": "mm",
+        "pxPerMm": 10.559,
+        "region": {
+          "x": 54,
+          "y": 68,
+          "width": 754,
+          "height": 408,
+          "tile": 256,
+          "tiles": 2
+        },
+        "meanLab": [
+          90.32,
+          2.28,
+          11.63
+        ],
+        "rmsL": 0.938,
+        "visibleRmsL": 0.678,
+        "bands": {
+          "0.25-0.5mm": 0.4848,
+          "0.5-1mm": 0.4349,
+          "1-2mm": 0.3917,
+          "2-4mm": 0.2843,
+          "4-8mm": 0.1903
+        },
+        "quantiles": {
+          "p1": -1.941,
+          "p5": -1.229,
+          "p10": -0.913,
+          "p25": -0.438,
+          "p50": 0.038,
+          "p75": 0.49,
+          "p90": 0.89,
+          "p95": 1.136,
+          "p99": 1.607
+        },
+        "anisotropy": 0.067,
+        "orientationDeg": 91.9,
+        "line": null,
+        "lightFraction": 0
+      },
+      "heldOut": {
+        "kind": "paper",
+        "units": "mm",
+        "pxPerMm": 10.559,
+        "region": {
+          "x": 1615,
+          "y": 68,
+          "width": 1023,
+          "height": 612,
+          "tile": 512,
+          "tiles": 1
+        },
+        "meanLab": [
+          89.09,
+          2.17,
+          13.09
+        ],
+        "rmsL": 0.84,
+        "visibleRmsL": 0.49,
+        "bands": {
+          "0.25-0.5mm": 0.5051,
+          "0.5-1mm": 0.3741,
+          "1-2mm": 0.2456,
+          "2-4mm": 0.164,
+          "4-8mm": 0.1159,
+          "8-16mm": 0.0913
+        },
+        "quantiles": {
+          "p1": -2.046,
+          "p5": -1.292,
+          "p10": -0.962,
+          "p25": -0.467,
+          "p50": 0.037,
+          "p75": 0.515,
+          "p90": 0.94,
+          "p95": 1.195,
+          "p99": 1.697
+        },
+        "anisotropy": 0.061,
+        "orientationDeg": 22.1,
+        "line": null,
+        "lightFraction": 0
+      },
+      "natural": {
+        "comparable": true,
+        "bands": [
+          "0.25-0.5mm",
+          "0.5-1mm",
+          "1-2mm",
+          "2-4mm",
+          "4-8mm"
+        ],
+        "spectralDb": 3.151,
+        "bandDb": {
+          "0.25-0.5mm": -0.34,
+          "0.5-1mm": 1.25,
+          "1-2mm": 3.81,
+          "2-4mm": 4.37,
+          "4-8mm": 3.79
+        },
+        "histogramL": 0.052,
+        "visibleRmsRatio": 1.369,
+        "anisotropy": 0.006,
+        "meanDeltaE": 1.91
+      }
+    },
+    "wove-toned": {
+      "kind": "paper",
+      "description": "toned wove paper (graphite study of trees, top margin)",
+      "sample": {
+        "source": "cleveland",
+        "sourceId": "130620",
+        "title": "Study of Trees",
+        "author": "Roger de La Fresnaye (French, 1885–1925)",
+        "sourceUrl": "https://clevelandart.org/art/1953.341",
+        "fileUrl": "https://openaccess-cdn.clevelandart.org/1953.341/1953.341_print.jpg",
+        "license": "CC0",
+        "licenseEvidence": "share_license_status=CC0",
+        "retrieved": "2026-11-05",
+        "sha256": "856186b270fa111cb226d53067ff73a7bcc534f3462a8e7ce8e77e10b46ce2ea",
+        "width": 3400,
+        "height": 2692
+      },
+      "pxPerMm": 11.93,
+      "pxPerMmEvidence": "sheet 21.8 x 28.5 cm, 3400 px long side",
+      "fitRoi": [
+        0.03,
+        0.004,
+        0.26,
+        0.1
+      ],
+      "heldOutRoi": [
+        0.55,
+        0.004,
+        0.95,
+        0.1
+      ],
+      "stats": {
+        "kind": "paper",
+        "units": "mm",
+        "pxPerMm": 11.93,
+        "region": {
+          "x": 102,
+          "y": 11,
+          "width": 782,
+          "height": 258,
+          "tile": 256,
+          "tiles": 3
+        },
+        "meanLab": [
+          84.94,
+          4.71,
+          20.04
+        ],
+        "rmsL": 1.492,
+        "visibleRmsL": 0.968,
+        "bands": {
+          "0.25-0.5mm": 0.8171,
+          "0.5-1mm": 0.6915,
+          "1-2mm": 0.5316,
+          "2-4mm": 0.3541,
+          "4-8mm": 0.2238
+        },
+        "quantiles": {
+          "p1": -3.427,
+          "p5": -2.26,
+          "p10": -1.717,
+          "p25": -0.852,
+          "p50": 0.038,
+          "p75": 0.898,
+          "p90": 1.641,
+          "p95": 2.08,
+          "p99": 2.893
+        },
+        "anisotropy": 0.116,
+        "orientationDeg": 163.4,
+        "line": null,
+        "lightFraction": 0
+      },
+      "heldOut": {
+        "kind": "paper",
+        "units": "mm",
+        "pxPerMm": 11.93,
+        "region": {
+          "x": 1870,
+          "y": 11,
+          "width": 1360,
+          "height": 258,
+          "tile": 256,
+          "tiles": 5
+        },
+        "meanLab": [
+          83.79,
+          4.44,
+          21.6
+        ],
+        "rmsL": 1.325,
+        "visibleRmsL": 0.856,
+        "bands": {
+          "0.25-0.5mm": 0.7443,
+          "0.5-1mm": 0.6204,
+          "1-2mm": 0.4504,
+          "2-4mm": 0.305,
+          "4-8mm": 0.2291
+        },
+        "quantiles": {
+          "p1": -3.423,
+          "p5": -2.22,
+          "p10": -1.666,
+          "p25": -0.824,
+          "p50": 0.027,
+          "p75": 0.834,
+          "p90": 1.542,
+          "p95": 1.956,
+          "p99": 2.74
+        },
+        "anisotropy": 0.073,
+        "orientationDeg": 11.2,
+        "line": {
+          "periodPx": 6.24,
+          "periodMm": 0.523,
+          "angleDeg": 1.4,
+          "amplitude": 0.058,
+          "peakRatio": 26.9
+        },
+        "lightFraction": 0
+      },
+      "natural": {
+        "comparable": true,
+        "bands": [
+          "0.25-0.5mm",
+          "0.5-1mm",
+          "1-2mm",
+          "2-4mm",
+          "4-8mm"
+        ],
+        "spectralDb": 0.99,
+        "bandDb": {
+          "0.25-0.5mm": 0.79,
+          "0.5-1mm": 0.91,
+          "1-2mm": 1.38,
+          "2-4mm": 1.22,
+          "4-8mm": -0.19
+        },
+        "histogramL": 0.064,
+        "visibleRmsRatio": 1.128,
+        "anisotropy": 0.043,
+        "meanDeltaE": 1.96
+      }
+    },
+    "woodblock-indigo": {
+      "kind": "print",
+      "description": "indigo woodblock flat with wood grain (Hiroshige, night sky)",
+      "sample": {
+        "source": "cleveland",
+        "sourceId": "120225",
+        "title": "Fireworks at Ryōgoku, from the series One Hundred Views of Famous Places in Edo",
+        "author": "Utagawa Hiroshige (Japanese, 1797–1858)",
+        "sourceUrl": "https://clevelandart.org/art/1940.986",
+        "fileUrl": "https://openaccess-cdn.clevelandart.org/1940.986/1940.986_print.jpg",
+        "license": "CC0",
+        "licenseEvidence": "share_license_status=CC0",
+        "retrieved": "2026-11-05",
+        "sha256": "d39caa739924cac3560d5222706e85d008b619b14050610a6e7db3c2f2360546",
+        "width": 2244,
+        "height": 3400
+      },
+      "pxPerMm": 10.089,
+      "pxPerMmEvidence": "sheet 33.7 x 22 cm, 3400 px long side",
+      "fitRoi": [
+        0.04,
+        0.06,
+        0.3,
+        0.24
+      ],
+      "heldOutRoi": [
+        0.04,
+        0.25,
+        0.3,
+        0.42
+      ],
+      "stats": {
+        "kind": "print",
+        "units": "mm",
+        "pxPerMm": 10.089,
+        "region": {
+          "x": 90,
+          "y": 204,
+          "width": 583,
+          "height": 612,
+          "tile": 512,
+          "tiles": 1
+        },
+        "meanLab": [
+          20.79,
+          -4.49,
+          -4.61
+        ],
+        "rmsL": 6.148,
+        "visibleRmsL": 3.704,
+        "bands": {
+          "0.25-0.5mm": 3.6651,
+          "0.5-1mm": 2.7352,
+          "1-2mm": 1.9187,
+          "2-4mm": 1.2337,
+          "4-8mm": 1.0171,
+          "8-16mm": 0.6384
+        },
+        "quantiles": {
+          "p1": -12.6,
+          "p5": -9.457,
+          "p10": -7.627,
+          "p25": -4.273,
+          "p50": -0.172,
+          "p75": 4.066,
+          "p90": 7.966,
+          "p95": 10.376,
+          "p99": 15.372
+        },
+        "anisotropy": 0.101,
+        "orientationDeg": 173.1,
+        "line": {
+          "periodPx": 12.19,
+          "periodMm": 1.208,
+          "angleDeg": 91.4,
+          "amplitude": 0.395,
+          "peakRatio": 193.2
+        },
+        "lightFraction": 0.0587
+      },
+      "heldOut": {
+        "kind": "print",
+        "units": "mm",
+        "pxPerMm": 10.089,
+        "region": {
+          "x": 90,
+          "y": 850,
+          "width": 583,
+          "height": 578,
+          "tile": 512,
+          "tiles": 1
+        },
+        "meanLab": [
+          18.8,
+          -4.54,
+          -4.62
+        ],
+        "rmsL": 6.244,
+        "visibleRmsL": 4.136,
+        "bands": {
+          "0.25-0.5mm": 3.6569,
+          "0.5-1mm": 2.9908,
+          "1-2mm": 2.2663,
+          "2-4mm": 1.4136,
+          "4-8mm": 1.0121,
+          "8-16mm": 0.6582
+        },
+        "quantiles": {
+          "p1": -12.298,
+          "p5": -9.418,
+          "p10": -7.654,
+          "p25": -4.389,
+          "p50": -0.365,
+          "p75": 3.945,
+          "p90": 7.987,
+          "p95": 10.502,
+          "p99": 15.759
+        },
+        "anisotropy": 0.11,
+        "orientationDeg": 178.3,
+        "line": {
+          "periodPx": 11.9,
+          "periodMm": 1.18,
+          "angleDeg": 91.3,
+          "amplitude": 0.318,
+          "peakRatio": 105.3
+        },
+        "lightFraction": 0.0643
+      },
+      "natural": {
+        "comparable": true,
+        "bands": [
+          "0.25-0.5mm",
+          "0.5-1mm",
+          "1-2mm",
+          "2-4mm",
+          "4-8mm",
+          "8-16mm"
+        ],
+        "spectralDb": 0.824,
+        "bandDb": {
+          "0.25-0.5mm": 0.02,
+          "0.5-1mm": -0.77,
+          "1-2mm": -1.43,
+          "2-4mm": -1.16,
+          "4-8mm": 0.04,
+          "8-16mm": -0.26
+        },
+        "histogramL": 0.148,
+        "visibleRmsRatio": 0.896,
+        "anisotropy": 0.009,
+        "meanDeltaE": 1.99
+      }
+    },
+    "litho-red": {
+      "kind": "print",
+      "description": "colour lithograph red flat with spatter (Toulouse-Lautrec, sofa)",
+      "sample": {
+        "source": "cleveland",
+        "sourceId": "107215",
+        "title": "Elles: The Seated Clown, Mlle Cha-u-Ka-o\r\n",
+        "author": "Henri de Toulouse-Lautrec (French, 1864-1901)",
+        "sourceUrl": "https://clevelandart.org/art/1925.1204.2",
+        "fileUrl": "https://openaccess-cdn.clevelandart.org/1925.1204.2/1925.1204.2_print.jpg",
+        "license": "CC0",
+        "licenseEvidence": "share_license_status=CC0",
+        "retrieved": "2026-11-05",
+        "sha256": "c5a1ee138ace85d5e800e80aec7b27beb9eb96f9e75cdc2ef79ac2231e7d405c",
+        "width": 2634,
+        "height": 3400
+      },
+      "pxPerMm": 6.464,
+      "pxPerMmEvidence": "sheet 52.6 x 40.3 cm, 3400 px long side",
+      "fitRoi": [
+        0.35,
+        0.612,
+        0.47,
+        0.66
+      ],
+      "heldOutRoi": [
+        0.47,
+        0.612,
+        0.59,
+        0.66
+      ],
+      "stats": {
+        "kind": "print",
+        "units": "mm",
+        "pxPerMm": 6.464,
+        "region": {
+          "x": 922,
+          "y": 2081,
+          "width": 316,
+          "height": 163,
+          "tile": 128,
+          "tiles": 2
+        },
+        "meanLab": [
+          57.23,
+          34.49,
+          26.24
+        ],
+        "rmsL": 4.862,
+        "visibleRmsL": 4.528,
+        "bands": {
+          "0.5-1mm": 3.0277,
+          "1-2mm": 2.8502,
+          "2-4mm": 1.5794,
+          "4-8mm": 0.8453
+        },
+        "quantiles": {
+          "p1": -11.691,
+          "p5": -7.217,
+          "p10": -5.52,
+          "p25": -3.153,
+          "p50": -0.599,
+          "p75": 2.548,
+          "p90": 6.469,
+          "p95": 9.403,
+          "p99": 14.959
+        },
+        "anisotropy": 0.024,
+        "orientationDeg": 130.4,
+        "line": null,
+        "lightFraction": 0.05
+      },
+      "heldOut": {
+        "kind": "print",
+        "units": "mm",
+        "pxPerMm": 6.464,
+        "region": {
+          "x": 1238,
+          "y": 2081,
+          "width": 316,
+          "height": 163,
+          "tile": 128,
+          "tiles": 2
+        },
+        "meanLab": [
+          58.38,
+          33.38,
+          25.78
+        ],
+        "rmsL": 5.808,
+        "visibleRmsL": 5.48,
+        "bands": {
+          "0.5-1mm": 3.4317,
+          "1-2mm": 3.4932,
+          "2-4mm": 2.1609,
+          "4-8mm": 1.1773
+        },
+        "quantiles": {
+          "p1": -11.473,
+          "p5": -7.779,
+          "p10": -6.284,
+          "p25": -3.974,
+          "p50": -1.028,
+          "p75": 3.316,
+          "p90": 8.337,
+          "p95": 11.302,
+          "p99": 16.238
+        },
+        "anisotropy": 0.017,
+        "orientationDeg": 101.8,
+        "line": null,
+        "lightFraction": 0.0871
+      },
+      "natural": {
+        "comparable": true,
+        "bands": [
+          "0.5-1mm",
+          "1-2mm",
+          "2-4mm",
+          "4-8mm"
+        ],
+        "spectralDb": 2.206,
+        "bandDb": {
+          "0.5-1mm": -1.08,
+          "1-2mm": -1.76,
+          "2-4mm": -2.69,
+          "4-8mm": -2.82
+        },
+        "histogramL": 0.956,
+        "visibleRmsRatio": 0.827,
+        "anisotropy": 0.007,
+        "meanDeltaE": 1.66
+      }
+    },
+    "autotype-1904": {
+      "kind": "halftone",
+      "description": "1904 sepia autotype (halftone) portrait, about 160 lpi",
+      "sample": {
+        "source": "rijksmuseum",
+        "sourceId": "200104782",
+        "title": "Mapje met 25 in autotypie gedrukte foto’s van gebouwen op het terrein van de wereldtentoonstelling in St. Louis (Louisiana Purchase Exposition), 1904 (‘St. Louis World’s Fair Souvenir Mailing Guide’)",
+        "author": "onbekend",
+        "sourceUrl": "https://www.rijksmuseum.nl/nl/collectie/object/RP-F-2010-21-75--5bae383ff88bba86f418bae191710e19",
+        "fileUrl": "https://iiif.micr.io/MWoXX/3650,330,800,800/max/0/default.jpg",
+        "license": "PDM",
+        "licenseEvidence": "image rights=https://creativecommons.org/publicdomain/mark/1.0/",
+        "retrieved": "2026-11-05",
+        "sha256": "f01b59cd94206153471cf2c9c508b5b47f80d21d817358c755a7964316f93820",
+        "width": 800,
+        "height": 800,
+        "region": [
+          3650,
+          330,
+          800,
+          800
+        ]
+      },
+      "pxPerMm": 31.2,
+      "pxPerMmEvidence": "mm ticks of the ruler photographed with the object, region [0,3700,4096,600]: 31.2 px per tick",
+      "fitRoi": [
+        0.25,
+        0.15,
+        0.5,
+        0.55
+      ],
+      "heldOutRoi": [
+        0.5,
+        0.15,
+        0.75,
+        0.55
+      ],
+      "stats": {
+        "kind": "halftone",
+        "pxPerMm": 31.2,
+        "region": {
+          "x": 200,
+          "y": 120,
+          "width": 200,
+          "height": 320,
+          "tile": 128
+        },
+        "periodPx": 5.009,
+        "periodMm": 0.1605,
+        "lpi": 158.2,
+        "angleDeg": 30.6,
+        "coverage": 0.53,
+        "paperL": 75.61,
+        "inkL": 35.91,
+        "harmonic2Ratio": 0.0217,
+        "offLatticeFraction": 0.3655
+      },
+      "heldOut": {
+        "kind": "halftone",
+        "pxPerMm": 31.2,
+        "region": {
+          "x": 400,
+          "y": 120,
+          "width": 200,
+          "height": 320,
+          "tile": 128
+        },
+        "periodPx": 5.009,
+        "periodMm": 0.1605,
+        "lpi": 158.2,
+        "angleDeg": 30.6,
+        "coverage": 0.588,
+        "paperL": 67.21,
+        "inkL": 29.89,
+        "harmonic2Ratio": 0.043,
+        "offLatticeFraction": 0.7912
+      },
+      "natural": {
+        "comparable": true,
+        "offLattice": 0.4257,
+        "harmonic2Db": 5.749,
+        "coverage": 0.058,
+        "contrastL": 2.38,
+        "lpiRatio": 1,
+        "angleDeg": 0
+      }
+    }
+  },
+  "yardsticks": {
+    "paper": {
+      "pairs": [
+        {
+          "pair": [
+            "laid-cream",
+            "wove-cream"
+          ],
+          "spectralDb": 12.466,
+          "histogramL": 5.267
+        },
+        {
+          "pair": [
+            "laid-cream",
+            "wove-toned"
+          ],
+          "spectralDb": 10.022,
+          "histogramL": 4.476
+        },
+        {
+          "pair": [
+            "wove-cream",
+            "wove-toned"
+          ],
+          "spectralDb": 3.024,
+          "histogramL": 0.792
+        }
+      ],
+      "between": {
+        "spectralDb": 3.024,
+        "histogramL": 0.792
+      }
+    },
+    "print": {
+      "pairs": [
+        {
+          "pair": [
+            "woodblock-indigo",
+            "litho-red"
+          ],
+          "spectralDb": 2.198,
+          "histogramL": 1.245
+        }
+      ],
+      "between": {
+        "spectralDb": 2.198,
+        "histogramL": 1.245
+      }
+    }
+  }
+}

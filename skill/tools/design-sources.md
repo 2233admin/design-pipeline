@@ -26,6 +26,7 @@ The examples below were observed on 2026-10-07; availability and destinations ca
 | Public-domain prints, plates and object photos for collage | [Material sources](#public-domain-collage-materials) below: Cleveland, Met, Rijksmuseum, Wikimedia Commons | A CC0 / public-domain file with its record in `materials/licenses.json`, cut into stickers, ink layers or plates |
 | Graphic operations and lighting studies | [Space Type Generator](https://spacetypegenerator.com/index.html), Dithering Studio, light-reference, PhotoMosh | An observable type deformation, tonal pattern, light arrangement or compositing operation to study or reproduce |
 | Textures, brushes, patterns and icons | Texturelabs, Brusheezy, Pattern Monster, iconfont | The material's scale, repetition, edges and interaction with the composition |
+| Paper, halftone, ink flats, perspective line art made here | `materials generate` / `materials process` ([make material](art-motion/assets-audio.md#make-material-generators-print-effects-calibration)); owner photos and scans by [capturing material](../references/material-capture.md) | A seeded, recorded file whose texture is measured against a real scan (or the owner's own) |
 
 These are search starting points, not default styles, mandatory services or bundled tools.
 PV/MAD references are useful when their visual mechanism fits; the same route serves still
@@ -88,6 +89,12 @@ node "<skill-root>/scripts/designer-pipeline.cjs" materials add --project-root .
   --license owner-scan --by "<owner>" --kind scan --use "paper texture"
 node "<skill-root>/scripts/designer-pipeline.cjs" materials check --project-root .
 ```
+
+For a detail at native resolution (paper tooth, a halftone screen) from a IIIF source such as the
+Rijksmuseum, fetch a region of the master instead of a downscaled whole:
+`materials fetch --source rijksmuseum --id <id> --params '{"region":[x,y,w,h]}'` (each side 64-4096 px,
+kept unscaled, recorded as `region`). Other sources refuse it; fetch the largest size and measure
+a `roi` instead.
 
 Search terms are comma-separated and searched one by one; results are full-text matches, so pick
 by looking, not by rank. `fetch` downloads only CC0 / public-domain records (an attribution or

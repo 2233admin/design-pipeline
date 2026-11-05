@@ -124,6 +124,48 @@ not flagged), a pale low-contrast object on white can vanish in `paper` mode (`m
 and touching motifs come out as one piece. Look
 at every piece at its use size; the flags are not visual acceptance.
 
+## Make material: generators, print effects, calibration
+
+When no source has the material, make it. `materials generate` runs a seeded generator from
+`procedural.cjs` and records `generator` {name, version, params, seed} with the file under
+`materials/generated/`; `materials generate --file <it>` replays the record and exits 2 if the
+bytes differ. Same params + seed + version = same bytes.
+
+| Generator | Output | Key params |
+| --- | --- | --- |
+| `paper` | PNG sheet (`output: "color"`) or neutral multiply layer (`"multiply"`, white at `whiteQuantile`, default 0.6) | `profile`, `pxPerMm` (default 4: a 1080 px side is a 27 cm sheet), `strength`, `creases`, `wrinkle`, `age`, `foxing`, `stains`, `tint` |
+| `halftone` | ink layer (RGBA) or ink on a paper | `periodPx` or `lpi`, `angleDeg`, `shape` round/ellipse/square/line/cross, `mode` am/fm, `coverage` (0-1 or `{"ramp":"x"\|"y"\|"radial","from","to"}`), `roughness`, `mottle`, `gain`, `ink`, `paper` |
+| `print` | ink flat: grain from a measured ink-flat profile, edge pile, rough edge, optional second ink misregistered | `profile`, `ink`, `paper`, `strength`, `margin`, `pile`, `edgeRoughMm`, `starvation`, `second`, `misregisterMm` |
+| `architecture` | SVG: `corridor`, `arcade`, `stairs`, `windows`, `checker` floor, all converging on `vp` | `vp` [x, y] fractions, `depth`, `ratio`, `tiles`, `doors`, colours; the record keeps the measured vanishing-point residual |
+| `motif` | SVG: `gear`, `rosette`, `star`, `sunburst`, `rings`, `spiral`, `lattice` | `count`, `inner`, colours |
+
+`materials process --effect` turns any recorded PNG into `woodcut` (gouged lines whose width
+follows tone, ink grain from a print profile), `halftone`, `duotone` (two screens, the second
+plate misregistered), `photocopy` (steep toner curve, edge bloom, specks, drum streaks) or
+`papercut` (colour clusters by k-means, each cut from its own textured sheet with a lit edge and
+its own shadow, stacked by area so spots land on top). Output goes to `materials/processed/`,
+inherits the source's licence and keeps `derivedFrom`; `materials check` reports it stale with the
+exact re-run command when the source changes.
+
+Paper and ink flats are calibrated, not tuned by eye: the noise is random-phase with the octave-band
+spectrum (L* RMS per band of physical period) of a real scan, then matched to the scan's lightness
+quantiles. Built-in profiles (`materials profiles`) come from CC0 / public-domain scans fetched with
+`materials fetch` (`references/material-calibration.json` holds their provenance, px/mm evidence,
+fit region, held-out region and natural variation): `laid-cream` (Arches laid, strong tooth and
+laid lines, about 4.9 L* RMS), `wove-cream` (smooth, about 0.9), `wove-toned` (about 1.5),
+`woodblock-indigo` and `litho-red` (ink flats), `autotype-1904` (a 160 lpi halftone). Each
+generated texture records its distance to the held-out region (`similarity`): `spectralDb` (RMS of
+per-band dB differences) for paper and ink, the off-lattice variance share for halftones, with the
+yardsticks `natural` (two regions of the same real sheet) and `between` (two different real papers).
+Owners calibrate to their own scans with `materials measure --name` ([capturing material](../../references/material-capture.md)).
+
+Limits, measured: spectrum + histogram synthesis does not reproduce phase structure (single hairs,
+wood-grain lines, chain lines) even when the numbers match; a near-black ink (#0d0b0b) clips the
+darker half of a profile's grain and lands `unlike-reference`; a halftone's natural variation is
+wide (two crops of the same autotype print differ by 0.43 in off-lattice share), so that yardstick
+separates a clean digital screen (about 0.04) from print but not one print from another. Visual
+use is still a decision at 100% where the material sits.
+
 ## Font subset and glyph route
 
 For choosing and obtaining the source font, use [font sources and selection](../fonts.md).

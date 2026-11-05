@@ -161,6 +161,27 @@ function project(name) {
   return dir;
 }
 
+test("fetch can take a native-resolution region from a IIIF source and records it; other sources refuse", async () => {
+  const root = project("fetch-region"), png = encodePng(flat());
+  const { http, calls } = stubFetch({
+    "https://id.rijksmuseum.nl/200140255": rijksObject,
+    "https://iiif.micr.io/": png,
+    "https://openaccess-api.clevelandart.org/api/artworks/130217": clevelandObject,
+  });
+  const result = await materials.fetchMaterial({ project: root, sourceId: "rijksmuseum", id: "200140255", region: [10, 20, 100, 120], width: 64, http });
+  assert.equal(result.status, "fetched", JSON.stringify(result));
+  assert.equal(result.file, "materials/raw/rijksmuseum-200140255-r10-20-100-120.png");
+  assert.deepEqual(result.record.region, [10, 20, 100, 120]);
+  assert.equal(result.record.fileUrl, "https://iiif.micr.io/rYoPx/10,20,100,120/max/0/default.jpg");
+  assert.ok(calls.some((call) => call.url.endsWith("/10,20,100,120/max/0/default.jpg")));
+  // Kept at the region's own size (120 px long side), not scaled down to --width.
+  assert.equal(Math.max(result.record.width, result.record.height), 120);
+  const cleveland = await materials.fetchMaterial({ project: root, sourceId: "cleveland", id: "130217", region: [0, 0, 100, 100], http });
+  assert.equal(cleveland.status, "refused");
+  assert.match(cleveland.fix, /params.roi|IIIF/);
+  await assert.rejects(materials.fetchMaterial({ project: root, sourceId: "rijksmuseum", id: "200140255", region: [0, 0, 10, 10], http }), /region/);
+});
+
 test("fetch downloads an open-licence object as PNG with complete provenance; check passes", async () => {
   const root = project("fetch-ok"), png = encodePng(flat());
   const { http, calls } = stubFetch({

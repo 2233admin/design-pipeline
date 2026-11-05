@@ -165,7 +165,7 @@ const KNOWN_OPTIONS = new Set([
   "--start", "--end", "--fps", "--max-frames", "--cut-threshold", "--min-shot", "--by", "--page-review", "--until", "--assisted-by", "--tradeoff", "--revision", "--affects",
   "--spec", "--stills", "--ffmpeg", "--ffprobe", "--medium", "--second", "--pool", "--east-pool",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
-  "--use", "--name", "--license", "--finish",
+  "--use", "--name", "--license", "--finish", "--generator", "--seed", "--reference",
 ]);
 function parseArgs(argv) {
   const positionals = [];
@@ -469,10 +469,15 @@ function publicHelp() {
     "  film-edit render|check --project-root <dir> [--output renders/edit.mp4]",
     "  materials sources | probe [--source <id>]   (public-domain/CC0 image sources with measured reachability; probe re-measures now, exit 2 on drift)",
     "  materials search --query <term[,term]> [--source cleveland|met|rijksmuseum] [--limit 5]   (candidates with their licence field; blocked sources say why)",
-    "  materials fetch --project-root <dir> --source <id> --id <object id|File:name> [--use <purpose>] [--name <stem>] [--width 1200] [--replace]   (CC0/public domain only; writes materials/raw/<stem>.png and its record in materials/licenses.json; exit 2 blocked or refused)",
+    "  materials fetch --project-root <dir> --source <id> --id <object id|File:name> [--use <purpose>] [--name <stem>] [--width 1200] [--params '{\"region\":[x,y,w,h]}'] [--replace]   (CC0/public domain only; writes materials/raw/<stem>.png and its record in materials/licenses.json; exit 2 blocked or refused)",
     "  materials add --project-root <dir> --file materials/<path> --license <licence> --by <author> [--url <source page>] [--kind image|font|scan|photo|texture] [--title <t>] [--use <purpose>] [--commercial-use] [--replace]   (owner-supplied material)",
     "  materials cut --project-root <dir> --file materials/raw/<x>.png --mode border|paper|white-matte|none [--finish cut,sticker,ink,plate] [--params '{\"threshold\":14,\"keep\":2,\"roi\":[x0,y0,x1,y1]}'] [--replace]",
-    "  materials check --project-root <dir>   (every file recorded with licence and provenance; cut pieces match their source hash; exit 2 on findings)",
+    "  materials check --project-root <dir>   (every file recorded with licence and provenance; cut/processed pieces match their source hash; generated files carry generator, version, params and seed; exit 2 on findings)",
+    "  materials generate --project-root <dir> --generator paper|halftone|print|architecture|motif [--params <json>] [--seed 1] [--name <stem>] [--reference <profile>] [--replace]   (seeded; writes materials/generated/<stem>.png|svg with generator, version, params, seed and, for textures, its measured distance to a real scan)",
+    "  materials generate --project-root <dir> --file materials/generated/<x>   (replay from the record; exit 2 if the bytes differ)",
+    "  materials process --project-root <dir> --file materials/<x>.png --effect woodcut|halftone|papercut|photocopy|duotone [--params <json>] [--seed 1] [--name <stem>] [--replace]   (writes materials/processed/<stem>.png with lineage to its source)",
+    "  materials measure --project-root <dir> --file materials/<x>.png [--kind paper|print|halftone] [--params '{\"pxPerMm\":11.81,\"roi\":[x0,y0,x1,y1]}'] [--reference <profile>] [--name <profile> [--title <t>]]   (texture statistics; distance to a calibration profile, exit 2 when unlike it; --name saves an owner scan as a profile)",
+    "  materials profiles [--project-root <dir>]   (built-in calibration profiles measured on public-domain scans, plus the project's own)",
     "  film score --project-root <dir> --bpm <n> [--template punchy-launch|calm-build|tech-pulse --key c] | [--pattern score.strudel.js] [--output assets/score.wav] [--write] [--replace]",
     "    (Strudel, AGPL-3.0, is installed into <dir>/.design-pipeline/strudel on first use; never bundled)",
     "  film blocks --project-root <dir> [--query <action words>] [--tag 3d|shader|transition|...] [--type block|component] [--refresh]",
@@ -1467,6 +1472,7 @@ function designMdCommand(parsed, root, action) {
 // the network and run in the fetch-materials kernel.
 function materialsCommand(parsed, root, action) {
   if (action === "sources") return { result: materials.listSources(), exitCode: 0 };
+  if (action === "profiles") return { result: materials.listProfiles(option(parsed, "--project-root") ? contained(root, option(parsed, "--project-root"), "--project-root") : null), exitCode: 0 };
   const sources = option(parsed, "--source") ? String(option(parsed, "--source")).split(",") : undefined;
   if (action === "probe") {
     const { value, exitCode } = runKernel("fetch-materials.cjs", ["probe", JSON.stringify({ sources })], process.cwd(), { timeout: 5 * 60 * 1000 });
@@ -1481,7 +1487,15 @@ function materialsCommand(parsed, root, action) {
   const project = contained(root, requireOption(parsed, "--project-root"), "--project-root");
   if (action === "fetch") {
     const width = Number(option(parsed, "--width", 1200));
-    const args = { project, sourceId: requireOption(parsed, "--source"), id: requireOption(parsed, "--id"), use: option(parsed, "--use") || undefined, name: option(parsed, "--name") || undefined, width, replace: option(parsed, "--replace") === true };
+    let region;
+    if (option(parsed, "--params")) {
+      let params;
+      try { params = JSON.parse(option(parsed, "--params")); } catch (error) { fail("cli", `--params is not JSON: ${error.message}`, { code: "OPTION_VALUE_INVALID" }); }
+      const unknown = Object.keys(params || {}).filter((key) => key !== "region");
+      if (unknown.length) fail("cli", `materials fetch --params accepts only region; got ${unknown.join(", ")}`, { code: "OPTION_VALUE_INVALID" });
+      region = params.region;
+    }
+    const args = { project, sourceId: requireOption(parsed, "--source"), id: requireOption(parsed, "--id"), use: option(parsed, "--use") || undefined, name: option(parsed, "--name") || undefined, width, region, replace: option(parsed, "--replace") === true };
     const { value, exitCode } = runKernel("fetch-materials.cjs", ["fetch", JSON.stringify(args)], process.cwd(), { timeout: 5 * 60 * 1000 });
     return { result: value, exitCode };
   }
@@ -1492,6 +1506,18 @@ function materialsCommand(parsed, root, action) {
       commercialUse: option(parsed, "--commercial-use") === true ? true : undefined, replace: option(parsed, "--replace") === true,
     });
     return { result, exitCode: 0 };
+  }
+  if (action === "generate") {
+    const result = materials.generateMaterial(project, { generator: option(parsed, "--generator") || undefined, params: option(parsed, "--params") || undefined, seed: option(parsed, "--seed") ?? undefined, name: option(parsed, "--name") || undefined, use: option(parsed, "--use") || undefined, reference: option(parsed, "--reference") || undefined, file: option(parsed, "--file") || undefined, replace: option(parsed, "--replace") === true });
+    return { result, exitCode: ["generated", "reproduced"].includes(result.status) ? 0 : 2 };
+  }
+  if (action === "process") {
+    const result = materials.processMaterial(project, { file: requireOption(parsed, "--file"), effect: requireOption(parsed, "--effect"), params: option(parsed, "--params") || undefined, seed: option(parsed, "--seed") ?? undefined, name: option(parsed, "--name") || undefined, use: option(parsed, "--use") || undefined, replace: option(parsed, "--replace") === true });
+    return { result, exitCode: 0 };
+  }
+  if (action === "measure") {
+    const result = materials.measureMaterial(project, { file: requireOption(parsed, "--file"), kind: option(parsed, "--kind") || undefined, params: option(parsed, "--params") || undefined, reference: option(parsed, "--reference") || undefined, name: option(parsed, "--name") || undefined, title: option(parsed, "--title") || undefined, replace: option(parsed, "--replace") === true });
+    return { result, exitCode: result.assessment?.level === "unlike-reference" ? 2 : 0 };
   }
   if (action === "cut") {
     const result = materials.cutMaterial(project, { file: requireOption(parsed, "--file"), mode: requireOption(parsed, "--mode"), finish: option(parsed, "--finish") || undefined, params: option(parsed, "--params") || undefined, use: option(parsed, "--use") || undefined, replace: option(parsed, "--replace") === true });
@@ -2650,7 +2676,7 @@ const COMMANDS = {
     }])),
   },
   materials: {
-    actions: Object.fromEntries(["sources", "probe", "search", "fetch", "add", "cut", "check"].map((name) => [name, { run: ({ parsed, root }) => materialsCommand(parsed, root, name) }])),
+    actions: Object.fromEntries(["sources", "profiles", "probe", "search", "fetch", "add", "generate", "process", "measure", "cut", "check"].map((name) => [name, { run: ({ parsed, root }) => materialsCommand(parsed, root, name) }])),
   },
   "film-eval": {
     actions: {
