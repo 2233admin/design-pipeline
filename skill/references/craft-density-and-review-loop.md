@@ -24,7 +24,7 @@ Each page lands at least five items from this menu, and the delivery report list
 3. brand focus ring with offset, not the browser default;
 4. one signature interaction (magnetic button, hover reveal, scroll reveal, or number roll);
 5. two or three layer shadows tinted from the base colour;
-6. editorial detail: section numbers, margin notes, hairlines, tracked small-caps labels;
+6. structure that encodes the content: numbering only for a real sequence, a margin note that adds a fact, a rule that separates real groups (eyebrows, hairlines and small-caps labels on every section are template chrome, not craft);
 7. display typography: oversized, outlined, vertical or overlapping type;
 8. fluid heading size with a clamped range;
 9. custom scrollbar in the brand colour;

@@ -6,7 +6,7 @@ sourceMeta:
   reviewedRevision: 4e5d0925e1a0d34894734611b225205aa10e5a2f
   reviewedContentHash: 396572fd3133134972196037484def6b553fa28a2b69a7aba2f3aceeaf1cf711
   contentHashScope: single-source UTF-8 bytes at reviewedRevision
-  reviewedAt: 2026-08-26T00:00:00.000Z
+  reviewedAt: 2026-11-04T00:00:00.000Z
   freshnessDays: 365
   license: unverified
   useBoundary: reference-only; distilled guidance; do not install or execute upstream content

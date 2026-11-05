@@ -236,9 +236,12 @@ try {
   const unfetched = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "mengto", "search", "--root", repoRoot, "--query", "gsap", "--json"], { echo: false, env: hermeticEnv });
   let unfetchedPayload = null; try { unfetchedPayload = JSON.parse(unfetched.stdout); } catch {}
   report(unfetched.status === 1 && unfetchedPayload?.error?.code === "TOOL_MISSING" && /sources fetch --bundle mengto-skills/.test(unfetchedPayload.error.message), "installed MengTo search names the fetch command before a download");
+  const unfetchedSystems = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "designmd", "search", "--root", repoRoot, "--kind", "design-system", "--query", "coral", "--json"], { echo: false, env: hermeticEnv });
+  let unfetchedSystemsPayload = null; try { unfetchedSystemsPayload = JSON.parse(unfetchedSystems.stdout); } catch {}
+  report(unfetchedSystems.status === 1 && unfetchedSystemsPayload?.error?.code === "TOOL_MISSING" && /sources fetch --bundle brand-design-systems/.test(unfetchedSystemsPayload.error.message), "installed brand design-system search names the fetch command before a download");
   const installedDoctor = run(process.execPath, [path.join(installed, "scripts/designer-pipeline.cjs"), "doctor", "--json"], { echo: false, env: hermeticEnv });
   let installedDoctorPayload = null; try { installedDoctorPayload = JSON.parse(installedDoctor.stdout); } catch {}
-  report(installedDoctor.status === 0 && JSON.stringify(installedDoctorPayload?.downloads?.map((item) => item.bundle)) === JSON.stringify(["mengto-skills", "iart-motion-skills", "design-direction-library"]), "installed doctor lists the bundles to download without blocking");
+  report(installedDoctor.status === 0 && JSON.stringify(installedDoctorPayload?.downloads?.map((item) => item.bundle)) === JSON.stringify(["mengto-skills", "iart-motion-skills", "design-direction-library", "brand-design-systems"]), "installed doctor lists the bundles to download without blocking");
   for (const bundle of ["mengto-skills", "iart-motion-skills"]) {
     const bundleManifest = readJson(path.join(repoRoot, "skill/vendor", bundle, "manifest.json"));
     fs.cpSync(path.join(repoRoot, "skill/vendor", bundle, "upstream"), path.join(hermeticEnv.DESIGN_PIPELINE_CACHE, "vendor", bundle, bundleManifest.snapshot.treeSha256, "upstream"), { recursive: true });

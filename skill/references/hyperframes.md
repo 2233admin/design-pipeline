@@ -105,7 +105,7 @@ looks.
 ## Production loop
 
 Use the project-pinned CLI from the composition root. `film scaffold` writes a `package.json`
-that pins `hyperframes` 0.8.137 and `gsap` 3.15.0 and loads GSAP from
+that pins `hyperframes` 0.8.137 and `gsap` 3.15.1 and loads GSAP from
 `node_modules/gsap/dist/gsap.min.js`; run `npm install` once (network), then call the CLI with
 `--no-install` so `npx` never fetches a newer release and lint, check and render run offline:
 

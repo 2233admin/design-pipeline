@@ -1,0 +1,12 @@
+<!doctype html><html><head><style>
+body{font:16px/1.5 Arial;background:#fff;color:#111;margin:0;padding:20px}
+#splash{position:fixed;inset:0;background:#111;color:#fff;display:grid;place-items:center;transition:opacity .3s}
+#splash.gone{opacity:0;pointer-events:none}
+.toast{position:fixed;right:10px;bottom:10px;background:#222;color:#fff;padding:8px;transition:opacity .3s}
+.toast.gone{opacity:0}
+</style></head><body>
+<h1>Preloader / toast (JS timers, not motion)</h1><p>Main content</p>
+<div id="splash"><p>Loading brand…</p></div>
+<div class="toast" id="t">Saved</div>
+<script>setTimeout(()=>splash.classList.add('gone'),600);setTimeout(()=>t.classList.add('gone'),700)</script>
+</body></html>

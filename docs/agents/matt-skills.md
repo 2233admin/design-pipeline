@@ -4,11 +4,11 @@ Matt 的技能提供需求澄清、模块设计、TDD、诊断和审查方法；
 
 ## 已核对的版本
 
-2026-10-08 核对了 [v1.3.0](https://github.com/mattpocock/skills/tree/984a2c023c9fb42bb6ea40c70a652284a109dc05)、[v1.3.1](https://github.com/mattpocock/skills/tree/24fe0ef7737efae15c87225755e9f6f5965e4888) 和当前已安装的 [f3fc563](https://github.com/mattpocock/skills/tree/f3fc5632f401156837ee3872f14fe33ccf1024ea)。本机 38 个上游技能、103 个技能文件逐一匹配该提交。它包含 v1.3.1 后续的修改；包内版本字段仍是 1.3.1，不能据此把 main 当作已发布标签。
+跟随上游最新：当前锁定 [`4ae2317`](https://github.com/mattpocock/skills/tree/4ae2317ddb22b046e26455e4f9c9b3aaaf62212d)（`sources.lock.json` 的 `mattpocock-skills`，由 `npm run sources:update` 每周移动）。该提交的包内版本是 1.3.2（标签 [v1.3.2](https://github.com/mattpocock/skills/releases/tag/v1.3.2) 之后的 main），共 39 个技能：20 个 engineering、7 个 productivity、8 个 in-progress、4 个 misc。2026-10-08 曾逐一核对过 [v1.3.0](https://github.com/mattpocock/skills/releases/tag/v1.3.0) 和 [v1.3.1](https://github.com/mattpocock/skills/releases/tag/v1.3.1)；包内版本字段不能当作已发布标签。
 
-v1.3 把 `implement-spec`、`pr`、`retro` 纳入正式工程技能，统一 `GLOSSARY.md` 命名，移除专用的合并冲突解决技能，并改进跨技能加载。v1.3.1 修正调试后的建议：修复后用用户选择的 `retro` 检查环境缺口，发现模块边界问题时再考虑架构调查。见固定提交的 [变更记录](https://github.com/mattpocock/skills/blob/f3fc5632f401156837ee3872f14fe33ccf1024ea/CHANGELOG.md)。
+v1.3 把 `implement-spec`、`pr`、`retro` 纳入正式工程技能，统一 `GLOSSARY.md` 命名，移除专用的合并冲突解决技能，并改进跨技能加载。v1.3.1 修正调试后的建议：修复后用用户选择的 `retro` 检查环境缺口，发现模块边界问题时再考虑架构调查。v1.3.2 让 `diagnosing-bugs` 在信任失败测试前先 `diff` 强制改动，`code-review` 读取仓库的规范文件。见锁定提交的 [变更记录](https://github.com/mattpocock/skills/blob/4ae2317ddb22b046e26455e4f9c9b3aaaf62212d/CHANGELOG.md)。
 
-官方插件当前包含 27 个正式技能；本机全量安装额外包含 7 个 in-progress 和 4 个 misc 技能。全量安装记录不等于本项目承诺支持每个试验技能。发布说明应写所审查的标签或提交，分别说明正式和试验入口。
+官方插件当前包含 27 个正式技能（engineering 与 productivity）；全量安装额外包含 in-progress 和 misc 技能。全量安装记录不等于本项目承诺支持每个试验技能。发布说明应写所审查的标签或提交，分别说明正式和试验入口。
 
 ## Setup 的必要调整
 

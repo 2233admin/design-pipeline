@@ -22,9 +22,14 @@ context: |
   scripts/test-manifest.json and load-bearing skill files in references/package-resources.json.
   Use the root-workspace OpenSpec CLI through npm exec -- openspec; run npm run specs:check
   for strict validation.
-  capabilities:check audits existing source evidence and may report UNKNOWN without evidence;
-  sources:check validates locked snapshots. Source import requires an explicitly reviewed
-  revision in a local checkout; never refresh a manifest by rehashing arbitrary source.
+  capabilities:check audits existing source evidence and may report UNKNOWN without evidence.
+  Upstream sources track upstream HEAD (npm runtimes the latest release); sources.lock.json records
+  each one and every derived pin agrees with it. npm run sources:update resolves HEAD, re-imports
+  from a fresh checkout of it and regenerates integrity hashes (size, Git blob id, SHA-256) and
+  the lock; the bump PR with green tests is the review. sources:check verifies the snapshots
+  against those hashes offline; --upstream lists what is behind. Never edit vendored bytes or
+  rehash a manifest by hand. A source that cannot move mechanically is held in the lock with
+  its follow-up issue.
 
 rules:
   proposal:

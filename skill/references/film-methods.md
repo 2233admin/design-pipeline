@@ -22,8 +22,8 @@ Read one selected full entry before applying it:
 
 - **Cinetic:** [complete SKILL.md](../vendor/cinetic/upstream/skills/cinetic/UPSTREAM-SKILL.md),
   [source inventory](../vendor/cinetic/manifest.json), [MIT license](../vendor/cinetic/upstream/LICENSE).
-  [Leonxlnx/cinetic](https://github.com/Leonxlnx/cinetic/tree/bee5d7807205d5543472c38312507f9bf366cbbf)
-  at `bee5d7807205d5543472c38312507f9bf366cbbf`; this is a different repository from Taste.
+  [Leonxlnx/cinetic](https://github.com/Leonxlnx/cinetic/tree/ecfa6605de1adb9345ce937724810dc32267d068)
+  at `ecfa6605de1adb9345ce937724810dc32267d068`; this is a different repository from Taste.
 - **Product Film:** [complete SKILL.md](../vendor/product-film-skill/upstream/plugins/product-film/skills/product-film/UPSTREAM-SKILL.md),
   [source inventory](../vendor/product-film-skill/manifest.json), [MIT license](../vendor/product-film-skill/upstream/LICENSE).
   [Rieranthony/product-film-skill](https://github.com/Rieranthony/product-film-skill/tree/fe11efc429d5903e37274d0b294e1b95745b2881)
@@ -187,14 +187,14 @@ Remotion and HyperFrames starters, treatment template and critic prompts. Only t
 motion kit is adapted into the maintained primitive API here. Starter films/tokens are examples,
 not the user's brand, and the example `timeline.js` is not installed as a second timing authority.
 
-| Cinetic script group (all 27, excluding tests) | Maintained choice and status |
+| Cinetic script group (all 30, excluding tests) | Maintained choice and status |
 | --- | --- |
 | `new-film.sh` | Use existing `film scaffold`; upstream shell source only. |
 | `pick.py` | Explicit-ID catalog selection in `film methods`; source randomizer not executed. |
 | `add-font.mjs`, `palette.py`, `brand-kit.sh`, `brand-svg.ts`, `outline-text.py`, `dither-gradient.py` | Use existing font, asset and artwork paths as needed; upstream font/brand/export helpers remain source only. No global installs or brand redefinition. |
 | `lint-film.mjs`, `grid-check.ts`, `layout-audit.sh` | Existing storyboard/timeline/composition and task checks; source tools not run and their bans/quotas are not new policy. |
-| `export-cues.ts`, `audio/score.py`, `audio/master.py`, `audio/synth.py` | Adapter cue calculations plus existing film score/audio tools; full upstream score/stem pipeline remains source only. |
-| `render.sh`, `render-chunks.sh`, `hf-finish.sh`, `measure-speed.py`, `accumulate.py` | Existing HyperFrames/render and film checks; upstream shell renderer, optical-flow blur/float accumulation not executed or claimed. |
+| `export-cues.ts`, `audio/score.py`, `audio/master.py`, `audio/synth.py`, `audio/kit.py`, `audio/listen.py` | Adapter cue calculations plus existing film score/audio tools; full upstream score/stem pipeline remains source only. |
+| `render.sh`, `render-chunks.sh`, `hf-preflight.cjs`, `hf-finish.sh`, `measure-speed.py`, `accumulate.py` | Existing HyperFrames/render and film checks; upstream shell renderer, optical-flow blur/float accumulation not executed or claimed. |
 | `grab.sh`, `sheet.py`, `probe.py`, `check-sync.py`, `forensics.py`, `av-audit.py`, `deliver.sh` | Existing capture/FFmpeg/contact-sheet/audio/render evidence and requested delivery; upstream forensic/A-V/stem/social/alpha export scripts remain source only. |
 
 All script bytes, tests and fixtures are retained in the local [Cinetic scripts directory](../vendor/cinetic/upstream/skills/cinetic/scripts/).

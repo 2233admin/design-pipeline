@@ -19,7 +19,7 @@ library serves three purposes:
 
 ```
 evals/cases/
-  package.json                  workspace toolchain pins (GSAP 3.15.0, HyperFrames 0.8.137)
+  package.json                  workspace toolchain pins (GSAP 3.15.1, HyperFrames 0.9.15)
   cases.cjs                     load, validate, patch and check cases
   capture-core.cjs              deterministic 2x UI capture for real-interface cases
   verify.cjs                    command-line verification

@@ -7,9 +7,11 @@
 // shell (download once into a user cache, overridable by an environment variable). Node built-ins
 // and global fetch only. See openspec/changes/archive/2026-10-15-fetch-vendor-on-demand.
 //
-// A partial bundle (the design direction library) ships its text in the package and fetches only the
-// binaries listed in `manifest.fetched`, with the same download, size, blob id and SHA-256 checks.
-// Its fetch id is `manifest.bundle`; it is found by manifest schema, so this file names no upstream.
+// A partial bundle (the design direction library, the brand design-system catalog) ships its text in
+// the package and fetches only the files listed in `manifest.fetched`, with the same download, size,
+// blob id and SHA-256 checks. Its fetch id is `manifest.bundle`; it is found by manifest schema, so
+// this file names no upstream. A partial manifest with `packs` maps each object's first path segment
+// to a pack's repository and revision, as iart does.
 
 const crypto = require("node:crypto");
 const fs = require("node:fs");
@@ -27,7 +29,7 @@ function repoOf(repository) {
   return `${match[1]}/${match[2]}`;
 }
 
-const PARTIAL_SCHEMA = "design-pipeline.direction-library-source.v1";
+const PARTIAL_SCHEMAS = ["design-pipeline.direction-library-source.v1", "design-pipeline.brand-design-systems-source.v1"];
 
 // Bundle -> every manifest object with the repository, revision and in-repository path it comes from.
 // `directory` is the folder under skill/vendor; `partial` bundles ship their text and fetch `manifest.fetched`.
@@ -38,19 +40,22 @@ const FETCHABLE = {
   },
   "iart-motion-skills": {
     directory: "iart-motion-skills",
-    items: (manifest) => {
-      const packs = new Map(manifest.packs.map((pack) => [pack.id, pack]));
-      return manifest.snapshot.objects.map((object) => {
-        const [id, ...rest] = object.path.split("/");
-        const pack = packs.get(id);
-        if (!pack || !rest.length) throw new Error(`object ${object.path} belongs to no recorded pack`);
-        return { object, repo: repoOf(pack.repository), revision: pack.revision, file: rest.join("/") };
-      });
-    },
+    items: (manifest) => packItems(manifest, manifest.snapshot.objects),
   },
 };
 
-// Partial bundles under a vendor directory: any folder whose manifest.json starts with the partial schema.
+// Objects whose first path segment names a recorded pack: fetched from that pack's repository and revision.
+function packItems(manifest, objects) {
+  const packs = new Map(manifest.packs.map((pack) => [pack.id, pack]));
+  return objects.map((object) => {
+    const [id, ...rest] = object.path.split("/");
+    const pack = packs.get(id);
+    if (!pack || !rest.length) throw new Error(`object ${object.path} belongs to no recorded pack`);
+    return { object, repo: repoOf(pack.repository), revision: pack.revision, file: rest.join("/") };
+  });
+}
+
+// Partial bundles under a vendor directory: any folder whose manifest.json starts with a partial schema.
 function partialBundles(vendorDirectory = VENDOR) {
   if (!fs.existsSync(vendorDirectory)) return [];
   const found = [];
@@ -58,11 +63,14 @@ function partialBundles(vendorDirectory = VENDOR) {
     if (!entry.isDirectory()) continue;
     const manifestFile = path.join(vendorDirectory, entry.name, "manifest.json");
     if (!fs.existsSync(manifestFile)) continue;
+    // The schema is sniffed from the first 256 bytes, so every partial manifest must write `schema`
+    // first (both importers do); a manifest that moves it later is not found as a partial bundle.
     const descriptor = fs.openSync(manifestFile, "r");
     const head = Buffer.alloc(256);
     const read = fs.readSync(descriptor, head, 0, head.length, 0);
     fs.closeSync(descriptor);
-    if (!head.subarray(0, read).toString("utf8").includes(PARTIAL_SCHEMA)) continue;
+    const schema = PARTIAL_SCHEMAS.find((candidate) => head.subarray(0, read).toString("utf8").includes(candidate));
+    if (!schema) continue;
     // Module load must not throw: a corrupt manifest registers under its folder name and the
     // verifier (which doctor wraps) reports it with reinstall guidance.
     let bundle;
@@ -70,7 +78,7 @@ function partialBundles(vendorDirectory = VENDOR) {
       bundle = JSON.parse(fs.readFileSync(manifestFile, "utf8")).bundle;
     } catch {}
     if (!/^[a-z][a-z0-9-]*$/.test(bundle || "")) bundle = entry.name;
-    found.push({ bundle, directory: entry.name, manifestFile });
+    found.push({ bundle, directory: entry.name, manifestFile, schema });
   }
   return found;
 }
@@ -78,7 +86,9 @@ for (const { bundle, directory } of partialBundles()) {
   FETCHABLE[bundle] = {
     directory,
     partial: true,
-    items: (manifest) => manifest.fetched.objects.map((object) => ({ object, repo: repoOf(manifest.source.repository), revision: manifest.source.revision, file: object.path })),
+    items: (manifest) => (manifest.packs
+      ? packItems(manifest, manifest.fetched.objects)
+      : manifest.fetched.objects.map((object) => ({ object, repo: repoOf(manifest.source.repository), revision: manifest.source.revision, file: object.path }))),
   };
 }
 const BUNDLES = Object.keys(FETCHABLE);
