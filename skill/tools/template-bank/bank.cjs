@@ -7,12 +7,16 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { pathToFileURL } = require("node:url");
 const lettering = require("./lettering.cjs");
 const measure = require("./measure.cjs");
-const { LAYOUTS } = require("./layouts.cjs");
+const coverage = require("./coverage.cjs");
+const LAYOUTS = { ...require("./layouts.cjs").LAYOUTS, ...require("./layouts-shinbo.cjs").LAYOUTS };
 
 const TEMPLATES_ROOT = path.join(__dirname, "templates");
+const STYLES_ROOT = path.join(__dirname, "styles");
 const MANIFEST_SCHEMA = "design-pipeline.template-bank-template.v1";
+const STYLE_SCHEMA = "design-pipeline.template-bank-style.v1";
 const CHECK_SCHEMA = "design-pipeline.template-check.v1";
 const PARAM_CLASSES = ["proportion", "rhythm", "decoration"];
 const RULES = Object.freeze({ minTypePx: 12, minCapPx: 9, contrastNormal: 4.5, contrastLarge: 3, largePx: 24, largeBoldPx: 18.66, alignTolerance: 0.005 });
@@ -28,26 +32,62 @@ function templateIds() {
   return fs.readdirSync(TEMPLATES_ROOT, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
 }
 
+// A style pack groups templates: font roles, layout grammar, materials, motion grammar and the
+// check rules its renders must pass (styles/<id>/style.json). Templates name their style.
+function styleIds() {
+  return fs.readdirSync(STYLES_ROOT, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+}
+
+const styleCache = new Map();
+function loadStyle(id) {
+  if (typeof id !== "string" || !styleIds().includes(id)) throw new BankError(`unknown style ${JSON.stringify(id)}. Fix: use one of ${styleIds().join(", ")} (template list)`, "OPTION_VALUE_INVALID");
+  if (!styleCache.has(id)) {
+    const style = JSON.parse(fs.readFileSync(path.join(STYLES_ROOT, id, "style.json"), "utf8"));
+    if (style.schema !== STYLE_SCHEMA || style.id !== id) throw new BankError(`styles/${id}/style.json must have schema ${STYLE_SCHEMA} and id ${id}`);
+    for (const key of ["fonts", "layout", "materials", "checks"]) if (!style[key]) throw new BankError(`styles/${id}/style.json lacks ${key}`);
+    for (const [role, spec] of Object.entries(style.fonts.roles || {})) if (!Array.isArray(spec.stack) || !spec.stack.length) throw new BankError(`style ${id} font role ${role} needs a stack`);
+    styleCache.set(id, style);
+  }
+  return styleCache.get(id);
+}
+
 function loadManifest(id) {
   if (typeof id !== "string" || !/^[a-z0-9][a-z0-9.-]*$/.test(id) || !templateIds().includes(id)) {
     throw new BankError(`unknown template ${JSON.stringify(id)}. Fix: pick one of ${templateIds().join(", ")} (template list)`, "TEMPLATE_NOT_FOUND");
   }
   const manifest = JSON.parse(fs.readFileSync(path.join(TEMPLATES_ROOT, id, "manifest.json"), "utf8"));
   if (manifest.schema !== MANIFEST_SCHEMA || manifest.id !== id) throw new BankError(`templates/${id}/manifest.json must have schema ${MANIFEST_SCHEMA} and id ${id}`);
-  if (!LAYOUTS[id]) throw new BankError(`template ${id} has no layout in layouts.cjs`);
+  if (!LAYOUTS[id]) throw new BankError(`template ${id} has no layout`);
+  const style = loadStyle(manifest.style);
+  if (!manifest.palette) manifest.palette = style.palette;
+  if (!manifest.palette) throw new BankError(`template ${id} has no palette and its style ${manifest.style} declares none`);
   return manifest;
 }
 
-function listTemplates({ family } = {}) {
+function styleSummary(style, templates) {
+  return {
+    id: style.id, title: style.title, summary: style.summary,
+    fontRoles: Object.fromEntries(Object.entries(style.fonts.roles).map(([role, spec]) => [role, spec.stack.join(" > ")])),
+    grammar: style.layout.grammar,
+    materials: { procedural: style.materials.procedural || [], collage: style.materials.collage || [], sources: style.materials.sources, budget: style.materials.budget || null },
+    motion: style.motion || style.motionNote || null,
+    checks: style.checks,
+    templates: templates.filter((m) => m.style === style.id).map((m) => m.id),
+  };
+}
+
+function listTemplates({ family, style } = {}) {
   const all = templateIds().map(loadManifest);
   const families = [...new Set(all.map((m) => m.family))].sort();
   if (family && !families.includes(family)) throw new BankError(`unknown family ${JSON.stringify(family)}. Fix: use one of ${families.join(", ")}`, "OPTION_VALUE_INVALID");
-  const templates = all.filter((m) => !family || m.family === family).map((m) => ({
-    id: m.id, family: m.family, title: m.title, use: m.use, sizes: m.sizes,
+  if (style) loadStyle(style);
+  const templates = all.filter((m) => (!family || m.family === family) && (!style || m.style === style)).map((m) => ({
+    id: m.id, family: m.family, style: m.style, title: m.title, use: m.use, sizes: m.sizes,
     slots: Object.entries(m.slots).map(([name, slot]) => `${name}:${slot.kind}${slot.maxChars ? `<=${slot.maxChars}` : ""}`),
     knobs: Object.entries(m.params).filter(([, p]) => p.class === "rhythm").map(([name]) => name),
   }));
-  return { status: "templates", families, templates, next: "Render one with: template render <id> --set slot=value --param k=v --size WxH -o out.svg" };
+  const styles = (style ? [style] : styleIds()).map((id) => (style ? styleSummary(loadStyle(id), all) : { id, title: loadStyle(id).title, templates: all.filter((m) => m.style === id).length }));
+  return { status: "templates", families, styles, templates, next: "Render one with: template render <id> --set slot=value --param k=v --size WxH -o out.svg; template list --style <id> shows a style pack's font roles, grammar, materials, motion and checks" };
 }
 
 // ---- slots and parameters ---------------------------------------------------------------------
@@ -140,7 +180,7 @@ const esc = (value) => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;"
 const f1 = (value) => value.toFixed(1);
 
 class Doc {
-  constructor(manifest, W, H, params, palette, values) {
+  constructor(manifest, W, H, params, palette, values, faces = []) {
     this.m = manifest;
     this.W = W;
     this.H = H;
@@ -155,8 +195,37 @@ class Doc {
     this.alignLines = [];
     this.used = new Set();
     this.hatches = new Set();
-    const fonts = manifest.fonts;
-    this.families = { sans: fonts.sans.map((f) => `'${f}'`).concat("sans-serif").join(","), serif: fonts.serif.map((f) => `'${f}'`).concat("serif").join(",") };
+    this.defs = [];
+    this.fontSwitches = [];
+    this.faces = faces;
+    this.style = loadStyle(manifest.style);
+    this.roles = this.style.fonts.roles;
+    this.families = Object.fromEntries(Object.entries(this.roles).map(([role, spec]) => [role, this.stackCss(spec.stack, spec.generic)]));
+    this.edl = null;
+    this.rhythm = null;
+  }
+
+  stackCss(stack, generic) { return stack.map((f) => `'${f}'`).concat(generic || "serif").join(","); }
+
+  def(markup) { this.defs.push(markup); }
+
+  // Whole-string font choice: the first family of the role's stack that covers every character.
+  // Coverage comes from --font-dir files or a registered provider (font catalog); unknown stays as named.
+  familyFor(roleName, text, weight) {
+    const spec = this.roles[roleName];
+    if (!spec) throw new BankError(`layout ${this.m.id} uses font role ${roleName}, which style ${this.m.style} does not declare`);
+    const choice = coverage.chooseFamily(spec.stack, text, { weight, faces: this.faces });
+    const known = choice.tried.filter((t) => t.known);
+    if (!known.length) return { css: this.families[roleName] };
+    if (!choice.family) {
+      const first = known[0];
+      this.fontSwitches.push({ role: roleName, text, missing: first.missing, to: null });
+      return { css: this.families[roleName], missing: first.missing };
+    }
+    if (choice.family === spec.stack[0]) return { css: this.families[roleName] };
+    const from = spec.stack[0];
+    this.fontSwitches.push({ role: roleName, text, missing: choice.tried[0].missing, from, to: choice.family });
+    return { css: this.stackCss(spec.stack.slice(spec.stack.indexOf(choice.family)), spec.generic), switched: `${from}>${choice.family}` };
   }
 
   value(name) {
@@ -201,12 +270,22 @@ class Doc {
 
   raw(markup) { this.body.push(markup); }
 
-  image(name, x, y, w, h, note = "") {
+  image(name, x, y, w, h, note = "", o = {}) {
     const { spec, text } = this.value(name);
     const ground = this.pal[spec.ground || "bg"] || spec.groundColor || "#808080";
+    const hasImage = typeof text === "string" && text.startsWith("data:image/");
+    // Collage slots: drawn only when filled, at the image's own aspect (width w), rotated about the centre.
+    if (spec.collage) {
+      if (!hasImage) return;
+      const aspect = imageAspect(text) || 1;
+      const ih = w * aspect;
+      const turn = o.rotate ? ` transform="rotate(${f1(o.rotate)} ${f1(x + w / 2)} ${f1(y + ih / 2)})"` : "";
+      this.body.push(`<g ${this.slotAttrs(name, spec, { box: [x, y, w, ih] })} data-collage="${esc(name)}"${turn}><image href="${esc(text)}" x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="${f1(ih)}" preserveAspectRatio="xMidYMid meet"${o.filter ? ` filter="url(#${o.filter})"` : ""}/></g>`);
+      return;
+    }
     const box = [x, y, w, h];
     const open = `<g ${this.slotAttrs(name, spec, { box })} data-ground="${ground}">`;
-    if (typeof text === "string" && text.startsWith("data:image/")) {
+    if (hasImage) {
       this.body.push(`${open}<image href="${esc(text)}" x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="${f1(h)}" preserveAspectRatio="${spec.fit === "contain" ? "xMidYMid meet" : "xMidYMid slice"}"/></g>`);
       return;
     }
@@ -231,26 +310,35 @@ class Doc {
   }
 
   // Text slot. (x, y) is the baseline start (or centre/end by anchor), as in SVG.
+  // o.content: text the layout derives (a summary, a legend); such slots are declared derived.
   text(name, x, y, size, o = {}) {
-    const { spec, text } = this.value(name);
+    const { spec, text: given } = this.value(name);
+    const text = o.content !== undefined ? o.content : given;
     const role = o.role || "ink";
     const anchor = o.anchor || "start";
-    const family = this.families[o.family || spec.font || "sans"];
+    const roleName = o.family || spec.font || "sans";
+    if (!this.families[roleName]) throw new BankError(`layout ${this.m.id} uses font role ${roleName}, which style ${this.m.style} does not declare`);
+    const weight = o.weight || this.roles[roleName].weight || 700;
+    const chosen = this.familyFor(roleName, String(text), weight);
+    const family = chosen.css;
     const tracking = o.tracking || 0;
     const spacing = (tracking / 1000) * size;
     const lineHeight = o.lineHeight || 1.3;
     const box = o.box ? this.clipBox(o.box) : this.autoBox(x, y, size, spec, { anchor, vertical: o.vertical, lineHeight });
     const attrs = [
-      this.slotAttrs(name, spec, { box }), `x="${f1(x)}"`, `y="${f1(y)}"`, `font-family="${esc(family)}"`, `font-weight="${o.weight || 700}"`,
-      `font-size="${f1(size)}"`, `fill="${this.pal[role]}"`, `data-role="${role}"`, `text-anchor="${anchor}"`,
+      this.slotAttrs(name, spec, { box }), `x="${f1(x)}"`, `y="${f1(y)}"`, `font-family="${esc(family)}"`, `font-weight="${weight}"`,
+      `font-size="${f1(size)}"`, `fill="${this.pal[role]}"`, `data-role="${role}"`, `text-anchor="${anchor}"`, `data-font-role="${esc(roleName)}"`,
     ];
+    if (chosen.switched) attrs.push(`data-font-switch="${esc(chosen.switched)}"`);
+    if (chosen.missing) attrs.push(`data-font-missing="${esc(chosen.missing)}"`);
     if (o.vertical) attrs.push("writing-mode=\"vertical-rl\"", "text-orientation=\"upright\"");
     if (spacing) attrs.push(`letter-spacing="${f1(spacing)}"`);
     const lines = spec.lines > 1 ? measure.wrapText(text, size, box[2], spacing) : [String(text)];
     const content = lines.length > 1
       ? lines.map((line, index) => `<tspan x="${f1(x)}" dy="${index === 0 ? "0" : f1(size * lineHeight)}">${esc(line)}</tspan>`).join("")
       : esc(lines[0]);
-    this.body.push(`<text ${attrs.join(" ")}>${content}</text>`);
+    const markup = `<text ${attrs.join(" ")}>${content}</text>`;
+    this.body.push(o.transform ? `<g transform="${o.transform}">${markup}</g>` : markup);
     return { width: measure.textWidth(lines[0], size, spacing), lines: lines.length };
   }
 
@@ -309,12 +397,15 @@ class Doc {
       contrast: { normal: RULES.contrastNormal, large: RULES.contrastLarge, largePx: RULES.largePx, largeBoldPx: RULES.largeBoldPx },
       accent: { roles: accentRoles, colors: [...new Set(accentRoles.map((role) => this.pal[role]))], maxShare: this.p.accent_max_share ?? this.m.accent.maxShare, textInkFactor: measure.TEXT_INK_FACTOR },
       zones: this.zones, alignLines: this.alignLines,
+      ...(this.rhythm ? { rhythm: this.rhythm } : {}),
     };
     const showGuides = this.p.guides === true;
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${this.W}" height="${this.H}" viewBox="0 0 ${this.W} ${this.H}" data-template="${this.m.id}">`
       + `<metadata id="template-params">${esc(JSON.stringify(meta))}</metadata>`
       + `<metadata id="template-check">${esc(JSON.stringify(rules))}</metadata>`
       + "<defs>"
+      + (this.faces.length ? `<style>${this.faces.map((face) => `@font-face{font-family:'${face.family}';font-weight:${face.weight || 400};src:url("${esc(pathToFileURL(face.file).href)}")}`).join("")}</style>` : "")
+      + this.defs.join("")
       + [...this.hatches].map((ground) => {
         const rgb = measure.parseColor(ground);
         const line = measure.hex(measure.mix(rgb, measure.luminance(rgb) < 0.25 ? [255, 255, 255] : [0, 0, 0], 0.08));
@@ -328,24 +419,78 @@ class Doc {
   }
 }
 
+// Width-to-height of an embedded PNG, JPEG or WebP (collage slots keep their aspect).
+function imageAspect(dataUrl) {
+  const comma = dataUrl.indexOf(",");
+  if (comma < 0) return null;
+  const b = Buffer.from(dataUrl.slice(comma + 1, comma + 1 + 65536), "base64");
+  try {
+    if (b.toString("latin1", 1, 4) === "PNG") return b.readUInt32BE(20) / b.readUInt32BE(16);
+    if (b.toString("latin1", 0, 4) === "RIFF" && b.toString("latin1", 8, 12) === "WEBP") {
+      const kind = b.toString("latin1", 12, 16);
+      if (kind === "VP8X") return (1 + b.readUIntLE(27, 3)) / (1 + b.readUIntLE(24, 3));
+      if (kind === "VP8L") { const bits = b.readUInt32LE(21); return (((bits >> 14) & 0x3fff) + 1) / ((bits & 0x3fff) + 1); }
+      if (kind === "VP8 ") return (b.readUInt16LE(28) & 0x3fff) / (b.readUInt16LE(26) & 0x3fff);
+    }
+    if (b[0] === 0xff && b[1] === 0xd8) {
+      for (let i = 2; i < b.length - 9;) {
+        if (b[i] !== 0xff) { i += 1; continue; }
+        const marker = b[i + 1];
+        if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) return b.readUInt16BE(i + 5) / b.readUInt16BE(i + 7);
+        i += 2 + b.readUInt16BE(i + 2);
+      }
+    }
+  } catch { return null; }
+  return null;
+}
+
+// Font files for a style's faces found under a directory (matched by file name, any extension
+// the coverage reader takes).
+function fontFacesIn(dir, style) {
+  if (!dir) return [];
+  if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) throw new BankError(`--font-dir ${dir} is not a directory`, "OPTION_VALUE_INVALID");
+  const byStem = new Map();
+  for (const face of style.fonts.faces || []) byStem.set(face.file.replace(/\.[^.]+$/, "").toLowerCase(), face);
+  const found = [];
+  const stack = [dir];
+  while (stack.length) {
+    const current = stack.pop();
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const full = path.join(current, entry.name);
+      if (entry.isDirectory()) { stack.push(full); continue; }
+      if (!/\.(ttf|otf|ttc|woff)$/i.test(entry.name)) continue;
+      const face = byStem.get(entry.name.replace(/\.[^.]+$/, "").toLowerCase());
+      if (face) found.push({ family: face.family, weight: face.weight, file: full, index: /\.ttc$/i.test(entry.name) ? face.index || 0 : 0 });
+    }
+  }
+  return found;
+}
+
 // ---- render --------------------------------------------------------------------------------
-function render(id, { set = {}, params: overrides = {}, size = null, seed = null } = {}) {
+function render(id, { set = {}, params: overrides = {}, size = null, seed = null, fontDir = null } = {}) {
   const manifest = loadManifest(id);
   const { W, H } = parseSize(manifest, size);
   for (const [name, value] of Object.entries(set)) {
     const found = slotSpec(manifest, name);
     if (!found) throw new BankError(`unknown slot ${name} in ${id}. Fix: use one of ${slotNames(manifest)}`, "OPTION_VALUE_INVALID");
+    if (found.spec.derived) throw new BankError(`slot ${name} is derived by the layout and cannot be set. Fix: set the slots it is derived from`, "OPTION_VALUE_INVALID");
     if (found.spec.kind === "image" && !String(value).startsWith("data:image/")) throw new BankError(`slot ${name} is an image slot; pass a png, jpg, webp or svg file path`, "OPTION_VALUE_INVALID");
     if (found.spec.kind !== "image" && /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value)) throw new BankError(`slot ${name} contains control characters`, "OPTION_VALUE_INVALID");
   }
   const { params, palette, varied } = resolveParams(manifest, overrides, seed);
-  const doc = new Doc(manifest, W, H, params, palette, set);
-  LAYOUTS[id](doc);
+  const faces = fontFacesIn(fontDir, loadStyle(manifest.style));
+  const doc = new Doc(manifest, W, H, params, palette, set, faces);
+  try {
+    LAYOUTS[id](doc);
+  } catch (error) {
+    if (error instanceof BankError) throw error;
+    throw new BankError(error.message, error.code || "TEMPLATE_INVALID");
+  }
   const unknownSet = Object.keys(set).filter((name) => !doc.used.has(name));
   if (unknownSet.length) throw new BankError(`slot ${unknownSet.join(", ")} is not drawn with the current parameters (for example a count parameter is lower). Fix: raise the count or drop the --set`, "OPTION_VALUE_INVALID");
   const values = Object.fromEntries(Object.entries(set).map(([name, value]) => [name, String(value).startsWith("data:") ? `${String(value).slice(0, 32)}…` : value]));
-  const meta = { template: id, canvas: [W, H], params, palette, slots: values, ...(seed === null || seed === undefined ? {} : { seed: Number(seed), varied }), provenance: manifest.provenance.summary };
-  return { svg: doc.svg(meta), template: id, size: `${W}x${H}`, params, palette, varied };
+  const meta = { template: id, style: manifest.style, canvas: [W, H], params, palette, slots: values, ...(seed === null || seed === undefined ? {} : { seed: Number(seed), varied }), ...(doc.fontSwitches.length ? { fontSwitches: doc.fontSwitches } : {}), ...(faces.length ? { fontFaces: faces.map((f) => path.basename(f.file)) } : {}), provenance: manifest.provenance.summary };
+  return { svg: doc.svg(meta), template: id, style: manifest.style, size: `${W}x${H}`, params, palette, varied, fontSwitches: doc.fontSwitches, fontFaces: faces, ...(doc.edl ? { edl: doc.edl } : {}) };
 }
 
 // ---- check ---------------------------------------------------------------------------------
@@ -394,6 +539,79 @@ function fitChars(slot, available) {
   if (!chars.length) return 0;
   const perChar = slot.extent[slot.vertical ? 3 : 2] / Math.max(1, chars.length / Math.max(1, slot.lines?.length || 1));
   return Math.max(0, Math.floor(available / perChar));
+}
+
+// Rhythm of a title-card cut, as written in the render's check metadata: [{ kind: black|hold|flash,
+// frames, shot, ground, variant, group }]. Flash rate follows WCAG 2.3.1 on the ground tones: a
+// flash is a pair of opposing luminance changes of at least 0.1 with the darker side below 0.8;
+// more than three in any one second fails. The encoded film is measured by verify film-render.
+function checkRhythm(rhythm) {
+  const findings = [];
+  const { fps, limits, edl, grounds } = rhythm;
+  const range = { black: limits.blackFrames, hold: limits.holdFrames, flash: limits.flashFrames };
+  edl.forEach((seg, index) => {
+    const [lo, hi] = range[seg.kind] || [1, Infinity];
+    if (seg.frames < lo || seg.frames > hi) {
+      findings.push({ rule: "rhythm", slot: seg.shot || seg.kind, measured: { segment: index, kind: seg.kind, frames: seg.frames }, limit: { frames: [lo, hi] },
+        message: `segment ${index} (${seg.kind}${seg.shot ? ` ${seg.shot}` : ""}) lasts ${seg.frames} frames; ${seg.kind} cuts last ${lo}-${hi}`,
+        fix: `Set segment ${index} to ${Math.min(hi, Math.max(lo, seg.frames))} frames (--param ${seg.kind === "flash" ? "flash_frames" : seg.kind === "hold" ? "hold_frames" : "black_frames"} inside ${lo}-${hi}).` });
+    }
+  });
+  // flash groups
+  const groups = [];
+  for (let i = 0; i < edl.length; i += 1) {
+    if (edl[i].kind !== "flash") continue;
+    const start = i;
+    while (i + 1 < edl.length && edl[i + 1].kind === "flash") i += 1;
+    groups.push({ start, end: i, segs: edl.slice(start, i + 1) });
+  }
+  const [gmin, gmax] = limits.flashGroup;
+  for (const g of groups) {
+    const n = g.segs.length;
+    if (n < gmin || n > gmax) findings.push({ rule: "rhythm", slot: `flash group at ${g.start}`, measured: { flashes: n }, limit: { flashes: [gmin, gmax] },
+      message: `flash group at segment ${g.start} has ${n} flashes; groups hold ${gmin}-${gmax}`,
+      fix: `${n < gmin ? "Add" : "Remove"} ${n < gmin ? gmin - n : n - gmax} flash(es) (--param group_size inside ${gmin}-${gmax}), and keep a hold or black on each side.` });
+    const tones = [...new Set(g.segs.map((seg) => seg.ground))];
+    if (tones.length > 1) findings.push({ rule: "rhythm", slot: `flash group at ${g.start}`, measured: { grounds: tones }, limit: { grounds: 1 },
+      message: `flash group at segment ${g.start} mixes grounds ${tones.join(", ")}`,
+      fix: `Use cards of one ground in a flash group (${tones[0]}); vary them by text, crop or push-in, and change the ground at a hold or black.` });
+    let run = 1;
+    for (let k = 1; k < g.segs.length; k += 1) {
+      run = g.segs[k].shot === g.segs[k - 1].shot ? run + 1 : 1;
+      if (run > limits.repeats[1]) findings.push({ rule: "rhythm", slot: g.segs[k].shot, measured: { repeats: run }, limit: { repeats: limits.repeats },
+        message: `${g.segs[k].shot} repeats ${run} times in a row; the grammar repeats a frame ${limits.repeats[0]}-${limits.repeats[1]} times`,
+        fix: `Cut the repeat to ${limits.repeats[1]} (--param repeat) or cut to another card of the same ground.` });
+    }
+  }
+  const frames = edl.reduce((sum, seg) => sum + seg.frames, 0);
+  const seconds = frames / fps;
+  const [dmin, dmax] = limits.durationSec;
+  if (seconds < dmin - 1e-9 || seconds > dmax + 1e-9) findings.push({ rule: "rhythm", slot: "duration", measured: { seconds: measure.round(seconds, 2), frames }, limit: { seconds: [dmin, dmax] },
+    message: `the cut runs ${measure.round(seconds, 2)} s; the grammar is ${dmin}-${dmax} s`,
+    fix: `${seconds < dmin ? `Add ${Math.ceil((dmin - seconds) * fps)} frames (raise --param hold_frames or --param groups)` : `Remove ${Math.ceil((seconds - dmax) * fps)} frames (lower --param hold_frames or --param groups)`}.` });
+  // flash rate on ground tones
+  const lum = Object.fromEntries(Object.entries(grounds).map(([k, v]) => [k, measure.luminance(measure.parseColor(v))]));
+  const timeline = [];
+  for (const seg of edl) for (let f = 0; f < seg.frames; f += 1) timeline.push(seg.ground);
+  const changes = [];
+  for (let f = 1; f < timeline.length; f += 1) {
+    const a = lum[timeline[f - 1]]; const b = lum[timeline[f]];
+    if (a === undefined || b === undefined) continue;
+    if (Math.abs(a - b) >= limits.flashLimit.minLuminanceChange && Math.min(a, b) < limits.flashLimit.darkerBelow) changes.push({ frame: f, up: b > a });
+  }
+  let worst = null;
+  for (let i = 0; i < changes.length; i += 1) {
+    let pairs = 0; let last = null; let count = 0;
+    for (let j = i; j < changes.length && changes[j].frame < changes[i].frame + fps; j += 1) {
+      if (last === null || changes[j].up !== last) { count += 1; last = changes[j].up; }
+    }
+    pairs = Math.floor(count / 2);
+    if (!worst || pairs > worst.flashes) worst = { flashes: pairs, at: changes[i].frame };
+  }
+  if (worst && worst.flashes > limits.flashLimit.perSecond) findings.push({ rule: "rhythm", slot: "flash-rate", measured: { flashesInOneSecond: worst.flashes, fromFrame: worst.at, atSeconds: measure.round(worst.at / fps, 2) }, limit: { perSecond: limits.flashLimit.perSecond },
+    message: `${worst.flashes} ground-tone flashes within one second from ${measure.round(worst.at / fps, 2)} s; at most ${limits.flashLimit.perSecond} (WCAG 2.3.1)`,
+    fix: "Keep one ground per flash group and change grounds only across a hold or a black of at least 12 frames; check the encoded film with verify film-render." });
+  return findings;
 }
 
 function check(svgText) {
@@ -485,6 +703,15 @@ function check(svgText) {
         }
       }
     }
+    // 4. glyph coverage known at render time: no font of the role covers the whole string.
+    const missing = slot.node.attrs["data-font-missing"] || slot.textNode?.attrs?.["data-font-missing"];
+    if (missing) {
+      add({
+        rule: "glyph-coverage", slot: slot.slot, measured: { role: slot.node.attrs["data-font-role"] || null, missing }, limit: { missing: "" },
+        message: `no font of ${slot.slot}'s role covers ${missing}; the string would be set glyph by glyph in mixed fonts`,
+        fix: `Rewrite ${slot.slot} without ${missing}, or give --font-dir a font of the role that covers it (the font catalog lists candidates); the whole string switches, never single glyphs.`,
+      });
+    }
     measured.push(row);
   }
 
@@ -570,6 +797,8 @@ function check(svgText) {
       }
     }
   }
+  // 8. cutting rhythm (motion templates): segment lengths, flash groups, duration and flash rate.
+  if (rules.rhythm) for (const finding of checkRhythm(rules.rhythm)) add(finding);
   if (!rules.alignLines.length) notes.push("this template declares no shared alignment line");
   if (!rules.zones.some((z) => z.kind === "figure")) notes.push("this template declares no figure keep-out zone (titles may sit over the art; contrast still applies)");
   return {
@@ -581,4 +810,4 @@ function check(svgText) {
   };
 }
 
-module.exports = { BankError, MANIFEST_SCHEMA, CHECK_SCHEMA, PARAM_CLASSES, RULES, TEMPLATES_ROOT, check, listTemplates, loadManifest, parseSize, render, resolveParams, slotSpec, templateIds };
+module.exports = { BankError, MANIFEST_SCHEMA, STYLE_SCHEMA, CHECK_SCHEMA, PARAM_CLASSES, RULES, TEMPLATES_ROOT, STYLES_ROOT, check, checkRhythm, imageAspect, listTemplates, loadManifest, loadStyle, parseSize, render, resolveParams, slotSpec, styleIds, templateIds };

@@ -885,3 +885,20 @@ roles were measured from a reference corpus; nothing from that corpus is bundled
   study also names OFL Latin near-matches for reference (Montserrat, Outfit, Urbanist, Archivo
   Black, Bebas Neue, Oswald, Big Shoulders Display and Stencil, Saira Stencil One, Chakra Petch,
   Oxanium, Teko, Michroma, Cinzel, Playfair Display, Bodoni Moda); none is bundled or required.
+
+## Template style packs: the shinbo pack and its check fixtures (2026-11-05)
+
+- The `shinbo` style pack (`skill/tools/template-bank/styles/shinbo/`, `layouts-shinbo.cjs`) is
+  project-owned: its grammar, layouts, procedural corridor, door and butterfly shapes and all copy
+  were written for the Nocturne Corridor (夜想回廊) experiment, an original fictional work. "Shinbo /
+  SHAFT style" names a genre of flat graphic and typographic design; no frame, logo, character,
+  title or text of any existing work is used.
+- Fonts named by the pack, not bundled in the skill (SIL Open Font License 1.1): Shippori Mincho and
+  Shippori Mincho B1 (FONTDASU), Hina Mincho (Satsuyako), Zen Kaku Gothic New (Yoshimichi Ohira),
+  Noto Serif CJK SC and Noto Sans CJK SC (Google / Adobe).
+- Test fixtures only (`tests/fixtures/style-pack-shinbo/`, not packaged): WOFF subsets of those
+  fonts, limited to the characters the fixture pages set, each family's OFL text beside it
+  (`assets/fonts/OFL-*.txt`); cut-out and downscaled pieces of public-domain works released as CC0
+  by the Cleveland Museum of Art Open Access (Piranesi, Hollar, Redouté, De Gouy, scissors) and The
+  Met Open Access (keys, padlock, watch movement); generated paper textures. Every file's source
+  URL, licence and author are in `tests/fixtures/style-pack-shinbo/provenance.csv`.

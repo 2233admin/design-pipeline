@@ -155,6 +155,7 @@
     "vendor-cache.test.cjs",
     "design-direction-library.test.cjs",
     "reference-name-scope.test.cjs",
-    "template-bank.test.cjs"
+    "template-bank.test.cjs",
+    "template-style-pack.test.cjs"
   ]
 }

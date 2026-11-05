@@ -14,22 +14,7 @@
     "3840x2160"
   ],
   "aspect": "16:9",
-  "fonts": {
-    "sans": [
-      "Source Han Sans SC",
-      "Noto Sans CJK SC",
-      "Noto Sans SC"
-    ],
-    "serif": [
-      "Source Han Serif SC",
-      "Noto Serif CJK SC",
-      "Noto Serif SC"
-    ],
-    "latinDisplay": "lettering.cjs: code-drawn glyphs (A-Z, 0-9, / \\ - _ + . : [ ] < > | # % ! ? ' and space), rendered as paths",
-    "licence": "Source Han Sans/Serif and Noto Sans/Serif CJK: SIL Open Font License 1.1",
-    "bundled": false,
-    "note": "Fonts are named, not bundled. Install them where the SVG or PNG is rendered; check measures <text> with an advance model at or above their bold widths."
-  },
+  "style": "arknights-endfield",
   "palette": {
     "bg": {
       "value": "#FAFAF8",

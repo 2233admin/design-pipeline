@@ -1,0 +1,120 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.vertical-sentence",
+  "family": "card",
+  "style": "shinbo",
+  "title": "Vertical sentence card: two or three staggered columns read right to left, a numbered red block",
+  "use": "A line of narration or dialogue as a beat, read top-down; up to three short columns.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "1280x720",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "ground": {
+      "type": "enum",
+      "values": [
+        "black",
+        "paper",
+        "red"
+      ],
+      "default": "black",
+      "class": "decoration",
+      "note": "ground tone of the card: black, paper white or signal red (style groundTones)"
+    },
+    "size": {
+      "default": 0.1,
+      "min": 0.09,
+      "max": 0.1,
+      "class": "rhythm"
+    },
+    "col_x": {
+      "default": 0.74,
+      "min": 0.72,
+      "max": 0.76,
+      "class": "proportion",
+      "note": "first column centre x W"
+    },
+    "col_gap": {
+      "default": 0.09,
+      "min": 0.085,
+      "max": 0.1,
+      "class": "rhythm"
+    },
+    "top": {
+      "default": 0.14,
+      "min": 0.12,
+      "max": 0.16,
+      "class": "proportion"
+    },
+    "stagger": {
+      "default": 0.065,
+      "min": 0.04,
+      "max": 0.07,
+      "class": "rhythm",
+      "note": "each column starts lower by this x H"
+    }
+  },
+  "slots": {
+    "line{i}": {
+      "kind": "text",
+      "default": [
+        "回头的人，",
+        "会看见自己的",
+        "背影。"
+      ],
+      "maxChars": 6,
+      "font": "title",
+      "note": "column i, read right to left"
+    },
+    "mark_char": {
+      "kind": "text",
+      "default": "十",
+      "maxChars": 1,
+      "font": "display"
+    },
+    "label": {
+      "kind": "text",
+      "default": "第十夜",
+      "maxChars": 4,
+      "font": "label"
+    }
+  },
+  "relations": [
+    "Columns read right to left and each starts lower than the last.",
+    "A sentence longer than the column budget is split into another column, never run off the frame."
+  ],
+  "decoration": [
+    "Numbered red block top left."
+  ],
+  "provenance": {
+    "corpus": "Nocturne Corridor (夜想回廊) experiment: our own original fictional anime set in the shinbo style pack's grammar, first pass and reviewed final",
+    "experiment": "styles/shinbo/style.json provenance; fixtures in tests/fixtures/style-pack-shinbo",
+    "accessed": "2026-11-05",
+    "method": "Geometry taken from the final round's HTML/CSS as fractions of W and H; text sizes and colours chosen so the final passed the browser check (contrast with text hidden, ink overlap, collage alpha, off-canvas). All copy is original.",
+    "sampleIds": [
+      "c04-black-vertical"
+    ],
+    "measured": [
+      "first pass: 会看见自己的背影。 in one 118px column from 290px ran 400px past the bottom (off-canvas); final split it into a third column"
+    ],
+    "summary": "Nocturne Corridor c04 first pass and final"
+  }
+}

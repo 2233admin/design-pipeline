@@ -1,0 +1,95 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.giant-crop",
+  "family": "card",
+  "style": "shinbo",
+  "title": "Crop card: a two-character word set so large the frame shows only part of it, one small label on a plate",
+  "use": "A title word as texture: legible as shape, readable from the label.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "1280x720",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "ground": {
+      "type": "enum",
+      "values": [
+        "black",
+        "paper"
+      ],
+      "default": "black",
+      "class": "decoration",
+      "note": "ground tone of the card: black, paper white or signal red (style groundTones)"
+    },
+    "word_size": {
+      "default": 1.39,
+      "min": 1.2,
+      "max": 1.45,
+      "class": "rhythm"
+    },
+    "word_x": {
+      "default": -0.135,
+      "min": -0.2,
+      "max": -0.08,
+      "class": "rhythm"
+    },
+    "word_top": {
+      "default": -0.28,
+      "min": -0.32,
+      "max": -0.2,
+      "class": "rhythm"
+    }
+  },
+  "slots": {
+    "word": {
+      "kind": "text",
+      "default": "回廊",
+      "maxChars": 2,
+      "font": "display",
+      "title": true,
+      "bleed": true
+    },
+    "label": {
+      "kind": "text",
+      "default": "第一夜",
+      "maxChars": 3,
+      "font": "display"
+    }
+  },
+  "relations": [
+    "The label sits on a plate of the ground colour so the word never runs under it."
+  ],
+  "decoration": [
+    "Red word on black (large text, 3.5:1)."
+  ],
+  "provenance": {
+    "corpus": "Nocturne Corridor (夜想回廊) experiment: our own original fictional anime set in the shinbo style pack's grammar, first pass and reviewed final",
+    "experiment": "styles/shinbo/style.json provenance; fixtures in tests/fixtures/style-pack-shinbo",
+    "accessed": "2026-11-05",
+    "method": "Geometry taken from the final round's HTML/CSS as fractions of W and H; text sizes and colours chosen so the final passed the browser check (contrast with text hidden, ink overlap, collage alpha, off-canvas). All copy is original.",
+    "sampleIds": [
+      "c07-black-crop"
+    ],
+    "measured": [
+      "回廊 1500px from x -260, top -300; label 34px on a 330x80 plate at 1500,900; the em-box check reported an overlap, the ink check (plate above the word) does not"
+    ],
+    "summary": "Nocturne Corridor c07 final"
+  }
+}

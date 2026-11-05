@@ -318,6 +318,8 @@ function paints(tree) {
     order += 1;
     node.order = order;
     if (hidden(node)) continue;
+    // Collage layers (cut-outs with alpha) are measured by their pixels in the browser check, not here.
+    if (attr(node, "data-collage") !== undefined) continue;
     const slot = slotAncestor(node);
     if (node.name === "g" && node.attrs["data-kind"] === "image") {
       const box = numberList(node.attrs["data-box"]);

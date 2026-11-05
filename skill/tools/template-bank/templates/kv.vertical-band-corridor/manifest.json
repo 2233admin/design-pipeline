@@ -1,0 +1,154 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "kv.vertical-band-corridor",
+  "family": "kv",
+  "style": "shinbo",
+  "title": "Portrait key visual: one-point corridor, red band with a vertical title, collage objects, copy block on paper",
+  "use": "Poster or key visual of a fictional work in the style: architecture top, title band right, copy bottom left, collage around but never over copy.",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "sizes": [
+    "1080x1920",
+    "1440x2560",
+    "720x1280"
+  ],
+  "aspect": "9:16",
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "vp_x": {
+      "default": 0.38,
+      "min": 0.32,
+      "max": 0.45,
+      "class": "proportion",
+      "note": "corridor vanishing point x W"
+    },
+    "corridor_h": {
+      "default": 0.656,
+      "min": 0.62,
+      "max": 0.68,
+      "class": "proportion"
+    },
+    "band_x": {
+      "default": 0.741,
+      "min": 0.72,
+      "max": 0.76,
+      "class": "proportion"
+    },
+    "band_h": {
+      "default": 0.75,
+      "min": 0.7,
+      "max": 0.78,
+      "class": "proportion"
+    },
+    "title_size": {
+      "default": 0.108,
+      "min": 0.095,
+      "max": 0.11,
+      "class": "rhythm"
+    },
+    "butterfly": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "procedural cut-paper butterfly"
+    }
+  },
+  "slots": {
+    "title": {
+      "kind": "text",
+      "default": "夜想回廊",
+      "maxChars": 4,
+      "font": "display",
+      "title": true
+    },
+    "ruby": {
+      "kind": "text",
+      "default": "やそうかいろう",
+      "maxChars": 8,
+      "font": "ruby"
+    },
+    "tag1": {
+      "kind": "text",
+      "default": "门在身后关上。",
+      "maxChars": 12,
+      "font": "title"
+    },
+    "tag2": {
+      "kind": "text",
+      "default": "走廊，又长了一间。",
+      "maxChars": 12,
+      "font": "title"
+    },
+    "tag_ja": {
+      "kind": "text",
+      "default": "『扉は閉じた。廊下が、またひとつ伸びた。』",
+      "maxChars": 22,
+      "font": "ja"
+    },
+    "onair": {
+      "kind": "text",
+      "default": "2027年1月 深夜放送",
+      "maxChars": 12,
+      "font": "head"
+    },
+    "en": {
+      "kind": "text",
+      "default": "NOCTURNE CORRIDOR",
+      "maxChars": 18,
+      "font": "num"
+    },
+    "credit": {
+      "kind": "text",
+      "default": "原创动画　©夜想回廊制作委员会",
+      "maxChars": 16,
+      "font": "sans_body"
+    },
+    "number": {
+      "kind": "text",
+      "default": "第〇夜",
+      "maxChars": 3,
+      "font": "display"
+    },
+    "collage{i}": {
+      "kind": "image",
+      "default": "",
+      "collage": true,
+      "note": "cut-out object with alpha (png/webp); 0 main object top left, 1-3 secondary; drawn only when filled"
+    }
+  },
+  "relations": [
+    "Copy block on paper bottom left on one shared left line; the title column lives in the red band.",
+    "Collage objects frame the corridor and never cover copy (browser rule collage-cover)."
+  ],
+  "decoration": [
+    "Screentone band at the foot with paper plates under the credits.",
+    "Cut-paper butterfly."
+  ],
+  "provenance": {
+    "corpus": "Nocturne Corridor (夜想回廊) experiment: our own original fictional anime set in the shinbo style pack's grammar, first pass and reviewed final",
+    "experiment": "styles/shinbo/style.json provenance; fixtures in tests/fixtures/style-pack-shinbo",
+    "accessed": "2026-11-05",
+    "method": "Geometry taken from the final round's HTML/CSS as fractions of W and H; text sizes and colours chosen so the final passed the browser check (contrast with text hidden, ink overlap, collage alpha, off-canvas). All copy is original.",
+    "sampleIds": [
+      "poster"
+    ],
+    "measured": [
+      "first pass: a key sticker over the tagline and the reading (2 covered); 2 contrast failures on the screentone band",
+      "final: key moved to the corridor, paper plates under the credits; passes"
+    ],
+    "summary": "Nocturne Corridor poster first pass and final"
+  }
+}

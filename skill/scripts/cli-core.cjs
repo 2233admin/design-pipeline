@@ -151,7 +151,7 @@ const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sh
 const { inspectEnvironment, nodeAtLeast, renderDoctor } = require("./doctor-report.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots", "--browser"]);
 const REPEATABLE_OPTIONS = new Set(["--set", "--param", "--mix", "--taste", "--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
@@ -165,7 +165,7 @@ const KNOWN_OPTIONS = new Set([
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--start", "--end", "--fps", "--max-frames", "--cut-threshold", "--min-shot", "--by", "--page-review", "--until", "--assisted-by", "--tradeoff", "--revision", "--affects",
   "--spec", "--stills", "--ffmpeg", "--ffprobe", "--medium", "--second", "--pool", "--east-pool",
-  "--family", "--size", "--seed", "--png", "-o",
+  "--family", "--size", "--seed", "--png", "-o", "--font-dir",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
 ]);
 function parseArgs(argv) {
@@ -414,9 +414,9 @@ function publicHelp() {
     "  template adapt --receipt <file> --context <file> --json",
     "  template review --plan <file> --review <file> --json",
     "  template approve --plan <file> --approval <file> --json",
-    "  template list [--family kv|cover|card|banner|ui]   (template bank: parameterised SVG layouts with slots, knobs and provenance)",
-    "  template render <id> [--set slot=value ...] [--param name=value ...] [--seed <n>] [--size WxH] -o <out.svg> [--png <out.png>] [--chrome <exe>] [--puppeteer-module <path>]   (renders and audits the output; image slots take a file path; --seed varies the rhythm knobs; exit 2 when the check fails)",
-    "  template check <file.svg>   (measured: text fit, minimum size, contrast, figure and crop zones, accent budget, shared alignment lines; every finding has a fix; 0 pass, 2 fail)",
+    "  template list [--family kv|cover|card|banner|ui|motion] [--style <id>]   (template bank: parameterised SVG layouts with slots, knobs and provenance; --style shows a style pack: font roles, layout grammar, materials, motion grammar, checks)",
+    "  template render <id> [--set slot=value ...] [--param name=value ...] [--seed <n>] [--size WxH] -o <out.svg> [--png <out.png>] [--font-dir <dir>] [--browser] [--chrome <exe>] [--puppeteer-module <path>]   (renders and audits the output; image slots take a file path; --seed varies the rhythm knobs; --font-dir reads the style's fonts for whole-string glyph coverage; --browser, or a style that asks for it, adds the browser check; exit 2 when a check fails)",
+    "  template check <file.svg|file.html> [--browser] [--size WxH] [--chrome <exe>] [--puppeteer-module <path>]   (measured: text fit, minimum size, contrast, figure and crop zones, accent budget, alignment, rhythm; in the browser also ink overlap, off-canvas, collage over text, contrast with the text hidden and glyph coverage, for injected layers and hand-written SVG or HTML too; every finding has a fix; 0 pass, 2 fail)",
     "  doctor [--json]   (readable install and tool report; --json for machine output) | status --change-root <dir>",
     "  plan --manifest <file> --output <file>",
     "  run --plan <file> --to <phase>",
@@ -2195,16 +2195,74 @@ function templatePng(root, parsed, svg, size, pngFile) {
   return pngFile;
 }
 
+// Browser half of the template check (tools/template-bank/page-check.cjs) in a child process.
+// Returns { report } or { unavailable } (no puppeteer-core or Chrome, or the page failed to load).
+function templateBrowserCheck(root, parsed, file, size) {
+  const args = [path.join(__dirname, "../tools/template-bank/page-check.cjs"), file];
+  if (size) args.push("--size", size);
+  if (option(parsed, "--chrome") !== null) args.push("--chrome", String(option(parsed, "--chrome")));
+  let puppeteerModule = option(parsed, "--puppeteer-module");
+  if (puppeteerModule === null) {
+    try { puppeteerModule = path.dirname(require.resolve("puppeteer-core/package.json", { paths: [root, process.cwd(), __dirname] })); } catch { puppeteerModule = null; }
+  }
+  if (puppeteerModule !== null) args.push("--puppeteer-module", String(puppeteerModule));
+  const child = spawnSync(process.execPath, args, { cwd: root, encoding: "utf8", windowsHide: true, timeout: 600000, maxBuffer: 64 * 1024 * 1024 });
+  if (child.error || child.signal || child.status !== 0) return { unavailable: String(child.error?.message || child.stderr || child.signal || `exit ${child.status}`).trim().split("\n")[0] };
+  try { return { report: JSON.parse(child.stdout) }; } catch { return { unavailable: "the browser check printed no JSON" }; }
+}
+
+// Static report (template metadata) and browser report merged into one: the browser's pixel
+// contrast replaces the static estimate; other rules add up.
+function mergeTemplateReports(staticReport, browser, required) {
+  if (!browser) return staticReport;
+  if (browser.unavailable) {
+    const note = `browser check not run: ${browser.unavailable}. Fix: install puppeteer-core and Chrome or pass --chrome <exe> --puppeteer-module <path>`;
+    if (required) fail("template", note, { code: "TOOL_MISSING" });
+    return { ...staticReport, browser: { status: "unavailable", reason: browser.unavailable }, notes: [...(staticReport?.notes || []), note] };
+  }
+  const page = browser.report;
+  const kept = (staticReport?.findings || []).filter((finding) => finding.rule !== "contrast" && !(finding.rule === "glyph-coverage" && page.findings.some((other) => other.rule === "glyph-coverage" && other.slot === finding.slot)));
+  const findings = [...kept, ...page.findings];
+  const notes = [...(staticReport?.notes || []).filter((note) => !/recheck contrast on the real image/.test(note)), ...page.notes];
+  if (staticReport) notes.push("contrast measured in the browser (ground rendered with the text hidden, 10th percentile under each text's ink) replaces the static estimate");
+  return {
+    ...(staticReport || { template: null, canvas: page.canvas, measured: [] }),
+    status: findings.length ? "failed" : "passed",
+    summary: { ...(staticReport?.summary || {}), findings: findings.length, browser: page.summary },
+    findings, notes: [...new Set(notes)],
+    browser: { status: page.status, canvas: page.canvas, measured: page.measured, collage: page.collage, errors: page.errors, rules: page.rules },
+    scope: "Technical conformance only: measured on the rendered file and, in the browser, on its pixels. It does not grant visual or creative acceptance.",
+  };
+}
+
+function templateStyleWantsBrowser(svgText) {
+  const match = /data-template="([^"]+)"/.exec(svgText);
+  if (!match) return false;
+  try { return templateBank.loadStyle(templateBank.loadManifest(match[1]).style).checks.browserOnRender === true; } catch { return false; }
+}
+
 // Template bank (skill/tools/template-bank): list, render with knobs and audit, check a render.
 function templateBankCommand(parsed, root, action, operand) {
   if (action === "list") {
     if (operand) fail("cli", "template list takes no positional argument", { code: "UNKNOWN_ARGUMENT" });
-    return { result: templateBankCall(() => templateBank.listTemplates({ family: option(parsed, "--family") })), exitCode: 0 };
+    return { result: templateBankCall(() => templateBank.listTemplates({ family: option(parsed, "--family"), style: option(parsed, "--style") })), exitCode: 0 };
   }
+  const browserFlag = option(parsed, "--browser") === true;
   if (action === "check") {
-    if (!operand) fail("template", "template check needs the rendered SVG: template check <file.svg>", { code: "OPTION_REQUIRED" });
-    const file = contained(root, operand, "<file.svg>");
-    const report = templateBankCall(() => templateBank.check(fs.readFileSync(file, "utf8")));
+    if (!operand) fail("template", "template check needs a file: template check <file.svg|file.html>", { code: "OPTION_REQUIRED" });
+    const file = contained(root, operand, "<file>");
+    if (!fs.existsSync(file)) fail("template", `file not found: ${operand}`, { code: "OPTION_VALUE_INVALID" });
+    const size = option(parsed, "--size");
+    if (size !== null && !/^\d{2,5}x\d{2,5}$/.test(String(size))) fail("template", `--size must be WxH, got ${size}`, { code: "OPTION_VALUE_INVALID" });
+    const isHtml = /\.html?$/i.test(file);
+    const text = fs.readFileSync(file, "utf8");
+    const templated = !isHtml && text.includes("id=\"template-check\"");
+    // A file without template metadata (HTML, hand-written SVG) has only the browser check.
+    if (!templated && !/\.svg$/i.test(file) && !isHtml) fail("template", "template check takes an .svg or .html file", { code: "OPTION_VALUE_INVALID" });
+    const staticReport = templated ? templateBankCall(() => templateBank.check(text)) : null;
+    const wantBrowser = browserFlag || !templated || templateStyleWantsBrowser(text);
+    const browser = wantBrowser ? templateBrowserCheck(root, parsed, file, size) : null;
+    const report = mergeTemplateReports(staticReport, browser, browserFlag || !templated);
     return { result: { ...report, file }, exitCode: report.status === "passed" ? 0 : 2 };
   }
   if (!operand) fail("template", `template render needs a template id: template render <id> -o <out.svg>; ids: ${templateBank.templateIds().join(", ")}`, { code: "OPTION_REQUIRED" });
@@ -2226,18 +2284,24 @@ function templateBankCommand(parsed, root, action, operand) {
     if (!type) fail("template", `--set ${name} must be a ${Object.keys(TEMPLATE_IMAGE_TYPES).join(", ")} file, got ${value}`, { code: "OPTION_VALUE_INVALID" });
     set[name] = `data:${type};base64,${fs.readFileSync(image).toString("base64")}`;
   }
-  const rendered = templateBankCall(() => templateBank.render(operand, { set, params: keyValues(parsed, "--param"), size: option(parsed, "--size"), seed: seedRaw === null ? null : Number(seedRaw) }));
+  const fontDir = option(parsed, "--font-dir") === null ? null : contained(root, option(parsed, "--font-dir"), "--font-dir");
+  const rendered = templateBankCall(() => templateBank.render(operand, { set, params: keyValues(parsed, "--param"), size: option(parsed, "--size"), seed: seedRaw === null ? null : Number(seedRaw), fontDir }));
   const output = contained(root, outRaw, "-o", false);
   fs.mkdirSync(path.dirname(output), { recursive: true });
   fs.writeFileSync(output, rendered.svg);
   const png = pngRaw === null ? null : templatePng(root, parsed, rendered.svg, rendered.size, contained(root, pngRaw, "--png", false));
-  const report = templateBank.check(rendered.svg);
+  const staticReport = templateBank.check(rendered.svg);
+  const wantBrowser = browserFlag || templateBank.loadStyle(rendered.style).checks.browserOnRender === true;
+  const browser = wantBrowser ? templateBrowserCheck(root, parsed, output, rendered.size) : null;
+  const report = mergeTemplateReports(staticReport, browser, browserFlag);
   return {
     result: {
       status: report.status === "passed" ? "rendered" : "rendered-with-findings",
-      template: rendered.template, size: rendered.size, output, ...(png ? { png } : {}),
+      template: rendered.template, style: rendered.style, size: rendered.size, output, ...(png ? { png } : {}),
       ...(seedRaw === null ? {} : { seed: Number(seedRaw), varied: Object.fromEntries(rendered.varied.map((name) => [name, rendered.params[name]])) }),
-      check: { status: report.status, summary: report.summary, findings: report.findings, notes: report.notes },
+      ...(rendered.fontSwitches.length ? { fontSwitches: rendered.fontSwitches } : {}),
+      ...(rendered.edl ? { edl: rendered.edl } : {}),
+      check: { status: report.status, summary: report.summary, findings: report.findings, notes: report.notes, ...(report.browser ? { browser: report.browser.status } : {}) },
       next: report.status === "passed" ? `Inspect the pixels (--png) against the brief; the check covers technical conformance only.` : "Apply each finding's fix and render again.",
     },
     exitCode: report.status === "passed" ? 0 : 2,

@@ -1,0 +1,197 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.door-grid",
+  "family": "ui",
+  "style": "shinbo",
+  "title": "Chapter list: black top bar, vertical heading, a 6x2 grid of door cards",
+  "use": "Episode, chapter or level list on a site or in a game; each card a number, an episode mark, a door, a title and a second-language line.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "active": {
+      "type": "integer",
+      "default": 1,
+      "min": 0,
+      "max": 5,
+      "class": "decoration",
+      "note": "highlighted menu item"
+    },
+    "current": {
+      "type": "integer",
+      "default": 0,
+      "min": 0,
+      "max": 11,
+      "class": "decoration",
+      "note": "card with the NEW badge"
+    }
+  },
+  "slots": {
+    "logo": {
+      "kind": "text",
+      "default": "夜想回廊",
+      "maxChars": 5,
+      "font": "display"
+    },
+    "menu{i}": {
+      "kind": "text",
+      "default": [
+        "故事",
+        "十二夜",
+        "蝶番馆",
+        "道具图鉴",
+        "新闻",
+        "放送"
+      ],
+      "maxChars": 4,
+      "font": "head"
+    },
+    "heading": {
+      "kind": "text",
+      "default": "十二夜",
+      "maxChars": 3,
+      "font": "display",
+      "title": true
+    },
+    "reading": {
+      "kind": "text",
+      "default": "じゅうにや",
+      "maxChars": 6,
+      "font": "ruby"
+    },
+    "intro": {
+      "kind": "text",
+      "default": "每一夜，走廊多出一个房间。",
+      "maxChars": 18,
+      "font": "body",
+      "lines": 3
+    },
+    "episodes": {
+      "kind": "text",
+      "default": "EPISODES 01—12",
+      "maxChars": 16,
+      "font": "num"
+    },
+    "card{i}_num": {
+      "kind": "text",
+      "default": [
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12"
+      ],
+      "maxChars": 2,
+      "font": "num"
+    },
+    "card{i}_ep": {
+      "kind": "text",
+      "default": [
+        "第一夜",
+        "第二夜",
+        "第三夜",
+        "第四夜",
+        "第五夜",
+        "第六夜",
+        "第七夜",
+        "第八夜",
+        "第九夜",
+        "第十夜",
+        "第十一夜",
+        "第十二夜"
+      ],
+      "maxChars": 4,
+      "font": "display"
+    },
+    "card{i}_title": {
+      "kind": "text",
+      "default": [
+        "走廊，又长了一间",
+        "钥匙不是用来开门的",
+        "蝴蝶标本的证词",
+        "被剪掉的那一页",
+        "窗外是另一扇窗",
+        "齿轮在墙里转",
+        "第七级台阶",
+        "眼睛记得的事",
+        "没有门牌的房间",
+        "回头的人",
+        "花在夜里开",
+        "门的另一边"
+      ],
+      "maxChars": 10,
+      "font": "head",
+      "lines": 2
+    },
+    "card{i}_ja": {
+      "kind": "text",
+      "default": [
+        "廊下が伸びる",
+        "鍵は扉のためでなく",
+        "標本の証言",
+        "切り取られた頁",
+        "窓の外の窓",
+        "壁の中の歯車",
+        "七段目",
+        "目だけが覚えている",
+        "番号のない部屋",
+        "振り返る人",
+        "夜に咲く花",
+        "扉の向こう"
+      ],
+      "maxChars": 10,
+      "font": "ja"
+    },
+    "badge": {
+      "kind": "text",
+      "default": "NEW",
+      "maxChars": 4,
+      "font": "num"
+    }
+  },
+  "relations": [
+    "Navigation is a black bar with a red block on the active item; hover (in HTML) is an inverted block with a hard shadow."
+  ],
+  "decoration": [
+    "Cut-paper door on each card; screentone band at the foot."
+  ],
+  "provenance": {
+    "corpus": "Nocturne Corridor (夜想回廊) experiment: our own original fictional anime set in the shinbo style pack's grammar, first pass and reviewed final",
+    "experiment": "styles/shinbo/style.json provenance; fixtures in tests/fixtures/style-pack-shinbo",
+    "accessed": "2026-11-05",
+    "method": "Geometry taken from the final round's HTML/CSS as fractions of W and H; text sizes and colours chosen so the final passed the browser check (contrast with text hidden, ink overlap, collage alpha, off-canvas). All copy is original.",
+    "sampleIds": [
+      "web-nights"
+    ],
+    "measured": [
+      "first pass: the reading じゅうにや 22px red on paper measured 4.48:1 (below 4.5); final 24px (large text)",
+      "cards 236x410 with 20px gaps from x 330, y 150"
+    ],
+    "summary": "Nocturne Corridor nights page first pass and final"
+  }
+}

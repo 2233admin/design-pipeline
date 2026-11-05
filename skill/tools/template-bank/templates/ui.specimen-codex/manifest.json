@@ -1,0 +1,195 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.specimen-codex",
+  "family": "ui",
+  "style": "shinbo",
+  "title": "Item codex: list rows left, a tilted specimen board centre, details right",
+  "use": "Game or site item codex, archive or collection screen.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "tab": {
+      "type": "integer",
+      "default": 0,
+      "min": 0,
+      "max": 3,
+      "class": "decoration"
+    },
+    "selected": {
+      "type": "integer",
+      "default": 0,
+      "min": 0,
+      "max": 6,
+      "class": "decoration"
+    },
+    "board_tilt": {
+      "default": -1.4,
+      "min": -3,
+      "max": -0.5,
+      "class": "rhythm"
+    }
+  },
+  "slots": {
+    "heading": {
+      "kind": "text",
+      "default": "道具图鉴",
+      "maxChars": 5,
+      "font": "title",
+      "title": true
+    },
+    "tab{i}": {
+      "kind": "text",
+      "default": [
+        "钥匙",
+        "标本",
+        "机械",
+        "植物"
+      ],
+      "maxChars": 3,
+      "font": "head"
+    },
+    "count": {
+      "kind": "text",
+      "default": "收集 08 / 24",
+      "maxChars": 12,
+      "font": "num"
+    },
+    "row{i}_id": {
+      "kind": "text",
+      "default": [
+        "K-07",
+        "K-03",
+        "B-02",
+        "M-11",
+        "W-04",
+        "P-09",
+        "S-01"
+      ],
+      "maxChars": 5,
+      "font": "num"
+    },
+    "row{i}_name": {
+      "kind": "text",
+      "default": [
+        "第七把钥匙",
+        "铁三角锁",
+        "灰眼蝶标本",
+        "伦敦怀表芯",
+        "牵牛花",
+        "裁缝剪",
+        "夜蛾"
+      ],
+      "maxChars": 6,
+      "font": "head"
+    },
+    "row{i}_state": {
+      "kind": "text",
+      "default": [
+        "★★★",
+        "★★",
+        "★★★★",
+        "★★",
+        "★",
+        "★★★",
+        "? ? ?"
+      ],
+      "maxChars": 6,
+      "font": "num"
+    },
+    "specimen": {
+      "kind": "image",
+      "default": "",
+      "collage": true,
+      "note": "the selected object with alpha; drawn only when filled"
+    },
+    "plate_name": {
+      "kind": "text",
+      "default": "第七把钥匙",
+      "maxChars": 8,
+      "font": "head"
+    },
+    "plate_id": {
+      "kind": "text",
+      "default": "K-07 / 七番目の鍵",
+      "maxChars": 14,
+      "font": "num"
+    },
+    "name": {
+      "kind": "text",
+      "default": "第七把钥匙",
+      "maxChars": 6,
+      "font": "title"
+    },
+    "name_ja": {
+      "kind": "text",
+      "default": "七番目の鍵",
+      "maxChars": 10,
+      "font": "ja"
+    },
+    "where": {
+      "kind": "text",
+      "default": "二楼走廊尽头的花瓶底",
+      "maxChars": 26,
+      "font": "body",
+      "lines": 2
+    },
+    "body": {
+      "kind": "text",
+      "default": "齿纹与蝶番馆任何一扇门都不吻合。钥匙柄里藏着一枚转动的小齿轮，只在午夜之后转。",
+      "maxChars": 60,
+      "font": "body",
+      "lines": 4
+    },
+    "rarity": {
+      "kind": "text",
+      "default": "★★★",
+      "maxChars": 5,
+      "font": "num"
+    },
+    "night": {
+      "kind": "text",
+      "default": "第二夜",
+      "maxChars": 8,
+      "font": "label"
+    }
+  },
+  "relations": [
+    "The selected row is a red block; the board is the only tilted element; details share one left line."
+  ],
+  "decoration": [
+    "Board grid, hard red shadow, label plate."
+  ],
+  "provenance": {
+    "corpus": "Nocturne Corridor (夜想回廊) experiment: our own original fictional anime set in the shinbo style pack's grammar, first pass and reviewed final",
+    "experiment": "styles/shinbo/style.json provenance; fixtures in tests/fixtures/style-pack-shinbo",
+    "accessed": "2026-11-05",
+    "method": "Geometry taken from the final round's HTML/CSS as fractions of W and H; text sizes and colours chosen so the final passed the browser check (contrast with text hidden, ink overlap, collage alpha, off-canvas). All copy is original.",
+    "sampleIds": [
+      "game-codex"
+    ],
+    "measured": [
+      "first pass: row states 14px red on black (2.3:1) and the id line 22px red: 8 contrast failures; final greys #8A847B or paper",
+      "the codex's sans labels fell back glyph by glyph (Zen Kaku lacks 场 发现 选择 换类), found by the glyph-coverage rule"
+    ],
+    "summary": "Nocturne Corridor codex first pass and final"
+  }
+}

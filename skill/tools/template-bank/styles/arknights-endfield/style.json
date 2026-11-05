@@ -1,0 +1,41 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "arknights-endfield",
+  "title": "Arknights / Endfield promotional layouts (measured study)",
+  "summary": "Condensed code-drawn Latin display lettering over CJK sans/serif, one figure, a shared left line, one accent per piece, neutral grounds.",
+  "provenance": {
+    "corpus": "Official Arknights / Endfield promotional art, 119 sampled, 63 layout-annotated (reference only, © HYPERGRYPH)",
+    "study": "docs/research/arknights-endfield-template-study.md",
+    "provenanceList": "docs/research/arknights-endfield-provenance.csv"
+  },
+  "fonts": {
+    "roles": {
+      "sans": { "stack": ["Source Han Sans SC", "Noto Sans CJK SC", "Noto Sans SC"], "generic": "sans-serif", "weight": 700, "use": "labels, values, body" },
+      "serif": { "stack": ["Source Han Serif SC", "Noto Serif CJK SC", "Noto Serif SC"], "generic": "serif", "weight": 900, "use": "CJK titles and names" }
+    },
+    "latinDisplay": "lettering.cjs: code-drawn glyphs (A-Z, 0-9, / \\ - _ + . : [ ] < > | # % ! ? ' and space), rendered as paths",
+    "faces": [],
+    "licence": "Source Han Sans/Serif and Noto Sans/Serif CJK: SIL Open Font License 1.1",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. Install them where the SVG or PNG is rendered; check measures <text> with an advance model at or above their bold widths."
+  },
+  "layout": {
+    "grammar": [
+      "Title column on one shared left line; titles stay out of the figure zone (at most 30% of their width over it).",
+      "Latin display set in code-drawn condensed lettering; CJK title in the serif role.",
+      "One accent colour, inside the template's accent budget."
+    ]
+  },
+  "materials": {
+    "bundled": [],
+    "placeholders": "Figure, key art and logos are hatched placeholder image slots; bring the art.",
+    "sources": "Reference images are not redistributed; see the provenance list."
+  },
+  "motion": null,
+  "motionNote": "No motion grammar measured for this corpus.",
+  "checks": {
+    "static": ["text-overflow", "text-length", "type-size", "contrast", "figure-zone", "safe-zone", "accent-budget", "align-line"],
+    "browser": ["text-overlap", "off-canvas", "collage-cover", "contrast", "glyph-coverage"],
+    "browserOnRender": false
+  }
+}
