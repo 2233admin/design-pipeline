@@ -46,7 +46,8 @@ const {
 const { exitCodeForStatus: componentFirstExitCode } = require("./component-first/orchestration/aggregate-result.cjs");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { checkComponentMatrix, evaluateMotion } = require("./motion-evidence-core.cjs");
-const { checkStoryboard, evaluateFilmRender, productSourceFiles } = require("./film-core.cjs");
+const { checkStoryboard, evaluateFilmRender, narrationFiles, productSourceFiles } = require("./film-core.cjs");
+const { voiceoverFilm } = require("./voiceover-core.cjs");
 const { renderCutSheet, seedCuts } = require("./film-cut-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
 const { evaluateFilmRuns } = require("./film-eval-core.cjs");
@@ -56,6 +57,7 @@ const { templates: filmTemplates } = require("../tools/prompt-motion/library.cjs
 const { scaffoldVisualCraft, TEMPLATES: scaffoldTemplates } = require("../tools/visual-craft/scaffold.cjs");
 const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
 const { evaluateProbeFile, validateProbeFile } = require("./interaction-core.cjs");
+const { NOTE_BUDGET_MS, scrollBudgetMs } = require("./interaction-scroll.cjs");
 const { scoreFilm } = require("./score-project-core.cjs");
 const { renderBlenderShot } = require("./blender-project-core.cjs");
 const { listTemplates } = require("./blender-core.cjs");
@@ -129,6 +131,7 @@ const {
 const { searchMengToSkills, verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
 const { BUNDLES: FETCHABLE_BUNDLES } = require("./vendor-cache.cjs");
 const { findManifest: findDirectionLibraryManifest, verifyDirectionLibrary } = require("./design-direction-library-core.cjs");
+const { findManifest: findBrandDesignSystemsManifest, verifyBrandDesignSystems } = require("./brand-design-systems-core.cjs");
 const { searchShadcnioComponents, verifyShadcnioComponentSnapshot } = require("./shadcnio-react-components-core.cjs");
 const { routePrismRequest, searchPrismSkills, verifyPrismSnapshot } = require("./prism-system-core.cjs");
 const { buildJobPlan, routeJob } = require("./job-route-core.cjs");
@@ -162,10 +165,12 @@ const KNOWN_OPTIONS = new Set([
   "--direction-lock", "--providers", "--storyboard", "--from-reference", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict", "--job-plan", "--bundle",
   "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
-  "--start", "--end", "--fps", "--max-frames", "--cut-threshold", "--min-shot", "--by", "--page-review", "--until", "--assisted-by", "--tradeoff", "--revision", "--affects",
+  "--start", "--end", "--min-pause", "--script", "--fps", "--max-frames", "--cut-threshold", "--min-shot", "--by", "--page-review", "--until", "--assisted-by", "--tradeoff", "--revision", "--affects",
   "--spec", "--stills", "--ffmpeg", "--ffprobe", "--medium", "--second", "--pool", "--east-pool",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
-  "--use", "--name", "--license", "--finish", "--generator", "--seed", "--reference",
+  "--target-id",
+  "--use", "--name", "--license", "--finish",
+  "--generator", "--seed", "--reference",
 ]);
 function parseArgs(argv) {
   const positionals = [];
@@ -368,6 +373,11 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     directionLibrary = { status: "blocked", issues: [error.message] };
     missing.push("vendor/design-direction-library/manifest.json");
   }
+  // The brand design-system catalog ships its manifest and licences; the systems are fetched.
+  const brandManifest = findBrandDesignSystemsManifest(skillRoot);
+  const brandDesignSystems = verifyBrandDesignSystems(brandManifest);
+  if (brandDesignSystems.status === "missing") downloads.push({ bundle: brandDesignSystems.bundle, fetch: brandDesignSystems.fetch });
+  else if (brandDesignSystems.status !== "ready") missing.push(brandManifest ? `vendor/${path.basename(path.dirname(brandManifest))}/**` : "vendor/brand-design-systems/manifest.json");
   const nodeSupported = nodeAtLeast(nodeVersion);
   const registry =
     missing.length || !fs.existsSync(path.join(skillRoot, "references", "graphics-runtime-catalog.json"))
@@ -394,6 +404,7 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     designMdSource,
     iart,
     directionLibrary,
+    brandDesignSystems,
     registry,
   };
 }
@@ -423,6 +434,7 @@ function publicHelp() {
     "  change init|resume|advance|migrate|repair",
     "  foundation check [--kind design|motion|all] | direction check | direction draw --medium web|ppt|info|app [--second 0-59] [--pool <numbers>] [--east-pool <numbers>]   (the roulette: S % count + 1 in the medium's section and S % 12 + 1 in east, past styles the ledger's last three deliveries used) | playground check | reference check|resolve | reconstruction check | scene check",
     "  reference analyze-video --path <video> --output <new-dir> [--project-root <dir>] [--start sec --end sec --fps 12 --max-frames 400] [--study] [--shots [--cut-threshold 0.18] [--min-shot 0.25]]   (decoded timed windows; observations pending; --study adds study.json with audio and cut-grid candidates; --shots segments by detected shot with per-shot frames, motion and sound events)",
+    "  reference extract --url <http(s) page> --output <dir> [--target-id <id>] [--width 1440 --height 900] [--replace]   (deterministic palette, type scale and spacing from computed styles: extraction.json, palette-evidence.json (status pending; DOM source ready, raster pending) and design-md-draft.md; a challenge or block page exits 1 REFERENCE_BLOCKED, an HTTP 4xx/5xx page REFERENCE_HTTP_STATUS, a page that renders nothing REFERENCE_EMPTY)",
     "  project inspect [--project-root <dir>] [--scope <relative-dir>] [--query <brief>] [--write --output project-analysis.json]   (read-only source evidence)",
     "  runtime-review build --change-root <dir> --manifest <file> [--root <workspace>] [--json]",
     "  runtime-review check --change-root <dir> --artifact <review.json> [--root <workspace>] [--json]",
@@ -431,7 +443,8 @@ function publicHelp() {
     "    --help/-h shows public help; built/matched/recorded exit 0, stale/blocked exit 2",
     "  component-first check|stack|components|playground|page|verify|select|promote",
     "  design-skill route|manifest|run|select|promote",
-    "  reconciliation check",
+    "  reconciliation check --change-root <dir> [--project-root <dir>] [--design-foundation DESIGN.md]",
+    "  reconciliation measure --change-root <dir> [--project-root <dir>] [--design-foundation DESIGN.md] [--chrome <exe>] [--puppeteer-module <path>]   (measures the built index.html's computed colours and font families at 1440x900 and writes change built-styles.json; reconciliation check compares it with the DESIGN.md front-matter tokens by CIEDE2000)",
     "  feedback record|prepare|reconcile",
     "  evidence check --receipt <file> | evidence capture --adapter-path <file> --output-root <dir> --url <url> [--playwright-module <path>] [--agent-browser <path> [--agent-browser-state <file>]] [--chrome <exe>]",
     "  evidence refs --project-root <dir> [--chrome <exe>] [--puppeteer-module <path>]   (numbers the built index.html's visible elements at 1440x900 and as an emulated 390x844 phone: writes evidence/refs.json and a badged evidence/refs.png, and evidence/refs-mobile.json and refs-mobile.png with m: references; each current capture is kept, never rewritten; index.html is not changed)",
@@ -444,7 +457,7 @@ function publicHelp() {
     "    verify film-storyboard --storyboard <storyboard.json>",
     "    verify film-timeline --storyboard <storyboard.json> --timeline <timeline.json>",
     "    verify film-render --storyboard <storyboard.json> --video <out.mp4> [--output <evidence-dir>]",
-    "    verify interaction --probe <interaction.json> [--output <evidence-dir>] [--chrome <exe>] [--puppeteer-module <path>] [--project-root <dir>]   (motion, journey and audit probes; records the project's interaction gate)",
+    "    verify interaction --probe <interaction.json> [--output <evidence-dir>] [--chrome <exe>] [--puppeteer-module <path>] [--project-root <dir>]   (motion, journey, audit and scroll probes; records the project's interaction gate)",
     "  audio master --input <audio> --output <wav> [--target web|podcast|broadcast] [--fade-out <sec>]",
     "  composition capture --composition <html> | --url <url> --output <dir> [--width 1920 --height 1080] [--seek <sec>]",
     `  composition scaffold --output <new-dir> [--template ${scaffoldTemplates.join("|")}]`,
@@ -480,6 +493,7 @@ function publicHelp() {
     "  materials profiles [--project-root <dir>]   (built-in calibration profiles measured on public-domain scans, plus the project's own)",
     "  film score --project-root <dir> --bpm <n> [--template punchy-launch|calm-build|tech-pulse --key c] | [--pattern score.strudel.js] [--output assets/score.wav] [--write] [--replace]",
     "    (Strudel, AGPL-3.0, is installed into <dir>/.design-pipeline/strudel on first use; never bundled)",
+    "  film voiceover --project-root <dir> --audio <narration.wav> [--script lines.txt] [--start <sec>] [--min-pause 0.25] [--write]   (phrase cues measured from the take's pauses with silencedetect; --script: one spoken line per line; --write records vo-* cues and the narration hash in storyboard.json)",
     "  film blocks --project-root <dir> [--query <action words>] [--tag 3d|shader|transition|...] [--type block|component] [--refresh]",
     "  film cut-sheet --project-root <dir> [--from-reference <shots-analysis report.json>]   (writes cut-sheet.html from storyboard.json cuts; --from-reference first seeds one cut per detected shot, descriptions left empty, never overwrites existing cuts)",
     "  film check --project-root <dir> [--allow code,code]   (runs storyboard, timeline, render and composition gates; each finding carries a fix; --allow accepts named composition warnings)",
@@ -493,7 +507,7 @@ function publicHelp() {
     "  holosticker inspect|verify",
     "  designmd sync|search|inspect|verify",
     "  iart search|route|verify",
-    "  sources fetch --bundle mengto-skills|iart-motion-skills|design-direction-library | --all   (download a bundle at its pinned revision into the user cache; DESIGN_PIPELINE_CACHE overrides the location)",
+    "  sources fetch --bundle mengto-skills|iart-motion-skills|design-direction-library|brand-design-systems | --all   (download a bundle at its pinned revision into the user cache; DESIGN_PIPELINE_CACHE overrides the location)",
     "  toolchain request --plan <job-plan.json> --artifact <stack-input.json> [--write --output <toolchain-request.json>]",
     "    stack input targetRoot: target package directory relative to --root (default .); resolve and probe run there",
     "  toolchain resolve --artifact <toolchain-request.json> [--write --output <toolchain-plan.json>]",
@@ -516,6 +530,8 @@ function publicHelp() {
 // mismatch. `runKernel` propagates that status faithfully; it never normalises an unrecognised
 // status to success, because a status this wrapper does not understand is not evidence of success.
 const KERNEL_EXIT_CODES = [0, 2, 3];
+// Kernel error codes a caller keeps instead of KERNEL_FAILED (the kernel prints its JSON error on stdout).
+const PROPAGATED_KERNEL_CODES = new Set(["TOOL_MISSING", "SEEK_OUT_OF_RANGE", "REFERENCE_BLOCKED", "REFERENCE_UNREACHABLE", "REFERENCE_HTTP_STATUS", "REFERENCE_EMPTY"]);
 const KERNEL_STATUS_LABELS = { 2: "blocked", 3: "fidelity-limited" };
 
 function kernelStatusLabel(exitCode, successLabel) {
@@ -536,7 +552,14 @@ function runKernel(script, args, cwd, { timeout = 60000, maxBuffer = 4 * 1024 * 
   // kill in particular), so the signal is checked on its own rather than trusted to `error`.
   if (child.signal) fail("cli", `kernel ${script} was terminated by signal ${child.signal}`, { code: "KERNEL_SIGNALED" });
   if (typeof child.status !== "number") fail("cli", `kernel ${script} produced no exit status`, { code: "KERNEL_STATUS_MISSING" });
-  if (child.status === 1) fail("cli", (child.stderr || child.stdout || `kernel ${script} failed`).trim(), { code: "KERNEL_FAILED" });
+  if (child.status === 1) {
+    // A missing tool, an out-of-range request or a refused reference page keeps its own code, so a
+    // caller can tell it from a broken run.
+    let reported = null;
+    try { reported = JSON.parse((child.stdout || "").trim().split("\n").at(-1))?.error; } catch { reported = null; }
+    if (reported && PROPAGATED_KERNEL_CODES.has(reported.code)) fail("cli", reported.message, { ...(reported.details || {}), code: reported.code });
+    fail("cli", (child.stderr || child.stdout || `kernel ${script} failed`).trim(), { code: "KERNEL_FAILED" });
+  }
   if (!KERNEL_EXIT_CODES.includes(child.status)) {
     fail("cli", `kernel ${script} exited with unsupported status ${child.status}`, { code: "KERNEL_STATUS_UNSUPPORTED" });
   }
@@ -713,11 +736,98 @@ function foundationCommand(parsed, root) {
 // and reports blocked when a change that has a reference carries no reconciliation section.
 function reconciliationCommand(parsed, root) {
   const changeRoot = changeRootFrom(parsed, root);
-  const result = checkSpecReconciliation(changeRoot, {
+  const result = checkSpecReconciliation(changeRoot, reconciliationOptions(parsed, root));
+  return { result, exitCode: result.status === "ready" ? 0 : 2 };
+}
+
+// The built page and DESIGN.md the measured drift is read against: --project-root (default --root)
+// and --design-foundation (default DESIGN.md), the same flags `foundation check` and `design` use.
+function reconciliationOptions(parsed, root) {
+  const projectRoot = option(parsed, "--project-root") ? contained(root, option(parsed, "--project-root"), "--project-root") : root;
+  return {
     designFile: option(parsed, "--design-file", "design.md"),
     artifact: option(parsed, "--artifact"),
-  });
-  return { result, exitCode: result.status === "ready" ? 0 : 2 };
+    projectRoot,
+    designFoundation: option(parsed, "--design-foundation", "DESIGN.md"),
+  };
+}
+
+// Measures what the built page paints (computed colours and font families) in headless Chromium and
+// writes it, bound to the page digest and the DESIGN.md hash, as change built-styles.json. The kernel
+// runs the browser; this side refuses a missing page, an empty DESIGN.md baseline and a page that moved
+// during the capture, so a written measurement always describes the files on disk.
+function reconciliationMeasureCommand(parsed, root) {
+  const { pageDigest } = require("./workflows/web.cjs");
+  const drift = require("./built-style-drift-core.cjs");
+  const changeRoot = changeRootFrom(parsed, root);
+  const projectRoot = option(parsed, "--project-root") ? contained(root, option(parsed, "--project-root"), "--project-root") : root;
+  const designFile = contained(projectRoot, option(parsed, "--design-foundation", "DESIGN.md"), "--design-foundation", false);
+  const designRel = path.relative(projectRoot, designFile).split(path.sep).join("/");
+  if (!fs.existsSync(designFile)) fail("reconciliation", `${designRel} not found in --project-root. Fix: write the DESIGN.md the page is built from, or pass --design-foundation <path>`, { code: "DESIGN_MISSING" });
+  const gaps = drift.baselineGaps(drift.designTokens(fs.readFileSync(designFile, "utf8")));
+  if (gaps.length) fail("reconciliation", `${designRel} front matter has ${gaps.join(" and ")}, so a measurement could not be compared with anything. Fix: write the colors and typography tokens the page is built from into the DESIGN.md front matter`, { code: "BASELINE_EMPTY" });
+  const digest = pageDigest(projectRoot);
+  if (!digest) fail("reconciliation", "index.html not found in --project-root. Fix: build the page before measuring it", { code: "PAGE_MISSING" });
+  const designSha256 = drift.designSha(designFile);
+  const args = ["--project-root", projectRoot];
+  for (const flag of ["--chrome", "--puppeteer-module"]) if (option(parsed, flag)) args.push(flag, option(parsed, flag));
+  const kernel = runKernel("capture-built-styles.cjs", args, projectRoot, { timeout: 180000, maxBuffer: 64 * 1024 * 1024 });
+  const measurement = kernel.value?.measurement;
+  if (kernel.exitCode !== 0 || !measurement || !Array.isArray(measurement.colors)) fail("reconciliation", "measurement kernel returned no valid measurement", { code: "KERNEL_FAILED" });
+  if (pageDigest(projectRoot) !== digest || drift.designSha(designFile) !== designSha256) {
+    fail("reconciliation", "the page or DESIGN.md changed during the measurement. Fix: stop editing them, then run `reconciliation measure` again", { code: "PAGE_MOVED" });
+  }
+  // The local files the browser actually loaded (fonts, CSS, @imports, images), project-relative:
+  // the gate re-hashes them, so a swapped font file makes the measurement stale.
+  const lineage = {};
+  const loaded = kernel.value.loaded && typeof kernel.value.loaded === "object" && !Array.isArray(kernel.value.loaded) ? kernel.value.loaded : {};
+  for (const [url, hash] of Object.entries(loaded)) {
+    let file;
+    try { file = fileURLToPath(url); } catch { continue; }
+    if (!pathInside(projectRoot, file)) continue;
+    const now = drift.fileHash(file);
+    if (now === undefined) continue;
+    const rel = path.relative(projectRoot, file).split(path.sep).join("/");
+    if (now !== hash) fail("reconciliation", `${rel} changed during the measurement. Fix: stop editing the page and its files, then run \`reconciliation measure\` again`, { code: "PAGE_MOVED" });
+    lineage[rel] = hash;
+  }
+  const record = {
+    schema: drift.BUILT_STYLES_SCHEMA,
+    page: digest,
+    lineage,
+    designFile: designRel,
+    designSha256,
+    capturedAt: new Date().toISOString(),
+    scope: drift.MEASUREMENT_SCOPE,
+    ...measurement,
+  };
+  const problems = drift.validateMeasurement(record);
+  if (problems.length) fail("reconciliation", `the measurement ${problems.join("; ")}. Fix: check that index.html renders visible text and surfaces`, { code: "MEASUREMENT_EMPTY" });
+  const target = path.join(changeRoot, drift.BUILT_STYLES_FILE);
+  const temp = `${target}.${process.pid}.tmp`;
+  fs.writeFileSync(temp, `${JSON.stringify(record, null, 2)}\n`);
+  fs.renameSync(temp, target);
+  // What the gate will make of it, so a change without a reference is told its drift only warns.
+  const gate = checkSpecReconciliation(changeRoot, reconciliationOptions(parsed, root));
+  const measured = gate.measured || {};
+  return {
+    result: {
+      status: "measured",
+      file: path.relative(root, target).split(path.sep).join("/"),
+      colors: record.colors.length,
+      fonts: record.fonts.length,
+      totals: record.totals,
+      lineage: Object.keys(lineage),
+      notMeasured: record.scope.notMeasured,
+      applicable: gate.applicable,
+      gate: { status: gate.status, reason: gate.reason, major: measured.major ?? 0, uncovered: measured.uncovered ?? 0, minor: measured.minor ?? 0 },
+      ...(gate.applicable ? {} : {
+        note: "this change has no reference (reference.md, reference-evidence.json, or a website-cloning.json / design-synthesis.json that records reference inputs), "
+          + "so `reconciliation check` reports measured drift as warnings, not blockers. Fix: add the change's reference if it reconstructs or follows one",
+      }),
+    },
+    exitCode: 0,
+  };
 }
 
 function directionCommand(parsed, root) {
@@ -842,11 +952,8 @@ function reconciliationStage(changeRoot, options) {
   }
 }
 
-function foldReconciliation(result, changeRoot, parsed) {
-  const stage = reconciliationStage(changeRoot, {
-    designFile: option(parsed, "--design-file", "design.md"),
-    artifact: option(parsed, "--artifact"),
-  });
+function foldReconciliation(result, changeRoot, parsed, root) {
+  const stage = reconciliationStage(changeRoot, reconciliationOptions(parsed, root));
   const blocked = stage.status !== "ready";
   return {
     ...result,
@@ -873,6 +980,7 @@ function spatialCommand(parsed, root, command) {
       checkReferenceEvidence(changeRoot, { artifact: option(parsed, "--artifact") }),
       changeRoot,
       parsed,
+      root,
     );
   } else {
     result = checkReconstruction(changeRoot, {
@@ -896,6 +1004,53 @@ function referenceResolveCommand(parsed, root) {
     ...(option(parsed, "--timestamp") ? { timestamp: option(parsed, "--timestamp") } : {}),
   });
   return { result, exitCode: 0 };
+}
+
+// `reference extract` (OpenSpec change reference-palette-extract): measures the page in the kernel, then
+// writes the measurement, palette evidence (the schema palette-foundation-core checks) and a draft of
+// DESIGN.md front-matter tokens. It never overwrites one of those files without --replace.
+function referenceExtractCommand(parsed, root) {
+  const core = require("./reference-extract-core.cjs");
+  const url = core.validateUrl(requireOption(parsed, "--url"));
+  const output = contained(root, requireOption(parsed, "--output"), "--output", false);
+  if (fs.existsSync(output) && !fs.statSync(output).isDirectory()) fail("reference extract", "--output must be a directory. Fix: pass the directory the evidence goes in (for website cloning, the target's research directory)", { code: "OPTION_INVALID" });
+  const targetId = option(parsed, "--target-id") || core.targetIdFor(url);
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(targetId)) fail("reference extract", "--target-id must be lowercase words joined by hyphens. Fix: pass the website-cloning target id, for example home", { code: "OPTION_INVALID" });
+  const files = Object.fromEntries(Object.entries(core.FILES).map(([key, name]) => [key, path.join(output, name)]));
+  const existing = Object.values(files).filter((file) => fs.existsSync(file));
+  if (existing.length && option(parsed, "--replace") !== true) fail("reference extract", `${existing.map((file) => path.relative(root, file)).join(", ")} already exist. Fix: pass --replace to measure again, or choose a new --output`, { code: "OUTPUT_EXISTS" });
+  const args = ["--url", url];
+  for (const flag of ["--width", "--height", "--chrome", "--puppeteer-module"]) if (option(parsed, flag) !== null) args.push(flag, String(option(parsed, flag)));
+  const kernel = runKernel("extract-reference.cjs", args, root, { timeout: 180000, maxBuffer: 64 * 1024 * 1024 });
+  const measurement = kernel.value?.measurement;
+  if (kernel.exitCode !== 0 || !measurement?.colors) fail("reference extract", "the extraction kernel returned no measurement", { code: "KERNEL_FAILED" });
+  const analysis = core.analyzeMeasurement(measurement);
+  const palette = core.paletteEvidence({ url, targetId, measurement, analysis });
+  fs.mkdirSync(output, { recursive: true });
+  fs.writeFileSync(files.extraction, `${JSON.stringify(core.extractionRecord({ url, targetId, measurement, analysis }), null, 2)}\n`);
+  fs.writeFileSync(files.palette, `${JSON.stringify(palette, null, 2)}\n`);
+  fs.writeFileSync(files.draft, core.designMdDraft({ url, measurement, analysis }));
+  const rel = (file) => path.relative(root, file).split(path.sep).join("/");
+  return {
+    result: {
+      status: "extracted",
+      url,
+      finalUrl: measurement.finalUrl,
+      httpStatus: measurement.httpStatus,
+      targetId,
+      files: Object.fromEntries(Object.entries(files).map(([key, file]) => [key, rel(file)])),
+      roles: palette.semanticRoles.map(({ role, sourceColor }) => ({ role, hex: sourceColor })),
+      typeScale: analysis.type.scale.map(({ size, count }) => ({ size, count })),
+      bodySize: analysis.type.body,
+      spacing: analysis.spacing.scale.map(({ value }) => value),
+      spacingGrid: analysis.spacing.grid,
+      overlaysDismissed: measurement.overlaysDismissed,
+      lowConfidence: analysis.lowConfidence,
+      creativeAcceptance: "not-assessed",
+      next: "Judge the draft against the reference: keep the measured roles that carry the design, drop incidental values, measure the raster-media palette separately, then copy the chosen tokens into DESIGN.md (and design-tokens.md for website cloning) and set palette-evidence.json ready.",
+    },
+    exitCode: 0,
+  };
 }
 
 function analysisRoot(parsed, root) {
@@ -1129,7 +1284,11 @@ function observeInteraction(root, options = {}) {
   const args = ["--probe", context.probeFile];
   if (options.chrome) args.push("--chrome", options.chrome);
   if (options.puppeteer) args.push("--puppeteer-module", options.puppeteer);
-  const kernel = runKernel("capture-interaction.cjs", args, root);
+  if (options.framesDir && context.doc.probes.some(probe => probe.kind === "scroll")) args.push("--frames-dir", contained(root, options.framesDir, "scroll contact sheets", false));
+  // A scroll probe waits at every point it photographs; its validated plan is added to the usual minute.
+  const scrollBudget = context.doc.probes.filter(probe => probe.kind === "scroll").reduce((sum, probe) => sum + scrollBudgetMs(probe), 0);
+  if (scrollBudget > NOTE_BUDGET_MS) process.stderr.write(`note: the scroll probes in ${path.basename(context.probeFile)} plan about ${Math.round(scrollBudget / 1000)} s of loading and waiting before screenshots; lower points, settleMs or viewports for a faster run\n`);
+  const kernel = runKernel("capture-interaction.cjs", args, root, { timeout: 60000 + scrollBudget * 2 });
   const capture = kernel.value?.capture;
   if (kernel.exitCode !== 0 || capture?.schema !== "design-pipeline.interaction-capture.v1" || typeof capture.url !== "string") {
     fail("interaction capture", "capture kernel returned no valid capture", { code: "KERNEL_FAILED" });
@@ -1190,7 +1349,7 @@ function filmLayout(parsed, root, composition, url, times) {
 // source's run log and captures, and the bound Stage 0 job plan. Recording them as checked inputs
 // lets the existing workflow input hashes reopen the gate when any of them changes.
 function filmEvidenceInputs(board, plan) {
-  return [...productSourceFiles(board), ...(typeof board.referenceCuts === "string" ? [board.referenceCuts] : []), ...(plan?.jobPlanPath ? [plan.jobPlanPath] : [])];
+  return [...productSourceFiles(board), ...narrationFiles(board), ...(typeof board.referenceCuts === "string" ? [board.referenceCuts] : []), ...(plan?.jobPlanPath ? [plan.jobPlanPath] : [])];
 }
 
 function verifyCommand(parsed, root, action) {
@@ -1264,7 +1423,7 @@ function verifyCommand(parsed, root, action) {
     const { result, resultFile, localPage, kernel } = observeInteraction(root, {
       probe: probeFile, resultFile: path.join(outDir, "interaction.json"), project,
       protectedFiles: [...new Set([path.join(path.dirname(probeFile), workflow.STATE), path.join(project, workflow.STATE)])],
-      chrome: option(parsed, "--chrome"), puppeteer: option(parsed, "--puppeteer-module"),
+      chrome: option(parsed, "--chrome"), puppeteer: option(parsed, "--puppeteer-module"), framesDir: path.join(outDir, "scroll"),
     });
     // Lineage is read before the report is written: a request that resolves only once the report
     // exists, through any alias the filesystem accepts, stays absent and reopens the gate.
@@ -2411,11 +2570,17 @@ const COMMANDS = {
       record: { run: ({ parsed, root, action }) => runtimeReviewCommand(parsed, root, action) },
     },
   },
-  reconciliation: { actions: { check: { run: ({ parsed, root }) => reconciliationCommand(parsed, root) } } },
+  reconciliation: {
+    actions: {
+      check: { run: ({ parsed, root }) => reconciliationCommand(parsed, root) },
+      measure: { run: ({ parsed, root }) => reconciliationMeasureCommand(parsed, root) },
+    },
+  },
   reference: {
     actions: {
       check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) },
       resolve: { run: ({ parsed, root }) => referenceResolveCommand(parsed, root) },
+      extract: { run: ({ parsed, root }) => referenceExtractCommand(parsed, root) },
       "analyze-video": { required: ["--path", "--output"], run: ({ parsed, root }) => {
         const options = { path: option(parsed, "--path"), output: option(parsed, "--output"), ...(option(parsed, "--start") === null ? {} : { startSec: Number(option(parsed, "--start")) }), ...(option(parsed, "--end") === null ? {} : { endSec: Number(option(parsed, "--end")) }), ...(option(parsed, "--fps") === null ? {} : { sampleFps: Number(option(parsed, "--fps")) }), ...(option(parsed, "--max-frames") === null ? {} : { maxFrames: Number(option(parsed, "--max-frames")) }), ...(option(parsed, "--shots") === true ? { shots: true } : {}), ...(option(parsed, "--cut-threshold") === null ? {} : { cutThreshold: Number(option(parsed, "--cut-threshold")) }), ...(option(parsed, "--min-shot") === null ? {} : { minShotSec: Number(option(parsed, "--min-shot")) }) };
         // --study adds study.json, an audio excerpt and spectrogram when the source has sound, and cut-grid candidates.
@@ -2504,6 +2669,22 @@ const COMMANDS = {
             render: (args) => runKernel("render-score.cjs", [...args, ...["--chrome", "--puppeteer-module"].flatMap((flag) => (option(parsed, flag) ? [flag, option(parsed, flag)] : []))], root).value,
           });
           return { result, exitCode: result.alignment.status === "passed" ? 0 : 2 };
+        },
+      },
+      voiceover: {
+        required: ["--project-root", "--audio"],
+        run: ({ parsed, root }) => {
+          const project = contained(root, option(parsed, "--project-root"), "--project-root");
+          const result = voiceoverFilm(project, {
+            audio: contained(root, option(parsed, "--audio"), "--audio"),
+            script: option(parsed, "--script") ? contained(root, option(parsed, "--script"), "--script") : null,
+            startSec: option(parsed, "--start") === null ? undefined : Number(option(parsed, "--start")),
+            minPauseSec: option(parsed, "--min-pause") === null ? undefined : Number(option(parsed, "--min-pause")),
+            write: option(parsed, "--write") === true,
+            ffmpeg: option(parsed, "--ffmpeg"),
+            ffprobe: option(parsed, "--ffprobe"),
+          });
+          return { result, exitCode: result.status === "passed" ? 0 : 2 };
         },
       },
       blocks: {

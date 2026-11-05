@@ -14,34 +14,18 @@ const { canonicalTree } = require("../scripts/git-tree-snapshot.cjs");
 const { REVIEWED, skillMetadata } = require("../scripts/import-ui-craft-sources.cjs");
 const { storedPath } = require("../skill/scripts/upstream-path.cjs");
 const { restoreUpstreamNames, storedTree, upstreamFilesIn } = require("./helpers/upstream-names.cjs");
+const { DATE, SHA1, TIME, lockedSource } = require("./helpers/locked-source.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const skillRoot = path.join(repoRoot, "skill");
 const vendorRoot = path.join(skillRoot, "vendor");
 const GUIDES = ["references/ui-craft-sources.md", "references/react-doctor.md"];
-const GUIDE_ANCHORS = ["emil-design-eng", "make-interfaces-feel-better", "fixing-accessibility", "12-principles-of-animation", "shadcn", "playwright-cli", "react-doctor"];
+const GUIDE_ANCHORS = ["emil-design-eng", "make-interfaces-feel-better", "fixing-accessibility", "shadcn", "playwright-cli", "react-doctor"];
 const BOUNDARY = { mode: "built-in-reference-adaptation", installsUpstreamDependencies: false, executesUpstreamCommands: false, fetchesRemotePrompts: false, changesProjectRuntime: false };
-const LICENSE_NAME = /^(?:licen[cs]e|copying)(?:\.[^/]*)?$/i;
 
-// The reviewed scoped inventories, written out so a manifest cannot silently widen or narrow a scope.
-const skillFiles = (skill, files) => files.map(file => `skills/${skill}/${file}`);
-const EXPECTED_FILES = {
-  "emil-design-eng": ["LICENSE", ...skillFiles("emil-design-eng", ["SKILL.md"])],
-  "make-interfaces-feel-better": ["LICENSE", "README.md", ...skillFiles("make-interfaces-feel-better", ["SKILL.md", "agents/openai.yaml", "animations.md", "icons.md", "performance.md", "surfaces.md", "typography.md"])],
-  "fixing-accessibility": ["LICENSE", ...skillFiles("fixing-accessibility", ["SKILL.md"])],
-  "12-principles-of-animation": ["README.md", ...skillFiles("12-principles-of-animation", ["SKILL.md"])],
-  shadcn: ["LICENSE.md", ...skillFiles("shadcn", [
-    "SKILL.md", "agents/openai.yml", "assets/shadcn-small.png", "assets/shadcn.png", "assets/showcase/color-pair.tsx",
-    "assets/showcase/preview-states.css", "assets/showcase/state-matrix.tsx", "cli.md", "customization.md",
-    "design-system-page.md", "design-system.md", "evals/evals.json", "mcp.md", "registry.md", "rules/base-vs-radix.md",
-    "rules/chat.md", "rules/composition.md", "rules/forms.md", "rules/icons.md", "rules/styling.md", "scripts/showcase-coverage.mjs",
-  ])],
-  "playwright-cli": ["LICENSE", "README.md", ...skillFiles("playwright-cli", [
-    "SKILL.md", "references/element-attributes.md", "references/playwright-tests.md", "references/pr-attachments.md",
-    "references/request-mocking.md", "references/running-code.md", "references/session-management.md",
-    "references/storage-state.md", "references/test-generation.md", "references/tracing.md", "references/video-recording.md",
-  ])],
-};
+// A bundle holds exactly its scope at the locked upstream revision: the skill folder plus the listed
+// root files. The inventory follows upstream; the lock's treeSha256 pins the bytes.
+const inScope = (name, file) => file.startsWith(`skills/${REVIEWED[name].skill}/`) || REVIEWED[name].rootFiles.includes(file);
 
 function run(command, args, cwd, env = {}) {
   const result = spawnSync(command, args, { cwd, encoding: "utf8", windowsHide: true, env: { ...process.env, ...env }, maxBuffer: 64 * 1024 * 1024 });
@@ -56,23 +40,24 @@ function verifySnapshot(name, root) {
   const reviewed = REVIEWED[name];
   const manifest = JSON.parse(fs.readFileSync(path.join(root, "manifest.json"), "utf8"));
   const upstream = path.join(root, "upstream");
-  const expected = [...EXPECTED_FILES[name]].sort();
+  const locked = lockedSource(name);
   const entry = `skills/${reviewed.skill}/SKILL.md`;
   assert.deepEqual(fs.readdirSync(root).sort(), ["manifest.json", "upstream"]);
   assert.equal(manifest.schema, "design-pipeline.ui-craft-source.v1");
   assert.equal(manifest.name, name);
   assert.equal(manifest.source.repository, reviewed.repository);
-  assert.equal(manifest.source.revision, reviewed.revision);
-  assert.equal(manifest.source.gitTree, reviewed.gitTree);
-  assert.match(manifest.source.committedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/);
+  assert.equal(manifest.source.revision, locked.revision);
+  assert.match(manifest.source.gitTree, SHA1);
+  assert.match(manifest.source.committedAt, TIME);
   assert.equal(manifest.source.license, reviewed.license.spdx);
-  assert.equal(manifest.source.reviewedAt, "2026-10-13");
+  assert.match(manifest.source.reviewedAt, DATE);
   assert.deepEqual(manifest.source.scope, [`skills/${reviewed.skill}/**`, ...reviewed.rootFiles]);
   assert.match(manifest.source.contentHashScope, /^selected skill and root metadata: .*gitTree is the upstream repository root, not this scoped snapshot$/);
 
   const files = upstreamFilesIn(upstream);
-  assert.deepEqual(files, expected);
-  assert.deepEqual(manifest.snapshot.objects.map(object => object.path).sort(), expected);
+  assert.deepEqual(files.filter(file => !inScope(name, file)), [], `${name} files outside its scope`);
+  for (const file of [entry, ...reviewed.rootFiles]) assert.ok(files.includes(file), `${name} lacks ${file}`);
+  assert.deepEqual(manifest.snapshot.objects.map(object => object.path).sort(), files);
   assert.equal(manifest.snapshot.root, "upstream");
   let bytes = 0;
   for (const object of manifest.snapshot.objects) {
@@ -84,12 +69,10 @@ function verifySnapshot(name, root) {
     assert.equal(object.sha256, sha256(content), object.path);
   }
   assert.equal(manifest.snapshot.fileCount, files.length);
-  assert.equal(manifest.snapshot.fileCount, reviewed.fileCount);
   assert.equal(manifest.snapshot.byteCount, bytes);
-  assert.equal(manifest.snapshot.byteCount, reviewed.byteCount);
-  assert.equal(manifest.snapshot.treeSha256, reviewed.treeSha256);
-  assert.equal(canonicalTree(upstream, files), reviewed.treeSha256);
-  assert.deepEqual(manifest.snapshot.executableFiles, []);
+  assert.equal(manifest.snapshot.treeSha256, locked.treeSha256);
+  assert.equal(canonicalTree(upstream, files), locked.treeSha256);
+  assert.deepEqual(manifest.snapshot.executableFiles, manifest.snapshot.objects.filter(object => object.mode === "100755").map(object => object.path).sort());
 
   const entryText = fs.readFileSync(path.join(upstream, storedPath(entry)), "utf8");
   const metadata = skillMetadata(entryText);
@@ -98,33 +81,32 @@ function verifySnapshot(name, root) {
   assert.deepEqual(manifest.skills, [{ name: reviewed.skill, path: `upstream/${entry}`, description: metadata.description }]);
 
   const license = reviewed.license;
-  if (license.kind === "frontmatter") {
-    assert.equal(metadata.license, "MIT");
-    assert.ok(entryText.includes(`\n${license.evidence}\n`));
-    assert.deepEqual(files.filter(file => LICENSE_NAME.test(path.posix.basename(file))), []);
-    assert.deepEqual(manifest.licenses, [{ path: `upstream/${entry}`, license: "MIT", evidence: "license: MIT", note: license.note }]);
-    assert.match(manifest.licenses[0].note, /no LICENSE file .*no copyright line/);
+  const text = fs.readFileSync(path.join(upstream, license.file), "utf8");
+  assert.ok(text.split(/\r?\n/).some(line => line.trim() === license.copyright), `${name} copyright line`);
+  if (license.kind === "mit-file") {
+    assert.ok(text.startsWith("MIT License") && text.includes("Permission is hereby granted, free of charge"), name);
+    assert.deepEqual(manifest.licenses, [{ path: `upstream/${license.file}`, license: "MIT", copyright: license.copyright }]);
   } else {
-    const text = fs.readFileSync(path.join(upstream, license.file), "utf8");
-    assert.ok(text.split(/\r?\n/).some(line => line.trim() === license.copyright), `${name} copyright line`);
-    if (license.kind === "mit-file") {
-      assert.ok(text.startsWith("MIT License") && text.includes("Permission is hereby granted, free of charge"), name);
-      assert.deepEqual(manifest.licenses, [{ path: `upstream/${license.file}`, license: "MIT", copyright: license.copyright }]);
-    } else {
-      assert.match(text, /^\s*Apache License\r?\n\s*Version 2\.0, January 2004\r?\n/);
-      assert.equal(license.copyright, "Copyright (c) Microsoft Corporation.");
-      assert.deepEqual(manifest.licenses, [{ path: "upstream/LICENSE", license: "Apache-2.0", copyright: license.copyright, notice: "No NOTICE file exists at the reviewed revision." }]);
-      assert.deepEqual(files.filter(file => /^notice(?:\.|$)/i.test(path.posix.basename(file))), []);
-    }
+    assert.match(text, /^\s*Apache License\r?\n\s*Version 2\.0, January 2004\r?\n/);
+    assert.equal(license.copyright, "Copyright (c) Microsoft Corporation.");
+    assert.deepEqual(manifest.licenses, [{ path: "upstream/LICENSE", license: "Apache-2.0", copyright: license.copyright, notice: "No NOTICE file exists at the reviewed revision." }]);
+    assert.deepEqual(files.filter(file => /^notice(?:\.|$)/i.test(path.posix.basename(file))), []);
   }
   assert.deepEqual(manifest.boundary, BOUNDARY);
   return manifest;
 }
 
-test("the six reviewed UI craft sources are exactly the contracted bundles; React Doctor is not vendored", () => {
-  assert.deepEqual(Object.keys(REVIEWED), ["emil-design-eng", "make-interfaces-feel-better", "fixing-accessibility", "12-principles-of-animation", "shadcn", "playwright-cli"]);
-  assert.deepEqual(Object.keys(EXPECTED_FILES), Object.keys(REVIEWED));
+test("the five reviewed UI craft sources are exactly the contracted bundles; React Doctor is not vendored", () => {
+  assert.deepEqual(Object.keys(REVIEWED), ["emil-design-eng", "make-interfaces-feel-better", "fixing-accessibility", "shadcn", "playwright-cli"]);
   assert.equal(fs.existsSync(path.join(vendorRoot, "react-doctor")), false);
+});
+
+test("the dropped 12-principles-of-animation bundle leaves no route, lock entry or catalog link behind (#264)", () => {
+  assert.equal(fs.existsSync(path.join(vendorRoot, "12-principles-of-animation")), false);
+  assert.throws(() => lockedSource("12-principles-of-animation"), /has no 12-principles-of-animation/);
+  const shipped = ["SKILL.md", ...fs.readdirSync(path.join(skillRoot, "references"), { recursive: true }).map(file => path.join("references", file)), "vendor/README.md"]
+    .filter(file => fs.statSync(path.join(skillRoot, file)).isFile());
+  for (const file of shipped) assert.equal(fs.readFileSync(path.join(skillRoot, file), "utf8").includes("12-principles-of-animation"), false, file);
 });
 
 for (const name of Object.keys(REVIEWED)) {
@@ -142,7 +124,7 @@ for (const name of Object.keys(REVIEWED)) {
     fs.writeFileSync(entry, Buffer.concat([original, Buffer.from("\nunreviewed\n")]));
     assert.throws(() => verifySnapshot(name, root), assert.AssertionError);
 
-    // Rehash the manifest to the corrupted bytes: the reviewed scoped tree hash still rejects it.
+    // Rehash the manifest to the corrupted bytes: the lock's tree hash still rejects it.
     const manifestFile = path.join(root, "manifest.json");
     const pristine = fs.readFileSync(manifestFile);
     const rehashed = JSON.parse(pristine);
@@ -174,7 +156,8 @@ test("package resources list exactly every vendored UI craft file, its manifest 
   for (const name of Object.keys(REVIEWED)) {
     const listed = resources.required.filter(file => file.startsWith(`vendor/${name}/`));
     assert.equal(new Set(listed).size, listed.length, name);
-    const expected = [`vendor/${name}/manifest.json`, ...EXPECTED_FILES[name].map(file => `vendor/${name}/upstream/${storedPath(file)}`)].sort();
+    const objects = JSON.parse(fs.readFileSync(path.join(vendorRoot, name, "manifest.json"), "utf8")).snapshot.objects;
+    const expected = [`vendor/${name}/manifest.json`, ...objects.map(object => `vendor/${name}/upstream/${storedPath(object.path)}`)].sort();
     assert.deepEqual([...listed].sort(), expected);
   }
 });
@@ -223,7 +206,6 @@ test("UI craft import rejects unknown, invalid, unreviewed, dirty and mismatched
   rejects(/unknown option: --force/, ["--name", name, "--source", source, "--reviewed-at", "2026-10-13", "--force"]);
   rejects(/--name must be one of/, ["--name", "react-doctor", "--source", source, "--reviewed-at", "2026-10-13"]);
   rejects(/valid YYYY-MM-DD/, ["--name", name, "--source", source, "--reviewed-at", "2026-02-30"]);
-  rejects(/source revision must be the reviewed 993eb2c3151997ce08a49635c10fd8c8ef3713c7/);
   const entry = path.join(source, "skills/shadcn/SKILL.md");
   const entryBytes = fs.readFileSync(entry);
   fs.appendFileSync(entry, "dirty\n");
@@ -242,20 +224,21 @@ test("UI craft import rejects unknown, invalid, unreviewed, dirty and mismatched
   rejects(/missing skills\/shadcn\/SKILL\.md/);
 });
 
-test("UI craft import verifies frontmatter-only MIT evidence and the absent Apache NOTICE", t => {
-  const principles = rejectionFixture(t, "12-principles-of-animation");
-  principles.rejects(/source revision must be the reviewed/);
-  fs.writeFileSync(path.join(principles.source, "skills/12-principles-of-animation/LICENSE"), "MIT License\n");
-  principles.commit();
-  principles.rejects(/expects no license file, but the source tracks skills\/12-principles-of-animation\/LICENSE/);
-  fs.rmSync(path.join(principles.source, "skills/12-principles-of-animation/LICENSE"));
-  const entry = path.join(principles.source, "skills/12-principles-of-animation/SKILL.md");
-  fs.writeFileSync(entry, fs.readFileSync(entry, "utf8").replace(/^license: MIT$/m, "license: Apache-2.0"));
-  principles.commit();
-  principles.rejects(/does not declare the reviewed 12-principles-of-animation license: license: MIT/);
+test("UI craft import takes whatever revision the clean checkout is at and records it", t => {
+  const { source } = rejectionFixture(t, "fixing-accessibility");
+  const root = path.dirname(source);
+  const result = run(process.execPath, [path.join(root, "scripts/import-ui-craft-sources.cjs"), "--name", "fixing-accessibility", "--source", source, "--reviewed-at", "2026-11-04"], root);
+  assert.equal(result.status, 0, result.stderr);
+  const head = run("git", ["rev-parse", "HEAD"], source).stdout.trim();
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, "skill/vendor/fixing-accessibility/manifest.json"), "utf8"));
+  assert.equal(manifest.source.revision, head);
+  assert.equal(manifest.source.reviewedAt, "2026-11-04");
+  assert.equal(manifest.snapshot.treeSha256, lockedSource("fixing-accessibility").treeSha256, "same bytes, same content hash at any revision");
+  assert.deepEqual(manifest.snapshot.objects.map(object => object.path).includes("apps/out-of-scope.txt"), false);
+});
 
+test("UI craft import verifies the absent Apache NOTICE", t => {
   const playwright = rejectionFixture(t, "playwright-cli");
-  playwright.rejects(/source revision must be the reviewed/);
   fs.writeFileSync(path.join(playwright.source, "NOTICE"), "notice\n");
   playwright.commit();
   playwright.rejects(/expects no NOTICE file, but the source tracks NOTICE/);
@@ -269,7 +252,7 @@ test("UI craft import verifies frontmatter-only MIT evidence and the absent Apac
 let packaged = null;
 test.after(() => { if (packaged) fs.rmSync(packaged.root, { recursive: true, force: true }); });
 
-// Builds the release archive once, lists it and extracts the six bundles plus both guides.
+// Builds the release archive once, lists it and extracts the five bundles plus both guides.
 function packageArchive() {
   if (packaged) return packaged;
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-ui-craft-package-"));

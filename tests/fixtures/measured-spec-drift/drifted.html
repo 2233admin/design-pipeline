@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Drifted</title>
+<style>
+  @font-face { font-family: "Fixture Display"; src: url("fixture.woff") format("woff"); }
+  body { margin: 0; font-family: "Fixture Display", sans-serif; color: #1a1a2e; }
+  /* the primary was repainted: #3a6df0 is close to #3366ff but past CIEDE2000 2 */
+  .cta { background: #3a6df0; color: #fff; padding: 12px 24px; border: 0; font: inherit; width: 600px; height: 200px; }
+  /* body copy fell back to a family no token names */
+  .note { font-family: "DejaVu Serif", Georgia, serif; }
+  /* translucent ink: rgba(26,26,46,0.6) over white composites to an off-token grey */
+  .muted { color: rgba(26, 26, 46, 0.6); }
+  /* a 1px off-token rule: a stray, reported but not blocking */
+  .rule { border-top: 1px solid #ff00aa; width: 10px; }
+</style>
+</head>
+<body>
+  <h1>Measured drift fixture heading</h1>
+  <p class="note">This paragraph is set in a serif family that DESIGN.md never names, across a long line of body copy.</p>
+  <p class="muted">Muted helper text painted with a translucent ink that composites off token.</p>
+  <button class="cta">Primary action</button>
+  <div class="rule"></div>
+</body>
+</html>

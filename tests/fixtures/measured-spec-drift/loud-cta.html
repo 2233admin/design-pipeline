@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Loud CTA</title>
+<style>
+  @font-face { font-family: "Fixture Display"; src: url("fixture.woff") format("woff"); }
+  body { margin: 0; font-family: "Fixture Display", sans-serif; color: #1a1a2e; background: #fff; }
+  /* a long on-token page: the ink surface dwarfs everything else */
+  .band { background: #1a1a2e; color: #ffffff; height: 6000px; padding: 40px; }
+  /* the primary CTA is far off token (CIEDE2000 > 10) but a fraction of a percent of the area */
+  .cta { background: #e0115f; color: #ffffff; border: 0; width: 160px; height: 48px; font: inherit; }
+</style>
+</head>
+<body>
+  <section class="band">
+    <h1>Long on-token page</h1>
+    <button class="cta">Buy now</button>
+  </section>
+</body>
+</html>

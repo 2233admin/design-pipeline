@@ -135,7 +135,10 @@ then the image becomes part of a storyboard. Name conceptual/illustrative demons
 Choose the film's visual grammar from that action: continuous transformation, product demonstration,
 match-cut montage, footage-led edit, kinetic type, or a deliberate combination.
 
-Style references describe material, contrast, pacing and framing. "Apple-like" does not select a
+Style references describe material, contrast, pacing and framing. Name a style by a concrete
+work the owner can look at (a named launch film, a title sequence, a style ID from a library with
+its still), not by adjectives such as "premium" or "modern", which every generated film already
+claims. "Apple-like" does not select a
 slideshow template. ASCII can express structure while real imagery expresses the finished work.
 Footage-led references call for moving footage and editing, with graphics integrated into the shots.
 Continuous object motion alone does not establish the desired film language. Choose templates only

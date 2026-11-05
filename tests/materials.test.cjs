@@ -11,6 +11,39 @@ const materials = require("../skill/scripts/material-core.cjs");
 const { execute } = require("../skill/scripts/cli-core.cjs");
 
 const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "materials-"));
+
+// `materials fetch` converts each download with ffmpeg. The CI QA runner has no ffmpeg, so without
+// it the fetch tests use a stand-in converter that takes the same arguments (-i <in> ... -vf
+// scale=...min(<width>,...) <out>): it decodes the PNG the stubbed hosts serve and shrinks it to the
+// kept width, which is all these tests check. Real ffmpeg is used when it is on PATH; on Windows
+// without it (no shebang scripts) the two fetch tests skip.
+const { spawnSync } = require("node:child_process");
+const hasFfmpeg = spawnSync("ffmpeg", ["-version"], { windowsHide: true }).status === 0;
+function converter() {
+  if (hasFfmpeg) return "ffmpeg";
+  if (process.platform === "win32") return null;
+  const script = path.join(temporary, "ffmpeg-stub.cjs");
+  fs.writeFileSync(script, `"use strict";
+const fs = require("node:fs");
+const { decodePng, encodePng } = require(${JSON.stringify(path.join(__dirname, "../skill/scripts/png-core.cjs"))});
+const args = process.argv.slice(2);
+const input = decodePng(fs.readFileSync(args[args.indexOf("-i") + 1]));
+const width = Number(/min\\((\\d+),/.exec(args[args.indexOf("-vf") + 1])[1]);
+const k = Math.min(1, width / Math.max(input.width, input.height));
+const w = Math.max(1, Math.round(input.width * k)), h = Math.max(1, Math.round(input.height * k));
+const data = Buffer.alloc(w * h * 4);
+for (let y = 0; y < h; y += 1) for (let x = 0; x < w; x += 1) {
+  const sx = Math.min(input.width - 1, Math.floor(x / k)), sy = Math.min(input.height - 1, Math.floor(y / k));
+  input.data.copy(data, (y * w + x) * 4, (sy * input.width + sx) * 4, (sy * input.width + sx) * 4 + 4);
+}
+fs.writeFileSync(args.at(-1), encodePng({ width: w, height: h, data }));
+`);
+  const shim = path.join(temporary, "ffmpeg-stub");
+  fs.writeFileSync(shim, `#!/bin/sh\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(script)} "$@"\n`, { mode: 0o755 });
+  return shim;
+}
+const ffmpeg = converter();
+const skipFetch = !ffmpeg && "ffmpeg not on PATH and no stand-in converter on Windows";
 after(() => fs.rmSync(temporary, { recursive: true, force: true }));
 
 // ---- synthetic sources ---------------------------------------------------------------------
@@ -161,14 +194,14 @@ function project(name) {
   return dir;
 }
 
-test("fetch can take a native-resolution region from a IIIF source and records it; other sources refuse", async () => {
+test("fetch can take a native-resolution region from a IIIF source and records it; other sources refuse", { skip: skipFetch }, async () => {
   const root = project("fetch-region"), png = encodePng(flat());
   const { http, calls } = stubFetch({
     "https://id.rijksmuseum.nl/200140255": rijksObject,
     "https://iiif.micr.io/": png,
     "https://openaccess-api.clevelandart.org/api/artworks/130217": clevelandObject,
   });
-  const result = await materials.fetchMaterial({ project: root, sourceId: "rijksmuseum", id: "200140255", region: [10, 20, 100, 120], width: 64, http });
+  const result = await materials.fetchMaterial({ project: root, sourceId: "rijksmuseum", id: "200140255", region: [10, 20, 100, 120], width: 64, http, ffmpeg });
   assert.equal(result.status, "fetched", JSON.stringify(result));
   assert.equal(result.file, "materials/raw/rijksmuseum-200140255-r10-20-100-120.png");
   assert.deepEqual(result.record.region, [10, 20, 100, 120]);
@@ -182,7 +215,7 @@ test("fetch can take a native-resolution region from a IIIF source and records i
   await assert.rejects(materials.fetchMaterial({ project: root, sourceId: "rijksmuseum", id: "200140255", region: [0, 0, 10, 10], http }), /region/);
 });
 
-test("fetch downloads an open-licence object as PNG with complete provenance; check passes", async () => {
+test("fetch downloads an open-licence object as PNG with complete provenance; check passes", { skip: skipFetch }, async () => {
   const root = project("fetch-ok"), png = encodePng(flat());
   const { http, calls } = stubFetch({
     "https://openaccess-api.clevelandart.org/api/artworks/130217": clevelandObject,
@@ -191,7 +224,7 @@ test("fetch downloads an open-licence object as PNG with complete provenance; ch
     "https://id.rijksmuseum.nl/200140255": rijksObject,
     "https://iiif.micr.io/": png,
   });
-  const result = await materials.fetchMaterial({ project: root, sourceId: "cleveland", id: "130217", use: "collage: key", width: 160, http });
+  const result = await materials.fetchMaterial({ project: root, sourceId: "cleveland", id: "130217", use: "collage: key", width: 160, http, ffmpeg });
   assert.equal(result.status, "fetched");
   assert.ok(calls.some((call) => call.url.endsWith("_web.jpg")) && !calls.some((call) => call.url.endsWith("_print.jpg")), "the smallest published size covering the kept width is downloaded");
   const record = materials.readRecords(path.join(root, "materials"))["raw/cleveland-130217.png"];
@@ -201,7 +234,7 @@ test("fetch downloads an open-licence object as PNG with complete provenance; ch
   const stored = decodePng(fs.readFileSync(path.join(root, "materials", "raw", "cleveland-130217.png")));
   assert.ok(Math.max(stored.width, stored.height) <= 160);
   assert.ok(!fs.readdirSync(path.join(root, "materials", "raw")).some((name) => name.endsWith(".download")));
-  const rijks = await materials.fetchMaterial({ project: root, sourceId: "rijksmuseum", id: "200140255", http, width: 300 });
+  const rijks = await materials.fetchMaterial({ project: root, sourceId: "rijksmuseum", id: "200140255", http, width: 300, ffmpeg });
   assert.equal(rijks.record.license, "PDM");
   assert.equal(rijks.record.fileUrl, "https://iiif.micr.io/rYoPx/full/300,/0/default.jpg");
   assert.equal(rijks.record.author, "Herman Henstenburgh");
@@ -211,7 +244,7 @@ test("fetch downloads an open-licence object as PNG with complete provenance; ch
   assert.equal(materials.checkMaterials(root).status, "passed");
 });
 
-test("fetch refuses non-open licences and reports blocked or rate-limited sources without writing", async () => {
+test("fetch refuses non-open licences and reports blocked or rate-limited sources without writing", { skip: skipFetch }, async () => {
   const root = project("fetch-refused");
   const { http } = stubFetch({
     "https://collectionapi.metmuseum.org/public/collection/v1/objects/14548": metObject(14548, false),
@@ -231,7 +264,7 @@ test("fetch refuses non-open licences and reports blocked or rate-limited source
   assert.match(nypl.message, /materials add/);
   assert.ok(!fs.existsSync(path.join(root, "materials", "raw")));
   const pd = stubFetch({ "https://commons.wikimedia.org/w/api.php": commons("Public domain"), "https://upload.wikimedia.org/": encodePng(flat()) });
-  const ok = await materials.fetchMaterial({ project: root, sourceId: "wikimedia", id: "File:Haeckel_Tineida.jpg", http: pd.http, width: 200 });
+  const ok = await materials.fetchMaterial({ project: root, sourceId: "wikimedia", id: "File:Haeckel_Tineida.jpg", http: pd.http, width: 200, ffmpeg });
   assert.deepEqual([ok.status, ok.record.license, ok.record.author], ["fetched", "public-domain", "Ernst Haeckel"]);
 });
 

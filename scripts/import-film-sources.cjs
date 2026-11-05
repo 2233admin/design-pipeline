@@ -7,16 +7,13 @@ const path = require("node:path");
 const { storedPath } = require("../skill/scripts/upstream-path.cjs");
 const { canonicalTree, copyTrackedFiles, fail, frontmatter, inspectCheckout } = require("./git-tree-snapshot.cjs");
 
+// The revision comes from the checkout; sources.lock.json records which upstream HEAD was imported.
 // `kind: "skill"` bundles carry a SKILL.md entry with frontmatter; `kind: "template"` bundles are
 // renderable projects whose entry is their README.
 const REVIEWED = {
   cinetic: {
     kind: "skill",
     repository: "https://github.com/Leonxlnx/cinetic",
-    revision: "bee5d7807205d5543472c38312507f9bf366cbbf",
-    gitTree: "6bf9bcdfbc1af302f3d9233f7438bc0d38d4dfc1",
-    treeSha256: "08a00027789a3452f030919e8c2d3ababdf44162c1934dfa9a45b35c505c9a75",
-    fileCount: 137, byteCount: 2645694,
     copyright: "Copyright (c) 2026 Leonxlnx",
     entry: "skills/cinetic/SKILL.md", skillName: "cinetic",
     externalMedia: "README gallery media-branch videos and linked dependencies are outside this reviewed Git tree; none are mirrored.",
@@ -25,10 +22,6 @@ const REVIEWED = {
   "product-film-skill": {
     kind: "skill",
     repository: "https://github.com/Rieranthony/product-film-skill",
-    revision: "fe11efc429d5903e37274d0b294e1b95745b2881",
-    gitTree: "ca1b16a4091528f90059b1ed2c0bb1afb8b5769f",
-    treeSha256: "6ed8d4b4e6da3e00c82b7e86472c01c23d7c5748a4d2e063bf28b563cf559089",
-    fileCount: 30, byteCount: 82908,
     copyright: "Copyright (c) 2026 Rieranthony",
     entry: "plugins/product-film/skills/product-film/SKILL.md", skillName: "product-film",
     externalMedia: "Project fonts, music, Remotion and on-demand Python dependencies are not in this reviewed Git tree; none are mirrored.",
@@ -37,10 +30,6 @@ const REVIEWED = {
   "ff-tracking": {
     kind: "template",
     repository: "https://github.com/mrsarac/ff-tracking",
-    revision: "cc7f4e192eccefb55ae7f18f5a370955122b651b",
-    gitTree: "0f550821569078a4c91e11b65a1eb575f3bd7453",
-    treeSha256: "5e1ebba1adcfbf83ebf3c5cc32af4abbec618eaf1a1c3acfe8ce11a4e9b27fe6",
-    fileCount: 46, byteCount: 6959604,
     copyright: "Copyright (c) 2026 Mustafa Saraç",
     entry: "README.md", templateName: "tracking-hud",
     // Separately licensed parts of the tree, kept beside the repository's MIT license.
@@ -73,8 +62,6 @@ function parseArgs(argv) {
 function importSnapshot(name, source, reviewedAt) {
   const reviewed = REVIEWED[name];
   const checkout = inspectCheckout(source);
-  if (checkout.revision !== reviewed.revision) fail(`source revision must be the reviewed ${reviewed.revision}; received ${checkout.revision}`);
-  if (checkout.gitTree !== reviewed.gitTree) fail(`source Git tree does not match reviewed ${name} tree`);
   const license = checkout.blobs.get("LICENSE")?.toString("utf8") || "";
   if (!license.startsWith("MIT License") || !license.includes(reviewed.copyright)) fail(`source LICENSE does not match reviewed ${name} MIT attribution`);
   for (const notice of reviewed.notices || []) {
@@ -82,7 +69,7 @@ function importSnapshot(name, source, reviewedAt) {
   }
   const files = checkout.indexEntries.map(entry => entry.path);
   const byteCount = checkout.indexEntries.reduce((sum, entry) => sum + entry.size, 0);
-  if (files.length !== reviewed.fileCount || byteCount !== reviewed.byteCount) fail(`source inventory does not match reviewed ${name} files and bytes`);
+  if (!files.includes(reviewed.entry)) fail(`upstream no longer provides the ${name} entry ${reviewed.entry}`);
 
   const destination = path.resolve(__dirname, "../skill/vendor", name);
   fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -96,7 +83,6 @@ function importSnapshot(name, source, reviewedAt) {
     fs.mkdirSync(upstream);
     copyTrackedFiles(upstream, checkout.indexEntries, checkout.blobs);
     const treeSha256 = canonicalTree(upstream, files);
-    if (treeSha256 !== reviewed.treeSha256) fail(`source content does not match reviewed ${name} tree hash`);
     let entries;
     if (reviewed.kind === "skill") {
       const metadata = frontmatter(path.join(upstream, storedPath(reviewed.entry)));
