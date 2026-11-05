@@ -42,10 +42,18 @@
  * inline text links; tabular numbers are measured digit advance widths; failed or missing font
  * files also fail the family check; aria-hidden text, clipped screen-reader text and off-screen
  * content are not measured as visible text.
+ *
+ * The reading, reduced-motion and state checks (line length, line height, heading levels, reduced
+ * motion, state contrast) are this project's own code. Their rules follow Nutlope/hallmark
+ * sloplint-render.mjs (MIT), pbakaus/impeccable rules line-length, tight-leading and skipped-heading
+ * (Apache-2.0) and plugin87/ux-ui-agent-skills verify_reduced_motion.mjs and verify_states.mjs (MIT);
+ * no source text is copied. openspec/changes/interaction-reading-motion-states/design.md has the
+ * credits and the decisions.
  */
 
 const { fileURLToPath } = require("node:url");
 const { fail, isObject, nonEmpty, resolveInside } = require("./contract-utils.cjs");
+const { summarizeStress, validateStress } = require("./interaction-stress.cjs");
 
 const SCOPE = "interaction probe";
 
@@ -67,6 +75,11 @@ const AUDIT_CODES = Object.freeze([
   "audit.layout-gap",
   "audit.layout-alignment",
   "audit.nested-radius",
+  "audit.line-length",
+  "audit.line-height",
+  "audit.heading-levels",
+  "audit.reduced-motion",
+  "audit.state-contrast",
 ]);
 
 // An optional check measures only what the probe declares. Without its declaration it reports
@@ -79,6 +92,8 @@ const DECLARATIONS = Object.freeze({
   "audit.layout-gap": "declare.stacks",
   "audit.layout-alignment": "declare.alignGroups",
   "audit.nested-radius": "declare.radiusPairs",
+  "audit.line-length": "declare.bodyText",
+  "audit.line-height": "declare.bodyText",
 });
 const OPTIONAL_CODES = Object.freeze(Object.keys(DECLARATIONS));
 
@@ -92,16 +107,19 @@ const AUDIT_DEFAULTS = Object.freeze({
   minLayoutGapPx: 8,
   contrastNormal: 4.5,
   contrastLarge: 3,
+  contrastFocus: 3,
+  maxLineCh: 80,
+  minLineHeight: 1.3,
   fonts: Object.freeze([]),
   fontSizes: Object.freeze([]),
-  tolerances: Object.freeze({ alignmentPx: 1, radiusPx: 1, boundsPx: 1, fontSizePx: 0.1, digitWidthPx: 0.5 }),
+  tolerances: Object.freeze({ alignmentPx: 1, radiusPx: 1, boundsPx: 1, fontSizePx: 0.1, digitWidthPx: 0.5, lineCh: 0.1, lineHeight: 0.005 }),
 });
 
-const PROBE_KEYS = ["id", "kind", "viewports", "thresholds", "declare"];
-const NUMBER_THRESHOLDS = ["minFontPx", "minTargetPx", "minControlGapPx", "minControlInsetPx", "minLayoutGapPx", "contrastNormal", "contrastLarge"];
+const PROBE_KEYS = ["id", "kind", "viewports", "thresholds", "declare", "stress"];
+const NUMBER_THRESHOLDS = ["minFontPx", "minTargetPx", "minControlGapPx", "minControlInsetPx", "minLayoutGapPx", "contrastNormal", "contrastLarge", "contrastFocus", "maxLineCh", "minLineHeight"];
 const THRESHOLD_KEYS = [...NUMBER_THRESHOLDS, "fonts", "fontSizes"];
-const SELECTOR_LISTS = ["numbers", "stacks", "controlContainers", "contentBoxes"];
-const DECLARE_KEYS = ["numbers", "stacks", "controlContainers", "alignGroups", "radiusPairs", "contentBoxes"];
+const SELECTOR_LISTS = ["numbers", "stacks", "controlContainers", "contentBoxes", "bodyText"];
+const DECLARE_KEYS = ["numbers", "stacks", "controlContainers", "alignGroups", "radiusPairs", "contentBoxes", "bodyText"];
 const EDGES = ["start", "center", "end"];
 const MAX_VIEWPORTS = 8;
 const MAX_VIEWPORT_PX = 4096;
@@ -112,6 +130,8 @@ const PASSING = ["passed", "not-applicable"];
 // URLs as the verifier's other external-request findings. The fix also serves motion and journey
 // probes on a local page, where an outside file shares the page's origin.
 const MAX_LISTED_URLS = 20;
+// The page keeps 100 items per check (MAX_ITEMS in auditPage); the summed state check keeps as many.
+const MAX_STATE_ITEMS = 100;
 const EXTERNAL_FIX = "Copy every listed resource into the project, next to the page, and reference it with a relative URL: a verified local page may load only files the gate can hash, so fonts, styles and scripts are self-hosted.";
 
 // What to declare so a `not-declared` check measures the page: the coverage carries it as a hint.
@@ -122,6 +142,33 @@ const NOT_DECLARED_HINT = Object.freeze({
   "audit.layout-gap": "Declare the layout stacks (section lists, card grids, form fields) in declare.stacks.",
   "audit.layout-alignment": "Declare groups whose items share an edge in declare.alignGroups as {\"selector\", \"items\", \"edge\"}.",
   "audit.nested-radius": "Declare rounded surfaces nested in rounded surfaces in declare.radiusPairs as {\"outer\", \"inner\"}.",
+  "audit.line-length": "Declare the running text (article paragraphs, descriptions, long list items) in declare.bodyText.",
+  "audit.line-height": "Declare the running text (article paragraphs, descriptions, long list items) in declare.bodyText.",
+});
+
+// The interactive elements: target size and spacing measure them, and the state pass forces
+// :hover and :focus-visible on them through the DevTools protocol. One string serves the
+// page (passed in with every pass) and the driver's DOM query, so the two cannot drift.
+const CONTROL_SELECTOR = 'a[href], button, input:not([type="hidden"]), select, textarea, summary, [role="button"], [role="link"], [role="checkbox"], [role="radio"], [role="switch"], [role="tab"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="option"], [role="slider"], [role="combobox"]';
+// The pseudo-classes forced for each measured state; a keyboard focus matches :focus as well as
+// :focus-visible. :active is not measured: it lasts as long as a press, and an unstyled link's
+// :active is the browser's own activelink red (#ff0000, 3.99:1 on white), which no page chose.
+const STATE_PSEUDO_CLASSES = Object.freeze({
+  hover: Object.freeze(["hover"]),
+  "focus-visible": Object.freeze(["focus", "focus-visible"]),
+});
+// Both renderings are read this long after load (fonts and two frames first), so a short entrance
+// fade has ended and script timers such as a preloader or a toast have run in both.
+const REDUCED_MOTION_SETTLE_MS = 1000;
+const PASS_KINDS = ["audit", "reduced-motion", "rest", "state"];
+// The one definition of "still moving" under reduced motion: a running Web Animation whose animated
+// properties include one outside `fades` (fades and color changes are what reduced motion keeps),
+// on a target that is not on or inside `essential` (loading indicators: WCAG 2.3.3 essential motion),
+// read `settleMs` after load. Any other reduced-motion measurement reuses this object.
+const STILL_MOVING = Object.freeze({
+  settleMs: REDUCED_MOTION_SETTLE_MS,
+  essential: '[role="status"], [role="progressbar"], [role="alert"], [aria-busy="true"]',
+  fades: Object.freeze(["opacity", "fill-opacity", "stroke-opacity", "visibility", "color", "background-color", "border-color", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "border-block-start-color", "border-block-end-color", "border-inline-start-color", "border-inline-end-color", "outline-color", "text-decoration-color", "caret-color", "column-rule-color", "accent-color", "fill", "stroke", "stop-color", "flood-color", "lighting-color"]),
 });
 
 // ---------- probe contract ----------
@@ -213,6 +260,8 @@ function validateAuditProbe(probe, context = {}) {
       }
     } else error(".declare", "must be an object");
   }
+  // The long-content stress pass (interaction-stress.cjs): evidence for long-content and overflow.
+  if (probe.stress !== undefined) validateStress(probe.stress, error);
   return errors;
 }
 
@@ -242,18 +291,42 @@ function auditOptions(probe) {
   };
 }
 
+// The second argument of every auditPage call: which pass runs and the control selector. The full
+// audit takes the reduce pass's snapshot; a state pass takes the state and the resting styles.
+function auditPass(kind, extra = {}) {
+  if (!PASS_KINDS.includes(kind)) fail(SCOPE, `unknown audit pass ${String(kind)}; allowed: ${PASS_KINDS.join(", ")}`);
+  if (kind === "state" && !Object.hasOwn(STATE_PSEUDO_CLASSES, extra.state)) fail(SCOPE, `unknown state ${String(extra.state)}; allowed: ${Object.keys(STATE_PSEUDO_CLASSES).join(", ")}`);
+  return { kind, control: CONTROL_SELECTOR, ...(kind === "reduced-motion" ? { stillMoving: { essential: STILL_MOVING.essential, fades: [...STILL_MOVING.fades], settleMs: STILL_MOVING.settleMs } } : {}), ...extra };
+}
+
+// The state passes each return their audit.state-contrast check; the audit row holds their sum.
+function combineStateChecks(parts) {
+  if (!Array.isArray(parts) || parts.length !== Object.keys(STATE_PSEUDO_CLASSES).length) fail(SCOPE, `audit.state-contrast needs one result per state (${Object.keys(STATE_PSEUDO_CLASSES).join(", ")})`);
+  const combined = { declared: true, checked: 0, failedCount: 0, indeterminateCount: 0, failed: [], indeterminate: [], notMeasured: [] };
+  for (const part of parts) {
+    readCheck(part, "audit.state-contrast", "state pass");
+    for (const key of ["checked", "failedCount", "indeterminateCount"]) combined[key] += part[key];
+    for (const key of ["failed", "indeterminate", "notMeasured"]) combined[key].push(...(part[key] || []).slice(0, MAX_STATE_ITEMS - combined[key].length));
+  }
+  return combined;
+}
+
 // ---------- in-page measurement ----------
 
 // Runs in the page (page.evaluate). Self-contained by necessity: puppeteer ships this function as
-// source text, so every helper and constant it uses is defined inside it.
-function auditPage(options) {
+// source text, so every helper and constant it uses is defined inside it, except what arrives as
+// plain JSON in `options` and `pass` (see auditPass). `pass.kind` is "audit" for the full audit
+// (which needs `pass.reducedMotion`), "reduced-motion" for the snapshot of the reduce load, "rest"
+// for the resting styles of controls, and "state" for one forced state.
+function auditPage(options, pass) {
   const CODES = [
     "audit.font-family", "audit.font-loading", "audit.font-size", "audit.tabular-numbers", "audit.numeric-alignment",
     "audit.text-contrast", "audit.root-background", "audit.horizontal-overflow", "audit.viewport-bounds",
     "audit.content-clipping", "audit.content-overflow", "audit.target-size", "audit.control-gap", "audit.control-inset",
-    "audit.layout-gap", "audit.layout-alignment", "audit.nested-radius",
+    "audit.layout-gap", "audit.layout-alignment", "audit.nested-radius", "audit.line-length", "audit.line-height",
+    "audit.heading-levels", "audit.reduced-motion", "audit.state-contrast",
   ];
-  const OPTIONAL = ["audit.tabular-numbers", "audit.content-overflow", "audit.control-inset", "audit.layout-gap", "audit.layout-alignment", "audit.nested-radius"];
+  const OPTIONAL = ["audit.tabular-numbers", "audit.content-overflow", "audit.control-inset", "audit.layout-gap", "audit.layout-alignment", "audit.nested-radius", "audit.line-length", "audit.line-height"];
   const MAX_ITEMS = 100;
   const MAX_ELEMENTS = 5000;
   // Rounding slack for sizes and gaps measured in fractional layout pixels (lintapple's 0.1 px).
@@ -261,7 +334,7 @@ function auditPage(options) {
   const GENERIC = new Set(["serif", "sans-serif", "monospace", "cursive", "fantasy", "system-ui", "ui-serif", "ui-sans-serif", "ui-monospace", "ui-rounded", "math", "emoji", "fangsong"]);
   const CODE_TEXT = "pre, code, kbd, samp";
   const TEXT_FIELD = ["text", "search", "email", "url", "tel", "number", "password", "date", "time", "datetime-local", "month", "week", "button", "submit", "reset"].map((type) => `input[type="${type}"]`).concat(["input:not([type])", "textarea", "select"]).join(", ");
-  const CONTROL = 'a[href], button, input:not([type="hidden"]), select, textarea, summary, [role="button"], [role="link"], [role="checkbox"], [role="radio"], [role="switch"], [role="tab"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="option"], [role="slider"], [role="combobox"]';
+  const CONTROL = pass.control;
   const OVERLAY = 'dialog[open], [role="dialog"], [role="alertdialog"]';
   const REPLACED = new Set(["img", "svg", "video", "canvas", "iframe", "object", "embed"]);
   const FONT_PROPERTIES = ["font-family", "font-size", "font-weight", "font-style", "font-stretch", "font-variant-numeric", "font-feature-settings", "font-variation-settings", "font-kerning", "font-optical-sizing", "font-synthesis", "text-rendering"];
@@ -287,6 +360,14 @@ function auditPage(options) {
     radius: "Set the inner radius to max(0, outer radius - inset); the inset includes the outer border.",
     radiusUnresolved: "Use equal insets and uniform pixel radii for concentric surfaces.",
     noMatch: "Correct the selector so it names elements on the page, or remove the declaration.",
+    lineLength: "Cap the measure of running text: set max-width (for example 65ch) on the text block or its column, so lines stay at or below thresholds.maxLineCh.",
+    lineHeight: "Set line-height on running text to at least thresholds.minLineHeight (unitless, for example 1.5); keep tight leading for headings and labels only.",
+    headingLevel: "Use the next heading level after the previous heading (one deeper at most) and set the size you wanted with a class: heading levels follow the outline, not the type scale.",
+    reducedHidden: "Under @media (prefers-reduced-motion: reduce), skip the entrance and show the element in the final state the animation ends in (where it would have come to rest, fully opaque and visible) instead of only removing the animation, which leaves its hidden start state behind.",
+    reducedMoving: "Inside @media (prefers-reduced-motion: reduce), stop this animation (animation: none, or a transition of opacity or color only) or replace the movement with a fade; for a script animation, check matchMedia('(prefers-reduced-motion: reduce)') before starting it. A loading indicator is exempt once it says so: role=\"status\" or role=\"progressbar\" on it, or aria-busy=\"true\" on the region it fills.",
+    stateContrast: "Keep the text readable in this state: change the :hover or :focus-visible text or background color so it meets the same contrast as the resting state.",
+    focusMissing: "Give the control a visible :focus-visible indicator, for example outline: 2px solid <a color at least thresholds.contrastFocus:1 against the background beside it>; outline-offset: 2px. Never remove the outline without a replacement.",
+    focusContrast: "Raise the contrast of the :focus-visible indicator against the background it sits on: change the outline, ring or border color, or move the ring off the control with outline-offset.",
   };
   const { thresholds, declare } = options;
   const tolerance = thresholds.tolerances;
@@ -303,7 +384,7 @@ function auditPage(options) {
       contractErrors.push(`${label} ${JSON.stringify(selector)} is not a selector this page accepts (${error.message})`);
     }
   };
-  for (const key of ["numbers", "stacks", "controlContainers", "contentBoxes"]) declare[key].forEach((selector, index) => accepts(selector, `declare.${key}[${index}]`));
+  for (const key of ["numbers", "stacks", "controlContainers", "contentBoxes", "bodyText"]) declare[key].forEach((selector, index) => accepts(selector, `declare.${key}[${index}]`));
   declare.alignGroups.forEach((group, index) => { accepts(group.selector, `declare.alignGroups[${index}].selector`); accepts(group.items, `declare.alignGroups[${index}].items`); });
   declare.radiusPairs.forEach((pair, index) => { accepts(pair.outer, `declare.radiusPairs[${index}].outer`); accepts(pair.inner, `declare.radiusPairs[${index}].inner`); });
   if (contractErrors.length) return { viewport, contractErrors };
@@ -380,7 +461,8 @@ function auditPage(options) {
 
   const everything = [...document.querySelectorAll("body, body *")];
   const elements = everything.filter((el) => visible(el));
-  if (!elements.length) throw new Error("the page has no visible content to audit; check that url points at the built page and that it renders without a script error");
+  // Under reduced motion a page may hide all of its content; that is the reduce pass's finding.
+  if (!elements.length && pass.kind !== "reduced-motion") throw new Error("the page has no visible content to audit; check that url points at the built page and that it renders without a script error");
   if (elements.length > MAX_ELEMENTS) throw new Error(`the page has ${elements.length} visible elements, more than the ${MAX_ELEMENTS} one audit measures; audit a smaller page`);
 
   // ---- finding selectors: a unique id when there is one, otherwise a type/position chain
@@ -407,6 +489,12 @@ function auditPage(options) {
     if (list.length < MAX_ITEMS) list.push({ code, selector, expected: item.expected, actual: item.actual, message: item.message, fix: item.fix, ...(item.related ? { related: selectorOf(item.related) } : {}) });
   };
   const failed = (code, el, item) => record(code, "failed", el, item);
+  // A state the page draws with a filter, translucency or a gradient cannot be measured; it is listed
+  // in the check's details and does not fail it (the resting audit already judged that surface).
+  const notMeasured = (code, el, actual, selector = null) => {
+    const list = (checks[code].notMeasured ||= []);
+    if (list.length < MAX_ITEMS) list.push({ selector: selector || selectorOf(el), actual });
+  };
   const unresolved = (code, el, item) => record(code, "indeterminate", el, item);
   // A declared selector that matches nothing is a failure, so a typo cannot pass as "nothing to check".
   const noMatch = (code, selector, field) => failed(code, null, {
@@ -673,7 +761,6 @@ function auditPage(options) {
   }
 
   // ---- contrast over a resolved solid background; anything else is indeterminate
-  const contrast = checks["audit.text-contrast"];
   const htmlStyle = styleOf(root);
   const rootPaints = htmlStyle.backgroundImage !== "none" || paintsColor(htmlStyle.backgroundColor);
   const paintedPseudo = (node) => ["::before", "::after"].some((pseudo) => {
@@ -751,11 +838,13 @@ function auditPage(options) {
     const size = parseFloat(style.fontSize);
     return size >= 24 || (parseFloat(style.fontWeight) >= 700 && size >= 56 / 3) ? thresholds.contrastLarge : thresholds.contrastNormal;
   };
-  const measureContrast = (el, selector, color, style, rects, effects, resolved = null) => {
-    contrast.checked += 1;
+  // `as` records a state's text under audit.state-contrast, naming the state in what it reports.
+  const measureContrast = (el, selector, color, style, rects, effects, resolved = null, as = { code: "audit.text-contrast", when: "", fix: FIX.contrast }) => {
+    const { code, when } = as;
+    checks[code].checked += 1;
     const need = required(style);
     const expected = `at least ${need}:1`;
-    const unsure = (reason) => unresolved("audit.text-contrast", el, { selector, expected, actual: `not measurable: ${reason}`, message: `the contrast of ${selector} cannot be measured: ${reason}`, fix: FIX.contrastUnresolved });
+    const unsure = (reason) => (as.soft ? notMeasured(code, el, `not measurable${when}: ${reason}`, selector) : unresolved(code, el, { selector, expected, actual: `not measurable${when}: ${reason}`, message: `the contrast of ${selector}${when} cannot be measured: ${reason}`, fix: FIX.contrastUnresolved }));
     if (effects) return unsure(effects);
     if (!color) return unsure(`its text color could not be read`);
     if (color.a === 0) return unsure("its text color is transparent");
@@ -765,7 +854,7 @@ function auditPage(options) {
     if (covering) return unsure(covering);
     const shown = color.a < 1 ? { r: color.r * color.a + background.color.r * (1 - color.a), g: color.g * color.a + background.color.g * (1 - color.a), b: color.b * color.a + background.color.b * (1 - color.a), a: 1 } : color;
     const ratio = contrastRatio(shown, background.color);
-    if (ratio < need) failed("audit.text-contrast", el, { selector, expected, actual: `${Math.floor(ratio * 100) / 100}:1 (${hex(shown)} on ${hex(background.color)})`, message: `text contrast is ${Math.floor(ratio * 100) / 100}:1, below ${need}:1`, fix: FIX.contrast });
+    if (ratio < need) failed(code, el, { selector, expected, actual: `${Math.floor(ratio * 100) / 100}:1 (${hex(shown)} on ${hex(background.color)})${when}`, message: `text contrast${when} is ${Math.floor(ratio * 100) / 100}:1, below ${need}:1`, fix: as.fix });
   };
   const textEffects = (style) => (style.textShadow === "none" ? parseFloat(style.webkitTextStrokeWidth) > 0 ? "the text has a stroke" : null : "the text has a shadow");
   // The element's other pseudo-element shares its stacking context. Out of flow, it paints over this
@@ -819,6 +908,201 @@ function auditPage(options) {
     if (!box) return measureContrast(el, selector, color, style, [], effects, { reason: unplaced });
     measureContrast(el, selector, color, style, [box], effects);
   };
+
+  // ---- the passes that run before or after the full audit, each on its own page state
+  // The text color expression the contrast loop reads, so a state is compared like the rest.
+  const textColorOf = (el, style) => (el instanceof SVGElement ? style.fill : style.webkitTextFillColor || style.color);
+  const transformedBy = (el) => {
+    for (let node = el; node && node !== root; node = node.parentElement) {
+      const style = styleOf(node);
+      if (["transform", "translate", "rotate", "scale"].some((property) => style[property] !== "none")) return node;
+    }
+    return null;
+  };
+  // Why content that has boxes paints nothing: opacity 0 on it or an ancestor, visibility, or a
+  // transform that moves it off the page, out of its clipping ancestor or down to zero size. Display
+  // none is not reported: removing an element is a deliberate change, not a lost end state.
+  const hiddenBy = (el, rects) => {
+    for (let node = el; node && node !== root; node = node.parentElement) {
+      const style = styleOf(node);
+      if (style.display !== "contents" && parseFloat(style.opacity) === 0) return { cause: node, reason: `opacity 0 on ${selectorOf(node)}` };
+    }
+    if (styleOf(el).visibility !== "visible") {
+      let cause = el;
+      while (cause.parentElement && cause.parentElement !== root && styleOf(cause.parentElement).visibility !== "visible") cause = cause.parentElement;
+      return { cause, reason: `visibility: ${styleOf(el).visibility} on ${selectorOf(cause)}` };
+    }
+    const mover = transformedBy(el);
+    const width = Math.max(root.scrollWidth, innerWidth);
+    const height = Math.max(root.scrollHeight, innerHeight);
+    const { clips } = contextFor(el);
+    const gone = rects.every((rect) => {
+      if (rect.width < 1 || rect.height < 1) return true;
+      if (rect.right + scrollX <= 0 || rect.bottom + scrollY <= 0 || rect.left + scrollX >= width || rect.top + scrollY >= height) return true;
+      const painted = clippedRect(rect, clips, el, true);
+      return painted.left >= painted.right || painted.top >= painted.bottom;
+    });
+    if (!gone) return null;
+    if (mover) return { cause: mover, reason: `transform ${styleOf(mover).transform === "none" ? "(translate, rotate or scale)" : styleOf(mover).transform} on ${selectorOf(mover)} moves it out of view` };
+    const clip = clips.find((item) => item.element !== document.body && item.element !== root);
+    return { cause: clip ? clip.element : el, reason: clip ? `it lies outside the clipping area of ${selectorOf(clip.element)}` : "it lies outside the page or has no size" };
+  };
+  // Content: elements that paint their own text, and media. SVG parts belong to their svg.
+  const contentRects = (el) => {
+    if (el.parentElement?.closest("svg")) return [];
+    const boxes = [...el.getClientRects()];
+    if (!boxes.length) return [];
+    if (REPLACED.has(el.localName)) return boxes;
+    const rects = [];
+    for (const node of el.childNodes) {
+      if (node.nodeType !== Node.TEXT_NODE || !node.textContent.trim()) continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      rects.push(...range.getClientRects());
+    }
+    return rects;
+  };
+  const ESSENTIAL_MOTION = pass.stillMoving?.essential;
+  const FADES = new Set(pass.stillMoving?.fades || []);
+  if (pass.kind === "reduced-motion") {
+    const hidden = [];
+    for (const el of everything) {
+      if (decorative(el) || concealed(el)) continue;
+      const rects = contentRects(el);
+      if (!rects.length) continue;
+      const why = hiddenBy(el, rects);
+      if (why) hidden.push({ selector: selectorOf(el), cause: selectorOf(why.cause), reason: why.reason });
+    }
+    const moving = [];
+    let animations = 0;
+    for (const animation of document.getAnimations()) {
+      const effect = animation.effect;
+      const target = effect?.target;
+      if (animation.playState !== "running" || !(target instanceof Element) || !visible(target)) continue;
+      animations += 1;
+      // Essential motion (WCAG 2.3.3): a spinner, progress bar or skeleton that says it reports a
+      // loading state. An auto-advancing carousel says no such thing and is still judged.
+      if (target.closest(ESSENTIAL_MOTION)) continue;
+      const transition = typeof CSSTransition !== "undefined" && animation instanceof CSSTransition;
+      const css = typeof CSSAnimation !== "undefined" && animation instanceof CSSAnimation;
+      const properties = transition ? [animation.transitionProperty] : [...new Set(effect.getKeyframes().flatMap((frame) => Object.keys(frame))
+        .filter((key) => !["offset", "computedOffset", "easing", "composite"].includes(key))
+        .map((key) => (key.startsWith("--") ? key : key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`))))];
+      const moves = properties.filter((property) => !FADES.has(property));
+      if (!moves.length) continue;
+      const timing = effect.getComputedTiming();
+      const name = transition ? `transition of ${animation.transitionProperty}` : css ? `animation ${animation.animationName}` : `script animation ${animation.id || "(no id)"}`;
+      const duration = timing.endTime === Infinity ? "in an infinite loop" : `for ${Math.round(timing.endTime - timing.localTime)}ms more`;
+      if (moving.length < MAX_ITEMS) moving.push({ selector: `${selectorOf(target)}${effect.pseudoElement || ""}`, actual: `${name} still moves ${moves.join(", ")} ${duration}, ${pass.stillMoving.settleMs}ms after load` });
+    }
+    return { viewport, contractErrors: [], hidden, moving, animations };
+  }
+  if (pass.kind === "rest" || pass.kind === "state") {
+    const stateCheck = checks["audit.state-contrast"];
+    const controlsInState = elements.filter((el) => el.matches(CONTROL) && !el.closest(':disabled, [aria-disabled="true"]'));
+    const texts = [...new Set(controlsInState.flatMap((control) => elements.filter((el) => control.contains(el) && !decorative(el) && textRectsOf(el).length)))];
+    // Colors only: the text color and the background colors of the text and every ancestor. A
+    // state that only lifts, scales, filters or fades a control leaves this key as it was.
+    const textKey = (el) => {
+      const backgrounds = [];
+      for (let node = el; node; node = node.parentElement) backgrounds.push(styleOf(node).backgroundColor);
+      return `${textColorOf(el, styleOf(el))}|${backgrounds.join("|")}`;
+    };
+    const SIDES = ["Top", "Right", "Bottom", "Left"];
+    const focusStyle = (el) => {
+      const style = styleOf(el);
+      return {
+        outline: [style.outlineStyle, style.outlineWidth, style.outlineColor, style.outlineOffset].join(" "),
+        outlineStyle: style.outlineStyle, outlineWidth: style.outlineWidth, outlineColor: style.outlineColor, outlineOffset: style.outlineOffset,
+        boxShadow: style.boxShadow,
+        borders: SIDES.map((side) => ({ style: style[`border${side}Style`], width: style[`border${side}Width`], color: style[`border${side}Color`] })),
+        background: style.backgroundColor,
+      };
+    };
+    if (pass.kind === "rest") {
+      return {
+        viewport, contractErrors: [],
+        controls: Object.fromEntries(controlsInState.map((control) => [selectorOf(control), focusStyle(control)])),
+        texts: Object.fromEntries(texts.map((el) => [selectorOf(el), textKey(el)])),
+      };
+    }
+    const rest = pass.rest;
+    const when = ` in :${pass.state}`;
+    // Text the state leaves as it was is the resting audit's to judge; it is counted, not re-reported.
+    for (const el of texts) {
+      const selector = selectorOf(el);
+      if (rest.texts[selector] === textKey(el)) {
+        stateCheck.checked += 1;
+        continue;
+      }
+      const style = styleOf(el);
+      measureContrast(el, selector, parseColor(textColorOf(el, style)), style, textRectsOf(el), textEffects(style), null, { code: "audit.state-contrast", when, fix: FIX.stateContrast, soft: true });
+    }
+    if (pass.state === "focus-visible") {
+      const need = thresholds.contrastFocus;
+      const expected = `a :focus-visible indicator (outline, ring, border or background change) at least ${need}:1 against what it sits on`;
+      const shadowLayers = (value) => (value === "none" ? [] : value.split(/,(?![^(]*\))/).map((layer) => layer.trim()));
+      for (const control of controlsInState) {
+        if (control.tabIndex < 0) continue;
+        stateCheck.checked += 1;
+        const before = rest.controls[selectorOf(control)] || null;
+        const now = focusStyle(control);
+        const box = rectOf(control);
+        const behind = (extent) => {
+          const ring = { left: box.left - extent, top: box.top - extent, right: box.right + extent, bottom: box.bottom + extent };
+          return control.parentElement ? resolveBackground(control.parentElement, [ring]) : { reason: "the control has no parent element" };
+        };
+        const own = () => resolveBackground(control, [box]);
+        const results = [];
+        const against = (kind, value, background) => {
+          const color = parseColor(value);
+          if (!color) return results.push({ kind, reason: `its ${kind} color (${value}) could not be read` });
+          if (color.a === 0) return null;
+          if (!background.color) return results.push({ kind, reason: background.reason });
+          const shown = color.a < 1 ? { r: color.r * color.a + background.color.r * (1 - color.a), g: color.g * color.a + background.color.g * (1 - color.a), b: color.b * color.a + background.color.b * (1 - color.a), a: 1 } : color;
+          return results.push({ kind, ratio: contrastRatio(shown, background.color), detail: `${hex(shown)} on ${hex(background.color)}` });
+        };
+        if (now.outlineStyle !== "none" && parseFloat(now.outlineWidth) > 0 && now.outline !== before?.outline) {
+          // The browser's own ring (outline-style: auto) is drawn in two tones so it shows on any background.
+          if (now.outlineStyle === "auto") results.push({ kind: "outline", ratio: Infinity, detail: "the browser focus ring (outline-style: auto)" });
+          else {
+            const reach = parseFloat(now.outlineOffset) + parseFloat(now.outlineWidth);
+            against("outline", now.outlineColor, reach <= 0 ? own() : behind(reach));
+          }
+        }
+        const restLayers = shadowLayers(before?.boxShadow ?? "none");
+        for (const layer of shadowLayers(now.boxShadow)) {
+          if (restLayers.includes(layer)) continue;
+          const color = layer.match(/[a-z-]+\([^)]*\)|#[\da-f]{3,8}\b/i)?.[0];
+          const [x = 0, y = 0, blur = 0, spread = 0] = (layer.replace(color || "", "").match(/-?[\d.]+px/g) || []).map(parseFloat);
+          const reach = Math.max(Math.abs(x), Math.abs(y), Math.max(0, blur) + Math.max(0, spread));
+          if (!color || reach < 1) continue;
+          against("ring (box-shadow)", color, /\binset\b/.test(layer) ? own() : behind(reach));
+        }
+        now.borders.forEach((border, index) => {
+          const was = before?.borders[index];
+          if (["none", "hidden"].includes(border.style) || !(parseFloat(border.width) > 0) || (was && was.color === border.color && was.width === border.width && was.style === border.style)) return;
+          against("border", border.color, behind(0));
+        });
+        if (before && now.background !== before.background) {
+          const was = parseColor(before.background);
+          const is = parseColor(now.background);
+          if (!was || !is || was.a < 1 || is.a < 1) results.push({ kind: "background change", reason: `the background changes between translucent or unreadable colors (${before.background} to ${now.background})` });
+          else results.push({ kind: "background change", ratio: contrastRatio(is, was), detail: `${hex(is)} against the resting ${hex(was)}` });
+        }
+        const measured = results.filter((result) => typeof result.ratio === "number");
+        if (measured.some((result) => result.ratio >= need)) continue;
+        const unsure = results.filter((result) => result.reason);
+        if (!results.length) failed("audit.state-contrast", control, { expected, actual: "no outline, ring, border or background change in :focus-visible", message: "the control shows no visible focus indicator", fix: FIX.focusMissing });
+        else if (unsure.length) notMeasured("audit.state-contrast", control, `focus indicator not measurable: ${unsure.map((result) => `${result.kind}: ${result.reason}`).join("; ")}`);
+        else {
+          const best = measured.reduce((a, b) => (b.ratio > a.ratio ? b : a));
+          failed("audit.state-contrast", control, { expected, actual: `${best.kind} ${Math.floor(best.ratio * 100) / 100}:1 (${best.detail})`, message: `the focus indicator reaches ${Math.floor(best.ratio * 100) / 100}:1, below ${need}:1`, fix: FIX.focusContrast });
+        }
+      }
+    }
+    return stateCheck;
+  }
   for (const el of elements) {
     if (decorative(el) || el.closest(':disabled, [aria-disabled="true"]')) continue;
     const style = styleOf(el);
@@ -1105,6 +1389,98 @@ function auditPage(options) {
     }
   }
 
+  // ---- reading: declared running text, and the heading outline
+  const lineLength = checks["audit.line-length"];
+  const lineHeight = checks["audit.line-height"];
+  lineLength.declared = declare.bodyText.length > 0;
+  lineHeight.declared = lineLength.declared;
+  const bodyText = new Set();
+  for (const selector of declare.bodyText) {
+    const matches = [...document.querySelectorAll(selector)];
+    if (!matches.length) {
+      noMatch("audit.line-length", selector, "declare.bodyText");
+      noMatch("audit.line-height", selector, "declare.bodyText");
+    }
+    for (const el of matches) if (visible(el) && !decorative(el)) bodyText.add(el);
+  }
+  if (bodyText.size) {
+    // 1ch is the advance of "0" in the block's own font; "normal" leading is the line box the font
+    // itself sets, measured on two lines.
+    const probe = document.createElement("span");
+    probe.setAttribute("aria-hidden", "true");
+    probe.style.cssText = "position:fixed;left:0;top:0;visibility:hidden;white-space:pre;display:inline-block;margin:0;padding:0;border:0;letter-spacing:normal;pointer-events:none";
+    (document.body || root).appendChild(probe);
+    try {
+      for (const el of bodyText) {
+        const lines = [];
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          if (!node.textContent.trim() || !node.parentElement || !visible(node.parentElement) || decorative(node.parentElement)) continue;
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          for (const rect of range.getClientRects()) {
+            if (rect.width <= 0 || rect.height <= 0) continue;
+            const line = lines.find((item) => Math.min(item.bottom, rect.bottom) - Math.max(item.top, rect.top) > Math.min(item.bottom - item.top, rect.height) / 2);
+            if (line) Object.assign(line, { left: Math.min(line.left, rect.left), right: Math.max(line.right, rect.right), top: Math.min(line.top, rect.top), bottom: Math.max(line.bottom, rect.bottom) });
+            else lines.push({ left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom });
+          }
+        }
+        if (!lines.length) continue;
+        const style = styleOf(el);
+        for (const property of FONT_PROPERTIES) probe.style.setProperty(property, style.getPropertyValue(property));
+        probe.style.lineHeight = "normal";
+        probe.textContent = "0000000000";
+        const ch = probe.getBoundingClientRect().width / 10;
+        probe.textContent = "0\n0";
+        const normal = probe.getBoundingClientRect().height / 2;
+        const fontPx = parseFloat(style.fontSize);
+        lineLength.checked += 1;
+        const widest = Math.max(...lines.map((line) => line.right - line.left));
+        const measure = ch > 0 ? widest / ch : 0;
+        if (measure > thresholds.maxLineCh + tolerance.lineCh) failed("audit.line-length", el, { expected: `lines of at most ${thresholds.maxLineCh}ch`, actual: `${round2(measure)}ch (${round2(widest)}px at ${round2(ch)}px per ch)`, message: `running text sets lines of ${Math.round(measure)} characters, longer than ${thresholds.maxLineCh}ch`, fix: FIX.lineLength });
+        lineHeight.checked += 1;
+        const leading = (style.lineHeight === "normal" ? normal : parseFloat(style.lineHeight)) / fontPx;
+        if (leading < thresholds.minLineHeight - tolerance.lineHeight) failed("audit.line-height", el, { expected: `line-height of at least ${thresholds.minLineHeight}`, actual: `${round2(leading)} (${style.lineHeight} on ${round2(fontPx)}px text)`, message: `running text is set at line-height ${round2(leading)}, tighter than ${thresholds.minLineHeight}`, fix: FIX.lineHeight });
+      }
+    } finally {
+      probe.remove();
+    }
+  }
+
+  // Every heading assistive technology reads counts, screen-reader-only ones too; a heading may go
+  // back up any number of levels but down only one.
+  const headingLevels = checks["audit.heading-levels"];
+  let previous = null;
+  for (const el of document.querySelectorAll('h1, h2, h3, h4, h5, h6, [role="heading"]')) {
+    if (el.closest('[aria-hidden="true"], [inert]') || !el.checkVisibility({ checkVisibilityCSS: true })) continue;
+    const declared = parseInt(el.getAttribute("aria-level"), 10);
+    const level = declared >= 1 ? declared : /^h[1-6]$/.test(el.localName) ? Number(el.localName[1]) : 2;
+    headingLevels.checked += 1;
+    if (previous && level > previous.level + 1) failed("audit.heading-levels", el, { expected: `level ${previous.level + 1} or less after the level ${previous.level} heading ${selectorOf(previous.el)}`, actual: `level ${level}`, message: `the heading outline skips from level ${previous.level} to level ${level}`, fix: FIX.headingLevel, related: previous.el });
+    previous = { el, level };
+  }
+
+  // ---- reduced motion: the reduce pass's snapshot against this page as normally rendered
+  const reducedMotion = checks["audit.reduced-motion"];
+  const snapshot = pass.reducedMotion;
+  if (!snapshot || !Array.isArray(snapshot.hidden) || !Array.isArray(snapshot.moving) || !Number.isInteger(snapshot.animations)) throw new Error("the audit needs the reduce pass's snapshot; run the reduced-motion pass first");
+  reducedMotion.checked = everything.filter((el) => visible(el) && !decorative(el) && contentRects(el).length).length + snapshot.animations;
+  const lost = new Map();
+  for (const item of snapshot.hidden) {
+    let el = null;
+    try { el = document.querySelector(item.selector); } catch { el = null; }
+    // Hidden in both renderings (a closed menu, a carousel slide out of its frame) is not a loss.
+    if (!el || !visible(el) || hiddenBy(el, contentRects(el))) continue;
+    if (lost.has(item.cause)) lost.get(item.cause).count += 1;
+    else lost.set(item.cause, { ...item, count: 1 });
+  }
+  for (const item of lost.values()) failed("audit.reduced-motion", null, { selector: item.cause, expected: "content shown without a motion preference stays visible with prefers-reduced-motion: reduce", actual: `${item.reason} with prefers-reduced-motion: reduce, hiding ${item.count} element${item.count === 1 ? "" : "s"} shown without it (first ${item.selector})`, message: "content disappears when the visitor asks for reduced motion", fix: FIX.reducedHidden });
+  for (const item of snapshot.moving) failed("audit.reduced-motion", null, { selector: item.selector, expected: "no movement running 1s after load with prefers-reduced-motion: reduce; fades and color changes are allowed", actual: item.actual, message: "motion keeps running when the visitor asks for reduced motion", fix: FIX.reducedMoving });
+
+  // audit.state-contrast is measured by the state passes after this one; the driver puts their sum
+  // here, and a summary that finds this placeholder instead rejects the row as incomplete.
+  checks["audit.state-contrast"] = null;
+
   return {
     viewport,
     elements: elements.length,
@@ -1151,7 +1527,7 @@ function bindable(url, project) {
 // left not-declared, and any selector the page rejected (contract errors). Every URL in the
 // viewport logs and the probe's whole `requests` log that the gate cannot hash is listed once, in
 // request order, in one external-request finding that fails the row; `project` bounds the files.
-function summarizeAudit(probeId, viewportResults, project, requests = []) {
+function summarizeAudit(probeId, viewportResults, project, requests = [], options = {}) {
   if (!nonEmpty(probeId)) fail(SCOPE, "audit summary needs the probe id");
   if (!nonEmpty(project)) fail(SCOPE, `audit ${probeId} needs the project root that bounds the files its page may load`);
   if (!Array.isArray(viewportResults) || !viewportResults.length) fail(SCOPE, `audit ${probeId} has no viewport results`);
@@ -1182,9 +1558,22 @@ function summarizeAudit(probeId, viewportResults, project, requests = []) {
       return {
         code, status, checked: check.checked, failed: check.failedCount, indeterminate: check.indeterminateCount,
         ...(status === "not-declared" ? { hint: NOT_DECLARED_HINT[code] } : {}),
+        ...(Array.isArray(check.notMeasured) && check.notMeasured.length ? { notMeasured: check.notMeasured.map(({ selector, actual }) => ({ selector, actual })) } : {}),
       };
     });
-    coverage.push({ viewport, elements: result.elements, checks });
+    // A probe that declares stress carries one stressed re-measurement per viewport; only what it
+    // newly breaks in the overflow checks is reported (interaction-stress.cjs).
+    let stress = null;
+    if (options.stress) {
+      const summary = summarizeStress(probeId, where, result.checks, entry.stress, readCheck);
+      if (summary.contractErrors) {
+        for (const message of summary.contractErrors) if (!contractErrors.includes(message)) contractErrors.push(message);
+        continue;
+      }
+      stress = summary.coverage;
+      findings.push(...summary.findings);
+    }
+    coverage.push({ viewport, elements: result.elements, checks, ...(stress ? { stress } : {}) });
   }
   if (!Array.isArray(requests) || !requests.every((url) => typeof url === "string")) fail(SCOPE, `audit ${probeId} has no request log`);
   for (const url of requests) requested.add(url);
@@ -1196,8 +1585,8 @@ function summarizeAudit(probeId, viewportResults, project, requests = []) {
   }
   // not-declared is reported, never passed and never failing; only an optional check can be it.
   const settled = (check) => PASSING.includes(check.status) || (check.status === "not-declared" && OPTIONAL_CODES.includes(check.code));
-  const status = !contractErrors.length && !unbound.length && coverage.length === viewportResults.length && coverage.every((entry) => entry.checks.every(settled)) ? "passed" : "failed";
+  const status = !contractErrors.length && !unbound.length && coverage.length === viewportResults.length && coverage.every((entry) => entry.checks.every(settled) && (!entry.stress || PASSING.includes(entry.stress.status))) ? "passed" : "failed";
   return { status, coverage, findings, contractErrors };
 }
 
-module.exports = { AUDIT_CODES, OPTIONAL_CODES, AUDIT_DEFAULTS, EXTERNAL_FIX, validateAuditProbe, auditOptions, auditViewports, auditPage, bindable, summarizeAudit };
+module.exports = { AUDIT_CODES, OPTIONAL_CODES, AUDIT_DEFAULTS, EXTERNAL_FIX, CONTROL_SELECTOR, STATE_PSEUDO_CLASSES, REDUCED_MOTION_SETTLE_MS, STILL_MOVING, validateAuditProbe, auditOptions, auditViewports, auditPass, auditPage, bindable, combineStateChecks, summarizeAudit };

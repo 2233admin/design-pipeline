@@ -1,7 +1,8 @@
 "use strict";
 
 // Geometric industrial lettering drawn in code: no font file, no traced artwork.
-// Port of the art-study lettering.py (docs/research/arknights-endfield-template-study.md, section 5).
+// Port of the art-study lettering.py (docs/research/arknights-endfield-template-study.md, section 5),
+// plus , ; " & and the euro sign.
 //
 // Each glyph is a stroke skeleton on a unit box (x right, y down, 0..1). Rendering turns the
 // skeleton into filled outlines with mitred joins, so the output is plain SVG <path> data.
@@ -72,6 +73,12 @@ const G = {
   "!": { w: 0, p: [[[0.5, 0], [0.5, 0.68]], [[0.5, 0.9], [0.5, 1]]] },
   "?": { w: 0.8, p: [[[0, 0.2], [0, 0], [1, 0], [1, 0.42], [0.5, 0.42], [0.5, 0.68]], [[0.5, 0.9], [0.5, 1]]] },
   "'": { w: 0, p: [[[0.5, 0], [0.5, 0.26]]] },
+  // Added in the template bank (not in the study's lettering.py).
+  ",": { w: 0.3, p: [[[0.8, 0.84], [0.8, 1], [0.25, 1.1]]] },
+  ";": { w: 0.3, p: [[[0.8, 0.22], [0.8, 0.32]], [[0.8, 0.84], [0.8, 1], [0.25, 1.1]]] },
+  "\"": { w: 0.9, p: [[[0, 0], [0, 0.26]], [[1, 0], [1, 0.26]]] },
+  "&": { w: 0.95, p: [[[1, 1], [0.2, 0.36], [0.2, 0], [0.72, 0], [0.72, 0.32], [0, 0.66], [0, 1], [0.66, 1], [1, 0.62]]] },
+  "€": { w: 0.9, p: [[[1, 0], [0.2, 0], [0.2, 1], [1, 1]], [[0, 0.38], [0.72, 0.38]], [[0, 0.62], [0.72, 0.62]]], cut: [[0.55, 0], [0.55, 1]] },
   " ": { w: 0.5, p: [] },
 };
 
@@ -237,6 +244,9 @@ function resolveParams(overrides = {}) {
 }
 
 const hasGlyph = (ch) => Object.hasOwn(G, ch.toUpperCase());
+// The study's 53 glyphs plus the space; ADDED_GLYPHS were drawn for the template bank.
+const ADDED_GLYPHS = [",", ";", "\"", "&", "€"];
+const STUDY_GLYPHS = Object.keys(G).filter((ch) => !ADDED_GLYPHS.includes(ch));
 
 // One glyph at cap height H with its box top-left at (x0, y0): { paths: [{ d, rule }], advance }.
 function glyphPaths(ch, H, x0 = 0, y0 = 0, overrides = {}) {
@@ -347,4 +357,4 @@ function specimen(overrides = {}) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="${Math.round(y)}" viewBox="0 0 1400 ${Math.round(y)}"><rect width="100%" height="100%" fill="#EDEDEA"/>${parts.join("")}</svg>`;
 }
 
-module.exports = { DEFAULTS, PARAM_RANGES, CHAMFER_MODES, GLYPHS: Object.keys(G), KERN, glyphPaths, hasGlyph, resolveParams, setText, specimen };
+module.exports = { DEFAULTS, PARAM_RANGES, CHAMFER_MODES, GLYPHS: Object.keys(G), STUDY_GLYPHS, ADDED_GLYPHS, KERN, glyphPaths, hasGlyph, resolveParams, setText, specimen };

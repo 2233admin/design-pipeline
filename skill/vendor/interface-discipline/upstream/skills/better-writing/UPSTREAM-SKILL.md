@@ -1,24 +1,31 @@
 ---
 name: better-writing
-description: >-
-  UX writing and interface copy, from voice and button labels to error messages and empty states. Use when writing or reviewing any user-facing text: button and link labels, form errors, placeholders, settings labels, onboarding flows, notifications, or empty states. Triggers on UX writing, microcopy, interface copy, product copy, copywriting, button labels, link text, error messages, empty states, placeholder text, settings labels, capitalization, title case, sentence case, voice and tone.
+description: Writes and reviews interface copy, from labels and errors to empty states and confirmations, so it matches the product's voice and tells people what to do next.
 ---
 
-# Writing that disappears into the interface
+# Writing
 
-Clear and brief beats clever, consistency beats variety, and the best error message is the interaction redesigned so the error can't happen. Apply these principles when writing or reviewing any user-facing text.
+This skill writes and reviews interface copy such as labels, errors, empty states and confirmations, along with the terms that run through them. It matches the product's existing voice and flags copy that misleads people or leaves them without a way forward.
 
-How copy renders (capitalization via `text-transform`, truncation, smart punctuation) is covered by the `better-typography` skill; error markup and announcements (`aria-invalid`, live regions) by the `better-accessibility` skill; room for translated strings by the `better-layout` skill.
+A deliberate brand voice is not a defect. Raise a departure from plain language only when it creates inconsistency, ambiguity, translation risk or a tone the stakes don't support. Rewording that merely suits your taste is not a finding.
 
-## Core Principles
+How copy renders, including `text-transform`, truncation and smart punctuation, belongs to `better-typography`. Error markup, announcements and the attributes that carry accessible names belong to `better-accessibility`. Room for translated strings belongs to `better-layout`.
 
-### 1. Recon the Existing Voice
+## Inventory the existing strings first
 
-Before writing or reviewing, inspect nearby interface copy, the product's terminology, localization conventions, and any voice or content style guide. Preserve intentional brand character when it remains clear and appropriate to the stakes. Treat a difference from generic plain language as a finding only when it creates inconsistency, ambiguity, translation risk, or an inappropriate tone.
+Before writing or reviewing, find where the copy lives and read the copy around the change:
 
-### 2. One Voice, Flexible Tone
+1. Search for the translation call (`t(`, `i18n.`, `<FormattedMessage`, `$t(`) and the locale files it reads, such as `locales/**/*.json`, `messages/*.json`, `*.po` and `*.strings`. Copy may also come from a CMS or the API.
+2. List the noun used for each object and the verb used for each action, as in "project" or "workspace" and "Delete" or "Remove".
+3. Note the case used per element type and any voice or content style guide.
 
-The product has one voice, established by its existing system rather than invented during a local edit. Keep terms consistent: if it's "Archive" in the menu, it isn't "Move to storage" in the toast. Tone flexes with the stakes:
+New copy uses the terms on that list. A synonym is a finding only where the same thing is named two ways.
+
+## One voice, one vocabulary
+
+The product has one voice and its existing copy establishes it. A local edit does not get to invent a new one. If it's "Archive" in the menu, it isn't "Move to storage" in the toast.
+
+A multi-step flow uses one vocabulary throughout: "Get started" to enter, either "Continue" or "Next" to advance, "Done" to finish. Tone flexes with the stakes:
 
 | Context | Tone |
 | --- | --- |
@@ -27,49 +34,72 @@ The product has one voice, established by its existing system rather than invent
 | Errors, destructive confirmations | Calm, plain, zero playfulness |
 | Data loss, security | Serious, explicit |
 
-### 3. Address the Reader Directly
+## Address the reader directly
 
-In instructional interface copy, address the reader directly as "you" rather than "the user." Avoid “we” in errors when it creates ambiguity or reads as deflection: prefer “Unable to load content” over “We're having trouble loading this content.” Preserve an established first-person brand voice in low-stakes contexts when it remains clear. Use possessives sparingly (“Favorites” over “Your Favorites”) and never switch perspective accidentally.
+In instructional copy, write "you", not "the user". In errors, "we" reads as deflection, so prefer "Unable to load content. Check your connection and try again." An established first-person voice can stay in low-stakes copy where it still reads clearly.
 
-### 4. Plain Words Over Clever Ones
+Use possessives sparingly: "Favorites" beats "Your favorites". Never mix perspectives in one flow, such as "My account" beside "Your settings".
 
-Choose easily understood words and delete every word that isn't needed. No idioms, colloquialisms, or humor that won't translate. Skip unnecessary gender: "Subscribers can post recipes", not "each subscriber can post his or her recipes". Match the input device: "tap" on touch, "click" with a pointer, "select" when both are possible. Never build sentences by concatenating fragments around variables (`"You have " + n + " new messages"`); word order changes per language, so use full templated strings with proper pluralization.
+## Plain words over clever ones
 
-### 5. Verb-First Buttons
+Choose words a tired reader gets on the first pass, and delete every word that does no work. No idioms, no colloquialisms and no humor that won't translate.
 
-Button labels start with a verb naming the specific action: "Send", "Save draft", "Delete project". Never "OK!", "Let's go!", or bare "Yes"/"No" on consequential actions. Confirmation buttons repeat the consequence so the dialog is answerable without reading the body: "Delete this project?" offers `Delete project` and `Cancel`, not `Yes` and `No`.
+Skip unnecessary gender: "Subscribers can post recipes", not "each subscriber can post his or her recipes". Match the input device: "tap" on touch, "click" with a pointer, "select" when both are possible.
 
-### 6. Consistent Flow Vocabulary
+## Build strings whole
 
-Multi-step flows use one vocabulary: "Get Started" to enter, "Continue" or "Next" (pick one) to advance, "Done" to finish. Alternating synonyms across steps makes users wonder if the buttons do different things.
+Never assemble a sentence from fragments around a variable (`"You have " + n + " new messages"`), because word order changes per language. Write one message with placeholders, and use the locale's plural rules rather than `n === 1 ? "" : "s"`. Many languages have more than two plural forms. Format numbers, dates and lists through `Intl`. Recipes are in [patterns.md](patterns.md#plurals-and-placeholders).
 
-### 7. Links Describe Their Destination
+## Verb-first buttons
 
-Link text makes sense out of context; screen-reader users navigate by a list of the page's links. "Read the billing docs", never "Click here" (which also fails the device-verb rule on touch), and never a bare "Learn more" when several appear on one page. Suffix each: "Learn more about exports".
+A button label starts with a verb naming the action: "Send", "Save draft", "Delete project". Never "OK!" or "Let's go!".
 
-### 8. One Capitalization Policy
+An icon-only button's accessible name follows the same rule. It names the action, "Delete project", never the glyph, "Trash icon". The attribute that carries it is `better-accessibility`'s.
 
-Pick title case or sentence case per element type (all buttons, all headings) and apply it consistently; sentence case is the safer default: calmer, no per-word case rules, localizes cleanly. "Save Changes" beside "Discard changes" reads as sloppiness.
+## Links describe their destination
 
-### 9. Settings Describe the ON State
+Link text makes sense out of context, because screen-reader users navigate by a list of the page's links. Write "Read the billing docs", never "Click here".
 
-Label a toggle for what happens when it's on: "Send read receipts", and users infer the off state. Never label the negative ("Don't send read receipts"), which turns the toggle into a double negative. Link directly to a referenced setting instead of describing the path to it: a "Notification settings" link, not "Go to Settings > Notifications > Email".
+A bare "Learn more" breaks down as soon as two appear on one page. Suffix each one: "Learn more about exports".
 
-### 10. Errors Say How to Fix, Next to Where It Broke
+## One capitalization policy
 
-An error is an instruction, adjacent to the failing field:
+Pick title case or sentence case per element type, then apply it to every instance of that type. Sentence case is the default where the project has no policy. "Save Changes" beside "Discard changes" reads as sloppiness.
+
+## Settings describe the ON state
+
+Label a toggle for what happens when it is on. "Send read receipts" lets users infer the off state; "Don't send read receipts" turns the toggle into a double negative.
+
+Link straight to a referenced setting rather than describing the path to it: a "Notification settings" link, not "Go to Settings > Notifications > Email".
+
+## Errors say how to fix, next to where it broke
+
+An error is an instruction, and it belongs beside the field that failed:
 
 | Bad | Good |
 | --- | --- |
 | That password is too short | Choose a password with at least 8 characters |
-| Invalid name | Use only letters for your name |
+| Invalid date | Enter a date as DD/MM/YYYY |
 | Oops! Something went wrong. | Unable to save. Check your connection and try again. |
 
-No blame, no "oops", no exclamation marks. Phrase hints positively ("Use only letters", not "Don't use numbers or symbols") and show them before the mistake, not after. If the same error keeps firing for many users, redesign the interaction instead of rewording it.
+No blame, no "oops" and no exclamation marks. Phrase hints positively, as in "Use at least 8 characters" rather than "Don't use fewer than 8". Show a known requirement as helper text before input, not only in the error. When the same error keeps firing, redesign the interaction so it cannot happen.
 
-### 11. Empty States Point Forward
+## Undo beats confirmation
 
-An empty state says what this place is and how to fill it, with one clear next action:
+Prefer undo when the action can be reversed and people perform it often, such as archiving, moving or deleting into a trash. Act at once and offer undo in the result: "Project archived. Undo".
+
+Confirm before acting when the action cannot be reversed, affects other people or destroys many items at once. The confirmation repeats the consequence, so the dialog is answerable without reading the body:
+
+- The title names the action and the object, "Delete 'Q3 report'?", never "Are you sure?".
+- The body says what is lost and what cannot be recovered, with counts where they apply.
+- The buttons are verb plus object, `Delete project` and `Cancel`, never `Yes` and `No`.
+- For an account, a workspace or a repository, ask the person to type the object's name.
+
+Templates are in [patterns.md](patterns.md#destructive-flows). The destructive button's distinct color is `better-colors`'.
+
+## Empty states point forward
+
+An empty state says what this place is and how to fill it, and offers one clear next action:
 
 ```html
 <!-- Bad: a shrug -->
@@ -81,65 +111,41 @@ An empty state says what this place is and how to fill it, with one clear next a
 <button class="mt-4">Create a project</button>
 ```
 
-Search and filter empty states name the query and offer an exit: "No results for 'quarterly'. Clear filters". Never park crucial persistent information in an empty state; it disappears the moment content exists.
+A filtered empty state names the query and offers an exit: "No results for 'quarterly'. Clear filters". Never park persistent information in an empty state. It disappears the moment content exists.
 
-### 12. Placeholders Are Examples, Not Labels
+Loading, saving and success copy is in [patterns.md](patterns.md#status-copy).
 
-Placeholders show the expected format (`name@example.com`, `DD/MM/YYYY`). A placeholder is never the field's only label: it vanishes on input, and every field keeps a visible label.
+## Placeholders show an example
 
-## Common Mistakes
+A placeholder shows a realistic example in the format the field accepts, `name@example.com` or `DD/MM/YYYY`, never an instruction. Whether the field also needs a visible label is `better-accessibility`'s.
 
-| Mistake | Fix |
+## Before you finish
+
+| Detection pattern | Fix |
 | --- | --- |
-| Local rewrite ignores the product's established terminology or voice | Inspect nearby copy and the style guide before proposing a change |
-| "The user" in instructional interface copy | Address the reader directly as "you" |
-| "We're having trouble…" obscures responsibility or recovery | Use a direct status and next step: "Unable to load content" |
-| `OK` / `Yes` confirming a destructive dialog | Repeat the consequence: "Delete project" |
-| "Continue" on step 2, "Next" on step 3 | One flow vocabulary throughout |
-| "Click here" or bare "Learn more" link | Describe the destination: "Read the billing docs" |
-| "Save Changes" beside "Discard changes" | One capitalization policy per element type |
-| "Don't send read receipts" toggle | Label the ON state: "Send read receipts" |
-| "Oops! Something went wrong." | Say what to do, next to the failing field |
-| "No results." as the whole empty state | Orient and point forward with a next action |
-| Placeholder doing the label's job | Visible label; placeholder shows the format |
-| `"You have " + n + " messages"` | Full templated strings with pluralization |
+| `Click here`, a link reading `here` or two identical `Learn more` links | Name the destination |
+| `Oops`, `Something went wrong` or `!` in an error string | Say what failed and the next step |
+| `" + n + "`, a template literal holding a sentence fragment, or `=== 1 ? "" : "s"` | One ICU message with a plural argument |
+| `>OK<`, `>Yes<` or `>No<` on a dialog button | Verb plus object |
+| `Are you sure` | Name the action and the object |
+| `successfully` | Cut it: "Changes saved" |
+| `Please` in a routine instruction | Cut it |
+| A toggle label starting `Don't`, `Disable` or `Hide` | Describe the ON state |
+| `aria-label="Trash"`, `"Close icon"` or `"X"` | Name the action: "Delete project", "Close dialog" |
+| `toLocaleDateString()` with no locale, or a date built from `getMonth()` | `Intl.DateTimeFormat` with the user's locale |
+| `Save Changes` beside `Discard changes` | One case per element type |
 
-## Review Output Format
+## Reporting
 
-Use this format only when the user asks for a standalone writing review. When `better-interface` orchestrates the review, provide domain evidence and findings to that skill and let its output format, severity scale, consolidation rules, cap, and verdict take precedence.
+**Severity.** `HIGH` misleads the user or hides how to recover from an error. An error that names no way to recover is always `HIGH`, as is a destructive action with neither confirmation nor undo. `MEDIUM` breaks voice, terminology or capitalization consistency. `LOW` is isolated wording polish.
 
-Present the standalone review in two parts.
+**Verification.** Check every label against the action it invokes, every error for a stated fix and every term against the inventory. Read locale files as well as components. Report strings supplied by the server or a CMS that you could not see as `Not verified`.
 
-### Findings
+**Format.** Group findings under the principle each violates, ordered by severity, one row per root cause listing every location it appears in:
 
-Group all confirmed findings by principle. Use a markdown table with **Severity**, **Location**, **Before**, **After**, and **Why** columns. Never use separate "Before:" / "After:" lines.
-
-- **Severity**: `HIGH` misleads users, obscures a consequence, or prevents recovery; `MEDIUM` makes a task harder to understand; `LOW` is isolated voice or consistency polish.
-- **Location**: cite `path/to/file:line`. If the artifact has no source files, cite the exact screen and component instead.
-- **Before / After**: quote the current copy and its complete replacement.
-- **Why**: name the violated principle and explain the comprehension or trust cost.
-
-Consolidate a repeated systemic issue into one row and list every affected location. Omit principles with no findings.
-
-### Example
-
-#### Errors say how to fix
 | Severity | Location | Before | After | Why |
 | --- | --- | --- | --- | --- |
-| MEDIUM | `src/PasswordField.tsx:36` | "Invalid password" | "Choose a password with at least 8 characters" | The error must say how to fix the problem |
-| HIGH | `src/Editor.tsx:81` | "We couldn't process your request" toast | Inline "Unable to save. Check your connection and try again." | The current message neither locates the failure nor offers recovery |
 
-#### Verb-first buttons
-| Severity | Location | Before | After | Why |
-| --- | --- | --- | --- | --- |
-| HIGH | `src/DeleteDialog.tsx:29` | "OK" on the delete confirmation | "Delete project" | A consequential action must repeat the consequence |
-| MEDIUM | `src/Signup.tsx:54` | "Let's go!" | "Create account" | The label must name the action |
+`Location` is `path/to/file:line`. `Why` names the principle and the user impact.
 
-### Verification and Verdict
-
-After the findings:
-
-1. **Verification**: list the exact checks run and their observed results, including the complete flow, variable interpolation, pluralization, and narrow-width wrapping when applicable. If a check was not run, state what still needs verification.
-2. **Verdict**: `Block` if any `HIGH` finding remains, `Needs changes` if only `MEDIUM` or `LOW` findings remain, and `Approve` only when no actionable findings remain.
-
-When there are no findings, omit the tables, state "No actionable writing findings", report verification, and end with `Approve`.
+End with `Block` when any `HIGH` remains, `Approve` otherwise, leaving the rest in the table as work to do. Never `Approve` coverage you did not inspect. With nothing to report, state "No actionable writing findings" and report verification.

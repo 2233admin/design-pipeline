@@ -271,7 +271,7 @@ const LAYOUTS = {
     const ds = 0.0185 * H;
     d.text("intro", 0.057 * W, 0.604 * H + BASE * ds, ds, { role: "black", family: "body", tracking: 60, lineHeight: 1.7, box: [0.057 * W - d.pad, 0.604 * H - d.pad, 0.1 * W, ds * 1.7 * 3 + ds * 0.3] });
     const es = 0.0148 * H;
-    d.text("episodes", 0.057 * W, 0.704 * H + BASE * es, es, { role: "black", family: "num", tracking: 200, box: [0.057 * W - d.pad, 0.704 * H - d.pad, 0.1 * W, es * 1.3] });
+    d.text("episodes", 0.057 * W, 0.704 * H + BASE * es, es, { role: "black", family: "num", tracking: 200, box: [0.057 * W - d.pad, 0.704 * H - d.pad, 0.11 * W, es * 1.3] });
     const cw = 0.123 * W; const chh = 0.38 * H; const gx = 0.0104 * W; const gy = 0.0185 * H; const x0 = 0.172 * W; const y0 = 0.139 * H;
     const border = 3 * d.k;
     for (let i = 0; i < 12; i += 1) {

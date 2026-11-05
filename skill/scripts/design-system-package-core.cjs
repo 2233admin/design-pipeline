@@ -236,6 +236,169 @@ function checkComponents(dir, findings) {
   return components.sort();
 }
 
+// ---- token use: previews and bundle.css style with tokens, never raw values ---------------------
+// After open-design's components manifest (Apache-2.0): every var(--x) must be declared (tokens.json
+// via tokens.css, or a local custom property), and colours and font families come from tokens.
+// Only declaration values are scanned: selectors, comments, strings, url(...), @font-face and
+// @property blocks never count. Named colours (white, red) are a known gap and are not reported.
+
+const RAW_COLOR = /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|oklch|oklab|lab|lch|color|color-mix)\(/gi;
+const SVG_PAINT = /\s(fill|stroke|stop-color|flood-color|lighting-color)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi;
+const ENTITIES = { quot: '"', apos: "'", amp: "&", lt: "<", gt: ">", nbsp: " ", num: "#", lpar: "(", rpar: ")", semi: ";", colon: ":", comma: "," };
+
+function decodeEntities(text) {
+  return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);?/gi, (whole, ref) => {
+    if (ref[0] === "#") {
+      const code = ref[1] === "x" || ref[1] === "X" ? parseInt(ref.slice(2), 16) : parseInt(ref.slice(1), 10);
+      return Number.isFinite(code) && code <= 0x10ffff ? String.fromCodePoint(code) : whole;
+    }
+    return ENTITIES[ref.toLowerCase()] ?? whole;
+  });
+}
+
+// Live CSS and markup of a preview: <style> blocks are raw text, HTML comments and <script> drop out.
+function splitHtml(text) {
+  const styles = [];
+  let markup = "";
+  let i = 0;
+  while (i < text.length) {
+    const lower = text.slice(i).toLowerCase();
+    const next = lower.search(/<!--|<style\b|<script\b/);
+    if (next < 0) {
+      markup += text.slice(i);
+      break;
+    }
+    markup += text.slice(i, i + next);
+    i += next;
+    const rest = text.slice(i).toLowerCase();
+    if (rest.startsWith("<!--")) {
+      const end = rest.indexOf("-->", 4);
+      i = end < 0 ? text.length : i + end + 3;
+      continue;
+    }
+    const tag = rest.startsWith("<style") ? "style" : "script";
+    const open = rest.indexOf(">");
+    const close = rest.indexOf(`</${tag}`, open < 0 ? 0 : open);
+    if (open < 0) break;
+    if (tag === "style") styles.push(text.slice(i + open + 1, close < 0 ? text.length : i + close));
+    markup += `<${tag}>`;
+    i = close < 0 ? text.length : i + close + rest.slice(close).indexOf(">") + 1;
+  }
+  return { styles, markup };
+}
+
+// Drops comments and url(...) contents, and swaps string literals for "<n>" placeholders kept in
+// `strings` so a reported font stack can show them.
+function stripCss(css, strings) {
+  let out = "";
+  let i = 0;
+  while (i < css.length) {
+    const c = css[i];
+    if (c === "/" && css[i + 1] === "*") {
+      const end = css.indexOf("*/", i + 2);
+      i = end < 0 ? css.length : end + 2;
+      out += " ";
+    } else if (c === '"' || c === "'") {
+      let j = i + 1;
+      while (j < css.length && css[j] !== c && css[j] !== "\n") j += css[j] === "\\" ? 2 : 1;
+      strings.push(css.slice(i, j + 1));
+      out += `"${strings.length - 1}"`;
+      i = j + 1;
+    } else if (/^url\(/i.test(css.slice(i, i + 4))) {
+      const end = css.indexOf(")", i);
+      out += "url()";
+      i = end < 0 ? css.length : end + 1;
+    } else if (css.startsWith("<!--", i) || css.startsWith("-->", i)) {
+      out += " ";
+      i += css.startsWith("<!--", i) ? 4 : 3;
+    } else {
+      out += c;
+      i += 1;
+    }
+  }
+  return out.replace(/@(?:font-face|property)\b[^{;]*\{[^{}]*\}/gi, " ");
+}
+
+// Declarations of cleaned CSS: text before `{` is a selector or at-rule prelude and is skipped.
+function declarationsOf(css) {
+  const out = [];
+  let buffer = "";
+  for (const c of css) {
+    if (c === "{") buffer = "";
+    else if (c === ";" || c === "}") {
+      const colon = buffer.indexOf(":");
+      if (colon > 0) out.push({ property: buffer.slice(0, colon).trim(), value: buffer.slice(colon + 1).trim() });
+      buffer = "";
+    } else buffer += c;
+  }
+  const colon = buffer.indexOf(":");
+  if (colon > 0) out.push({ property: buffer.slice(0, colon).trim(), value: buffer.slice(colon + 1).trim() });
+  return out;
+}
+
+function sourceOf(file, html) {
+  const text = readText(file);
+  const strings = [];
+  if (!html) return { declarations: declarationsOf(stripCss(text, strings)), strings, paints: [] };
+  const { styles, markup } = splitHtml(text);
+  const inline = [...markup.matchAll(/\sstyle\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi)].map((m) => `x{${decodeEntities(m[1] ?? m[2] ?? m[3])}}`);
+  const css = [...styles, ...inline].map((block) => stripCss(block, strings)).join("\n");
+  // Paint attributes on elements only, not text inside a style attribute (such as a data: URI).
+  const attributes = markup.replace(/\sstyle\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, " ");
+  const paints = [...attributes.matchAll(SVG_PAINT)]
+    .map((m) => decodeEntities(m[2] ?? m[3] ?? m[4]).trim())
+    .filter((value) => !/^(?:none|currentcolor|transparent|inherit)$/i.test(value) && !/^(?:url\(\s*['"]?#|var\()/i.test(value));
+  return { declarations: declarationsOf(css), strings, paints };
+}
+
+function checkTokenUse(dir, tokens, findings) {
+  const declared = new Set([...compileTokensCss(tokens).matchAll(/--([\w-]+)\s*:/g)].map((m) => m[1]));
+  const files = [];
+  const bundle = path.join(dir, "components", "bundle.css");
+  if (fs.existsSync(bundle)) files.push({ rel: "components/bundle.css", shared: true, ...sourceOf(bundle, false) });
+  const root = path.join(dir, "components");
+  if (fs.existsSync(root)) {
+    for (const entry of fs.readdirSync(root, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      const preview = path.join(root, entry.name, "preview.html");
+      if (entry.isDirectory() && fs.existsSync(preview)) files.push({ rel: `components/${entry.name}/preview.html`, shared: false, ...sourceOf(preview, true) });
+    }
+  }
+  const localOf = (file) => new Set(file.declarations.filter((d) => /^--[\w-]+$/.test(d.property)).map((d) => d.property.slice(2)));
+  // bundle.css is loaded with every preview; a property a preview declares stays in that preview.
+  const shared = new Set(files.filter((file) => file.shared).flatMap((file) => [...localOf(file)]));
+  const referenced = new Set();
+  for (const file of files) {
+    const local = localOf(file);
+    const undeclared = new Set();
+    const colors = new Set();
+    const fonts = [];
+    for (const { property, value } of file.declarations) {
+      for (const m of value.matchAll(/var\(\s*--([\w-]+)/g)) {
+        referenced.add(m[1]);
+        if (!declared.has(m[1]) && !shared.has(m[1]) && !local.has(m[1])) undeclared.add(m[1]);
+      }
+      if (property.startsWith("--")) continue;
+      for (const m of value.match(RAW_COLOR) || []) colors.add(m.toLowerCase());
+      if (/^font-family$/i.test(property)) {
+        const stack = value.replace(/\s*!\s*important\s*$/i, "").trim();
+        if (!/^var\(--font-/.test(stack) && !/^(inherit|initial|unset)$/i.test(stack)) {
+          fonts.push(value.replace(/"(\d+)"/g, (whole, index) => file.strings[Number(index)] ?? whole));
+        }
+      }
+    }
+    for (const paint of file.paints) for (const m of paint.match(RAW_COLOR) || []) colors.add(m.toLowerCase());
+    for (const name of undeclared) {
+      const where = file.shared ? "declare it in bundle.css" : "declare it in bundle.css or this preview";
+      findings.push({ file: file.rel, message: `var(--${name}) is not a token: add it to tokens.json, ${where}, or use an existing token` });
+    }
+    const list = [...colors];
+    if (list.length) findings.push({ file: file.rel, message: `raw colour values ${list.slice(0, 5).join(", ")}${list.length > 5 ? " ..." : ""}: use the colour tokens (var(--<name>)) so a token change reaches every component` });
+    if (fonts.length) findings.push({ file: file.rel, message: `font-family ${fonts[0]} is not a token: use var(--font-<family>) or a type-style class` });
+  }
+  const unused = [...declared].filter((name) => !referenced.has(name)).sort();
+  return { declared: declared.size, referenced: referenced.size, unused };
+}
+
 // ---- tokens.json -> CSS and DESIGN.md front matter -------------------------------------------
 
 function firstTheme(tokens) {
@@ -497,6 +660,140 @@ function projectBrandFindings(projectRoot, options = {}) {
   return brandFindings({ projectRoot, systemDir, designText: readText(designFile), tokens });
 }
 
+// ---- Role tokens and the cover ----------------------------------------------------------------
+// Findings `{file, code, severity, message, fix}`. Distilled from the Design System artifact's craft
+// rules (openspec/changes/distill-claude-design-methods): a fill's `on-…` colour and a focus ring
+// are measured, and the cover stays shapes in one fixed layout. Taste rules stay in the guide.
+
+const ON_TOKEN = /^on-(.+)$/;
+// Focus-ring colours by convention: `focus-ring` or `focus-outline`, optionally with kebab-case
+// suffixes for a theme or state (`focus-ring-inverse`). `focus-bg` and other fills do not match.
+const FOCUS_TOKEN = /^focus-(?:ring|outline)(?:-[a-z0-9]+)*$/;
+
+function roleTokenFindings(tokens) {
+  const out = [];
+  const color = tokens && typeof tokens === "object" ? tokens.color : null;
+  if (!color || !Array.isArray(color.tokens)) return out;
+  const names = new Set(color.tokens.filter((t) => t && typeof t.name === "string").map((t) => t.name));
+  const pairs = (Array.isArray(tokens.contrast) ? tokens.contrast : []).filter((p) => p && typeof p.text === "string" && Array.isArray(p.on));
+  const add = (code, message, fix) => out.push({ file: "tokens.json", code, severity: "error", message, fix });
+  const below = (own, floor) => own.some((p) => p.min !== undefined && !(Number(p.min) >= floor));
+  for (const name of names) {
+    const own = pairs.filter((p) => p.text === name);
+    const on = ON_TOKEN.exec(name);
+    if (on) {
+      const ground = on[1];
+      const grounds = names.has(ground) ? [ground] : null;
+      if (!own.length || (grounds && !own.some((p) => p.on.includes(ground)))) {
+        add("on-token-unmeasured", `${name} names the colour drawn on ${ground}, but no contrast entry measures it there`,
+          `add {"text": "${name}", "on": ["${grounds ? ground : "<each fill it sits on>"}"], "min": 4.5} to contrast (3 only for marks or text 24px and up)`);
+      } else if (below(own, 3)) {
+        add("on-token-floor", `${name} is measured with a minimum below 3:1`, `set "min" to 4.5 for body text (3 at least, for marks or text 24px and up) on every contrast entry for ${name}`);
+      }
+    } else if (FOCUS_TOKEN.test(name)) {
+      if (!own.length) {
+        add("focus-ring-unmeasured", `${name} is a focus ring colour, but no contrast entry measures it on the surfaces it lands on`,
+          `add {"text": "${name}", "on": ["<every surface a focused control sits on>"], "min": 3} to contrast`);
+      } else if (below(own, 3)) {
+        add("focus-ring-floor", `${name} is measured with a minimum below 3:1`, `set "min" to 3 or more on every contrast entry for ${name}`);
+      }
+    }
+  }
+  return out;
+}
+
+// A small CSS walker: enough to find rules, their declarations and the at-rules around them.
+function cssBlocks(css, parents = []) {
+  const blocks = [];
+  let pos = 0;
+  while (pos < css.length) {
+    const open = css.indexOf("{", pos);
+    if (open < 0) break;
+    const prelude = css.slice(pos, open).split(";").pop().trim();
+    let depth = 1;
+    let i = open + 1;
+    for (; i < css.length && depth; i += 1) {
+      if (css[i] === "{") depth += 1;
+      else if (css[i] === "}") depth -= 1;
+    }
+    const inner = css.slice(open + 1, depth ? css.length : i - 1);
+    if (/^@(?:-\w+-)?keyframes\b/i.test(prelude)) blocks.push({ prelude, parents, keyframes: true, declarations: [] });
+    else if (/^@(?:media|container|supports|layer|scope)\b/i.test(prelude)) blocks.push(...cssBlocks(inner, [...parents, prelude]));
+    else blocks.push({ prelude, parents, declarations: declarations(inner) });
+    pos = i;
+  }
+  return blocks;
+}
+
+function declarations(text) {
+  return text.split(";").map((d) => {
+    const colon = d.indexOf(":");
+    return colon < 0 ? null : { property: d.slice(0, colon).trim().toLowerCase(), value: d.slice(colon + 1).trim() };
+  }).filter((d) => d && d.property);
+}
+
+const stripCssComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, "");
+const GRADIENT_VALUE = /(?:^|[^\w-])(?:-(?:webkit|moz|o)-)?(?:repeating-)?(?:linear|radial|conic)-gradient\(/i;
+const VIEWPORT_VALUE = /(?:^|[^\w.#-])-?(?:\d+\.?\d*|\.\d+)(?:vw|vh|svh|dvh|lvh|svw|dvw|lvw|vmin|vmax)(?![\w-])/i;
+// Size features make a layout responsive; prefers-color-scheme and other preference queries do not.
+const SIZE_QUERY = /\b(?:(?:min|max)-)?(?:width|height|aspect-ratio|device-width|device-height|orientation)\b/i;
+const PICTURE_TAG = /<(?:img|picture|video|canvas|image)(?![\w-])/i;
+const SVG_GRADIENT_TAG = /<(?:linearGradient|radialGradient)(?![\w-])/i;
+const SVG_MOTION_TAG = /<(?:animate|animateTransform|animateMotion|set)(?![\w-])/i;
+
+const COVER_FIXES = {
+  "cover-picture": ["the cover shows a picture; it is name, colour blocks and one pattern",
+    "remove the picture and draw the blocks and pattern as inline SVG shapes bound to tokens"],
+  "cover-gradient": ["the cover uses a gradient", "fill every block with a solid colour token"],
+  "cover-motion": ["the cover moves", "remove the animation; the cover is still (a transition alone is allowed)"],
+  "cover-responsive": ["the cover has a responsive layout",
+    "lay it out once at 960px wide with no size media or container queries and no viewport units; the host scales it"],
+};
+
+function cssCodes(blocks, codes) {
+  for (const block of blocks) {
+    if (block.keyframes) codes.add("cover-motion");
+    if (block.parents.some((p) => /^@container\b/i.test(p) || (/^@media\b/i.test(p) && SIZE_QUERY.test(p)))) codes.add("cover-responsive");
+    declarationCodes(block.declarations, codes);
+  }
+}
+
+function declarationCodes(list, codes) {
+  for (const { property, value } of list) {
+    const bare = value.replace(/url\([^)]*\)/gi, "url()");
+    if (property === "animation" || property.startsWith("animation-")) codes.add("cover-motion");
+    if (GRADIENT_VALUE.test(bare)) codes.add("cover-gradient");
+    if (VIEWPORT_VALUE.test(bare)) codes.add("cover-responsive");
+  }
+}
+
+// The cover preview and the bundle.css rules that reach it (bundle.css is loaded into every
+// preview). HTML and CSS comments are ignored, so the derivation comment may name anything.
+function coverFindings(dir) {
+  const file = path.join(dir, "components", "Cover", "preview.html");
+  if (!fs.existsSync(file)) return [];
+  const html = readText(file).replace(/<!--[\s\S]*?-->/g, "");
+  const styles = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => stripCssComments(m[1])).join("\n");
+  const markup = html.replace(/<(style|script)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
+  const codes = new Set();
+  if (PICTURE_TAG.test(markup)) codes.add("cover-picture");
+  if (SVG_GRADIENT_TAG.test(markup)) codes.add("cover-gradient");
+  if (SVG_MOTION_TAG.test(markup)) codes.add("cover-motion");
+  for (const m of markup.matchAll(/\sstyle\s*=\s*("([^"]*)"|'([^']*)')/gi)) declarationCodes(declarations(m[2] ?? m[3]), codes);
+  cssCodes(cssBlocks(styles), codes);
+  const bundle = path.join(dir, "components", "bundle.css");
+  if (fs.existsSync(bundle)) {
+    const used = new Set();
+    for (const m of markup.matchAll(/\sclass\s*=\s*("([^"]*)"|'([^']*)')/gi)) for (const c of (m[2] ?? m[3]).split(/\s+/)) if (c) used.add(`.${c}`);
+    for (const m of markup.matchAll(/\sid\s*=\s*("([^"]*)"|'([^']*)')/gi)) if ((m[2] ?? m[3]).trim()) used.add(`#${(m[2] ?? m[3]).trim()}`);
+    const reaches = (block) => [...block.prelude.matchAll(/[.#][A-Za-z_-][\w-]*/g)].some((m) => used.has(m[0]));
+    cssCodes(cssBlocks(stripCssComments(readText(bundle))).filter((b) => !b.keyframes && reaches(b)), codes);
+  }
+  return Object.keys(COVER_FIXES).filter((code) => codes.has(code)).map((code) => ({
+    file: "components/Cover/preview.html", code, severity: "error", message: COVER_FIXES[code][0], fix: COVER_FIXES[code][1],
+  }));
+}
+
 function resolveSystemDir(projectRoot, raw) {
   const dir = path.resolve(projectRoot, raw || DEFAULT_DIR);
   if (!pathIsInside(projectRoot, dir)) throw new Error("--system-dir resolves outside --project-root");
@@ -527,10 +824,13 @@ function checkDesignSystemPackage(options = {}) {
   }
   checkReadme(dir, findings);
   const components = checkComponents(dir, findings);
+  const tokensValid = tokens && !findings.some((f) => f.file === "tokens.json");
+  const tokenUse = tokensValid ? checkTokenUse(dir, tokens, findings) : null;
   if (tokens && !findings.some((f) => f.file === "tokens.json") && fs.existsSync(designFile)) {
     checkDesignMdDrift(readText(designFile), tokens, findings);
   }
   if (fs.existsSync(designFile)) findings.push(...brandFindings({ projectRoot, systemDir: rel, designText: readText(designFile), tokens }));
+  findings.push(...roleTokenFindings(tokens), ...coverFindings(dir));
   return {
     schema: SCHEMA,
     status: findings.length ? "invalid" : "ready",
@@ -538,6 +838,7 @@ function checkDesignSystemPackage(options = {}) {
     systemDir: rel,
     components,
     contrast,
+    ...(tokenUse ? { tokenUse } : {}),
     findings,
     ...(tokens ? { tokensSha256: sha256Text(readText(path.join(dir, "tokens.json"))) } : {}),
   };

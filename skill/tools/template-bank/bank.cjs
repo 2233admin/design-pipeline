@@ -335,13 +335,14 @@ class Doc {
     if (chosen.missing) attrs.push(`data-font-missing="${esc(chosen.missing)}"`);
     if (o.vertical) attrs.push("writing-mode=\"vertical-rl\"", "text-orientation=\"upright\"");
     if (spacing) attrs.push(`letter-spacing="${f1(spacing)}"`);
-    const lines = spec.lines > 1 ? measure.wrapText(text, size, box[2], spacing) : [String(text)];
+    const font = { serif: roleName === "serif", weight };
+    const lines = spec.lines > 1 ? measure.wrapText(text, size, box[2], spacing, font) : [String(text)];
     const content = lines.length > 1
       ? lines.map((line, index) => `<tspan x="${f1(x)}" dy="${index === 0 ? "0" : f1(size * lineHeight)}">${esc(line)}</tspan>`).join("")
       : esc(lines[0]);
     const markup = `<text ${attrs.join(" ")}>${content}</text>`;
     this.body.push(o.transform ? `<g transform="${o.transform}">${markup}</g>` : markup);
-    return { width: measure.textWidth(lines[0], size, spacing), lines: lines.length };
+    return { width: measure.textWidth(lines[0], size, spacing, font), lines: lines.length };
   }
 
   // Lettering slot drawn with the code-drawn glyphs; (x, y) is the top of the cap box.
@@ -363,7 +364,7 @@ class Doc {
       const family = this.families[spec.fallbackFont || "sans"];
       const baseline = y + h / 2 + 0.38 * size;
       this.body.push(`<g ${this.slotAttrs(name, spec, { box })} data-role="${role}" data-fallback="cjk-font"${wrap}><text x="${f1(x)}" y="${f1(baseline)}" font-family="${esc(family)}" font-weight="900" font-size="${f1(size)}" fill="${this.pal[role]}" text-anchor="${anchor}">${esc(text)}</text></g>`);
-      return { width: measure.textWidth(text, size), fallback: true };
+      return { width: measure.textWidth(text, size, 0, { serif: spec.fallbackFont === "serif", weight: 900 }), fallback: true };
     }
     const set = lettering.setText(text, x, y, h, { fill: this.pal[role], anchor, trimStart: o.trim !== false, ...P });
     this.body.push(`<g ${this.slotAttrs(name, spec, { box })} data-role="${role}" data-cap="${f1(h)}"${wrap}>${set.svg}</g>`);
@@ -510,6 +511,34 @@ function readRules(tree) {
   }
 }
 
+function validateTones(tree, tones) {
+  const imageSlots = new Set([...measure.walk(tree)].filter((n) => n.attrs["data-kind"] === "image").map((n) => n.attrs["data-slot"]));
+  const out = {};
+  for (const [slot, value] of Object.entries(tones)) {
+    if (!imageSlots.has(slot)) throw new BankError(`--tone ${slot}: not an image slot of this render. Fix: use one of ${[...imageSlots].join(", ")}`, "OPTION_VALUE_INVALID");
+    if (!/^#[0-9a-fA-F]{6}$/.test(String(value))) throw new BankError(`--tone ${slot} must be a #RRGGBB colour, got ${value}`, "OPTION_VALUE_INVALID");
+    out[slot] = String(value).toUpperCase();
+  }
+  return out;
+}
+
+// Points to sample in a browser: every text slot that sits on a real image with no declared tone.
+function pixelRequests(svgText, options = {}) {
+  const tree = measure.parseXml(svgText);
+  const rules = readRules(tree);
+  const tones = validateTones(tree, options.tones || {});
+  const [W, H] = rules.canvas;
+  const layers = measure.paints(tree);
+  const grads = measure.gradients(tree);
+  const points = {};
+  for (const slot of measure.readSlots(tree).filter((s) => (s.kind === "text" || s.kind === "lettering") && s.extent && !s.decor && s.fill)) {
+    const order = slot.textNode.order ?? slot.node.order;
+    const inside = measure.samplePoints(slot.extent).filter(([x, y]) => x >= 0 && y >= 0 && x <= W && y <= H);
+    if (inside.some((point) => measure.groundAt(point, layers, grads, order, slot.slot, tones).realImages.length)) points[slot.slot] = inside;
+  }
+  return { width: W, height: H, points };
+}
+
 function roleOf(node) {
   for (let current = node; current && current.attrs; current = current.parent) if (current.attrs["data-role"]) return current.attrs["data-role"];
   return null;
@@ -628,10 +657,15 @@ function checkRhythm(rhythm) {
   return findings;
 }
 
-function check(svgText) {
+// options.tones: { <image slot>: "#RRGGBB" } declared tone of a real image under text.
+// options.pixels: { <text slot>: [[r, g, b], ...] } rendered ground pixels at measure.samplePoints of the
+// slot's extent, from pixelRequests() run through a browser.
+function check(svgText, options = {}) {
   let tree;
   try { tree = measure.parseXml(svgText); } catch (error) { throw new BankError(error.message, "CONTRACT_INVALID"); }
   const rules = readRules(tree);
+  const tones = validateTones(tree, options.tones || {});
+  const pixels = options.pixels || {};
   const context = renderContext(tree, rules);
   const [W, H] = rules.canvas;
   const canvasBox = [0, 0, W, H];
@@ -687,37 +721,68 @@ function check(svgText) {
         });
       }
     }
-    // 3. contrast of the text against its ground, sampled over the measured extent.
+    // 3. contrast of the text against its ground, judged at 27 points over the measured extent.
     if (!slot.decor && slot.fill) {
       const fg = measure.parseColor(slot.fill);
       const order = slot.textNode.order ?? slot.node.order;
+      const inside = measure.samplePoints(slot.extent).filter(([x, y]) => x >= 0 && y >= 0 && x <= W && y <= H);
+      const grounds = inside.map((point) => ({ point, ground: measure.groundAt(point, layers, grads, order, slot.slot, tones) }));
+      const realImages = [...new Set(grounds.flatMap((item) => item.ground.realImages))];
+      const sampled = realImages.length ? pixels[slot.slot] : null;
       let worst = null;
-      for (const fx of [0.1, 0.5, 0.9]) {
-        for (const fy of [0.25, 0.5, 0.75]) {
-          const point = [ex + ew * fx, ey + eh * fy];
-          if (point[0] < 0 || point[1] < 0 || point[0] > W || point[1] > H) continue;
-          const ground = measure.groundAt(point, layers, grads, order, slot.slot);
+      if (realImages.length && sampled && sampled.length === inside.length) {
+        sampled.forEach((rgb, index) => {
+          const ratio = measure.contrastRatio(fg, rgb);
+          if (!worst || ratio < worst.ratio) worst = { ratio, color: rgb, point: inside[index], source: "pixels" };
+        });
+        notes.push(`${slot.slot}: contrast judged on ${sampled.length} rendered pixels of image slot ${realImages.join(", ")} under the text`);
+      } else if (realImages.length) {
+        add({
+          rule: "contrast-unverified", slot: slot.slot, measured: { imageSlots: realImages }, limit: { needs: "rendered pixels or a declared tone" },
+          message: `${slot.slot} sits on the real image in ${realImages.join(", ")}, and its pixels were not sampled`,
+          fix: `Run the check where headless Chrome and puppeteer-core are available (template render and template check then sample the rendered pixels under the text), or declare the image's tone under the text with --tone ${realImages[0]}=#RRGGBB.`,
+        });
+      } else {
+        for (const { point, ground } of grounds) {
           const ratio = measure.contrastRatio(fg, ground.color);
-          if (!worst || ratio < worst.ratio) worst = { ratio, ground, point };
+          if (!worst || ratio < worst.ratio) worst = { ratio, color: ground.color, point, assumed: ground.assumed, source: "geometry" };
         }
       }
       if (worst && fg) {
         const isLarge = slot.kind === "lettering" && !slot.fallback ? slot.size / 0.72 >= rules.contrast.largePx : slot.size >= rules.contrast.largePx || (slot.size >= rules.contrast.largeBoldPx && slot.weight >= 700);
         const need = isLarge ? rules.contrast.large : rules.contrast.normal;
         row.contrast = measure.round(worst.ratio, 2);
-        row.ground = measure.hex(worst.ground.color);
-        if (worst.ground.assumed) notes.push(`${slot.slot}: ground under the text comes from image slot ${worst.ground.assumed}'s declared tone ${row.ground}; recheck contrast on the real image (render --png and sample it)`);
+        row.ground = measure.hex(worst.color);
+        row.groundFrom = worst.source;
+        if (worst.assumed) {
+          notes.push(Object.hasOwn(tones, worst.assumed)
+            ? `${slot.slot}: ground under the text is the tone declared with --tone for image slot ${worst.assumed}`
+            : `${slot.slot}: ground under the text is image slot ${worst.assumed}'s declared tone ${row.ground} (no image in the slot yet)`);
+        }
         if (worst.ratio + 1e-9 < need) {
           add({
-            rule: "contrast", slot: slot.slot, measured: { ratio: measure.round(worst.ratio, 2), text: measure.hex(fg), ground: measure.hex(worst.ground.color), at: worst.point.map((v) => measure.round(v)) },
+            rule: "contrast", slot: slot.slot, measured: { ratio: measure.round(worst.ratio, 2), text: measure.hex(fg), ground: measure.hex(worst.color), at: worst.point.map((v) => measure.round(v)), from: worst.source },
             limit: { min: need, large: isLarge },
-            message: `${slot.slot} contrast ${measure.round(worst.ratio, 2)}:1 against ${measure.hex(worst.ground.color)} is below ${need}:1`,
-            fix: `Darken or lighten the text colour (palette role ${slot.node.attrs["data-role"] || "of the slot"}) via --param palette.<role>=#RRGGBB until it reaches ${need}:1, or put a plate or scrim under it${worst.ground.assumed ? `; the ground is image slot ${worst.ground.assumed}` : ""}.`,
+            message: `${slot.slot} contrast ${measure.round(worst.ratio, 2)}:1 against ${measure.hex(worst.color)} is below ${need}:1`,
+            fix: `Darken or lighten the text colour (palette role ${slot.node.attrs["data-role"] || slot.textNode.attrs["data-role"] || "of the slot"}) via --param palette.<role>=#RRGGBB until it reaches ${need}:1, or put a plate or scrim under it${worst.source === "pixels" ? `; the ground is the image in ${realImages.join(", ")}, so a darker crop or a scrim also works` : worst.assumed ? `; the ground is image slot ${worst.assumed}` : ""}.`,
           });
         }
       }
     }
-    // 4. glyph coverage known at render time: no font of the role covers the whole string.
+    // 4. lettering keeps its style: characters the glyph set cannot draw make the slot fall back.
+    if (slot.kind === "lettering") {
+      const missing = [...new Set([...slot.text].filter((ch) => ch !== " " && !lettering.hasGlyph(ch)))];
+      if (missing.length) {
+        add({
+          rule: "lettering-fallback", slot: slot.slot, measured: { characters: missing }, limit: { glyphs: lettering.GLYPHS.join("") },
+          message: `${slot.slot} has characters the code-drawn lettering cannot draw (${missing.join(" ")}), so the slot was set in the fallback font and its style changed`,
+          fix: `Use only A-Z, 0-9, space and ${lettering.GLYPHS.filter((ch) => !/[A-Z0-9 ]/.test(ch)).join(" ")} in ${slot.slot}, or move this copy to a text slot.`,
+        });
+      } else if (/[a-z]/.test(slot.text)) {
+        notes.push(`${slot.slot}: lowercase is drawn as capitals by the lettering`);
+      }
+    }
+    // 4b. glyph coverage known at render time: no font of the role covers the whole string.
     const missing = slot.node.attrs["data-font-missing"] || slot.textNode?.attrs?.["data-font-missing"];
     if (missing) {
       add({
@@ -729,7 +794,7 @@ function check(svgText) {
     measured.push(row);
   }
 
-  // 4. titles stay out of declared figure zones (horizontal overlap share while rows intersect).
+  // 5. titles stay out of declared figure zones (horizontal overlap share while rows intersect).
   for (const zone of rules.zones.filter((z) => z.kind === "figure")) {
     const [zx, zy, zw, zh] = zone.box;
     for (const slot of textSlots.filter((s) => s.title)) {
@@ -748,7 +813,7 @@ function check(svgText) {
       }
     }
   }
-  // 5. crop/safe zones keep their listed slots whole.
+  // 6. crop/safe zones keep their listed slots whole.
   for (const zone of rules.zones.filter((z) => z.kind === "safe")) {
     const [zx, zy, zw, zh] = zone.box;
     for (const name of zone.slots || []) {
@@ -766,7 +831,7 @@ function check(svgText) {
       }
     }
   }
-  // 6. accent-colour budget: area of accent-role or accent-coloured paint over the canvas.
+  // 7. accent-colour budget: area of accent-role or accent-coloured paint over the canvas.
   const accentColors = new Set(rules.accent.colors.map((c) => c.toUpperCase()));
   const isAccent = (fill, role) => rules.accent.roles.includes(role) || (fill && accentColors.has(String(fill).toUpperCase()));
   const contributions = new Map();
@@ -795,7 +860,7 @@ function check(svgText) {
       fix: `Remove about ${Math.ceil(excess)}px² of accent (${((excess / (W * H)) * 100).toFixed(2)}% of the canvas): shrink or recolour ${top.map(([k]) => k).join(", ")}; keep the accent for one mark, the tagline bar or actionable elements.`,
     });
   }
-  // 7. shared alignment lines.
+  // 8. shared alignment lines.
   for (const line of rules.alignLines) {
     for (const name of line.slots) {
       const slot = slots.find((s) => s.slot === name && s.extent);
@@ -811,7 +876,15 @@ function check(svgText) {
       }
     }
   }
-  // 8. cutting rhythm (motion templates): segment lengths, flash groups, duration and flash rate.
+  // 9. geometry the measurement does not model is a failure, never a silent pass.
+  for (const item of measure.unsupportedGeometry(tree)) {
+    add({
+      rule: "unsupported-geometry", slot: item.element.startsWith("slot ") ? item.element.slice(5) : undefined, measured: { element: item.element, found: item.what }, limit: { supported: "rect, polygon, path, circle, line, text with dy-only tspans; transform attributes with matrix, translate, scale, rotate" },
+      message: `${item.element} contains ${item.what}, which the check cannot measure`,
+      fix: "Flatten it: no <use>, nested <svg>, <foreignObject> or CSS transforms; put moves in the transform attribute (translate, rotate, scale, matrix) and give tspans only dy; or render again with template render and change the layout through --set and --param.",
+    });
+  }
+  // 10. cutting rhythm (motion templates): segment lengths, flash groups, duration and flash rate.
   if (rules.rhythm) for (const finding of checkRhythm(rules.rhythm)) add(finding);
   if (!rules.alignLines.length) notes.push("this template declares no shared alignment line");
   if (!rules.zones.some((z) => z.kind === "figure")) notes.push("this template declares no figure keep-out zone (titles may sit over the art; contrast still applies)");
@@ -824,4 +897,4 @@ function check(svgText) {
   };
 }
 
-module.exports = { BankError, MANIFEST_SCHEMA, STYLE_SCHEMA, CHECK_SCHEMA, PARAM_CLASSES, RULES, TEMPLATES_ROOT, STYLES_ROOT, check, checkRhythm, imageAspect, listTemplates, loadManifest, loadStyle, parseSize, render, resolveParams, slotSpec, styleIds, templateIds };
+module.exports = { BankError, MANIFEST_SCHEMA, STYLE_SCHEMA, CHECK_SCHEMA, PARAM_CLASSES, RULES, TEMPLATES_ROOT, STYLES_ROOT, check, checkRhythm, imageAspect, listTemplates, loadManifest, loadStyle, parseSize, render, resolveParams, slotSpec, styleIds, templateIds, pixelRequests };

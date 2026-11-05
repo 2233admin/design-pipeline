@@ -19,9 +19,9 @@
 
 3 to 30 minutes — you ship a **product launch animation**, a clickable App prototype, an editable PPT deck, a print-grade infographic.
 
-Not "decent for AI" quality — it looks like a real design team made it. Give the skill your brand assets (logo, colors, UI screenshots) and it reads your brand's voice; give it nothing and **three real directions picked from six thumbnails, backed by an 84-style library with a visual specimen for every style**, still keep you out of AI slop territory.
+Not "decent for AI" quality — it looks like a real design team made it. Give the skill your brand assets (logo, colors, UI screenshots) and it reads your brand's voice; give it nothing and **three real directions picked from six thumbnails, backed by a 92-style library with a visual specimen for every style**, still keep you out of AI slop territory.
 
-**Every animation in this README was made by huashu-design itself.** No Figma, no After Effects — just a sentence + skill run. Next product launch needs a promo video? You can make it too.
+**Every design in this README was made by huashu-design itself.** No Figma, no After Effects — just a sentence + skill run. Next product launch needs a promo video? You can make it too.
 
 ```
 npx skills add alchaincyf/huashu-design
@@ -29,9 +29,11 @@ npx skills add alchaincyf/huashu-design
 
 > 📣 **Now MIT-licensed.** As of 2026-05-14 this skill is fully open-source under the [MIT License](LICENSE) — free for personal **and** commercial use, no authorization required. ([what changed](#license))
 
-> 🆕 **3.0: bolder directions, and projects that stop looking alike.** Six thumbnails first, then the three strongest become real designs; the style library grows to 84 (new App and Chinese & East Asian sections), each with a specimen; reference works are screenshotted before they are borrowed from; plus a facts-only design check and a "look ledger" that remembers what you've already shipped. [How it works](#core-mechanics)
+> 🆕 **3.1: Xiaohongshu (RED) carousels.** Eight layout paradigms for 3:4 image sets — specimen journal, product notebook, index, panorama strip, daily paper, trading cards, vertical blank, area infographic — and every specimen doubles as an editable template. One command slices the pages and checks type size, overflow, text across panorama seams and overlapping text. [See the specimens](#design-direction-advisor)
 
-[See it work](#demo-gallery) · [Install](#install) · [What it does](#what-it-does) · [How it works](#core-mechanics) · [vs. Claude Design](#vs-claude-design)
+> **3.0: bolder directions, and projects that stop looking alike.** Six thumbnails first, then the three strongest become real designs; the style library grows to 84 (new App and Chinese & East Asian sections), each with a specimen; reference works are screenshotted before they are borrowed from; plus a facts-only design check and a "look ledger" that remembers what you've already shipped. [How it works](#core-mechanics)
+
+[See it work](#30-showcase) · [Install](#install) · [What it does](#what-it-does) · [How it works](#core-mechanics) · [vs. Claude Design](#vs-claude-design)
 
 > 📖 **Note for English readers**: this skill is built by a Chinese-speaking developer. The skill's agent prompts (`SKILL.md`, `references/*.md`) are in Chinese but the agent is bilingual — works fine with English tasks. The demos below are the English parallel versions; the Chinese ones are in the default [Chinese README](README.md).
 >
@@ -42,12 +44,74 @@ npx skills add alchaincyf/huashu-design
 ---
 
 <p align="center">
-  <video src="https://github.com/alchaincyf/huashu-design/releases/download/v2.0/hero-animation-v10-en.mp4" autoplay muted loop playsinline width="100%">
-    Your browser doesn't support inline video. <a href="https://github.com/alchaincyf/huashu-design/releases/download/v2.0/hero-animation-v10-en.mp4">Download MP4</a>.
-  </video>
+  <img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/launch-3.0.gif" alt="huashu-design 3.0 launch film" width="100%">
 </p>
 
-<p align="center"><sub>▲ 10-second hero animation showing what huashu-design does (<a href="https://github.com/alchaincyf/huashu-design/releases/download/v2.0/hero-animation-v10-en.mp4">download MP4</a> if autoplay doesn't work)</sub></p>
+<p align="center"><sub>
+  ▲ 3.0 launch film · 32s · every page in it was designed by 3.0 itself; edited with <a href="https://github.com/alchaincyf/huashu-motion">huashu-motion</a><br>
+  👉 <a href="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/launch-3.0.mp4">Download MP4 (1080p · with music · 24MB)</a> ·
+  <a href="https://github.com/alchaincyf/huashu-design/releases/download/v2.0/hero-animation-v10-en.mp4">2.0 hero animation (English)</a>
+</sub></p>
+
+---
+
+## 3.0 Showcase
+
+All made with 3.0. The first five are picked from 6 fresh prompts run for the launch: one sentence each, the agent picked the direction, the author didn't step in. The last two are the version that won the third blind round, and a real project the author built with it after release. (Prompts and on-page copy are in Chinese.)
+
+### Web · *Thirty-six Views of Mount Fuji* online exhibition
+
+> "Make an online exhibition site for Hokusai's *Thirty-six Views of Mount Fuji*"
+
+Three directions: a Rijksmuseum-style dark gallery, an Ikko Tanaka triangle window, and a Republic-era book-cover title frame. The design check flagged a collision: two versions opened with *The Great Wave*, so the dark gallery switched to *Rainstorm Beneath the Summit*.
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-hokusai-hero.jpg" width="100%" alt="Hokusai exhibition hero"></p>
+
+A chapter on Prussian blue follows, based on the Met's spectral research; all 46 prints come from the open-access collections of the Art Institute of Chicago and the Met.
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-hokusai-prussian-blue.jpg" width="100%" alt="Prussian blue chapter"></p>
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-hokusai-all-46.jpg" width="60%" alt="All 46 prints"></p>
+
+### App · Mingji (birding log)
+
+> "Make a prototype of a birding log App"
+
+The real-world reference was CapWords, a 2025 Apple Design Award winner; `ref_board.py` screenshotted it into a reference board before any design started. What it borrowed: "peel a sticker out of a photo". Every bird is segmented from a real Wikimedia photo and stuck into a year-long notebook; the call waveforms are computed from real recordings.
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-mingji-birding-app.jpg" width="75%" alt="Mingji birding app board"></p>
+
+### App · What's for dinner (home recipes)
+
+> "Make a home-cooking recipe App"
+
+The seconds roulette landed on Lü Jingren's book design, so it became a recipe book: one dish per page, a margin column beside the fore-edge for notes like "pat it dry so the oil won't spit", and the cinnabar red reserved for the single "start cooking" seal. The look ledger noticed 5 of the last 6 deliveries used sans-serif headlines, so this one went with Song type.
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-recipe-app.jpg" width="75%" alt="Recipe app board"></p>
+
+### Slides · *A Thousand Li of Rivers and Mountains* lecture
+
+An Abbott Miller–style dark display case; the dark ground is sampled from the darkest part of the silk. The thin bar under the cover is a thumbnail of the whole scroll, framing which stretch of the 11.9-meter painting the current slide is on.
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-qianli-cover.jpg" width="100%" alt="Lecture cover"></p>
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-qianli-pages.jpg" width="100%" alt="Four lecture slides"></p>
+
+### Slides · How the black hole photo was taken
+
+Referenced Jonathan Corum's lecture slides: black ground, photos as the protagonist, labels written directly on the image. Every slide cites its sources.
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-blackhole-pages.jpg" width="100%" alt="Black hole deck, four slides"></p>
+
+### App · Green Thumb (won the third blind round)
+
+Reads a plant like vital signs. The App prototype is laid out as a composed presentation board, with the phones staggered.
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-plant-health-app.jpg" width="75%" alt="Green Thumb plant health app"></p>
+
+### Web · Travel archive (the author's own project)
+
+A map of every travel photo from three years, in a Kaoru Kasai–style long scroll of white paper and Mincho type: a satellite map ties all the trips together up top, then one chapter per trip. After picking it the author said "try not to leave any out", and it saved that as experience: personal memory archives should be complete, scoped to photo archives only, not product UIs.
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-travel-archive.jpg" width="100%" alt="Travel archive"></p>
 
 ---
 
@@ -101,6 +165,7 @@ No buttons, no panels, no Figma plugin. Agent-agnostic — drops into Claude Cod
 | Motion design | MP4 (25fps / 60fps interpolation) + GIF (palette-optimized) + BGM | 8–12 min |
 | Design variations | 3+ side-by-side · Tweaks live params · cross-dimension exploration | 10 min |
 | Infographic / data viz | Print-quality typography · exports to PDF/PNG/SVG | 10 min |
+| Xiaohongshu carousel / cover | 3:4 image sets (≤18) · 8 paradigm templates · continuous panorama strips · one-command slicing with checks | 10–15 min |
 | Design direction advisor | Three logics × two candidates each · six thumbnails → three real designs, the other three kept as alternates | 10 min |
 | 5-dimension expert critique | Radar chart + Keep/Fix/Quick Wins · actionable punch list | 3 min |
 
@@ -112,7 +177,7 @@ No buttons, no panels, no Figma plugin. Agent-agnostic — drops into Claude Cod
 
 ### Design Direction Advisor
 
-The fallback for vague briefs: **three complementary logics, two candidates each** — best designer, an award-winning work in the same medium (screenshotted first), and a seconds roulette over the style library. Six thumbnails, then the three strongest and most distinct become **real designs** to choose from, with the other three as alternates. Backed by an **84-style HTML-native library** (web 20 + deck 20 + infographic 20 + app 12 + Chinese & East Asian 12, pure CSS, no image generation), each with a specimen.
+The fallback for vague briefs: **three complementary logics, two candidates each** — best designer, an award-winning work in the same medium (screenshotted first), and a seconds roulette over the style library. Six thumbnails, then the three strongest and most distinct become **real designs** to choose from, with the other three as alternates. Backed by a **92-style HTML-native library** (web 20 + deck 20 + infographic 20 + app 12 + Chinese & East Asian 12 + Xiaohongshu 8, pure CSS, no image generation), each with a specimen.
 
 <p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v2.0/w3-fallback-advisor-en.gif" width="100%"></p>
 <p align="center"><sub>The animation shows the 2.0 flow (one design per logic)</sub></p>
@@ -121,6 +186,10 @@ The two sections new in 3.0 — every cell is a specimen (pure HTML/CSS, fiction
 
 <p align="center"><img src="assets/style-specimens/sheet-east.jpg" width="100%" alt="12 Chinese and East Asian design styles"></p>
 <p align="center"><img src="assets/style-specimens/sheet-app.jpg" width="100%" alt="12 app styles"></p>
+
+New in 3.1, the Xiaohongshu section: each cell is one paradigm's cover plus an inner page (the panorama is three pages forming one picture). They come from a real post, so all eight carry the same story:
+
+<p align="center"><img src="assets/style-specimens/sheet-xhs.jpg" width="100%" alt="8 Xiaohongshu carousel paradigms"></p>
 
 ### iOS App Prototype
 
@@ -205,7 +274,7 @@ Triggered when the brief is too vague to execute (rebuilt in 3.0):
 - **Three logics, two candidates each — six in total**: ① Best designer (two designers of different temperament, thinking from scratch the way they would) ② Real-world reference (two award-winning works **in the same medium** — apps for an app, publications for a deck; `scripts/ref_board.py` screenshots them so the agent actually looks before extracting grid, type ratios and color proportions) ③ Seconds roulette (`date +%S` picks one style from the matching section and one from the Chinese & East Asian section; the agent opens its specimen first)
 - **Six thumbnails → three full designs**: strong on its own, different from each other, not a repeat of your recent projects. The other three thumbnails come along as alternates
 - **You never pick a style from words alone** — it stops once the designs are on the table
-- Backed by an **84-style HTML-native library**, each with a specimen image and source (`assets/style-specimens/`) — ammunition, not dogma
+- Backed by a **92-style HTML-native library**, each with a specimen image and source (`assets/style-specimens/`) — ammunition, not dogma
 
 Why: we ran three rounds of blind before/after tests on fixed briefs (internal). Round one forced a big metaphor onto every direction, turned pages into props, and won 1 of 4; round two piled on bans to dodge the "AI default look", made all three directions "too regular, too boring", and lost both briefs; round three switched to more options instead of more bans — more candidates, visible specimens, real references — and won both.
 
@@ -290,13 +359,13 @@ huashu-design/
 │   ├── deck_index.html      # Multi-file deck assembler
 │   ├── design_canvas.jsx    # Side-by-side variation display
 │   ├── showcases/           # 24 prebuilt samples (8 scenes × 3 styles)
-│   ├── style-specimens/     # Specimens for all 84 styles (html source + jpg) and section overviews
+│   ├── style-specimens/     # Specimens for all 92 styles (html source + jpg) and section overviews; the xhs/ ones double as templates
 │   └── bgm-*.mp3            # 6 scene-specific background tracks
 ├── references/              # Drill-down docs by task (Chinese)
 │   ├── animation-pitfalls.md
 │   ├── directions.md        # Three directions: six candidates → thumbnails → pick three
-│   ├── design-styles.md     # 84 HTML-native styles (web 20 + deck 20 + infographic 20 + app 12 + Chinese & East Asian 12)
-│   ├── modules/             # Web / deck / infographic / motion module manuals
+│   ├── design-styles.md     # 92 HTML-native styles (web 20 + deck 20 + infographic 20 + app 12 + Chinese & East Asian 12 + Xiaohongshu 8)
+│   ├── modules/             # Web / deck / infographic / Xiaohongshu / motion module manuals
 │   ├── slide-decks.md
 │   ├── editable-pptx.md
 │   ├── critique-guide.md
@@ -304,6 +373,7 @@ huashu-design/
 │   └── ...
 ├── scripts/                 # Export toolchain
 │   ├── render-video.js      # HTML → MP4
+│   ├── xhs_render.py        # Xiaohongshu pages → 3:4 images + checks
 │   ├── convert-formats.sh   # MP4 → 60fps + GIF
 │   ├── add-music.sh         # MP4 + BGM
 │   ├── export_deck_pdf.mjs
@@ -349,11 +419,13 @@ Want to add your language? Fork the repo, translate `SKILL.md` + `README.md`, an
 
 Under the [MIT License](LICENSE) you are free to **use, modify, and distribute** this skill for any purpose, **including commercial use** — inside companies, in client deliverables, as part of a paid product, anywhere. No prior authorization, no licensing fee, no notification required. Attribution is appreciated but not required.
 
+One exception: the demo stickers in `assets/style-specimens/xhs/_kit/stickers/` come from [huashu-bird-sticker](https://github.com/alchaincyf/huashu-bird-sticker) and are licensed under PolyForm Shield 1.0.0 (see the LICENSE.md in that folder). They only demonstrate the layouts; use your own assets in your work.
+
 ---
 
 ## Connect · Huasheng (Huashu)
 
-Huasheng is an AI-native coder, independent developer, and AI content creator. Notable work: Cat Fill Light (App Store Top 1 in Paid category), *A Book on DeepSeek*, Nüwa.skill (GitHub 21k+ stars). Combined 300k+ followers across platforms.
+Huasheng is an AI-native coder, independent developer, and AI content creator. Notable work: Cat Fill Light (App Store Top 1 in Paid category), *A Book on DeepSeek*, Nüwa.skill (GitHub 30k+ stars). Combined 300k+ followers across platforms.
 
 | Platform | Handle | Link |
 |---|---|---|
@@ -366,3 +438,5 @@ Huasheng is an AI-native coder, independent developer, and AI content creator. N
 | Developer Hub | bookai.top | https://bookai.top |
 
 For collaborations or sponsored content, DM on any of the above.
+
+<p align="center"><img src="https://raw.githubusercontent.com/alchaincyf/alchaincyf/main/assets/follow.svg" width="100%" alt="Follow Huashu: WeChat 花叔 · Bilibili 花叔v · Xiaohongshu 花叔"></p>
