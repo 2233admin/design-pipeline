@@ -35,6 +35,13 @@ ideograph, kana or hangul syllable counting as 2 (about 12 Chinese characters). 
 same rationale, ignoring case, spacing and punctuation, on two or more of these waivers; `pass` notes
 may repeat. These checks prompt an explanation; they cannot prove one.
 
+`content-available-without-motion` is measured on web pages: the audit probe of `verify interaction`
+loads the page with `prefers-reduced-motion: reduce` and reports `audit.reduced-motion` for content
+that is visible without the preference but hidden under it (opacity 0, `visibility`, a transform
+out of view) and for motion still running a second after load. Cite the passing audit row in
+`evidence/interaction.json` as the rule's evidence; a failing row is a `fail`. Content that only
+script timing reveals without a motion preference is still a review.
+
 ## Evaluate
 
 ```powershell
