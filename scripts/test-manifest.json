@@ -157,6 +157,7 @@
     "browser-locate.test.cjs",
     "vendor-cache.test.cjs",
     "design-direction-library.test.cjs",
+    "brand-design-systems.test.cjs",
     "reference-name-scope.test.cjs"
   ]
 }

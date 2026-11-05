@@ -128,6 +128,7 @@ const {
 const { searchMengToSkills, verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
 const { BUNDLES: FETCHABLE_BUNDLES } = require("./vendor-cache.cjs");
 const { findManifest: findDirectionLibraryManifest, verifyDirectionLibrary } = require("./design-direction-library-core.cjs");
+const { findManifest: findBrandDesignSystemsManifest, verifyBrandDesignSystems } = require("./brand-design-systems-core.cjs");
 const { searchShadcnioComponents, verifyShadcnioComponentSnapshot } = require("./shadcnio-react-components-core.cjs");
 const { routePrismRequest, searchPrismSkills, verifyPrismSnapshot } = require("./prism-system-core.cjs");
 const { buildJobPlan, routeJob } = require("./job-route-core.cjs");
@@ -367,6 +368,11 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     directionLibrary = { status: "blocked", issues: [error.message] };
     missing.push("vendor/design-direction-library/manifest.json");
   }
+  // The brand design-system catalog ships its manifest and licences; the systems are fetched.
+  const brandManifest = findBrandDesignSystemsManifest(skillRoot);
+  const brandDesignSystems = verifyBrandDesignSystems(brandManifest);
+  if (brandDesignSystems.status === "missing") downloads.push({ bundle: brandDesignSystems.bundle, fetch: brandDesignSystems.fetch });
+  else if (brandDesignSystems.status !== "ready") missing.push(brandManifest ? `vendor/${path.basename(path.dirname(brandManifest))}/**` : "vendor/brand-design-systems/manifest.json");
   const nodeSupported = nodeAtLeast(nodeVersion);
   const registry =
     missing.length || !fs.existsSync(path.join(skillRoot, "references", "graphics-runtime-catalog.json"))
@@ -393,6 +399,7 @@ function inspectDoctor(skillRoot = path.resolve(__dirname, ".."), nodeVersion = 
     designMdSource,
     iart,
     directionLibrary,
+    brandDesignSystems,
     registry,
   };
 }
@@ -482,7 +489,7 @@ function publicHelp() {
     "  holosticker inspect|verify",
     "  designmd sync|search|inspect|verify",
     "  iart search|route|verify",
-    "  sources fetch --bundle mengto-skills|iart-motion-skills|design-direction-library | --all   (download a bundle at its pinned revision into the user cache; DESIGN_PIPELINE_CACHE overrides the location)",
+    "  sources fetch --bundle mengto-skills|iart-motion-skills|design-direction-library|brand-design-systems | --all   (download a bundle at its pinned revision into the user cache; DESIGN_PIPELINE_CACHE overrides the location)",
     "  toolchain request --plan <job-plan.json> --artifact <stack-input.json> [--write --output <toolchain-request.json>]",
     "    stack input targetRoot: target package directory relative to --root (default .); resolve and probe run there",
     "  toolchain resolve --artifact <toolchain-request.json> [--write --output <toolchain-plan.json>]",

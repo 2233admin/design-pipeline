@@ -27,6 +27,7 @@ links: an upstream link to `SKILL.md` means the `UPSTREAM-SKILL.md` in the same 
 | `playwright-cli/` | [Exploratory browser driving](../references/ui-craft-sources.md#playwright-cli) | `manifest.json`, scoped snapshot hash |
 | `taste-skill/` | [Visual direction and interface recipes](../references/taste-skill.md) | `manifest.json`, source Git tree and snapshot hashes |
 | `design-direction-library/` | [Style specimens, directions, brand protocol, critique](../references/design-direction-library.md) | `manifest.json`, pinned Git tree; binaries fetched by `sources fetch --bundle design-direction-library` |
+| `brand-design-systems/` | [Brand design systems](../references/design-md.md) | `manifest.json`, two pinned sources, licences; the systems fetched by `sources fetch --bundle brand-design-systems` |
 | `good-css/` | [CSS practices and specimens](../references/good-css.md) | `manifest.json`, source Git tree, snapshot hashes and separate font notices |
 | `answer-me-with-html/` | [Offline explanations](../tools/answer-me-with-html/README.md) | `manifest.json`, pinned source/build/runtime hashes and complete dependency/font `LICENSES.txt`; original skill instructions inert |
 | `cinetic/` | [Film methods and techniques](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |

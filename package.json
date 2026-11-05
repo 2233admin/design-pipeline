@@ -31,6 +31,7 @@
     "sources:import:gepa": "node scripts/import-gepa.cjs",
     "sources:import:ui-craft": "node scripts/import-ui-craft-sources.cjs",
     "sources:import:direction-library": "node scripts/import-design-direction-library.cjs",
+    "sources:import:brand-design-systems": "node scripts/import-brand-design-systems.cjs",
     "sources:import:answer-html": "node scripts/import-answer-me-with-html.cjs",
     "answer-html:build": "node scripts/build-answer-me-with-html-runtime.cjs"
   },

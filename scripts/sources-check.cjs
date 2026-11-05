@@ -29,6 +29,7 @@ const SOURCE_TESTS = [
   "gepa-source.test.cjs",
   "ui-craft-sources.test.cjs",
   "design-direction-library.test.cjs",
+  "brand-design-systems.test.cjs",
   "answer-me-with-html-sources.test.cjs",
 ];
 

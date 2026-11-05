@@ -5374,6 +5374,68 @@
       "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Complete tracked design-md snapshot."
     },
     {
+      "id": "source/nexu-io/open-design",
+      "sourceId": "nexu-io/open-design",
+      "recordType": "source",
+      "name": "open-design design systems",
+      "availability": "downloaded-implementation",
+      "aliases": [
+        "https://github.com/nexu-io/open-design"
+      ],
+      "localPaths": {
+        "guide": "references/design-md.md",
+        "manifest": "vendor/brand-design-systems/manifest.json"
+      },
+      "provenance": {
+        "source": "brand-design-systems",
+        "license": "Apache-2.0",
+        "url": "https://github.com/nexu-io/open-design",
+        "revision": "5a0c47777975ddb91d09c1c16b423a3ef74bf572",
+        "gitTree": "0fc60c4ad669d1f14c4ea12ec59acf96bdbeecdf",
+        "contentHash": "d4dbe0cf105a8fc82e4b1c978c063db46bcaa4a2005413044c8735118912f682",
+        "hashScope": "Manifest fetched scope of the brand-design-systems bundle (both sources); sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "Apache-2.0",
+        "evidence": [
+          "https://github.com/nexu-io/open-design/blob/5a0c47777975ddb91d09c1c16b423a3ef74bf572/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE is the Apache License 2.0. Scope: English design-system packages under design-systems/ (manifest, DESIGN.md, USAGE.md, tokens.css, components.html, token report), fetched on demand; brand-referencing systems are aesthetic studies, not official brand assets; per-system provenance in each manifest.json and design-systems/README.md."
+    },
+    {
+      "id": "source/feimacode/open-design-agent-kit",
+      "sourceId": "feimacode/open-design-agent-kit",
+      "recordType": "source",
+      "name": "open-design-agent-kit design systems",
+      "availability": "downloaded-implementation",
+      "aliases": [
+        "https://github.com/feimacode/open-design-agent-kit"
+      ],
+      "localPaths": {
+        "guide": "references/design-md.md",
+        "manifest": "vendor/brand-design-systems/manifest.json"
+      },
+      "provenance": {
+        "source": "brand-design-systems",
+        "license": "MIT",
+        "url": "https://github.com/feimacode/open-design-agent-kit",
+        "revision": "927d4b6e6a29d8bfebdccadb4bb4a1b2a6438e73",
+        "gitTree": "1b7ae070ec44786afdb17e6c0898fe57fd2cbfa2",
+        "contentHash": "d4dbe0cf105a8fc82e4b1c978c063db46bcaa4a2005413044c8735118912f682",
+        "hashScope": "Manifest fetched scope of the brand-design-systems bundle (both sources); sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT",
+        "evidence": [
+          "https://github.com/feimacode/open-design-agent-kit/blob/927d4b6e6a29d8bfebdccadb4bb4a1b2a6438e73/LICENSE"
+        ]
+      },
+      "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant, Copyright (c) 2026 Iven Xu. Scope: the kit's own design-system packages and its correction overlays for open-design systems, fetched on demand; systems adapted from Meliwat/awesome-ios-design-md keep that MIT notice (Copyright (c) 2026 Muhammed Eliwat)."
+    },
+    {
       "id": "source/educlopez/smoothui",
       "sourceId": "educlopez/smoothui",
       "recordType": "source",
