@@ -2,9 +2,9 @@
 
 Strong opinions about modern CSS technique, borrowed from experts, for agents to know and reach for.
 
-Each one is described in plain CSS because that is the common language. None of them depends on a class name, a file layout or a framework: the properties and values are the technique. Write them in whatever the project already uses, whether that is a stylesheet, Tailwind utilities or StyleX objects. Names in the examples are illustrative.
+Each one is described in plain CSS because that is the common language. None of them depends on a class name, a file layout or a framework. The properties and values are the technique. Write them in whatever the project already uses, whether that is a stylesheet, Tailwind utilities or StyleX objects. Names in the examples are illustrative.
 
-The bias throughout: one declaration that adapts on its own beats a set of breakpoints, and a CSS feature beats a script. JavaScript appears only where it makes the result nicer, and the CSS works without it.
+The list always prefers one declaration that adapts on its own over a set of breakpoints, and a CSS feature over a script. JavaScript appears only where it makes the result nicer, and the CSS works without it.
 
 Every entry has the same shape: when to use it, the CSS, why it works, the rules, and who it is borrowed from.
 
@@ -280,7 +280,7 @@ Support: Chrome 120, Firefox 118, Safari 15.4, set by `pow()`. Tested in Chrome 
 
 ### Content grid with breakouts
 
-Use it wherever you would reach for a centered max-width container. One grid on the section replaces the `section > .container` wrapper pair, and any child can be content width, wider, or edge to edge. Put it on `main` for a page of flowing content, or on each section. It suits CMS content well, because an editor widens a block with one class and no extra wrapper.
+Use it as the container of every page, whether or not anything on it goes wider than the content. A centered `max-width` wrapper is the sign, such as `.container`, `.wrapper` or Tailwind's `mx-auto max-w-*`. One grid on the section replaces the `section > .container` wrapper pair and costs no more than it, and any child can be content width, wider, or edge to edge. Put it on `main` for a page of flowing content, or on each section. A band, a figure or a block that an editor later wants wider then takes one class, with no negative margin and no new wrapper.
 
 The container defines three nested widths with named grid lines:
 
@@ -324,6 +324,7 @@ Rules:
 - Every child must be placed. An unplaced child of the grid lands in the gutter track.
 - Every direct child is a grid item. Wrap a run of inline elements in one element.
 - Change a width by overriding `--content`, not by writing a new column template.
+- In a pass over existing CSS, replace each centered `max-width` wrapper with the grid, and keep the wrapper's width as `--content` on its section.
 
 In other systems: the column template goes wherever the project defines reusable styles. Where child selectors are not available, as in StyleX or Tailwind without a custom variant, each child sets its own `grid-column` to `content`, `breakout` or `full-width`.
 
@@ -1651,16 +1652,18 @@ Arrow buttons are the one part that needs a script.
 ```js
 const carousel = document.querySelector(".carousel");
 const [prev, next] = document.querySelectorAll("[data-carousel-dir]");
+const sign = getComputedStyle(carousel).direction === "rtl" ? -1 : 1;
 
 const step = (dir) => {
   const card = carousel.firstElementChild.getBoundingClientRect().width;
-  carousel.scrollBy({ left: dir * card });
+  carousel.scrollBy({ left: sign * dir * card });
 };
 
 const sync = () => {
   const max = carousel.scrollWidth - carousel.clientWidth;
-  prev.disabled = carousel.scrollLeft <= 1;
-  next.disabled = carousel.scrollLeft >= max - 1;
+  const scrolled = Math.abs(carousel.scrollLeft);
+  prev.disabled = scrolled <= 1;
+  next.disabled = scrolled >= max - 1;
 };
 
 prev.addEventListener("click", () => step(-1));
@@ -1673,6 +1676,7 @@ Why it works:
 
 - Scroll snap makes the browser do the scrolling and the landing. Every input method gets the same result.
 - `scrollBy` moves one card width and snapping picks the final position. The script never calculates an offset.
+- In a right-to-left row `scrollLeft` starts at 0 and goes negative. `sign` and `Math.abs()` make the script work in both directions.
 - `scroll-behavior: smooth` in CSS animates the script's scroll. The media query turns the animation off for people who ask for reduced motion.
 - `overscroll-behavior-x: contain` stops a swipe at the end of the row from triggering the browser's back gesture.
 

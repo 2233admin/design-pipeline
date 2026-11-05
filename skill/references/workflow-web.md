@@ -89,12 +89,13 @@ owner to lengthen feedback; when a short reason is ambiguous, ask about the real
 ("brighter background, or more text contrast?"). Shorter records are refused with
 `CONTRACT_INVALID` and change nothing.
 
-For new-site design, existing-site redesign or visual critique, use [taste-skill.md](taste-skill.md)
-to select and read the complete built-in method. On an existing site, audit brand, routes, content,
-states and stack before changing its design. Preserve supplied references in replicate mode;
-Taste's generate-first preferences do not require replacement images. Image concepts and brand
-boards use the matched image-only method with an available provider, then become selected
-reference/concept inputs through the existing workflow. No external Taste install is required.
+For new-site design, existing-site redesign, app screens or visual critique, use
+[taste-skill.md](taste-skill.md) to select the route and read its complete built-in source. On an
+existing site, audit brand, routes, content, states and stack before changing its design. Preserve
+supplied references in replicate mode. Image concepts and brand boards use an available image
+provider, then become selected reference/concept inputs through the existing workflow. Taste's
+`inspect.mjs` may add screenshots and measurements to review evidence; its findings about taste
+never fail a web gate. No external Taste install is required.
 
 ## intake
 
@@ -162,6 +163,14 @@ Web intake writes no `brief.md`: the brief is written later as the [description]
 A `quick` project started before quick intake existed records its stated line first.
 
 ## reference
+
+For a live page run `reference extract --url <page> --output <dir>` before reading it yourself: it
+measures the palette (CIEDE2000 clusters tiered by share), type scale and spacing from computed
+styles with no model, and writes `extraction.json`, `palette-evidence.json` (pending, DOM source
+ready) and `design-md-draft.md`. Judge that draft; never copy a `(low confidence)` value, and check
+merged dark surfaces it lists. A challenge or block page (`REFERENCE_BLOCKED`), an HTTP error
+(`REFERENCE_HTTP_STATUS`) or a page that renders nothing (`REFERENCE_EMPTY`) exits 1; use a
+screenshot as an image reference instead.
 
 For a local video run `reference analyze-video --path <contained-video> --output <new-dir>`.
 Inspect ordered timed windows, record named target/property/state observations and uncertainties,

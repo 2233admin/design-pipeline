@@ -2,6 +2,7 @@
   "schema": "design-pipeline.test-manifest.v1",
   "tests": [
     "gepa-source.test.cjs",
+    "sources-lock.test.cjs",
     "gepa-runtime.test.cjs",
     "reference-analysis-entry.test.cjs",
     "reference-video.test.cjs",
@@ -15,6 +16,7 @@
     "answer-me-with-html-sources.test.cjs",
     "answer-me-with-html.test.cjs",
     "astryx-bundled-snapshot.test.cjs",
+    "astryx-snapshot-generator.test.cjs",
     "benchmark.test.cjs",
     "capability-audit.test.cjs",
     "carried-forward-defects.test.cjs",
@@ -93,6 +95,7 @@
     "interaction-audit.test.cjs",
     "page-compare.test.cjs",
     "page-refs.test.cjs",
+    "reference-extract.test.cjs",
     "page-review.test.cjs",
     "workflow-next.test.cjs",
     "workflow-replicate.test.cjs",

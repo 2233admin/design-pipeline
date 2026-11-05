@@ -1,0 +1,200 @@
+name: Track latest upstream
+
+# Weekly (and on demand): move every upstream in sources.lock.json to its latest revision or
+# release, move npm dev dependencies to latest, run the full QA and open or refresh one pull request
+# on chore/track-latest-upstream (a dated branch when someone else committed there). The owner
+# reviews and merges it; nothing here merges.
+#
+# Two jobs: `update` fetches upstream data and runs QA with a read-only token (QA exercises vendored
+# files); `propose` holds the write token and only applies the resulting patch and opens the PR.
+# A pull request opened with GITHUB_TOKEN does not start other workflows, so `update` runs the same
+# checks as ci.yml and the PR body carries their result.
+
+on:
+  schedule:
+    - cron: "23 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sources-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      changed: ${{ steps.patch.outputs.changed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install locked workspace dependencies
+        run: npm ci
+
+      - name: Move every upstream to latest
+        # Upstream checkouts are fetched as data into a temporary directory and only read by the
+        # repository's own importers. A source that moved or removed a cited file, or changed a cited
+        # license, fails loudly and stays at its locked revision; the others still move.
+        id: sources
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          set +e
+          node scripts/sources-update.cjs > "$RUNNER_TEMP/out/sources-update.json" 2> "$RUNNER_TEMP/out/sources-update.err"
+          echo "$?" > "$RUNNER_TEMP/out/sources-status"
+          cat "$RUNNER_TEMP/out/sources-update.err"
+
+      - name: Move npm dev dependencies to latest
+        # Exact pins are lock entries (kind npm) and moved above; this takes the ranges.
+        run: |
+          npm update --workspaces --include-workspace-root --ignore-scripts
+          npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Record the patch and check its scope
+        # Recorded before QA and the browser install, so nothing those steps write can enter the PR.
+        # The update may touch vendored data, references, tests, the lock and dependency versions; it
+        # may never touch .github/, scripts/ or a package.json field other than dependency versions.
+        id: patch
+        shell: bash
+        run: |
+          git add --all
+          git diff --cached --binary > "$RUNNER_TEMP/out/track-latest.patch"
+          if [ -s "$RUNNER_TEMP/out/track-latest.patch" ]; then echo "changed=true" >> "$GITHUB_OUTPUT"; else echo "changed=false" >> "$GITHUB_OUTPUT"; fi
+          node - "$RUNNER_TEMP/out/scope-status" <<'EOF'
+          const fs = require("node:fs");
+          const { execFileSync } = require("node:child_process");
+          const git = (...args) => execFileSync("git", args, { encoding: "utf8" });
+          const files = git("diff", "--cached", "--name-only").split("\n").filter(Boolean);
+          const problems = files.filter((file) => file.startsWith(".github/") || file.startsWith("scripts/")).map((file) => `${file} is outside the update scope`);
+          const DEPENDENCY_FIELDS = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"];
+          const strip = (text) => { const value = JSON.parse(text); for (const field of DEPENDENCY_FIELDS) delete value[field]; return JSON.stringify(value); };
+          for (const file of files.filter((item) => item === "package.json" || item.endsWith("/package.json"))) {
+            let before = "{}";
+            try { before = git("show", `HEAD:${file}`); } catch {}
+            if (strip(before) !== strip(git("show", `:${file}`))) problems.push(`${file} changes more than dependency versions`);
+          }
+          for (const problem of problems) console.log(`::error title=Update scope::${problem}`);
+          fs.writeFileSync(process.argv[2], problems.length ? "1" : "0");
+          EOF
+
+      - name: Prepare font-subset test runtime
+        run: |
+          python3 -m venv "$RUNNER_TEMP/design-pipeline-fonttools"
+          "$RUNNER_TEMP/design-pipeline-fonttools/bin/python" -m pip install fonttools==4.66.1
+          echo "FONTTOOLS_PYTHON=$RUNNER_TEMP/design-pipeline-fonttools/bin/python" >> "$GITHUB_ENV"
+
+      - name: Prepare browser runtimes
+        run: |
+          npm exec -- playwright install-deps chromium
+          npm run browser:install
+
+      - name: Allow Chrome's sandbox
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Validate and test
+        shell: bash
+        run: |
+          set +e
+          npm run specs:check > "$RUNNER_TEMP/out/specs.log" 2>&1
+          echo "$?" > "$RUNNER_TEMP/out/specs-status"
+          npm test > "$RUNNER_TEMP/out/qa.log" 2>&1
+          echo "$?" > "$RUNNER_TEMP/out/qa-status"
+          tail -n 40 "$RUNNER_TEMP/out/qa.log"
+
+      - name: Upload the patch and reports
+        uses: actions/upload-artifact@v7
+        with:
+          name: track-latest-upstream
+          path: ${{ runner.temp }}/out
+          if-no-files-found: error
+
+  propose:
+    needs: update
+    if: needs.update.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      BRANCH: chore/track-latest-upstream
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download the patch and reports
+        uses: actions/download-artifact@v7
+        with:
+          name: track-latest-upstream
+          path: ${{ runner.temp }}/out
+
+      - name: Open or refresh the pull request
+        shell: bash
+        run: |
+          out="$RUNNER_TEMP/out"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Only replace the standing branch when every commit on it came from this bot; otherwise the
+          # update goes to a dated branch and PR, and the old PR is told.
+          bot="41898282+github-actions[bot]@users.noreply.github.com"
+          target="$BRANCH"
+          if git fetch --quiet origin "$BRANCH" 2>/dev/null; then
+            others=$(git log --format='%ae%n%ce' "origin/main..FETCH_HEAD" | grep -vxF "$bot" || true)
+            if [ -n "$others" ]; then target="$BRANCH-$(date -u +%Y-%m-%d)"; fi
+          fi
+          git checkout -B "$target"
+          git apply --index --binary "$out/track-latest.patch"
+          git commit --quiet -m "chore: track latest upstream ($(date -u +%Y-%m-%d))"
+          if [ "$target" = "$BRANCH" ]; then git push --force origin "$target"; else git push origin "$target"; fi
+          node - "$out" > "$out/body.md" <<'EOF'
+          const fs = require("node:fs");
+          const out = process.argv[2];
+          const status = (name) => fs.readFileSync(`${out}/${name}-status`, "utf8").trim();
+          let report = { bumped: [], held: [], failed: [], npm: [], removed: [] };
+          try { report = JSON.parse(fs.readFileSync(`${out}/sources-update.json`, "utf8")); } catch {}
+          const short = (value) => String(value).length === 40 ? String(value).slice(0, 12) : String(value);
+          // Upstream names and paths go in code spans, so an @name in them pings no one.
+          const code = (value) => `\`${String(value).replace(/`/g, "'").replace(/\n/g, " ")}\``;
+          const lines = ["Weekly move to the latest upstream (sources.lock.json, `npm run sources:update`).", "", "| Source | From | To |", "| --- | --- | --- |"];
+          for (const item of report.bumped.filter((entry) => entry.id)) lines.push(`| ${code(item.id)} | ${code(short(item.from))} | ${code(short(item.to))} |`);
+          if (report.failed.length) lines.push("", "Did not move (fix the cited guide or importer, then rerun with `--only <id>`):", ...report.failed.map((item) => `- ${code(item.id)}: ${code(item.reason)}`));
+          if (report.held.length) lines.push("", "Held behind on purpose:", ...report.held.map((item) => `- ${code(item.id)}: ${code(short(item.at))} (latest ${code(short(item.latest))}), ${item.issue}`));
+          if (report.removed.length) lines.push("", "Upstream removed uncited files:", ...report.removed.map((item) => `- ${code(item.bundle)}: ${item.files.map(code).join(", ")}`));
+          lines.push("", `sources:update exit ${status("sources")} (non-zero: some source did not move); update scope ${status("scope") === "0" ? "ok" : "violated"}; specs:check exit ${status("specs")}; npm test exit ${status("qa")}.`, "Green means every source moved, the scope held and every check passed. Green checks are the review; merge is the owner's.");
+          process.stdout.write(`${lines.join("\n")}\n`);
+          EOF
+          green=no
+          if [ "$(cat "$out/sources-status")" = "0" ] && [ "$(cat "$out/scope-status")" = "0" ] && [ "$(cat "$out/specs-status")" = "0" ] && [ "$(cat "$out/qa-status")" = "0" ]; then green=yes; fi
+          existing=$(gh pr list --head "$target" --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh pr edit "$existing" --body-file "$out/body.md"
+            draft=$(gh pr view "$existing" --json isDraft --jq .isDraft)
+            if [ "$green" = "no" ] && [ "$draft" = "false" ]; then
+              id=$(gh pr view "$existing" --json id --jq .id)
+              gh api graphql -f query='mutation($id: ID!) { convertPullRequestToDraft(input: {pullRequestId: $id}) { pullRequest { isDraft } } }' -f id="$id"
+            elif [ "$green" = "yes" ] && [ "$draft" = "true" ]; then
+              gh pr ready "$existing"
+            fi
+          elif [ "$green" = "yes" ]; then
+            gh pr create --head "$target" --base main --title "chore: track latest upstream" --body-file "$out/body.md"
+          else
+            gh pr create --draft --head "$target" --base main --title "chore: track latest upstream (not green)" --body-file "$out/body.md"
+          fi
+          if [ "$target" != "$BRANCH" ]; then
+            old=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')
+            new=$(gh pr list --head "$target" --state open --json url --jq '.[0].url')
+            if [ -n "$old" ]; then gh pr comment "$old" --body "$BRANCH has commits from someone other than the update bot, so this week's update was not force-pushed here. It is in $new."; fi
+          fi

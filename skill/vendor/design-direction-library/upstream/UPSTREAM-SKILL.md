@@ -5,7 +5,7 @@ metadata:
   author: "花叔"
   homepage: "https://github.com/alchaincyf"
   repository: "https://github.com/alchaincyf/huashu-design"
-  version: "3.0.0"
+  version: "3.1.0"
 ---
 
 # 花叔Design · Huashu-Design
@@ -70,6 +70,7 @@ python3 "$HD/scripts/capabilities.py"            # 手里有什么：决定素�
 | 网页、落地页、官网、Dashboard、桌面界面原型 | `references/modules/web.md` |
 | 幻灯片、PPT、路演、课件、汇报 | `references/modules/deck.md` |
 | 信息图、数据可视化、长图 | `references/modules/infographic.md` |
+| 小红书图文、封面、轮播 | `references/modules/xiaohongshu.md` |
 | 手机 App / iOS 原型 | `references/app-prototype.md` |
 | 动画、视频、宣传片、产品演示、带解说的视频、导出 MP4/GIF | `references/modules/motion.md`（模块内还有一层路由） |
 | 评审、打分、「好不好看」 | `references/critique-guide.md` |
@@ -110,7 +111,7 @@ python3 "$HD/scripts/capabilities.py"            # 手里有什么：决定素�
 三张里最多一张用力过头（整页做成道具、套地铁图终端这类万能隐喻）——去掉这个手法信息反而更清楚，它就是过头。
 完整流程：`references/directions.md`。
 
-- 初稿形态：六格缩略图 1 页（备选），外加网页 / 信息图 / 原型每方向 1 个完整 HTML＋截图；deck 每方向 2 页代表页；动画每方向 1 张方向板（真实渲出的关键帧＋色板＋一句定位＋参照名）；封面 / 单图每方向 1 张真实出图
+- 初稿形态：六格缩略图 1 页（备选），外加网页 / 信息图 / 原型每方向 1 个完整 HTML＋截图；deck 每方向 2 页代表页；动画每方向 1 张方向板（真实渲出的关键帧＋色板＋一句定位＋参照名）；封面 / 单图每方向 1 张真实出图；小红书多张图文每方向封面＋1 张内页
 - **摆出来就停**，结束回合等用户选，包括无人值守会话
 - 风格词收窄的是解释空间，不转移选择权：「Apple 风格」时三个方向是 Apple 语境里的三种诠释
 - 唯一豁免（都要在 `direction-approved.md` 记原话或理由）：用户本次会话明说跳过；同一项目内已选定方向后的迭代；非设计的机械操作
@@ -150,7 +151,7 @@ T0 档人人都有（真图库、SVG/canvas/Three.js 程序化材质、数据即
 
 | 要什么 | 读 |
 |---|---|
-| 风格库（网页 / PPT / 信息图 / App / 中文与东亚，每种都有样张图）、色彩推导协议 | `references/design-styles.md`＋`assets/style-specimens/sheet-*.jpg` 总览 |
+| 风格库（网页 / PPT / 信息图 / App / 中文与东亚 / 小红书，每种都有样张图）、色彩推导协议 | `references/design-styles.md`＋`assets/style-specimens/sheet-*.jpg` 总览 |
 | 把参考作品截成参考板，动手前亲眼看 | `scripts/ref_board.py` |
 | 字体配对、中文排印、已被用烂名单 | `references/typography.md` |
 | 用户有 design system / codebase 时怎么用 | `references/design-context.md` |

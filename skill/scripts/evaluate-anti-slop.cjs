@@ -39,6 +39,25 @@ const EXCEPTION_POLICIES = {
   preference: "preference-only",
 };
 
+// A waiver must say why this target differs, after hallmark's gates.md: a reason under 24
+// characters, or one copied word for word onto several rules, explains nothing. Characters are
+// counted without whitespace and punctuation; a CJK ideograph, kana or hangul syllable counts as 2,
+// so about 12 Chinese characters pass. This prompts an explanation; it cannot stop deliberate padding.
+const MIN_RATIONALE = 24;
+const WAIVER_OUTCOMES = new Set(["accepted-context", "not-applicable"]);
+
+function rationaleWeight(text) {
+  let weight = 0;
+  for (const char of text.replace(/[\s\p{P}]/gu, "")) {
+    weight += /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u.test(char) ? 2 : 1;
+  }
+  return weight;
+}
+
+function rationaleKey(text) {
+  return text.replace(/[\s\p{P}]/gu, "").toLowerCase();
+}
+
 function fail(message) {
   throw new Error(message);
 }
@@ -329,13 +348,21 @@ function validateObservation(observation, rulesById, ids) {
     fail(`observation ${observation.ruleId} evidence is required`);
   }
   if (
-    ["accepted-context", "not-applicable"].includes(observation.outcome) &&
+    WAIVER_OUTCOMES.has(observation.outcome) &&
     (typeof observation.rationale !== "string" || !observation.rationale.trim())
   ) {
     fail(`observation ${observation.ruleId} requires a rationale`);
   }
   if (rule.severity === "hard" && observation.outcome === "accepted-context") {
     fail(`hard rule ${rule.id} cannot use accepted-context`);
+  }
+  if (
+    WAIVER_OUTCOMES.has(observation.outcome) &&
+    rationaleWeight(observation.rationale) < MIN_RATIONALE
+  ) {
+    fail(
+      `observation ${observation.ruleId} rationale is too short to explain this target: write at least ${MIN_RATIONALE} characters (about ${MIN_RATIONALE / 2} CJK characters), not counting spaces and punctuation, naming the product reason`,
+    );
   }
 }
 
@@ -351,6 +378,19 @@ function validateEvidence(evidence, rulesById) {
   const ids = new Set();
   for (const observation of evidence.observations) {
     validateObservation(observation, rulesById, ids);
+  }
+  const byRationale = new Map();
+  for (const observation of evidence.observations) {
+    if (!WAIVER_OUTCOMES.has(observation.outcome) || typeof observation.rationale !== "string") continue;
+    const key = rationaleKey(observation.rationale);
+    byRationale.set(key, [...(byRationale.get(key) || []), observation.ruleId]);
+  }
+  for (const ruleIds of byRationale.values()) {
+    if (ruleIds.length > 1) {
+      fail(
+        `the same rationale is copied onto ${ruleIds.join(", ")}: write the reason each rule is accepted on this target`,
+      );
+    }
   }
   return new Map(evidence.observations.map((item) => [item.ruleId, item]));
 }

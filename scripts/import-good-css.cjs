@@ -7,7 +7,7 @@ const { canonicalTree, copyTrackedFiles, fail, inspectCheckout } = require("./gi
 
 const destination = path.resolve(__dirname, "../skill/vendor/good-css");
 const repository = "https://github.com/vojtaholik/good-css";
-const reviewedRevision = "6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef";
+// The revision comes from the checkout; sources.lock.json records which upstream HEAD was imported.
 
 function parseArgs(argv) {
   const options = {};
@@ -32,7 +32,6 @@ function importSnapshot(source, reviewedAt) {
   const checkout = inspectCheckout(source);
   const license = checkout.blobs.get("LICENSE")?.toString("utf8") || "";
   if (!license.startsWith("MIT License") || !license.includes("Copyright (c) 2026 Vojta Holik")) fail("source LICENSE does not match reviewed good-css MIT attribution");
-  if (checkout.revision !== reviewedRevision) fail(`source revision must be the reviewed ${reviewedRevision}; received ${checkout.revision}`);
   const files = checkout.indexEntries.map((entry) => entry.path);
   const slugify = (text) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   let category;
@@ -47,7 +46,8 @@ function importSnapshot(source, reviewedAt) {
     }
   }
   const references = files.filter((file) => /^skills\/good-css\/references\/[^/]+\.md$/.test(file));
-  if (files.length !== 133 || practices.length !== 47 || references.length !== 8) fail("reviewed source inventory does not match 133 files, 47 practices and 8 references");
+  if (!practices.length || !references.length) fail(`upstream inventory has ${practices.length} practices and ${references.length} references; PRACTICES.md or skills/good-css/references moved`);
+  for (const practice of practices) if (!references.includes(practice.reference.slice("upstream/".length))) fail(`practice ${practice.slug} names missing reference ${practice.reference}`);
 
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   const backup = `${destination}.backup-${process.pid}`;

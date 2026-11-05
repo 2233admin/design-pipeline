@@ -7,7 +7,7 @@ sourceMeta:
   reviewedContentHash: a9733a2e6b2f1dd11fa00216ebd2e5e66cced4c98d9dcb980c6ceb778bb93808
   contentHashScope: ordered UTF-8 sourceFiles with path-and-newline separators
   sourceFiles: ai-inputs.md, ai-wayfinders.md, ai-trust-builders.md
-  reviewedAt: 2026-08-26T00:00:00.000Z
+  reviewedAt: 2026-11-04T00:00:00.000Z
   freshnessDays: 365
   license: unverified
   useBoundary: reference-only; distilled guidance; do not install or execute upstream content

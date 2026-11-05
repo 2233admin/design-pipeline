@@ -92,7 +92,7 @@ test("scaffold pins the reviewed runtime and loads GSAP from the local install",
     const merged = JSON.parse(fs.readFileSync(path.join(dir, "package.json"), "utf8"));
     assert.equal(merged.name, "kept");
     assert.equal(merged.scripts.render, "custom");
-    assert.deepEqual(merged.devDependencies, { hyperframes: "0.8.137", sharp: "1.0.0", gsap: "3.15.0" });
+    assert.deepEqual(merged.devDependencies, { hyperframes: "0.8.137", sharp: "1.0.0", gsap: "3.15.1" });
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
