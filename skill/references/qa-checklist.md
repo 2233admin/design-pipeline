@@ -112,9 +112,9 @@ For UI, interaction and film changes, continue the real journey or play the chan
 audio after technical checks; retain applicable owner review. A deterministic regression does
 not establish creative quality or replace playback and Visual Acceptance.
 
-Methods adapted from Matt Pocock's pinned [TDD](https://github.com/mattpocock/skills/blob/f3fc5632f401156837ee3872f14fe33ccf1024ea/skills/engineering/tdd/SKILL.md),
-[diagnosis](https://github.com/mattpocock/skills/blob/f3fc5632f401156837ee3872f14fe33ccf1024ea/skills/engineering/diagnosing-bugs/SKILL.md) and
-[module design](https://github.com/mattpocock/skills/blob/f3fc5632f401156837ee3872f14fe33ccf1024ea/skills/engineering/codebase-design/SKILL.md).
+Methods adapted from Matt Pocock's pinned [TDD](https://github.com/mattpocock/skills/blob/4ae2317ddb22b046e26455e4f9c9b3aaaf62212d/skills/engineering/tdd/SKILL.md),
+[diagnosis](https://github.com/mattpocock/skills/blob/4ae2317ddb22b046e26455e4f9c9b3aaaf62212d/skills/engineering/diagnosing-bugs/SKILL.md) and
+[module design](https://github.com/mattpocock/skills/blob/4ae2317ddb22b046e26455e4f9c9b3aaaf62212d/skills/engineering/codebase-design/SKILL.md).
 
 ## Self-Check
 
@@ -570,20 +570,20 @@ Complete this section when `scene.json` and `scene.md` or `3d.md` are required.
 - React/Next conventions checked when applicable:
 - Animation library choice justified:
 
-For selected built-in Taste methods, use `taste-skill.md` within these existing checks:
+For a selected built-in Taste route, use `taste-skill.md` within these existing checks:
 
-- Exact entry/version and complete original source read; v2 experimental or explicit v1 compatibility:
-- Brief/audience fit, chosen dials/style and project/user authority; adapted or non-applicable rules:
-- Every requested file, section image, screen or board completed and actually inspected:
+- Route (new site, redesign, app screens, critique) and complete original source read at the pinned revision:
+- Brief/audience fit, idea sentence and project/user authority; adopted, adapted or excluded house rules:
+- Draw direction id, seed and redraws with reasons, when `draw.mjs` was used:
 - Existing brand, route/IA/SEO/analytics, functionality, framework and shared consumers preserved:
 - Real copy/assets/facts, font licensing/CJK glyphs, contrast, zoom/reflow, keyboard and states checked:
-- Image provider/output paths and limitations; image-only output is distinct from live UI behavior:
-- Reference-to-code uses the actual selected/user reference and existing final fidelity evidence:
-- Stitch example translated into the project foundation; no copied example claimed as user design:
+- Found pictures downloaded into the project with licence and credit on the page and in the report:
+- `inspect.mjs`/`lint.mjs` output paths and target build, with real problems fixed and taste findings marked advisory:
+- Critique written on screenshots of the final render; scores reported as model judgement:
 - Implemented motion motivated, bounded, responsive to reduced motion, and observed through real input/playback:
 
-Availability, a source pre-flight checklist or a marker result does not establish Component
-Conformance or Visual Acceptance. Report both separately and preserve the existing evidence lineage.
+Availability, an inspector run with 0 FAIL, a critique score or a marker result does not establish
+Component Conformance or Visual Acceptance. Report both separately and preserve the existing evidence lineage.
 
 For CSS changes, use `good-css.md` within the existing interface review and evidence process:
 

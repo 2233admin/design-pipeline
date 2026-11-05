@@ -7,6 +7,7 @@ Design and film workflow (UI, motion web, product films, PV/MAD edits) shipped a
 - Change behavior only through an OpenSpec change under `openspec/changes/<change-id>/`; read `openspec/config.yaml` and that change first.
 - Extend existing gates, contracts and receipt schemas; never add a parallel gate, receipt schema, target resolver or policy digest. Delete superseded paths instead of keeping compatibility aliases or migrations.
 - Keep target, snapshot, policy digest and receipt lineage intact; when an upstream receipt changes, recompute or invalidate downstream evidence.
+- Upstream sources track latest: `sources.lock.json` records every upstream, `npm run sources:update` moves them to upstream HEAD (npm runtimes to the latest release) and regenerates manifests, hashes and derived pins; the bump PR with green tests is the review. Never hand-edit vendored bytes or hashes. A source that needs a redesign is `held` in the lock with its follow-up issue, never left silently old.
 - Report Component Conformance and Visual Acceptance separately; gate results never claim creative or visual acceptance.
 - Preserve unrelated working-tree changes; inspect `git status` before editing and never reset or discard work you did not make.
 

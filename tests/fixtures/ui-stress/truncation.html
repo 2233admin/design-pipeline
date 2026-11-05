@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stress fixture: ways back from truncation</title>
+<link rel="icon" href="data:,">
+<style>
+/* Every .t line fits its 160px box with the mock-up name and is cut by an ellipsis under the
+   stress pass. Only #own-title, #real-link and #in-details keep a way back to the full value. */
+@font-face { font-family: "Inter"; src: url("fonts/Inter-var.woff") format("woff"); font-weight: 100 900; font-display: block; }
+html { background: #fff; color: #18181b; font: 16px/1.5 Inter, sans-serif; }
+body { margin: 0; padding: 24px 16px; }
+.t { display: block; width: 160px; margin: 0 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+a { color: #1d4ed8; }
+</style>
+</head>
+<body>
+<main>
+  <p class="t" id="own-title" title="Alice  Johnson">Alice Johnson</p>
+  <p class="t" id="stale-title" title="Alice">Alice Johnson</p>
+  <div title="Alice Johnson"><p class="t" id="ancestor-title">Alice Johnson</p></div>
+  <a class="t" id="hash-link" href="#">Alice Johnson</a>
+  <p class="t" id="abbr-title"><abbr title="Doctor">Dr</abbr> Alice Johnson</p>
+  <a class="t" id="real-link" href="people/alice.html">Alice Johnson</a>
+  <details open><summary>Team</summary><p class="t" id="in-details">Alice Johnson</p></details>
+</main>
+</body>
+</html>

@@ -7,6 +7,7 @@
 
 const { assertEnum, assertKeys, assertObject, assertString, fail, isObject } = require("./contract-utils.cjs");
 const { AUDIT_CODES, EXTERNAL_FIX, OPTIONAL_CODES, auditViewports, bindable, summarizeAudit, validateAuditProbe } = require("./interaction-audit.cjs");
+const { stressCoverageFailure } = require("./interaction-stress.cjs");
 const { HINTS: SCROLL_HINTS, evaluateScroll, scrollResultFailure, validateScrollProbe } = require("./interaction-scroll.cjs");
 
 const SCHEMA = "design-pipeline.interaction-probe.v1";
@@ -566,6 +567,9 @@ function auditResultFailure(probe, row) {
       || checks.some(check => !auditCheckSettled(check) || !Number.isInteger(check.checked) || check.checked < 0 || (check.status === "passed" && check.checked === 0) || (check.status === "not-declared" && check.checked !== 0))) {
       return `${label} at ${viewport.width}x${viewport.height} does not cover every audit check with a passing status.`;
     }
+    // A declared stress pass is part of the row: every viewport needs its settled stress record.
+    const stressFailure = probe.stress ? stressCoverageFailure(entry) : null;
+    if (stressFailure) return `${label} at ${viewport.width}x${viewport.height} ${stressFailure}.`;
   }
   return null;
 }
@@ -579,7 +583,7 @@ function evaluateAudit(probe, shot, project) {
     const recorded = shot.viewports[index]?.viewport;
     if (recorded?.width !== viewport.width || recorded?.height !== viewport.height) fail(SCOPE, `capture ${probe.id} audit viewport ${index} is missing or reordered`);
   });
-  const summary = summarizeAudit(probe.id, shot.viewports, project, shot.requests);
+  const summary = summarizeAudit(probe.id, shot.viewports, project, shot.requests, { stress: Boolean(probe.stress) });
   if (summary.contractErrors.length) fail(SCOPE, `probe ${probe.id}: ${summary.contractErrors.join("; ")}. Fix: correct the selector in the audit probe, then rerun`, { code: "AUDIT_SELECTOR_INVALID" });
   return { id: probe.id, kind: "audit", status: summary.status, coverage: summary.coverage, findings: summary.findings };
 }

@@ -5,6 +5,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
+const { lockedSource } = require("./helpers/locked-source.cjs");
 const { STORED_NAME, upstreamFiles } = require("../skill/scripts/upstream-path.cjs");
 
 const disciplineRoot = path.join(__dirname, "../skill/vendor/interface-discipline");
@@ -22,13 +23,16 @@ function collectFiles(root, relative = "") {
 
 test("bundles the complete pinned interface-discipline source snapshot", () => {
   assert.equal(manifest.schema, "design-pipeline.interface-discipline-source.v1");
+  const locked = lockedSource("interface-discipline");
   assert.deepEqual(manifest.source, {
-    repository: "https://github.com/jakubkrehel/skills",
-    revision: "0c1f1e5b2481e86c168301bebb6aa3869691ac78",
+    repository: locked.repo,
+    revision: locked.revision,
     license: "MIT",
-    reviewedAt: "2026-08-12",
+    reviewedAt: manifest.source.reviewedAt,
     scope: ["LICENSE", "README.md", "skills/**"],
   });
+  assert.match(manifest.source.reviewedAt, /^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(manifest.snapshot.treeSha256, locked.treeSha256);
   assert.deepEqual(manifest.skills, [
     "better-accessibility",
     "better-colors",

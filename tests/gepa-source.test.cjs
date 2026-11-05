@@ -10,18 +10,16 @@ const test = require("node:test");
 const { canonicalTree } = require("../scripts/git-tree-snapshot.cjs");
 const { storedPath } = require("../skill/scripts/upstream-path.cjs");
 const { restoreUpstreamNames, storedTree, upstreamFilesIn } = require("./helpers/upstream-names.cjs");
+const { SHA1, lockedSource } = require("./helpers/locked-source.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const vendorRoot = path.join(repoRoot, "skill/vendor/gepa");
 const sourceRoot = path.join(vendorRoot, "upstream");
 const manifest = JSON.parse(fs.readFileSync(path.join(vendorRoot, "manifest.json"), "utf8"));
 const skillPrefix = ".claude/skills/gepa-optimize-anything/";
-const reviewedFiles = [
-  `${skillPrefix}.claude-plugin/plugin.json`, `${skillPrefix}SKILL.md`,
-  `${skillPrefix}references/api.md`, `${skillPrefix}references/gotchas.md`,
-  `${skillPrefix}references/tracking.md`, `${skillPrefix}references/writing_evaluators.md`,
-  `${skillPrefix}scripts/preflight.py`, "LICENSE", "README.md", "pyproject.toml",
-].sort();
+const rootFiles = ["LICENSE", "README.md", "pyproject.toml"];
+// The scope is the official skill folder plus three root files at the locked revision.
+const reviewedFiles = upstreamFilesIn(sourceRoot);
 const read = file => fs.readFileSync(path.join(repoRoot, file), "utf8");
 
 function run(command, args, cwd, env = {}) {
@@ -30,18 +28,18 @@ function run(command, args, cwd, env = {}) {
   return result;
 }
 
-test("GEPA preserves all seven official skill files and selected root metadata as exact reviewed blobs", () => {
+test("GEPA preserves the official skill folder and selected root metadata as exact locked blobs", () => {
   assert.equal(manifest.schema, "design-pipeline.gepa-source.v1");
   assert.equal(manifest.source.repository, "https://github.com/gepa-ai/gepa");
-  assert.equal(manifest.source.revision, "462e437a09be67d2acb59564cc0ea59132f5777c");
-  assert.equal(manifest.source.gitTree, "105cafea9959b259f1fa63ca0b5b375bcc611b9e");
+  assert.equal(manifest.source.revision, lockedSource("gepa").revision);
+  assert.match(manifest.source.gitTree, SHA1);
   assert.deepEqual(manifest.source.scope, [`${skillPrefix}**`, "LICENSE", "README.md", "pyproject.toml"]);
   assert.match(manifest.source.contentHashScope, /selected.*upstream repository root.*not this scoped snapshot/);
   assert.equal(manifest.source.license, "MIT");
-  assert.deepEqual(upstreamFilesIn(sourceRoot), reviewedFiles);
-  assert.equal(manifest.snapshot.fileCount, 10);
+  assert.deepEqual(reviewedFiles.filter(file => !file.startsWith(skillPrefix) && !rootFiles.includes(file)), []);
+  for (const file of [...rootFiles, `${skillPrefix}SKILL.md`]) assert.ok(reviewedFiles.includes(file), file);
+  assert.equal(manifest.snapshot.fileCount, reviewedFiles.length);
   assert.equal(manifest.snapshot.root, "upstream");
-  assert.equal(manifest.snapshot.byteCount, 107619);
   assert.deepEqual(manifest.snapshot.objects.map(object => object.path).sort(), reviewedFiles);
   let bytes = 0;
   for (const object of manifest.snapshot.objects) {
@@ -52,7 +50,7 @@ test("GEPA preserves all seven official skill files and selected root metadata a
     assert.equal(object.oid, crypto.createHash("sha1").update(`blob ${content.length}\0`).update(content).digest("hex"), object.path);
   }
   assert.equal(bytes, manifest.snapshot.byteCount);
-  assert.equal(manifest.snapshot.treeSha256, "c8bc85080ff2179e42879d573a29fa4f7d779e179da67a9d37528b8d2cfc2795");
+  assert.equal(manifest.snapshot.treeSha256, lockedSource("gepa").treeSha256);
   assert.equal(canonicalTree(sourceRoot, reviewedFiles), manifest.snapshot.treeSha256);
   assert.deepEqual(manifest.snapshot.executableFiles, []);
   assert.deepEqual(manifest.skills, [{ name: "gepa-optimize-anything", path: `upstream/${skillPrefix}SKILL.md` }]);
@@ -61,7 +59,7 @@ test("GEPA preserves all seven official skill files and selected root metadata a
   for (const field of ["installsUpstreamDependencies", "executesUpstreamScripts", "executesDeployment", "changesProjectRuntime"]) assert.equal(manifest.boundary[field], false, field);
 });
 
-test("GEPA import rejects unreviewed, dirty, incomplete and invalid-date input without replacing prior output", t => {
+test("GEPA import rejects dirty, incomplete and invalid-date input without replacing prior output", t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-gepa-import-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.mkdirSync(path.join(root, "scripts"));
@@ -89,7 +87,6 @@ test("GEPA import rejects unreviewed, dirty, incomplete and invalid-date input w
     assert.equal(storedTree(destination), before);
     assert.deepEqual(fs.readdirSync(path.dirname(destination)), ["gepa"]);
   };
-  rejects(/source revision must be the reviewed/);
   fs.appendFileSync(path.join(source, "README.md"), "dirty\n");
   rejects(/tracked working-tree changes/);
   fs.copyFileSync(path.join(sourceRoot, "README.md"), path.join(source, "README.md"));

@@ -41,6 +41,14 @@ When `--snapshot` and `--catalog` are both omitted, normalize, search, token pro
 use the packaged pinned Astryx snapshot. That snapshot is inert, versioned candidate evidence, not a
 live provider lookup. Supply your own snapshot or acquired catalog when current local state matters.
 
+The packaged snapshot is built by `scripts/generate-astryx-snapshot.cjs` from the
+`@astryxdesign/core` and `@astryxdesign/cli` npm tarballs of the locked release. It parses each
+`*.doc.mjs` and keeps only literal data; no Astryx code is installed or run, and a non-literal value
+fails the build. `npm run sources:update` runs it whenever a new release appears. A `docsZh` or
+`docsDense` lens is stored only where it reads differently from the entry, so a reader falls back to
+the entry itself. Docs entries carry the authored topic text: inline link and command tokens are left
+as written, and topics the CLI computes at run time are left out.
+
 ## Path A: Prepare A Supplied Snapshot
 
 Create a JSON file inside the project root with schema

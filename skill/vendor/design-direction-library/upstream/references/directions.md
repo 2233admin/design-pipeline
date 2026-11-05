@@ -46,7 +46,7 @@ python3 "$HD/scripts/learn.py" direction color <题材关键词>   # 这个用�
 python3 "$HD/scripts/design_lint.py" ledger                     # 最近交付过的样子和用过的参照：这次不再用
 ```
 
-再用看图能力打开风格总览：`$HD/assets/style-specimens/sheet-<分区>.jpg`（分区：web / ppt / info / app，外加跨媒介的 east 中文与东亚）。一张图里是这个分区全部风格的样张，先知道每个风格做到位是什么样。
+再用看图能力打开风格总览：`$HD/assets/style-specimens/sheet-<分区>.jpg`（分区：web / ppt / info / app / xhs 小红书，外加跨媒介的 east 中文与东亚）。一张图里是这个分区全部风格的样张，先知道每个风格做到位是什么样。
 
 **4a · 三套逻辑，每套出两个候选（共六个）：**
 

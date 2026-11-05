@@ -1,0 +1,13 @@
+{
+  "set": "ignoredone",
+  "style": "foundry-console",
+  "outputs": [
+    { "files": ["cover-16x9.html", "cover-16x9.svg"], "width": 1920, "height": 1080, "safeZone": { "x0": 96, "y0": 0, "x1": 1824, "y1": 1080 } },
+    { "files": ["cover-16x10.html", "cover-16x10.svg"], "width": 2560, "height": 1600, "safeZone": { "x0": 0, "y0": 80, "x1": 2560, "y1": 1520 } }
+  ],
+  "keyContent": ["H7-4", "三人小队 无增益", "突袭"],
+  "minFontPx": 24,
+  "hierarchy": { "levels": 3, "ratio": 2.5 },
+  "profile": "poster",
+  "controls": false
+}
