@@ -118,6 +118,13 @@
       ]
     },
     {
+      "name": "Listening and film sound",
+      "level": "optional",
+      "skills": ["earshot", "real-sound"],
+      "fallback": "Use verify audio (loudness, peaks, silence, entry and exit, hit-cue sync) and references/audio-gate.md; say the soundtrack was measured, not listened to, and never describe how it sounds.",
+      "install": ["Install earshot (CLI, MCP server and the earshot and real-sound skills) from: https://github.com/Leonxlnx/earshot"]
+    },
+    {
       "name": "React / Next.js engineering",
       "level": "optional",
       "skills": [
