@@ -1,18 +1,12 @@
 # Surfaces
 
-Border radius, optical alignment, shadows, and image outlines.
+Recipes for concentric radius, optical alignment, shadow rings and image outlines.
 
-## Concentric Border Radius
-
-When nesting rounded elements, the outer radius must equal the inner radius plus the padding between them:
+## Concentric border radius
 
 ```
-outerRadius = innerRadius + padding
+outerRadius = innerRadius + padding + borderWidth
 ```
-
-This rule is most useful when nested surfaces are close together. If padding is larger than `24px`, treat the layers as separate surfaces and choose each radius independently instead of forcing strict concentric math.
-
-### Example
 
 ```css
 /* Good: concentric radii */
@@ -34,43 +28,36 @@ This rule is most useful when nested surfaces are close together. If padding is 
 }
 ```
 
-### Tailwind Example
-
 ```tsx
 // Good: outer radius accounts for padding
 <div className="rounded-2xl p-2">       {/* 16px radius, 8px padding */}
-  <div className="rounded-lg">          {/* 8px radius = 16 - 8 ✓ */}
+  <div className="rounded-lg">          {/* 8px radius = 16 - 8 */}
     ...
   </div>
 </div>
 
 // Bad: same radius on both
 <div className="rounded-xl p-2">
-  <div className="rounded-xl">          {/* same radius, looks off */}
+  <div className="rounded-xl">
     ...
   </div>
 </div>
 ```
 
-Mismatched border radii on closely nested surfaces is a common source of visual tension. Calculate concentrically when the layers share a visible, even inset; preserve an established component token when the layers are independent or the padding is intentionally asymmetric.
+## Optical alignment
 
-## Optical Alignment
+### Buttons with text and an icon
 
-When geometric centering looks off, align optically instead.
-
-### Buttons with Text + Icon
-
-When an icon makes otherwise symmetric padding look unbalanced, use slightly less padding on the icon side. A useful starting point is:
-`icon-side padding = text-side padding - 2px`.
+Start the icon side at `2px` less padding than the text side, then judge by eye.
 
 ```css
-/* Good: less padding on icon side */
+/* Good: less padding on the trailing icon side */
 .button-with-icon {
   padding-inline-start: 16px;
-  padding-inline-end: 14px; /* trailing icon side = text side - 2px */
+  padding-inline-end: 14px;
 }
 
-/* Bad: equal padding looks like icon is pushed too far right */
+/* Bad: equal padding pushes the icon visually outward */
 .button-with-icon {
   padding-inline: 16px;
 }
@@ -84,45 +71,31 @@ When an icon makes otherwise symmetric padding look unbalanced, use slightly les
 </button>
 ```
 
-### Play Button Triangles
+### Play button triangles
 
-Play icons are triangular and their geometric center is not their visual center. Shift slightly right:
+A triangle's geometric center sits left of its visual center, so shift it toward its point:
 
 ```css
-/* Good: optically centered */
 .play-button svg {
-  transform: translateX(2px); /* physical correction to the glyph itself */
-}
-
-/* Bad: geometrically centered but looks off */
-.play-button svg {
-  /* no adjustment */
+  transform: translateX(2px); /* physical on purpose: playback icons never mirror */
 }
 ```
 
-### Asymmetric Icons (Stars, Arrows, Carets)
+### Asymmetric icons
 
-Some icons have uneven visual weight. The best fix is adjusting the SVG directly so no extra margin/padding is needed in the component code.
+Stars, arrows and carets carry uneven visual weight. Fix the `viewBox` or path in the SVG, so the component needs no extra offset. Where the asset cannot change, nudge its wrapper:
 
 ```tsx
-// Best: fix in the SVG itself
-// Adjust the viewBox or path to visually center the icon
-
-// Fallback: adjust with margin
 <span className="translate-x-px">
   <StarIcon />
 </span>
 ```
 
-## Shadows Instead of Borders
+## Shadow recipes
 
-For **buttons, cards, and containers** that use a border for depth or elevation, prefer replacing it with a subtle `box-shadow`. Shadows adapt to any background since they use transparency; solid borders don't. This also helps when using images or multiple colors as backgrounds: solid border colors don't work well on backgrounds other than the ones they were designed for.
+### Light mode
 
-**Do not apply this to dividers** (`border-b`, `border-t`, side borders) or any border whose purpose is layout separation rather than element depth. Those should stay as borders.
-
-### Shadow as Border (Light Mode)
-
-The shadow is comprised of three layers. The first acts as a 1px border ring, the second adds subtle lift, and the third provides ambient depth:
+Three layers. The first acts as a 1px ring, the second adds lift and the third ambient depth:
 
 ```css
 :root {
@@ -137,23 +110,21 @@ The shadow is comprised of three layers. The first acts as a 1px border ring, th
 }
 ```
 
-### Shadow as Border (Dark Mode)
+### Dark mode
 
-In dark mode, simplify to a single white ring, since layered depth shadows aren't visible on dark backgrounds:
+Depth shadows vanish on dark backgrounds, so dark mode keeps one white ring:
 
 ```css
-/* Dark mode: adapt to whatever setup the project uses
-   (prefers-color-scheme, class, data attribute, etc.) */
+/* Redefine under the project's dark selector */
 --shadow-border: 0 0 0 1px oklch(1 0 0 / 0.08);
 --shadow-border-hover: 0 0 0 1px oklch(1 0 0 / 0.13);
 ```
 
-### Usage with Hover Transition
-
-Apply the variable and add `transition-[box-shadow]` for a smooth hover:
+### Usage
 
 ```css
 .card {
+  border: 1px solid transparent; /* forced-colors mode drops box-shadow and paints this border */
   box-shadow: var(--shadow-border);
   transition-property: box-shadow;
   transition-duration: 150ms;
@@ -165,46 +136,22 @@ Apply the variable and add `transition-[box-shadow]` for a smooth hover:
 }
 ```
 
-### When to Use Shadows vs. Borders
+The transparent border keeps the box the same size as the border it replaces.
 
-| Use shadows | Use borders |
-| --- | --- |
-| Cards, containers with depth | Dividers between list items |
-| Buttons with bordered styles | Table cell boundaries |
-| Elevated elements (dropdowns, modals) | Form input outlines (for accessibility) |
-| Elements on varied backgrounds | Hairline separators in dense UI |
-| Hover/focus states for lift effect | |
-
-## Image Outlines
-
-Add a subtle `1px` outline with low opacity to images. This creates consistent depth, especially in design systems where other elements use borders or shadows.
-
-### Color rules (non-negotiable)
-
-- **Light mode**: pure black, `oklch(0 0 0 / 0.1)`.
-- **Dark mode**: pure white, `oklch(1 0 0 / 0.1)`.
-- Never use a near-black or near-white from the project palette (e.g. slate-900, zinc-900, `#0a0a0a`, `#111827`, `#f5f5f7`). Tinted outlines pick up the surrounding surface color and read as dirt on the image edge.
-- Never match the outline to the project's accent or ink color. The outline is a neutral separator, not a themed element.
-
-### Light Mode
+## Image outlines
 
 ```css
-img {
-  outline: 1px solid oklch(0 0 0 / 0.1);
-  outline-offset: -1px; /* draw the ring just inside the image edge */
+:root {
+  --image-outline: oklch(0 0 0 / 0.1);
 }
-```
+/* Redefine under the project's dark selector */
+--image-outline: oklch(1 0 0 / 0.1);
 
-### Dark Mode
-
-```css
-img {
-  outline: 1px solid oklch(1 0 0 / 0.1);
+.content-image {
+  outline: 1px solid var(--image-outline);
   outline-offset: -1px;
 }
 ```
-
-### Tailwind with Dark Mode
 
 ```tsx
 <img
@@ -214,6 +161,6 @@ img {
 />
 ```
 
-Use `outline-black/10` and `outline-white/10` specifically, not `outline-slate-*`, `outline-zinc-*`, `outline-neutral-*`, or any tinted scale.
+Never `outline-slate-*`, `outline-zinc-*`, `outline-neutral-*` or a palette near-black such as `#111827`.
 
-**Why outline instead of border?** `outline` never affects layout (no added width or height at any offset), and `outline-offset: -1px` draws the ring just inside the image edge so it hugs the corner radius instead of sitting outside it.
+Use `outline` rather than `border` because it never changes the image's size. At `outline-offset: -1px` it sits just inside the edge and follows the corner radius.

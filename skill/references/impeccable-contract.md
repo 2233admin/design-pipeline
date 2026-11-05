@@ -4,7 +4,7 @@ This is the design-pipeline adaptation of the upstream Impeccable skill. It is a
 not a vendored copy of the upstream prompt. The upstream visual skin is not a default theme.
 
 - Source: `https://github.com/pbakaus/impeccable`
-- Reviewed revision: `ae388ac58fb33aade50fc47e2be07c3192dcaabd`
+- Reviewed revision: `9fadc41729c38fd47d7ae622b501558653f9d2e9`
 - Reviewed: `2026-08-12`
 
 ## Authority and intent

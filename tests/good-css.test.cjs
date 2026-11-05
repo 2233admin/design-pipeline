@@ -12,6 +12,7 @@ const { canonicalTree } = require("../scripts/git-tree-snapshot.cjs");
 const { storedPath } = require("../skill/scripts/upstream-path.cjs");
 const { storedTree, upstreamFilesIn } = require("./helpers/upstream-names.cjs");
 const { gitTreeId } = require("../skill/scripts/mengto-skills-core.cjs");
+const { lockedSource } = require("./helpers/locked-source.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const vendorRoot = path.join(repoRoot, "skill/vendor/good-css");
@@ -34,15 +35,13 @@ function run(command, args, cwd) {
   return result;
 }
 
-test("good-css preserves the complete reviewed Git blobs, tree and licenses", () => {
+test("good-css preserves the complete locked Git blobs, tree and licenses", () => {
   assert.equal(manifest.schema, "design-pipeline.good-css-source.v1");
   assert.equal(manifest.source.repository, "https://github.com/vojtaholik/good-css");
-  assert.equal(manifest.source.revision, "6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef");
-  assert.equal(manifest.source.gitTree, "a14bae52fb7bd2374faefaf6c62f575aeff8dad5");
+  assert.equal(manifest.source.revision, lockedSource("good-css").revision);
   assert.equal(manifest.source.license, "MIT");
   assert.deepEqual(manifest.source.scope, ["**"]);
   const files = upstreamFilesIn(sourceRoot);
-  assert.equal(files.length, 133);
   assert.equal(manifest.snapshot.fileCount, files.length);
   assert.deepEqual(manifest.snapshot.objects.map((object) => object.path).sort(), files);
   assert.equal(new Set(manifest.snapshot.objects.map((object) => object.path)).size, files.length);
@@ -54,10 +53,9 @@ test("good-css preserves the complete reviewed Git blobs, tree and licenses", ()
     assert.equal(object.size, content.length, object.path);
     assert.equal(object.oid, crypto.createHash("sha1").update(`blob ${content.length}\0`).update(content).digest("hex"), object.path);
   }
-  assert.equal(bytes, 881927);
   assert.equal(manifest.snapshot.byteCount, bytes);
   assert.equal(gitTreeId(manifest.snapshot.objects), manifest.source.gitTree);
-  assert.equal(manifest.snapshot.treeSha256, "fe50d90bf5b9bcbd30d9696886f8f1c67fb3d3cfadc4a4a564f321adc7929a08");
+  assert.equal(manifest.snapshot.treeSha256, lockedSource("good-css").treeSha256);
   assert.equal(canonicalTree(sourceRoot, files), manifest.snapshot.treeSha256);
   assert.deepEqual(manifest.snapshot.executableFiles, []);
   assert.deepEqual(manifest.licenses.map((license) => license.license), ["MIT", "OFL-1.1", "OFL-1.1"]);
@@ -72,7 +70,7 @@ test("good-css preserves the complete reviewed Git blobs, tree and licenses", ()
   assert.equal(manifest.boundary.executesDeployment, false);
 });
 
-test("all 47 good-css practices retain their generated rules, CSS and local specimens", async () => {
+test("every good-css practice retains their generated rules, CSS and local specimens", async () => {
   const source = read("PRACTICES.md");
   const headings = [...source.matchAll(/^(##|###) (.+)$/gm)];
   let category;
@@ -82,10 +80,9 @@ test("all 47 good-css practices retain their generated rules, CSS and local spec
     if (heading[1] === "##") category = slugify(heading[2]);
     else practices.push({ slug: slugify(heading[2]), title: heading[2], category, body: source.slice(heading.index + heading[0].length, headings[index + 1]?.index || source.length) });
   }
-  assert.equal(practices.length, 47);
+  assert.ok(practices.length > 0);
   assert.deepEqual(manifest.practices.map(({ slug, title, category: section }) => ({ slug, title, category: section })), practices.map(({ slug, title, category: section }) => ({ slug, title, category: section })));
   const references = filesIn(path.join(sourceRoot, "skills/good-css/references"));
-  assert.equal(references.length, 8);
   assert.deepEqual(references, [...new Set(practices.map((practice) => `${practice.category}.md`))].sort());
   const fileOf = new Map(practices.map((practice) => [practice.slug, practice.category]));
   const locate = (text, file) => text.replace(/\[([^\]]+)\]\(#([a-z0-9-]+)\)/g, (_, title, slug) => fileOf.get(slug) === file ? `"${title}"` : `"${title}" (\`${fileOf.get(slug)}.md\`)`);
@@ -108,11 +105,11 @@ test("all 47 good-css practices retain their generated rules, CSS and local spec
     for (const css of cssBlocks(practice.body)) { assert.deepEqual(check(css), [], practice.slug); checked += 1; }
     assert.ok(fs.existsSync(path.join(sourceRoot, `harness/demos/${practice.slug}.html`)), practice.slug);
   }
-  assert.ok(checked >= 47);
+  assert.ok(checked >= practices.length);
   assert.deepEqual(filesIn(path.join(sourceRoot, "harness/demos")).filter((file) => file.endsWith(".html")), practices.map((practice) => `${practice.slug}.html`).sort());
 });
 
-test("good-css import rejects dirty, unreviewed and incomplete sources without replacing the snapshot", () => {
+test("good-css import rejects dirty, structurally incomplete and mislicensed sources without replacing the snapshot", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-good-css-import-"));
   try {
     const scripts = path.join(root, "scripts");
@@ -140,7 +137,7 @@ test("good-css import rejects dirty, unreviewed and incomplete sources without r
       assert.equal(fs.readFileSync(path.join(destination, "manifest.json"), "utf8"), "previous snapshot\n");
       assert.deepEqual(fs.readdirSync(path.dirname(destination)), ["good-css"]);
     };
-    rejects(/source revision must be the reviewed/);
+    rejects(/0 practices/);
     fs.appendFileSync(path.join(source, "PRACTICES.md"), "dirty\n");
     rejects(/tracked working-tree changes/);
     fs.writeFileSync(path.join(source, "PRACTICES.md"), "# fixture\n");

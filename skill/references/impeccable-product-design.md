@@ -23,13 +23,15 @@ and QA receipts as source of truth.
 The command names remain useful as product-design verbs even when the upstream executable is not
 installed:
 
-- Build: `shape`, `init`, `document`, `extract`, `visualize`
+- Build: `shape`, `init`, `document`, `extract`
 - Evaluate: `critique`, `audit`
 - Refine: `polish`, `bolder`, `quieter`, `distill`, `harden`, `onboard`
 - Enhance: `animate`, `colorize`, `typeset`, `layout`, `delight`, `overdrive`
 - Fix: `clarify`, `adapt`, `optimize`
-- Iterate: `live`
+- Iterate: `live`, `generate`
 
+Upstream lists 24 commands (README "24 commands" and the SKILL.md command table at the locked
+revision); the 24th, `craft`, is a deprecated alias, so 23 are core commands and all 23 are mapped.
 The deprecated `craft` alias maps to `shape` plus `new-work`; `teach` maps to `init`. They do not
 create a second workflow.
 
@@ -42,9 +44,11 @@ create a second workflow.
 - `bolder`, `quieter`, `distill`, `delight`, and `overdrive` change expression only after the
   product job and direction are explicit; they never replace product truth with a skin.
 - `onboard` and `clarify` treat activation, copy, labels, and recovery as product behavior.
-- `animate`, `adapt`, `optimize`, and `live` are implementation evidence routes, not decoration.
-- `visualize` tests composition and asset needs; it never replaces semantic UI, real states, or
-  accessible implementation.
+- `animate`, `adapt`, `optimize`, `live`, and `generate` (variants of one named element in the live
+  browser) are implementation evidence routes, not decoration.
+- The comp round of new work (upstream `visualize.md`, no longer a command of its own) tests
+  composition and asset needs; it never replaces semantic UI, real states, or accessible
+  implementation.
 
 ## Boundaries
 

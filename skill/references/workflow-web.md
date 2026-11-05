@@ -89,12 +89,13 @@ owner to lengthen feedback; when a short reason is ambiguous, ask about the real
 ("brighter background, or more text contrast?"). Shorter records are refused with
 `CONTRACT_INVALID` and change nothing.
 
-For new-site design, existing-site redesign or visual critique, use [taste-skill.md](taste-skill.md)
-to select and read the complete built-in method. On an existing site, audit brand, routes, content,
-states and stack before changing its design. Preserve supplied references in replicate mode;
-Taste's generate-first preferences do not require replacement images. Image concepts and brand
-boards use the matched image-only method with an available provider, then become selected
-reference/concept inputs through the existing workflow. No external Taste install is required.
+For new-site design, existing-site redesign, app screens or visual critique, use
+[taste-skill.md](taste-skill.md) to select the route and read its complete built-in source. On an
+existing site, audit brand, routes, content, states and stack before changing its design. Preserve
+supplied references in replicate mode. Image concepts and brand boards use an available image
+provider, then become selected reference/concept inputs through the existing workflow. Taste's
+`inspect.mjs` may add screenshots and measurements to review evidence; its findings about taste
+never fail a web gate. No external Taste install is required.
 
 ## intake
 
@@ -162,6 +163,14 @@ Web intake writes no `brief.md`: the brief is written later as the [description]
 A `quick` project started before quick intake existed records its stated line first.
 
 ## reference
+
+For a live page run `reference extract --url <page> --output <dir>` before reading it yourself: it
+measures the palette (CIEDE2000 clusters tiered by share), type scale and spacing from computed
+styles with no model, and writes `extraction.json`, `palette-evidence.json` (pending, DOM source
+ready) and `design-md-draft.md`. Judge that draft; never copy a `(low confidence)` value, and check
+merged dark surfaces it lists. A challenge or block page (`REFERENCE_BLOCKED`), an HTTP error
+(`REFERENCE_HTTP_STATUS`) or a page that renders nothing (`REFERENCE_EMPTY`) exits 1; use a
+screenshot as an image reference instead.
 
 For a local video run `reference analyze-video --path <contained-video> --output <new-dir>`.
 Inspect ordered timed windows, record named target/property/state observations and uncertainties,
@@ -703,7 +712,8 @@ has none, `next` asks for it instead of returning the verify command.
         "stacks": [".features", ".plans"],
         "controlContainers": [".toolbar"],
         "alignGroups": [{ "selector": ".hero", "items": ".hero > *", "edge": "start" }],
-        "contentBoxes": [".card"]
+        "contentBoxes": [".card"],
+        "bodyText": ["main p"]
       }
     }
   ]
@@ -712,7 +722,10 @@ has none, `next` asks for it instead of returning the verify command.
 
 The audit measures the rendered page at each of its `viewports` (default: the file's `viewport`),
 after a fresh load, the fonts and two frames, against the codes in
-`ui-craft-sources.md#measured-audit`. It needs the bindable local page: `url` names the project's
+`ui-craft-sources.md#measured-audit`. Each viewport also loads the page once with
+`prefers-reduced-motion: reduce`; both loads are read a second after load and compared
+(`audit.reduced-motion`). After the resting audit it forces `:hover` and `:focus-visible` on every
+control (`audit.state-contrast`). It needs the bindable local page: `url` names the project's
 local `index.html`, and every asset the page loads (stylesheets, scripts, fonts, images, data) is a
 file inside the project. An `http(s)` page or a page outside the project is a contract error before
 the browser starts.
@@ -720,23 +733,25 @@ the browser starts.
 - `thresholds`: copy them from `DESIGN.md`; a list replaces its default. `fonts` is required: the
   approved families from `DESIGN.md`, so `audit.font-family` always runs. Defaults: `minFontPx` 12,
   `minTargetPx` 24, `minControlGapPx`, `minControlInsetPx` and `minLayoutGapPx` 8,
-  `contrastNormal` 4.5 and `contrastLarge` 3 (text of 24 px, or bold at 18.67 px); the `fontSizes`
-  scale has none.
+  `contrastNormal` 4.5 and `contrastLarge` 3 (text of 24 px, or bold at 18.67 px), `contrastFocus` 3
+  (the focus indicator), `maxLineCh` 80 and `minLineHeight` 1.3 (declared running text); the
+  `fontSizes` scale has none.
 - `declare`: selectors for what the markup means, so the delivered page carries no audit
   attributes: `numbers` (changing or compared values; numeric table cells are found without it),
   `stacks`, `controlContainers`, `alignGroups` (`edge` is `start`, `center` or `end`),
-  `radiusPairs` (`outer`, `inner`) and `contentBoxes`. A declared selector that matches nothing
-  fails, so a typo cannot pass.
+  `radiusPairs` (`outer`, `inner`), `contentBoxes` and `bodyText` (running text: article
+  paragraphs, descriptions, long list items; not labels, captions or table cells). A declared
+  selector that matches nothing fails, so a typo cannot pass.
 
 No probe field can skip a subtree, suppress a finding or waive a result; any other field is
 rejected before the browser starts. Unresolved results are fixed in the page, not in the probe.
 
 Each check reports, per viewport, `passed`, `failed`, `not-declared`, `not-applicable` (nothing
 visible in scope) or `indeterminate`, with a `checked` count; nothing checked is never `passed`.
-Six optional checks measure only what is declared: `audit.tabular-numbers` (`numbers`, or the
+Eight optional checks measure only what is declared: `audit.tabular-numbers` (`numbers`, or the
 page's numeric table cells), `audit.content-overflow` (`contentBoxes`), `audit.control-inset`
-(`controlContainers`), `audit.layout-gap` (`stacks`), `audit.layout-alignment` (`alignGroups`) and
-`audit.nested-radius` (`radiusPairs`). Without their declaration they report `not-declared` in the
+(`controlContainers`), `audit.layout-gap` (`stacks`), `audit.layout-alignment` (`alignGroups`),
+`audit.nested-radius` (`radiusPairs`), and `audit.line-length` and `audit.line-height` (`bodyText`). Without their declaration they report `not-declared` in the
 coverage with a hint naming what to declare: it is never counted as passed and does not fail the
 audit. Once declared, an optional check is judged like the others. `indeterminate` means the page
 could not be measured, for example text over a gradient, image, translucent layer, filter, blend

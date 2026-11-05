@@ -165,6 +165,7 @@ const KNOWN_OPTIONS = new Set([
   "--start", "--end", "--fps", "--max-frames", "--cut-threshold", "--min-shot", "--by", "--page-review", "--until", "--assisted-by", "--tradeoff", "--revision", "--affects",
   "--spec", "--stills", "--ffmpeg", "--ffprobe", "--medium", "--second", "--pool", "--east-pool",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
+  "--target-id",
 ]);
 function parseArgs(argv) {
   const positionals = [];
@@ -428,6 +429,7 @@ function publicHelp() {
     "  change init|resume|advance|migrate|repair",
     "  foundation check [--kind design|motion|all] | direction check | direction draw --medium web|ppt|info|app [--second 0-59] [--pool <numbers>] [--east-pool <numbers>]   (the roulette: S % count + 1 in the medium's section and S % 12 + 1 in east, past styles the ledger's last three deliveries used) | playground check | reference check|resolve | reconstruction check | scene check",
     "  reference analyze-video --path <video> --output <new-dir> [--project-root <dir>] [--start sec --end sec --fps 12 --max-frames 400] [--study] [--shots [--cut-threshold 0.18] [--min-shot 0.25]]   (decoded timed windows; observations pending; --study adds study.json with audio and cut-grid candidates; --shots segments by detected shot with per-shot frames, motion and sound events)",
+    "  reference extract --url <http(s) page> --output <dir> [--target-id <id>] [--width 1440 --height 900] [--replace]   (deterministic palette, type scale and spacing from computed styles: extraction.json, palette-evidence.json (status pending; DOM source ready, raster pending) and design-md-draft.md; a challenge or block page exits 1 REFERENCE_BLOCKED, an HTTP 4xx/5xx page REFERENCE_HTTP_STATUS, a page that renders nothing REFERENCE_EMPTY)",
     "  project inspect [--project-root <dir>] [--scope <relative-dir>] [--query <brief>] [--write --output project-analysis.json]   (read-only source evidence)",
     "  runtime-review build --change-root <dir> --manifest <file> [--root <workspace>] [--json]",
     "  runtime-review check --change-root <dir> --artifact <review.json> [--root <workspace>] [--json]",
@@ -510,6 +512,8 @@ function publicHelp() {
 // mismatch. `runKernel` propagates that status faithfully; it never normalises an unrecognised
 // status to success, because a status this wrapper does not understand is not evidence of success.
 const KERNEL_EXIT_CODES = [0, 2, 3];
+// Kernel error codes a caller keeps instead of KERNEL_FAILED.
+const PROPAGATED_KERNEL_CODES = new Set(["REFERENCE_BLOCKED", "REFERENCE_UNREACHABLE", "REFERENCE_HTTP_STATUS", "REFERENCE_EMPTY"]);
 const KERNEL_STATUS_LABELS = { 2: "blocked", 3: "fidelity-limited" };
 
 function kernelStatusLabel(exitCode, successLabel) {
@@ -530,7 +534,13 @@ function runKernel(script, args, cwd, { timeout = 60000, maxBuffer = 4 * 1024 * 
   // kill in particular), so the signal is checked on its own rather than trusted to `error`.
   if (child.signal) fail("cli", `kernel ${script} was terminated by signal ${child.signal}`, { code: "KERNEL_SIGNALED" });
   if (typeof child.status !== "number") fail("cli", `kernel ${script} produced no exit status`, { code: "KERNEL_STATUS_MISSING" });
-  if (child.status === 1) fail("cli", (child.stderr || child.stdout || `kernel ${script} failed`).trim(), { code: "KERNEL_FAILED" });
+  if (child.status === 1) {
+    // A refused reference page keeps its own code, so a caller can tell it from a broken capture.
+    let reported = null;
+    try { reported = JSON.parse((child.stdout || "").trim().split("\n").at(-1))?.error; } catch { reported = null; }
+    if (reported && PROPAGATED_KERNEL_CODES.has(reported.code)) fail("cli", reported.message, { ...(reported.details || {}), code: reported.code });
+    fail("cli", (child.stderr || child.stdout || `kernel ${script} failed`).trim(), { code: "KERNEL_FAILED" });
+  }
   if (!KERNEL_EXIT_CODES.includes(child.status)) {
     fail("cli", `kernel ${script} exited with unsupported status ${child.status}`, { code: "KERNEL_STATUS_UNSUPPORTED" });
   }
@@ -890,6 +900,53 @@ function referenceResolveCommand(parsed, root) {
     ...(option(parsed, "--timestamp") ? { timestamp: option(parsed, "--timestamp") } : {}),
   });
   return { result, exitCode: 0 };
+}
+
+// `reference extract` (OpenSpec change reference-palette-extract): measures the page in the kernel, then
+// writes the measurement, palette evidence (the schema palette-foundation-core checks) and a draft of
+// DESIGN.md front-matter tokens. It never overwrites one of those files without --replace.
+function referenceExtractCommand(parsed, root) {
+  const core = require("./reference-extract-core.cjs");
+  const url = core.validateUrl(requireOption(parsed, "--url"));
+  const output = contained(root, requireOption(parsed, "--output"), "--output", false);
+  if (fs.existsSync(output) && !fs.statSync(output).isDirectory()) fail("reference extract", "--output must be a directory. Fix: pass the directory the evidence goes in (for website cloning, the target's research directory)", { code: "OPTION_INVALID" });
+  const targetId = option(parsed, "--target-id") || core.targetIdFor(url);
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(targetId)) fail("reference extract", "--target-id must be lowercase words joined by hyphens. Fix: pass the website-cloning target id, for example home", { code: "OPTION_INVALID" });
+  const files = Object.fromEntries(Object.entries(core.FILES).map(([key, name]) => [key, path.join(output, name)]));
+  const existing = Object.values(files).filter((file) => fs.existsSync(file));
+  if (existing.length && option(parsed, "--replace") !== true) fail("reference extract", `${existing.map((file) => path.relative(root, file)).join(", ")} already exist. Fix: pass --replace to measure again, or choose a new --output`, { code: "OUTPUT_EXISTS" });
+  const args = ["--url", url];
+  for (const flag of ["--width", "--height", "--chrome", "--puppeteer-module"]) if (option(parsed, flag) !== null) args.push(flag, String(option(parsed, flag)));
+  const kernel = runKernel("extract-reference.cjs", args, root, { timeout: 180000, maxBuffer: 64 * 1024 * 1024 });
+  const measurement = kernel.value?.measurement;
+  if (kernel.exitCode !== 0 || !measurement?.colors) fail("reference extract", "the extraction kernel returned no measurement", { code: "KERNEL_FAILED" });
+  const analysis = core.analyzeMeasurement(measurement);
+  const palette = core.paletteEvidence({ url, targetId, measurement, analysis });
+  fs.mkdirSync(output, { recursive: true });
+  fs.writeFileSync(files.extraction, `${JSON.stringify(core.extractionRecord({ url, targetId, measurement, analysis }), null, 2)}\n`);
+  fs.writeFileSync(files.palette, `${JSON.stringify(palette, null, 2)}\n`);
+  fs.writeFileSync(files.draft, core.designMdDraft({ url, measurement, analysis }));
+  const rel = (file) => path.relative(root, file).split(path.sep).join("/");
+  return {
+    result: {
+      status: "extracted",
+      url,
+      finalUrl: measurement.finalUrl,
+      httpStatus: measurement.httpStatus,
+      targetId,
+      files: Object.fromEntries(Object.entries(files).map(([key, file]) => [key, rel(file)])),
+      roles: palette.semanticRoles.map(({ role, sourceColor }) => ({ role, hex: sourceColor })),
+      typeScale: analysis.type.scale.map(({ size, count }) => ({ size, count })),
+      bodySize: analysis.type.body,
+      spacing: analysis.spacing.scale.map(({ value }) => value),
+      spacingGrid: analysis.spacing.grid,
+      overlaysDismissed: measurement.overlaysDismissed,
+      lowConfidence: analysis.lowConfidence,
+      creativeAcceptance: "not-assessed",
+      next: "Judge the draft against the reference: keep the measured roles that carry the design, drop incidental values, measure the raster-media palette separately, then copy the chosen tokens into DESIGN.md (and design-tokens.md for website cloning) and set palette-evidence.json ready.",
+    },
+    exitCode: 0,
+  };
 }
 
 function analysisRoot(parsed, root) {
@@ -2351,6 +2408,7 @@ const COMMANDS = {
     actions: {
       check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) },
       resolve: { run: ({ parsed, root }) => referenceResolveCommand(parsed, root) },
+      extract: { run: ({ parsed, root }) => referenceExtractCommand(parsed, root) },
       "analyze-video": { required: ["--path", "--output"], run: ({ parsed, root }) => {
         const options = { path: option(parsed, "--path"), output: option(parsed, "--output"), ...(option(parsed, "--start") === null ? {} : { startSec: Number(option(parsed, "--start")) }), ...(option(parsed, "--end") === null ? {} : { endSec: Number(option(parsed, "--end")) }), ...(option(parsed, "--fps") === null ? {} : { sampleFps: Number(option(parsed, "--fps")) }), ...(option(parsed, "--max-frames") === null ? {} : { maxFrames: Number(option(parsed, "--max-frames")) }), ...(option(parsed, "--shots") === true ? { shots: true } : {}), ...(option(parsed, "--cut-threshold") === null ? {} : { cutThreshold: Number(option(parsed, "--cut-threshold")) }), ...(option(parsed, "--min-shot") === null ? {} : { minShotSec: Number(option(parsed, "--min-shot")) }) };
         // --study adds study.json, an audio excerpt and spectrogram when the source has sound, and cut-grid candidates.

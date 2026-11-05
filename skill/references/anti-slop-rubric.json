@@ -18,6 +18,15 @@
       "contentHash": "11fc1f770260572a0a87c7171d2e2b0c7dcc5ce660ee7d888e125ef7be5a142d",
       "intakeState": "watchlist",
       "usage": "Curated concepts only. The mutable source prompt is not bundled, executed, or appended to global agent instructions."
+    },
+    {
+      "id": "anthropic-frontend-design",
+      "url": "https://github.com/anthropics/skills/blob/ca45fc496a3436251f191354091d557da31c15b5/skills/frontend-design/SKILL.md",
+      "observedAt": "2026-11-03T09:00:00.000Z",
+      "lastModified": "2026-10-28T19:20:38.000Z",
+      "contentHash": "d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3",
+      "intakeState": "accepted-optional",
+      "usage": "Curated calibration only: the five clusters of current AI defaults, paraphrased into fashion-tell-advisory. Apache-2.0 source is not bundled or executed."
     }
   ],
   "rules": [
@@ -233,13 +242,14 @@
       "appliesTo": [
         "all"
       ],
-      "principle": "Named colors, fonts, punctuation, pills, cards, gradients, shadows, and familiar layout families require context rather than automatic rejection.",
+      "principle": "Named colors, fonts, punctuation, pills, cards, gradients, shadows, and familiar layout families require context rather than automatic rejection. Current AI defaults to name when prominent: warm cream with a clay accent; near-black with one acid accent; broadsheet hairline columns; one uniform SaaS card kit; template chrome (an eyebrow on every heading, middle-dot meta strings, monospace data labels, arrows on button text). Where the brief leaves an axis free, a default there needs a stated reason; where the brief asks for it, it is a choice.",
       "evidenceRequired": [
         "Design rationale when a commonly criticized pattern is prominent."
       ],
       "exceptionPolicy": "preference-only",
       "sourceIds": [
-        "pols-anti-slop-law"
+        "pols-anti-slop-law",
+        "anthropic-frontend-design"
       ]
     }
   ]
