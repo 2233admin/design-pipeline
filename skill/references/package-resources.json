@@ -194,6 +194,7 @@
     "scripts/workflows/replicate.cjs",
     "tools/page-review/overlay.js",
     "references/workflow-film.md",
+    "references/game-ui-and-narrative.md",
     "references/qa-checklist.md",
     "references/animation-thinking.md",
     "references/film-choreography/motion-study.html",

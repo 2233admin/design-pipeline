@@ -949,3 +949,22 @@ is copied or distributed (`codeCopied: false`); the gap analysis and what landed
   MIT `referodesign/refero_skill`; none of their text is used here.
 
 Neither upstream sponsors or has reviewed this project.
+
+## Concept distillations (2026-11-04)
+
+Project-owned guide text written in this repository's words; no upstream text, code or media is
+copied or shipped.
+
+- The world-branded UI and key art review lens in `skill/references/game-ui-and-narrative.md`:
+  from AJ, "藏在「好看」背后的先进性", Tencent Game Institute,
+  https://gameinstitute.qq.com/article/10027 (read 2026-11-04). No licence is stated; observations
+  are paraphrased and linked.
+- Film mechanisms in `skill/references/hyperframes.md`, `workflow-film.md`, `film-score.md` and
+  `product-film-direction.md` (drawing from time, subframe motion blur, review strips, effects on
+  onsets and peaks, named reference styles): informed by https://github.com/howseen-ai/claude-motion-design
+  at `3d90d349ef3fdde9b7e89de4df4a2159c9e8697f`, MIT, Copyright (c) 2026 Howseen AI (Raphaël Aubry).
+  Commands and numbers in the guides were measured in this repository.
+- `skill/references/prompt-motion.md` routes to https://github.com/XiaoyeCodes/code-animation-prompts
+  at `69ccbeaf0b821591a40936572c2f559d8f4cfb68` as a companion. It is not distributed with this
+  package: its original collection is shared on free, no-resale terms, and its Lemo-Opuscar,
+  mg-styles-15 and code-video series keep their own MIT licences.
