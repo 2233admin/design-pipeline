@@ -24,7 +24,9 @@ const EPS = 0.02;
 // A screen's fundamental and its 90-degree partner each stand this far above the median of their
 // ring. Measured: real and generated AM screens 76 to 9e7; FM, paper, ink flats, laid lines, noise
 // and flat fields 0 to 7.6.
-const SCREEN_PEAK_MIN = 20; // L* floor so an empty band does not dominate the dB distance
+const SCREEN_PEAK_MIN = 20;
+const RING_FLOOR = 0.05; // ring median floor: this share of the mean power over the search annulus
+const LATTICE_BALANCE_MIN = 0.05; // 90-degree partner's peak over the fundamental's // L* floor so an empty band does not dominate the dB distance
 
 // ---- FFT ------------------------------------------------------------------------------------
 
@@ -239,18 +241,30 @@ function halftoneStats(image, { pxPerMm = null, roi } = {}) {
   // A screen is a 2-D lattice: a spike at the fundamental and at the same frequency turned 90
   // degrees, each far above the other bins of its ring. Laid lines and wood grain give one spike
   // and no orthogonal one; noise, paper or a flat field give none.
-  const ringRatio = (fx, fy) => {
-    const r = Math.hypot(fx, fy), x0 = Math.round(fx), y0 = Math.round(fy), ring = [];
+  // Ring medians are floored at a share of the mean power over the search annulus: a noise-free
+  // synthetic (a smooth gradient, clean stripes) has rings of almost exactly zero, which would
+  // turn any leakage into an "infinite" peak.
+  let annulus = 0, annulusBins = 0;
+  for (let ky = 0; ky < n; ky += 1) for (let kx = 0; kx < n; kx += 1) {
+    const r = Math.hypot(freq(kx, n), freq(ky, n));
+    if (r >= n / 40 && r <= n / 2.5) { annulus += power[ky * n + kx]; annulusBins += 1; }
+  }
+  const floor = RING_FLOOR * (annulus / Math.max(annulusBins, 1));
+  const ring = (fx, fy) => {
+    const r = Math.hypot(fx, fy), x0 = Math.round(fx), y0 = Math.round(fy), values = [];
     let peak = 0;
     for (let dy = -1; dy <= 1; dy += 1) for (let dx = -1; dx <= 1; dx += 1) peak = Math.max(peak, power[(((y0 + dy) % n) + n) % n * n + (((x0 + dx) % n) + n) % n]);
-    for (let ky = 0; ky < n; ky += 1) for (let kx = 0; kx < n; kx += 1) if (Math.abs(Math.hypot(freq(kx, n), freq(ky, n)) - r) < 0.75) ring.push(power[ky * n + kx]);
-    ring.sort((a, b) => a - b);
-    const median = ring[ring.length >> 1] || 0;
-    return median > 0 ? peak / median : peak > 0 ? 1e9 : 0;
+    for (let ky = 0; ky < n; ky += 1) for (let kx = 0; kx < n; kx += 1) if (Math.abs(Math.hypot(freq(kx, n), freq(ky, n)) - r) < 0.75) values.push(power[ky * n + kx]);
+    values.sort((a, b) => a - b);
+    return { peak, median: Math.max(values[values.length >> 1] || 0, floor) };
   };
-  const peakRatio = best.p ? Math.min(ringRatio(best.fx, best.fy), ringRatio(-best.fy, best.fx)) : 0;
+  // A lattice also needs the 90-degree partner to carry a real share of the fundamental's energy:
+  // stripes and gradients put (almost) all of it on one axis.
+  const r1 = best.p ? ring(best.fx, best.fy) : null, r2 = best.p ? ring(-best.fy, best.fx) : null;
+  const balance = r1 && r1.peak > 0 ? r2.peak / r1.peak : 0;
+  const peakRatio = r1 && r1.median > 0 && balance >= LATTICE_BALANCE_MIN ? Math.min(r1.peak / r1.median, r2.peak / r2.median) : 0;
   if (!(peakRatio >= SCREEN_PEAK_MIN)) {
-    return { pxPerMm: pxPerMm ? round(pxPerMm, 3) : null, region: { x: rect.x, y: rect.y, width: rect.w, height: rect.h, tile: n }, screen: false, screenPeakRatio: round(peakRatio, 1) };
+    return { pxPerMm: pxPerMm ? round(pxPerMm, 3) : null, region: { x: rect.x, y: rect.y, width: rect.w, height: rect.h, tile: n }, screen: false, screenPeakRatio: round(peakRatio, 1), latticeBalance: round(balance, 4) };
   }
   const at = (fx, fy, radius = 2) => {
     let sum = 0;
@@ -293,6 +307,7 @@ function halftoneStats(image, { pxPerMm = null, roi } = {}) {
     region: { x: rect.x, y: rect.y, width: rect.w, height: rect.h, tile: n },
     screen: true,
     screenPeakRatio: round(peakRatio, 1),
+    latticeBalance: round(balance, 4),
     periodPx: round(periodPx, 3),
     ...(pxPerMm ? { periodMm: round(periodPx / pxPerMm, 4), lpi: round((25.4 * pxPerMm) / periodPx, 1) } : {}),
     angleDeg: round((((Math.atan2(best.fy, best.fx) * 180) / Math.PI) % 90 + 90) % 90, 1),

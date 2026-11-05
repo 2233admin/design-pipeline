@@ -4,7 +4,8 @@
 When element data is supplied, the pipeline SHALL fail text below WCAG AA contrast against a known
 opaque background and text outside the viewport, and SHALL warn on near-miss edge alignment, flat
 type hierarchy and excessive distinct text sizes. When a text's background is an image, gradient
-or texture, `composition capture` SHALL sample the screenshot pixels under the text box with all
+or texture, `composition capture` SHALL sample the screenshot pixels under the text's own line
+boxes (its text nodes' client rects, not the element's padding or the rest of a block's row) with all
 text hidden, and the same `text-contrast` check SHALL judge the text against the worst 5% of those
 pixels; text whose background is unknown and unsampled SHALL be reported as
 `contrast-unmeasured`, never skipped.

@@ -22,23 +22,32 @@ const luminance = (rgb) => {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 };
 
-// For each text with an unknown (image-backed) background: the ground under its box with text
-// hidden, as its mean colour and the 0th..100th percentiles of relative luminance. The gate turns
+// For each text with an unknown (image-backed) background: the ground under its line boxes with
+// text hidden, as its mean colour and the 0th..100th percentiles of relative luminance. The gate turns
 // these into the contrast of every ground pixel against the text colour and judges the worst 5%.
 function groundSamples(ground, items) {
   for (const item of items) {
     if (item.kind !== "text" || item.background) continue;
-    const x0 = Math.max(0, Math.floor(item.box.x)), y0 = Math.max(0, Math.floor(item.box.y));
-    const x1 = Math.min(ground.width, Math.ceil(item.box.x + item.box.w)), y1 = Math.min(ground.height, Math.ceil(item.box.y + item.box.h));
-    const lum = [], sum = [0, 0, 0];
-    for (let y = y0; y < y1; y += 1) for (let x = x0; x < x1; x += 1) {
-      const i = (y * ground.width + x) * 4, rgb = [ground.data[i], ground.data[i + 1], ground.data[i + 2]];
-      lum.push(luminance(rgb)); for (let c = 0; c < 3; c += 1) sum[c] += rgb[c];
+    // Line boxes inflated by 2 px (antialiased edges, descenders); the border box only when the
+    // text has no measurable line box.
+    const rects = item.lines?.length ? item.lines.map((r) => ({ x: r.x - 2, y: r.y - 2, w: r.w + 4, h: r.h + 4 })) : [item.box];
+    const seen = new Set(), lum = [], sum = [0, 0, 0];
+    for (const rect of rects) {
+      const x0 = Math.max(0, Math.floor(rect.x)), y0 = Math.max(0, Math.floor(rect.y));
+      const x1 = Math.min(ground.width, Math.ceil(rect.x + rect.w)), y1 = Math.min(ground.height, Math.ceil(rect.y + rect.h));
+      for (let y = y0; y < y1; y += 1) for (let x = x0; x < x1; x += 1) {
+        const p = y * ground.width + x;
+        if (seen.has(p)) continue;
+        seen.add(p);
+        const i = p * 4, rgb = [ground.data[i], ground.data[i + 1], ground.data[i + 2]];
+        lum.push(luminance(rgb)); for (let c = 0; c < 3; c += 1) sum[c] += rgb[c];
+      }
     }
     if (!lum.length) continue;
     lum.sort((a, b) => a - b);
     item.ground = {
       source: "ground.png",
+      region: item.lines?.length ? "line-boxes" : "box",
       pixels: lum.length,
       mean: sum.map((v) => Math.round(v / lum.length)),
       luminancePercentiles: Array.from({ length: 101 }, (_, p) => Number(lum[Math.round((p / 100) * (lum.length - 1))].toFixed(5))),
@@ -96,7 +105,16 @@ function extract() {
     const box = { x: rect.x, y: rect.y, w: rect.width, h: rect.height };
     if (text) {
       const color = parse(style.color);
-      items.push({ kind: "text", id, text: text.slice(0, 80), box, fontSize: parseFloat(style.fontSize), fontWeight: Number(style.fontWeight) || 400, fontFamily: style.fontFamily, color: color ? color.slice(0, 3) : null, background: effectiveBackground(element) });
+      // The glyphs' own line boxes (content area, no padding or the rest of a block's row): the
+      // ground that matters for contrast is under these, not under the element's border box.
+      const lines = [];
+      for (const node of element.childNodes) {
+        if (node.nodeType !== 3 || !node.textContent.trim()) continue;
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        for (const r of range.getClientRects()) if (r.width > 0 && r.height > 0) lines.push({ x: r.x, y: r.y, w: r.width, h: r.height });
+      }
+      items.push({ kind: "text", id, text: text.slice(0, 80), box, ...(lines.length ? { lines } : {}), fontSize: parseFloat(style.fontSize), fontWeight: Number(style.fontWeight) || 400, fontFamily: style.fontFamily, color: color ? color.slice(0, 3) : null, background: effectiveBackground(element) });
     } else if (element.children.length === 0 || (parse(style.backgroundColor) || [0, 0, 0, 0])[3] > 0.5 || style.borderStyle !== "none") {
       const fill = parse(style.backgroundColor);
       items.push({ kind: "block", id, box, ...(fill && fill[3] >= 0.99 ? { fill: fill.slice(0, 3) } : {}) });

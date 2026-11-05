@@ -29,3 +29,4 @@
 - [x] 4.4 `--reference` and built-in profile entries in `calibration` lineage; profile ids `^[a-z0-9-]+$`.
 - [x] 4.5 Booleans and whole-number params validated; seed-free default names where the output ignores the seed; `--project-root` in every re-run command; replay compares decoded RGBA.
 - [x] 4.6 Focused tests, `npm run specs:check`, full `npm test`.
+- [x] 4.7 Re-review: ground sampled under the text's line boxes (hero and photo-title repros clean, true positive kept); ring-median floor and lattice balance so gradients and stripes are not screens.

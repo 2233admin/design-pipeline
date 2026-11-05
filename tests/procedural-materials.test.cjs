@@ -112,6 +112,15 @@ test("white noise and flat fields are unlike every profile, calibrated or not; n
       assert.equal(verdict.level, "unlike-reference", `${label} vs ${id}: ${JSON.stringify(verdict)}`);
     }
   }
+  // Noise-free synthetics: smooth gradients and clean stripes have near-zero rings and one axis of
+  // energy; they are not screens.
+  const synth = (f) => { const im = { width: W, height: W, data: Buffer.alloc(W * W * 4) }; for (let y = 0; y < W; y += 1) for (let x = 0; x < W; x += 1) { const v = f(x, y); im.data.set([v, v, v, 255], (y * W + x) * 4); } return im; };
+  for (const [label, image] of [["vertical gradient", synth((x, y) => Math.round((y / W) * 255))], ["6 px stripes", synth((x) => (x % 6 < 3 ? 0 : 255))], ["diagonal stripes", synth((x, y) => ((x + y) % 6 < 3 ? 0 : 255))]]) {
+    const m = stats.measure(image, "halftone", { pxPerMm: 4 });
+    assert.equal(m.screen, false, `${label}: ${JSON.stringify(m)}`);
+    const ref = calibration.profiles["autotype-1904"];
+    assert.equal(stats.assess("halftone", stats.distance(m, ref.heldOut, ref.stats), yard(ref)).level, "unlike-reference", label);
+  }
   // Laid lines and wood grain are single spikes, not a 2-D screen.
   for (const image of [procedural.generate("paper", { width: 512, height: 512 }, 1).image, procedural.generate("print", { width: 512, height: 512, margin: 0 }, 1).image]) {
     assert.equal(stats.measure(image, "halftone", { pxPerMm: 4 }).screen, false);

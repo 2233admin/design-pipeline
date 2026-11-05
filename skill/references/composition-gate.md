@@ -20,7 +20,8 @@ needs `puppeteer-core` in the project or `--puppeteer-module <absolute path to p
 on the call; without either it fails with `puppeteer-core not found`. It writes `screenshot.png`
 plus `elements.json` (visible text with box, size, weight and effective colors). When a text sits
 on a background image, gradient or texture, it also writes `ground.png` (the page with every glyph
-hidden) and records that text's `ground`: mean colour and luminance percentiles under its box.
+hidden) and records that text's `ground`: mean colour and luminance percentiles under its line
+boxes (the glyph runs, plus 2 px; not a block's padding or the empty rest of its row).
 `--seek` positions registered GSAP timelines first. Without
 `--elements` the gate runs on pixels alone.
 

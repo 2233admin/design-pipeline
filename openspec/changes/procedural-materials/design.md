@@ -16,9 +16,13 @@ runtime. Everything below was measured in this environment on 2026-11-05.
    `spectralDb` = RMS over shared bands of 20·log10 of the amplitude ratio (0.02 L* floor), plus the
    quantile difference (`histogramL`, mean absolute difference of the centred L* quantiles).
    Halftones: a screen counts only when its fundamental and the same frequency turned 90° each stand
-   at least 20× above the median of their ring (measured: real and generated AM screens 76 to 9e7;
-   FM, paper, ink flats, laid lines, white noise and flat fields 0 to 7.6); otherwise the measurement
-   says `screen: false`. Screen period/angle from the strongest whitened (×r²) peak,
+   at least 20× above the median of their ring, with the ring median floored at 5% of the mean
+   power of the search annulus and the 90° partner carrying at least 5% of the fundamental's peak
+   (noise-free gradients and clean stripes have near-zero rings and one axis of energy: without the
+   floor a vertical gradient scored 868 and 6 px stripes 60). Measured: real and generated AM screens
+   (round, ellipse, square, cross; autotype crops 76 and 418) pass; FM, line screens, paper, ink
+   flats, laid lines, gradients, stripes, white noise and flat fields score 0 to 7.6 and the
+   measurement says `screen: false`. Line screens are a known gap (one axis by construction). Screen period/angle from the strongest whitened (×r²) peak,
    coverage from the 3rd/97th percentiles, the 2nd-harmonic ratio and the share of variance off the
    screen lattice above 0.6× the screen frequency (content such as a face lives below it).
    Why: amplitudes in L* map directly to "visible or not" (about 1 L* RMS is where fine texture shows
@@ -113,7 +117,11 @@ runtime. Everything below was measured in this environment on 2026-11-05.
     returned null at a background image or gradient, and `verify composition` then skipped the text
     silently. Now, when any text has an image-backed ground, capture takes a second screenshot with
     every glyph hidden (`ground.png`) and records, per such text, the ground's mean colour and its
-    0-100th luminance percentiles under the text box; the existing `text-contrast` check computes the
+    0-100th luminance percentiles under the text's line boxes (`Range.getClientRects()` over its text
+    nodes, inflated by 2 px; the border box only when there is none). The border box was wrong for
+    block headings: an h1 spanning a row whose right side fades to white, or a padded title over a
+    photo with a bright sky elsewhere, measured 2.2-2.6:1 on pixels nowhere near the glyphs. The
+    existing `text-contrast` check computes the
     contrast of each percentile against the text colour and fails at the 5th percentile of those
     (the worst 5%), same 4.5:1 / 3:1 thresholds. Text with an unknown background and no sample is
     `contrast-unmeasured` (warn, with the recapture fix), never silent. No new gate, code family or
