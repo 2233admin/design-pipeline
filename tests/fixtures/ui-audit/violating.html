@@ -54,6 +54,21 @@ button { min-height: 32px; padding: 0 12px; border: 0; background: #1d4ed8; colo
 .media-inner { padding: 8px; border-radius: 16px; background: #fff; }
 /* audit.layout-gap (declared .tight) */
 .tight p { margin: 0; }
+/* audit.line-length and audit.line-height (declared .prose): 1100px lines set solid. */
+.prose { width: 1100px; margin: 0 0 16px; line-height: 1.1; }
+/* audit.heading-levels: the h3 follows the h1. */
+.skipped { margin: 0 0 16px; font-size: 20px; }
+/* audit.reduced-motion: the reduce query removes the entrance animation but not its hidden start,
+   and the spinner keeps turning. */
+.reveal { opacity: 0; animation: reveal 200ms ease-out forwards; }
+.spin { display: inline-block; animation: spin 2s linear infinite; }
+@keyframes reveal { to { opacity: 1; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .reveal { animation: none; } }
+/* audit.state-contrast: pale text on hover, and no focus indicator at all. */
+.states { display: flex; gap: 12px; margin: 0 0 16px; }
+.states .pale:hover { color: #6b8cf0; }
+.states .bare:focus-visible { outline: none; }
 </style>
 </head>
 <body>
@@ -75,6 +90,11 @@ button { min-height: 32px; padding: 0 12px; border: 0; background: #1d4ed8; colo
   <div class="group"><p>Start edge</p><p class="shifted">Shifted item</p></div>
   <div class="media"><div class="media-inner">Inner surface</div></div>
   <div class="tight"><p>One</p><p>Two</p></div>
+  <p class="prose">Running text set in a block eleven hundred pixels wide holds far more than eighty characters on each of its lines, and its leading is set solid, so the eye loses the next line on the way back.</p>
+  <h3 class="skipped">A heading two levels down</h3>
+  <p class="reveal">Text that only an animation reveals</p>
+  <p><span class="spin">Turning</span></p>
+  <div class="states"><button type="button" class="pale">Pale on hover</button><button type="button" class="bare">No focus ring</button></div>
 </main>
 </body>
 </html>

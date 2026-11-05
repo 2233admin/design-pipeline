@@ -19,7 +19,11 @@ a { color: #1d4ed8; }
 .stack { display: flex; flex-direction: column; gap: 32px; max-width: 960px; margin: 0 auto; }
 
 .hero { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
-.hero h1 { margin: 0; font-size: 32px; line-height: 1.25; }
+.hero h1 { margin: 0; font-size: 32px; line-height: 1.25; animation: rise 300ms ease-out both; }
+/* Reduced motion keeps the entrance as a fade, and the heading still ends visible. */
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+@keyframes fade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .hero h1 { animation-name: fade; } }
 .hero p { margin: 0; }
 /* The three false-positive guards: decorative aria-hidden text, clipped screen-reader text and
    content parked off screen are not visible text, so their 10px and 13px sizes are not measured. */
@@ -30,6 +34,11 @@ a { color: #1d4ed8; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 12px; padding: 12px; border-radius: 12px; background: #f4f4f5; }
 button { min-height: 40px; padding: 0 16px; border: 1px solid #1d4ed8; border-radius: 8px; background: #1d4ed8; color: #fff; font: inherit; }
 button.secondary { background: #fff; color: #1d4ed8; }
+/* States: a darker hover that eases in, and a ring two pixels off the control. */
+button { transition: background-color 150ms ease-out, color 150ms ease-out; }
+button:hover { background: #1e40af; }
+button.secondary:hover { background: #eff6ff; color: #1e40af; }
+button:focus-visible { outline: 2px solid #1d4ed8; outline-offset: 2px; }
 
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
 .card { overflow: hidden; padding: 16px; border-radius: 12px; background: #f4f4f5; }

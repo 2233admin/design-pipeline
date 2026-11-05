@@ -9,63 +9,30 @@ const { canonicalTree, copyTrackedFiles, fail, inspectCheckout } = require("./gi
 const CONTENT_HASH_SCOPE = "selected skill and root metadata: sorted POSIX path, NUL, SHA-256 blob hash, newline; gitTree is the upstream repository root, not this scoped snapshot";
 const MIT_GRANT = "Permission is hereby granted, free of charge";
 
-// One reviewed record per bundle. Scope is `skills/<skill>/**` plus the listed root files.
+// One record per bundle; the revision comes from the checkout and sources.lock.json records it. Scope is `skills/<skill>/**` plus the listed root files.
 const REVIEWED = {
   "emil-design-eng": {
     repository: "https://github.com/emilkowalski/skills",
-    revision: "2d228630ba1446365f614a108cb8252f1feda202",
-    gitTree: "a8f01f03c19a9ec7e737494dff7b8e416e326bd2",
-    treeSha256: "16edf049c960e6ea6d96ec4fa2d436c420183c7f33f2dc1b2f8491273218c674",
-    fileCount: 2, byteCount: 28193,
     skill: "emil-design-eng", rootFiles: ["LICENSE"],
     license: { kind: "mit-file", spdx: "MIT", file: "LICENSE", copyright: "Copyright (c) 2026 Emil Kowalski" },
   },
   "make-interfaces-feel-better": {
     repository: "https://github.com/jakubkrehel/make-interfaces-feel-better",
-    revision: "35545ea1512ad59fa463e6b1f95ca9c052981fe6",
-    gitTree: "178b8d6fe1643aa0cafad3fc20d665f666352d4f",
-    treeSha256: "d60a83f0eccb7d6e5b6a1e4eab47e1e1ee9d0a985f4737c8d34decc88db16961",
-    fileCount: 9, byteCount: 43641,
     skill: "make-interfaces-feel-better", rootFiles: ["LICENSE", "README.md"],
     license: { kind: "mit-file", spdx: "MIT", file: "LICENSE", copyright: "Copyright (c) 2026 Jakub Krehel" },
   },
   "fixing-accessibility": {
     repository: "https://github.com/ibelick/ui-skills",
-    revision: "f2264c30213a8a55bd0a6a7668d0438e4564e090",
-    gitTree: "477e37b34f19b7f5c7380219c6b54c0b99aed81e",
-    treeSha256: "bc4375b2fce2417ccf354e00b08cc7365e7bd11cd3ce6b5d501ff82a7d15fcd4",
-    fileCount: 2, byteCount: 5790,
     skill: "fixing-accessibility", rootFiles: ["LICENSE"],
     license: { kind: "mit-file", spdx: "MIT", file: "LICENSE", copyright: "Copyright (c) 2026 Julien Thibeaut" },
   },
-  "12-principles-of-animation": {
-    repository: "https://github.com/raphaelsalaja/skill",
-    revision: "dc9eef22f13635df77d9b9e67c82aa85d52a97b7",
-    gitTree: "e062cfd5c88ba6e7d43aa4c10dfd0644c09ba595",
-    treeSha256: "c836d17cb89f4c7d0cdd88829968db5484d9fd8f8e1762b4dc3fc29b067859e7",
-    fileCount: 2, byteCount: 5106,
-    skill: "12-principles-of-animation", rootFiles: ["README.md"],
-    // The repository ships no license file; the only license evidence is the skill frontmatter.
-    license: {
-      kind: "frontmatter", spdx: "MIT", evidence: "license: MIT",
-      note: "Declared only in the skill frontmatter; the upstream repository has no LICENSE file at the reviewed revision and publishes no copyright line.",
-    },
-  },
   shadcn: {
     repository: "https://github.com/shadcn-ui/ui",
-    revision: "993eb2c3151997ce08a49635c10fd8c8ef3713c7",
-    gitTree: "73f30996a5cbbc3a75ada6818781d1f121636082",
-    treeSha256: "fb90fd9ad20aba550f87fbc2e1aa0e5d0bd7f12035a14ac99f280506365e3fce",
-    fileCount: 22, byteCount: 149817,
     skill: "shadcn", rootFiles: ["LICENSE.md"],
     license: { kind: "mit-file", spdx: "MIT", file: "LICENSE.md", copyright: "Copyright (c) 2023 shadcn" },
   },
   "playwright-cli": {
     repository: "https://github.com/microsoft/playwright-cli",
-    revision: "b85c7a736bb473bf55b584e54a09ffa698d6d871",
-    gitTree: "36df4035a96234a35900b4f221277a617ab4f51b",
-    treeSha256: "5edf4c1784bf591cbfc13b06775c07667f6132c2efbfbc504840c5c03362972e",
-    fileCount: 13, byteCount: 105918,
     skill: "playwright-cli", rootFiles: ["LICENSE", "README.md"],
     // The copyright line is the filled-in appendix boilerplate of the Apache-2.0 text.
     license: {
@@ -75,7 +42,6 @@ const REVIEWED = {
   },
 };
 
-const LICENSE_NAME = /^(?:licen[cs]e|copying)(?:\.[^/]*)?$/i;
 const NOTICE_NAME = /^notice(?:\.[^/]*)?$/i;
 
 function parseArgs(argv) {
@@ -126,18 +92,11 @@ function skillMetadata(text) {
   const name = value("name");
   const description = value("description");
   if (!name || !description) fail("skill entry frontmatter is missing name or description");
-  const license = lines.find(line => /^license:/.test(line));
-  return { name, description, license: license ? unquote(license.slice("license:".length)) : null };
+  return { name, description };
 }
 
-function verifyLicense(name, reviewed, checkout, trackedPaths, entryText) {
+function verifyLicense(name, reviewed, checkout, trackedPaths) {
   const license = reviewed.license;
-  if (license.kind === "frontmatter") {
-    if (skillMetadata(entryText).license !== license.spdx || !entryText.includes(`\n${license.evidence}`)) fail(`source skill frontmatter does not declare the reviewed ${name} license: ${license.evidence}`);
-    const files = trackedPaths.filter(file => LICENSE_NAME.test(path.posix.basename(file)));
-    if (files.length) fail(`reviewed ${name} record expects no license file, but the source tracks ${files.join(", ")}`);
-    return { path: `upstream/skills/${reviewed.skill}/SKILL.md`, license: license.spdx, evidence: license.evidence, note: license.note };
-  }
   const text = checkout.blobs.get(license.file)?.toString("utf8") || "";
   const copyrightLine = new RegExp(`^\\s*${license.copyright.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "m");
   if (license.kind === "mit-file") {
@@ -166,17 +125,13 @@ function importSnapshot(name, source, reviewedAt) {
   const entryBlob = checkout.blobs.get(entry);
   if (!entryBlob) fail(`source does not track the ${name} skill entry: ${entry}`);
   const entryText = entryBlob.toString("utf8");
-  const licenseRecord = verifyLicense(name, reviewed, checkout, trackedPaths, entryText);
+  const licenseRecord = verifyLicense(name, reviewed, checkout, trackedPaths);
   const metadata = skillMetadata(entryText);
   if (metadata.name !== reviewed.skill) fail(`frontmatter name does not match reviewed ${name} entry: ${metadata.name}`);
-  if (checkout.revision !== reviewed.revision) fail(`source revision must be the reviewed ${reviewed.revision}; received ${checkout.revision}`);
-  if (checkout.gitTree !== reviewed.gitTree) fail(`source Git tree does not match reviewed ${name} root tree`);
   const entries = checkout.indexEntries;
   const files = entries.map(item => item.path);
   const byteCount = entries.reduce((sum, item) => sum + item.size, 0);
-  if (files.length !== reviewed.fileCount || byteCount !== reviewed.byteCount || reviewed.rootFiles.some(file => !files.includes(file))) {
-    fail(`reviewed ${name} scoped inventory does not match ${reviewed.fileCount} files and ${reviewed.byteCount} bytes`);
-  }
+  if (reviewed.rootFiles.some(file => !files.includes(file))) fail(`upstream ${name} scope lost a root file: ${reviewed.rootFiles.filter(file => !files.includes(file)).join(", ")}`);
 
   const destination = path.resolve(__dirname, "../skill/vendor", name);
   fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -190,7 +145,6 @@ function importSnapshot(name, source, reviewedAt) {
     fs.mkdirSync(upstream);
     copyTrackedFiles(upstream, entries, checkout.blobs);
     const treeSha256 = canonicalTree(upstream, files);
-    if (treeSha256 !== reviewed.treeSha256) fail(`source content does not match reviewed ${name} scoped tree hash`);
     manifest = {
       schema: "design-pipeline.ui-craft-source.v1",
       name,

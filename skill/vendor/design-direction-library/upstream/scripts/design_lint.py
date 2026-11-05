@@ -433,7 +433,12 @@ def cmd_check(a):
 
 
 def cmd_compare(a):
-    res = [f for f in collect(a.files, a.viewport, a.min_body, a.min_label) if not f.get('fatal') or print(f'打不开，跳过：{f["path"]}：{f["fatal"]}')]
+    res = collect(a.files, a.viewport, a.min_body, a.min_label)
+    failed = [f for f in res if f.get('fatal')]
+    if failed:
+        for f in failed:
+            print(f'打不开，无法完成比较：{f["path"]}：{f["fatal"]}')
+        return 2
     fps = [fingerprint(f) for f in res]
     names = [Path(f['path']).name for f in res]
     print('三方向外观：')

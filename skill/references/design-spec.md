@@ -79,3 +79,12 @@ Rules:
   intentions and are not accepted.
 - an empty table is a valid result and means the spec survived contact unchanged.
 - an absent section is not a valid result. Gate review reports `blocked`.
+- the table is checked against the built page, not only read: after the build, run
+  `designer-pipeline reconciliation measure --change-root <change> --project-root <project>`. It
+  records the colours and font families the page actually paints, and `reconciliation check` blocks
+  on any painted colour further than CIEDE2000 2 from every DESIGN.md `colors` token, or any
+  rendered text family no `typography` token names, that covers 1% or more of the page (or is far
+  off token on a control, the background or repeated elements) and that no row's `Implemented`
+  cell names (write the measured hex, or the family as its own comma-separated entry). Fix the page
+  or the token instead when the drift was not intended. Canvas and image pixels, shadows, the dark
+  scheme and per-glyph fallback are not measured.

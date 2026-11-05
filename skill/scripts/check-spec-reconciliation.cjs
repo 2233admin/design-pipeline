@@ -10,6 +10,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { isObject, resolveInside } = require("./contract-utils.cjs");
+const drift = require("./built-style-drift-core.cjs");
 
 const SPEC_DRIFT_SCHEMA = "design-pipeline.spec-drift.v1";
 const DESIGN_ARTIFACT = "design.md";
@@ -62,6 +63,10 @@ const REASONS = {
   ROW_MALFORMED: "reconciliation-row-malformed",
   CAUSE_MISSING: "reconciliation-cause-missing",
   CAUSE_INTENTION: "reconciliation-cause-intention",
+  MEASUREMENT_MALFORMED: "reconciliation-measurement-malformed",
+  MEASUREMENT_STALE: "reconciliation-measurement-stale",
+  BASELINE_EMPTY: "reconciliation-baseline-empty",
+  MEASURED_DRIFT: "reconciliation-measured-drift",
 };
 
 // Reported `reason` is the first blocking reason in this order; `reasons` carries all of them.
@@ -83,11 +88,17 @@ const REASON_ORDER = [
   REASONS.ROW_MALFORMED,
   REASONS.CAUSE_MISSING,
   REASONS.CAUSE_INTENTION,
+  REASONS.MEASUREMENT_MALFORMED,
+  REASONS.MEASUREMENT_STALE,
+  REASONS.BASELINE_EMPTY,
+  REASONS.MEASURED_DRIFT,
 ];
 
 const WARNINGS = {
   CAUSE_AMBIGUOUS: "reconciliation-cause-ambiguous",
   RECONCILED_UNDATED: "reconciliation-reconciled-undated",
+  MEASURED_MINOR: "reconciliation-measured-minor",
+  UNMEASURED: "reconciliation-unmeasured",
 };
 
 function phrasePattern(phrase) {
@@ -570,6 +581,138 @@ function reviewSection(section, { root, relative, signals, report }) {
   };
 }
 
+// --- measured drift --------------------------------------------------------------------------------
+// The table is what the author says changed; `built-styles.json` (written by `reconciliation measure`)
+// is what the built page paints. Both feed one specDrift record and one gate.
+
+// A change under `<project>/openspec/changes/<id>` belongs to that project; any other change root is
+// its own project root unless the caller names one.
+function inferProjectRoot(root) {
+  const parts = root.split(path.sep);
+  if (parts.length > 3 && parts.at(-3) === "openspec" && parts.at(-2) === "changes") return parts.slice(0, -3).join(path.sep) || path.sep;
+  return root;
+}
+
+function measureCommand(changeRoot, projectRoot) {
+  return `designer-pipeline reconciliation measure --change-root ${changeRoot} --project-root ${projectRoot}`;
+}
+
+function readFileOrNull(file) {
+  try {
+    return fs.statSync(file).isFile() ? fs.readFileSync(file, "utf8") : null;
+  } catch {
+    return null;
+  }
+}
+
+// Warns, never blocks, when a built page and a tokenised DESIGN.md both exist but nobody measured the
+// page against it: the obligation to reconcile already blocks; the measurement makes it checkable.
+function warnUnmeasured(root, projectRoot, designFoundation, report) {
+  if (!report.applicable) return;
+  if (!fs.existsSync(path.join(projectRoot, "index.html"))) return;
+  const text = readFileOrNull(path.resolve(projectRoot, designFoundation));
+  if (text === null) return;
+  const tokens = drift.designTokens(text);
+  if (!tokens.colors.length && !tokens.fonts.length) return;
+  report.warn(
+    WARNINGS.UNMEASURED,
+    `the built page and DESIGN.md tokens both exist but ${drift.BUILT_STYLES_FILE} is absent, so measured drift was not checked. `
+    + `Fix: run \`${measureCommand(path.relative(projectRoot, root) || ".", ".")}\``,
+  );
+}
+
+function reviewMeasurement(root, { projectRoot, designFoundation, rows, report }) {
+  const file = path.join(root, drift.BUILT_STYLES_FILE);
+  const text = readFileOrNull(file);
+  if (text === null) {
+    warnUnmeasured(root, projectRoot, designFoundation, report);
+    return null;
+  }
+  const rerun = `Fix: run \`${measureCommand(path.relative(projectRoot, root) || ".", ".")}\` again`;
+  let value;
+  try {
+    value = JSON.parse(text);
+  } catch (error) {
+    report.block(REASONS.MEASUREMENT_MALFORMED, `change ${drift.BUILT_STYLES_FILE} is not valid JSON (${error.message}). ${rerun}`);
+    return null;
+  }
+  const problems = drift.validateMeasurement(value);
+  if (problems.length) {
+    report.block(REASONS.MEASUREMENT_MALFORMED, `change ${drift.BUILT_STYLES_FILE} ${problems.join("; ")}. ${rerun}`);
+    return null;
+  }
+  const record = {
+    file: drift.BUILT_STYLES_FILE,
+    capturedAt: value.capturedAt,
+    designFile: value.designFile,
+    tolerance: drift.DELTA_E_TOLERANCE,
+    majorShare: drift.MAJOR_SHARE,
+    loudDeltaE: drift.LOUD_DELTA_E,
+    loudElements: drift.LOUD_ELEMENTS,
+    scope: value.scope,
+    current: true,
+    findings: [],
+    major: 0,
+    minor: 0,
+    uncovered: 0,
+  };
+  // Lineage: the measurement is evidence about one page and one DESIGN.md. When either changed it
+  // describes something that no longer exists and is refused rather than compared.
+  let designFile;
+  try {
+    designFile = resolveInside(projectRoot, value.designFile, "design foundation", { scope: "spec reconciliation" });
+  } catch (error) {
+    report.block(REASONS.MEASUREMENT_MALFORMED, `change ${drift.BUILT_STYLES_FILE} names a DESIGN.md outside the project: ${error.message}. ${rerun}`);
+    return null;
+  }
+  const designText = readFileOrNull(designFile);
+  const { pageDigest } = require("./workflows/web.cjs");
+  const stale = [];
+  if (designText === null) stale.push(`${value.designFile} no longer exists`);
+  else if (drift.designSha(designFile) !== value.designSha256) stale.push(`${value.designFile} changed since it was measured`);
+  if (pageDigest(projectRoot) !== value.page) stale.push("the built page (index.html or a file it loads) changed since it was measured");
+  for (const [rel, hash] of Object.entries(value.lineage)) {
+    let file;
+    try {
+      file = resolveInside(projectRoot, rel, "loaded page file", { scope: "spec reconciliation" });
+    } catch {
+      stale.push(`${rel}, which the page loaded, is outside the project`);
+      continue;
+    }
+    if (drift.fileHash(file) !== hash) stale.push(`${rel}, which the page loaded, changed since it was measured`);
+  }
+  if (stale.length) {
+    record.current = false;
+    report.block(REASONS.MEASUREMENT_STALE, `change ${drift.BUILT_STYLES_FILE} is stale: ${stale.join("; ")}. ${rerun}`);
+    return record;
+  }
+  const tokens = drift.designTokens(designText);
+  const gaps = drift.baselineGaps(tokens);
+  if (gaps.length) {
+    report.block(
+      REASONS.BASELINE_EMPTY,
+      `${value.designFile} front matter has ${gaps.join(" and ")}, so the measured page has nothing to be compared with and would pass whatever it paints. `
+      + "Fix: write the colors and typography tokens the page is built from into the DESIGN.md front matter",
+    );
+    return record;
+  }
+  for (const finding of drift.compareBuiltStyles(value, tokens)) {
+    const coveredBy = finding.severity === "major" ? drift.coveringRow(finding, rows) : null;
+    record.findings.push({ ...finding, coveredBy });
+    if (finding.severity === "major") {
+      record.major += 1;
+      if (coveredBy === null) {
+        record.uncovered += 1;
+        report.block(REASONS.MEASURED_DRIFT, `measured drift: ${finding.message}. Fix: ${finding.fix}`);
+      }
+    } else {
+      record.minor += 1;
+      report.warn(WARNINGS.MEASURED_MINOR, `measured drift (minor): ${finding.message}. Fix: ${finding.fix}`);
+    }
+  }
+  return record;
+}
+
 function checkSpecReconciliation(changeRoot, options = {}) {
   const root = fs.realpathSync(path.resolve(changeRoot));
   const relative = options.designFile || DESIGN_ARTIFACT;
@@ -593,6 +736,15 @@ function checkSpecReconciliation(changeRoot, options = {}) {
     );
   }
 
+  const projectRoot = options.projectRoot ? fs.realpathSync(path.resolve(options.projectRoot)) : inferProjectRoot(root);
+  const measured = reviewMeasurement(root, {
+    projectRoot,
+    designFoundation: options.designFoundation || "DESIGN.md",
+    rows: specDrift ? specDrift.rows : [],
+    report,
+  });
+  if (specDrift) specDrift.measured = measured;
+
   const reason = REASON_ORDER.find((candidate) => report.reasons.includes(candidate)) ?? null;
   return {
     status: report.reasons.length ? "blocked" : "ready",
@@ -605,6 +757,7 @@ function checkSpecReconciliation(changeRoot, options = {}) {
     designFile,
     section: { present: section.present, line: section.line },
     specDrift,
+    measured,
   };
 }
 
@@ -614,7 +767,7 @@ function parseArgs(argv) {
     const arg = argv[index];
     if (arg === "--json") options.json = true;
     else if (arg === "--help" || arg === "-h") options.help = true;
-    else if (["--change-root", "--design-file", "--artifact"].includes(arg)) {
+    else if (["--change-root", "--design-file", "--artifact", "--project-root", "--design-foundation"].includes(arg)) {
       const value = argv[index + 1];
       if (value === undefined || value.startsWith("--")) throw new Error(`${arg} requires a value`);
       options[arg.slice(2).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())] = value;
@@ -625,7 +778,7 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  return "Usage: check-spec-reconciliation.cjs --change-root <path> [--design-file design.md] [--artifact reference-evidence.json] [--json]";
+  return "Usage: check-spec-reconciliation.cjs --change-root <path> [--design-file design.md] [--artifact reference-evidence.json] [--project-root <dir>] [--design-foundation DESIGN.md] [--json]";
 }
 
 function main() {
@@ -660,6 +813,7 @@ module.exports = {
   SPEC_DRIFT_SCHEMA,
   WARNINGS,
   checkSpecReconciliation,
+  inferProjectRoot,
   classifyCause,
   parseArgs,
 };

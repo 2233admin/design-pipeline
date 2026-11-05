@@ -1,0 +1,12 @@
+{
+  "set": "ignoredone",
+  "style": "foundry-console",
+  "outputs": [
+    { "files": ["standby-a.html"], "width": 1920, "height": 1080, "style": "foundry-console" },
+    { "files": ["standby-b.html"], "width": 1920, "height": 1080, "style": "broadsheet" }
+  ],
+  "minFontPx": 24,
+  "hierarchy": { "levels": 3, "ratio": 2.5 },
+  "profile": "ui",
+  "controls": false
+}

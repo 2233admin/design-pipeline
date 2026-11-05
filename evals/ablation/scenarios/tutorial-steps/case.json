@@ -1,0 +1,9 @@
+{
+  "set": "ignoredone",
+  "style": "foundry-console",
+  "outputs": [{ "files": ["card.html", "card.svg"], "width": 1080, "height": 1920 }],
+  "minFontPx": 20,
+  "hierarchy": { "levels": 3, "ratio": 2.5 },
+  "profile": "poster",
+  "controls": false
+}

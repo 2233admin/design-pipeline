@@ -11,6 +11,7 @@ const { fileURLToPath, pathToFileURL } = require("node:url");
 const { fail, sha256 } = require("./contract-utils.cjs");
 const { resolvePuppeteer } = require("./film-capture-core.cjs");
 const { browserIdentity, resolveBrowser } = require("./browser-locate.cjs");
+const { collectBlockSignals, detectBlockPage, refuseBlockPage } = require("./block-page-core.cjs");
 
 const SCOPE = "page refs";
 const REFS_SCHEMA = "design-pipeline.page-refs.v1";
@@ -355,6 +356,10 @@ async function captureRefs(projectRoot, options = {}) {
       loaded.set(url, { file, hash: fileHash(file) });
     });
     await page.goto(pathToFileURL(file).href, { waitUntil: "load", timeout: NAVIGATION_TIMEOUT_MS });
+    // A saved challenge or block page (a vendor's own markers; a designed 403 page's wording is not
+    // enough on the project's own page) is refused instead of numbered.
+    const verdict = detectBlockPage(await page.evaluate(collectBlockSignals), { vendorOnly: true });
+    if (verdict.blocked) refuseBlockPage(SCOPE, "index.html", verdict);
     await settle(page);
     await awaitResources(page);
     await freezeMotion(page);

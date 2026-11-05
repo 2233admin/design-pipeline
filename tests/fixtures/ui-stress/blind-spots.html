@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stress fixture: text the rewrite cannot reach</title>
+<link rel="icon" href="data:,">
+<style>
+/* One of each blind spot the stress coverage counts under skipped: an open shadow root, form
+   values and placeholders (4), generated ::after content and SVG text. */
+@font-face { font-family: "Inter"; src: url("fonts/Inter-var.woff") format("woff"); font-weight: 100 900; font-display: block; }
+html { background: #fff; color: #18181b; font: 16px/1.5 Inter, sans-serif; }
+body { margin: 0; padding: 24px 16px; }
+.badge::after { content: "New"; margin-inline-start: 8px; }
+</style>
+</head>
+<body>
+<main>
+  <p class="badge">Plain paragraph text</p>
+  <div id="host"></div>
+  <input placeholder="Search customers" aria-label="Search">
+  <input value="Alice Johnson" aria-label="Name">
+  <textarea aria-label="Note">Hello there</textarea>
+  <select aria-label="Option"><option>Option one</option></select>
+  <svg width="120" height="20" role="img" aria-label="Label"><text x="0" y="14">Label here</text></svg>
+</main>
+<script>document.getElementById("host").attachShadow({ mode: "open" }).innerHTML = "<p>Shadow text</p>";</script>
+</body>
+</html>

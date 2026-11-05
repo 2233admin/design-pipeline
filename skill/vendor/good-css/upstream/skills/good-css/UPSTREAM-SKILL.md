@@ -13,7 +13,7 @@ Each technique is a set of properties and values, so it works in any authoring s
 
 These need no file.
 
-- Write `inline` and `block` properties in place of left, right, top and bottom. Tailwind has them too, as in `mbs-`, `pe-` and `inset-bs-`, so never write `mt-`, `pr-` or `top-`.
+- Write `inline` and `block` properties in place of left, right, top and bottom. Tailwind has them too, as in `mbs-`, `pe-` and `inset-bs-`, so never write `mt-`, `pr-` or `top-`. The block ones need Tailwind 4.2. Below it, write them as arbitrary properties, as in `[margin-block-start:theme(spacing.4)]`.
 - Write colors in `oklch()`, with `none` as the hue of a gray, white or black. Derive a hover, tint or transparent version with `color-mix(in oklch, …)`.
 - Put sizes that grow with the screen in one `clamp()` token.
 - Put every `:hover` rule inside `@media (hover: hover) and (pointer: fine)`.
@@ -29,7 +29,7 @@ Each file holds entries with the CSS and its rules. The rules are the conditions
 | Read | Before you write |
 | --- | --- |
 | `references/foundations.md` | a reset or base stylesheet, a set of color tokens, dark mode, a type or spacing scale |
-| `references/layout.md` | a page container or wrapper, a grid of cards, cards whose parts line up, a sidebar, a component placed in slots of different widths, overlapping layers, centered content that can overflow |
+| `references/layout.md` | a page or section container or any centered `max-width` wrapper, whether or not anything goes edge to edge, a grid of cards, cards whose parts line up, a sidebar, a component placed in slots of different widths, overlapping layers, centered content that can overflow |
 | `references/spacing-and-shape.md` | spacing between sections, elements stacked one above another, one item pushed to the far end of a row or column, nested rounded corners |
 | `references/text-and-media.md` | text or images that come from a user or a CMS, such as names, titles, excerpts, thumbnails, avatars and embeds, an icon next to a label, a label that looks off-center, numbers in a column |
 | `references/interaction.md` | the focus, hover and press states of a button, link, input or card, a small tap target, a clickable card, form validation, a textarea, a parent styled by what it contains, page scroll locked behind a modal |

@@ -2,6 +2,7 @@
   "schema": "design-pipeline.test-manifest.v1",
   "tests": [
     "gepa-source.test.cjs",
+    "sources-lock.test.cjs",
     "gepa-runtime.test.cjs",
     "reference-analysis-entry.test.cjs",
     "reference-video.test.cjs",
@@ -9,12 +10,14 @@
     "component-eval.test.cjs",
     "github-workflows.test.cjs",
     "hyperframes-routing.test.cjs",
+    "game-ui-lens-and-code-video.test.cjs",
     "adapter-intake.test.cjs",
     "adapter-registry.test.cjs",
     "anti-slop-review.test.cjs",
     "answer-me-with-html-sources.test.cjs",
     "answer-me-with-html.test.cjs",
     "astryx-bundled-snapshot.test.cjs",
+    "astryx-snapshot-generator.test.cjs",
     "benchmark.test.cjs",
     "capability-audit.test.cjs",
     "carried-forward-defects.test.cjs",
@@ -83,6 +86,7 @@
     "audio-gate.test.cjs",
     "film-catalog-3d.test.cjs",
     "film-score.test.cjs",
+    "film-voiceover.test.cjs",
     "film-motion-rules.test.cjs",
     "film-continuity.test.cjs",
     "film-blender.test.cjs",
@@ -91,8 +95,12 @@
     "interaction-capture.test.cjs",
     "interaction-cli.test.cjs",
     "interaction-audit.test.cjs",
+    "interaction-stress.test.cjs",
+    "interaction-scroll.test.cjs",
     "page-compare.test.cjs",
     "page-refs.test.cjs",
+    "reference-extract.test.cjs",
+    "measured-spec-drift.test.cjs",
     "page-review.test.cjs",
     "workflow-next.test.cjs",
     "workflow-replicate.test.cjs",
@@ -155,6 +163,8 @@
     "browser-locate.test.cjs",
     "vendor-cache.test.cjs",
     "design-direction-library.test.cjs",
-    "reference-name-scope.test.cjs"
+    "brand-design-systems.test.cjs",
+    "reference-name-scope.test.cjs",
+    "ablation-eval.test.cjs"
   ]
 }

@@ -42,7 +42,7 @@ The repository holds one skill, so the CLI selects it without asking. It still a
 
 ```bash
 npx skills add Leonxlnx/cinetic -g -a claude-code -y   # global, Claude Code only, no prompts
-npx skills add Leonxlnx/cinetic#v1.0.0                 # pin to the v1.0.0 tag
+npx skills add Leonxlnx/cinetic#v1.1.0                 # pin to the v1.1.0 tag
 npx skills add Leonxlnx/cinetic --list                 # show what would be installed, install nothing
 ```
 
@@ -121,7 +121,7 @@ mkdir -p ~/.claude/skills
 unzip cinetic.skill -d ~/.claude/skills/          # creates ~/.claude/skills/cinetic/
 ```
 
-To pin a version, download it from its tag instead: `https://github.com/Leonxlnx/cinetic/releases/download/v1.0.0/cinetic.skill`.
+To pin a version, download it from its tag instead: `https://github.com/Leonxlnx/cinetic/releases/download/v1.1.0/cinetic.skill`.
 
 Or copy the folder from a clone:
 
@@ -148,9 +148,9 @@ To update, delete the old folder first and repeat the steps: `rm -rf ~/.claude/s
 | bash | 3.2 or newer (macOS's built-in bash works) | every `.sh` script |
 | Network | when scaffolding a film, and each time you add a font | `npm install` in each new film (unless `--link-modules`), `npm pack` in `add-font.mjs`, the first `npx -y hyperframes@0.8.79` run, Remotion's first browser download; renders themselves run offline |
 
-Remotion bundles an ffmpeg of its own for its internal encodes, but `render.sh`, `accumulate.py`, `hf-finish.sh` and the QA scripts call `ffmpeg` and `ffprobe` from your `PATH`.
+Remotion bundles an ffmpeg of its own for its internal encodes, but `render.sh`, `accumulate.py`, `hf-finish.sh` and the QA scripts call `ffmpeg` and `ffprobe` from your `PATH`. Any version from 6 on works: ffmpeg 7.1 and newer take a file's colour tags from the decoded frames, so the scripts' encodes end with a `setparams` step that writes all four BT.709 tags (do the same in your own encodes, see [`references/finishing.md` §4](../skills/cinetic/references/finishing.md#4-colour-bt709-everywhere)).
 
-The scripts are bash and were developed and tested on Linux (CI runs on Ubuntu). They avoid GNU-only tools and bash 4 features so that they also run on macOS with its built-in bash 3.2, but macOS is less tested; please report anything that breaks. On Windows, WSL2 with the Ubuntu steps below is the likely route; it has not been tested.
+The scripts are bash and were developed and tested on Linux (CI runs on Ubuntu). They avoid GNU-only tools and bash 4 features so that they also run on macOS with its built-in bash 3.2, and CI parses every script with bash 3.2.57, the version macOS ships. macOS is still less tested; please report anything that breaks. On Windows, WSL2 with the Ubuntu steps below is the likely route; it has not been tested.
 
 ### macOS (Homebrew)
 
@@ -205,6 +205,34 @@ echo 'export PATH="$HOME/.venvs/cinetic/bin:$PATH"' >> ~/.zshrc    # or ~/.bashr
 
 A venv also avoids the `externally-managed-environment` error that recent Debian, Ubuntu and Homebrew Pythons raise on a global `pip install`.
 
+### Sound from earshot
+
+A film's sound effects come from its sound kit (`audio/kit.json`), rendered by [earshot](https://github.com/Leonxlnx/earshot) 0.3 or later: sounds designed in code, each take with its measured sync points. earshot is optional but recommended: without it a film plays the kit takes already rendered in its `audio/kit/` folder, and with none it falls back to synthesized effects and says so in a warning. Rendering a kit needs no models and no network; listening (`listen.py`) downloads two open models (~1.1 GB) on first use.
+
+earshot has heavier dependencies (PyTorch) than cinetic, so give it its own virtual environment, following its README ("Install"):
+
+```bash
+git clone https://github.com/Leonxlnx/earshot ~/earshot && cd ~/earshot
+python3 -m venv .venv
+.venv/bin/python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+.venv/bin/python -m pip install -e .
+```
+
+Then tell cinetic where it is, in your shell profile next to the `PATH` line above:
+
+```bash
+echo 'export EARSHOT_PYTHON="$HOME/earshot/.venv/bin/python"' >> ~/.zshrc    # or ~/.bashrc
+```
+
+Inside a film project, `python3 scripts/audio/kit.py where` prints which earshot it found, or what it tried. It looks, in order, at `--python`, `"sfx": {"python": ...}` in `audio/score.json`, `EARSHOT_PYTHON`, an `earshot` importable in the `python3` that runs the script, and `earshot` on `PATH`; each must have sound kits (`earshot kit --help` works). When the interpreter runs earshot from a source checkout it was not installed from, add `PYTHONPATH=/path/to/that/checkout` (it is passed through). `EARSHOT_PYTHON=none` turns earshot off for a run (score.py then plays the rendered takes as they are).
+
+| Command (in a film project) | What it does |
+|---|---|
+| `npm run kit` (`python3 scripts/audio/kit.py render`) | renders every take into `audio/kit/` (about 35–75 s for the calm kit the first time, a few seconds once cached) |
+| `python3 scripts/audio/kit.py init --preset calm\|crisp\|minimal --force` | starts `audio/kit.json` from an earshot preset, tuned to the key in `audio/score.json` |
+| `python3 scripts/audio/kit.py check` | the kit against the film's cues, plus earshot's audit of every take |
+| `npm run listen` (`python3 scripts/audio/listen.py`) | earshot's ears on the soundtrack: `out/qa/listen.json` and `out/qa/sound_sheet.png` (20–60 s of model loading, once per run) |
+
 ### Fonts
 
 Nothing is installed system-wide. Each film vendors its typefaces from npm `@fontsource-variable/*` packages, with `--font <name>` on `new-film.sh` or `node scripts/add-font.mjs <name>` inside the project (both need the network), so a render never fetches a font. A brand's own `.ttf` or `.otf`, and the route for offline machines, are in [`references/copy-and-type.md` §6](../skills/cinetic/references/copy-and-type.md#6-one-family-chosen-for-the-brand).
@@ -251,7 +279,7 @@ The config also sets the ANGLE GL backend (WebGL works headless), JPEG q95 inter
 
 ## 4. A first test render
 
-This renders the starter's 9-second placeholder demo end to end: scaffold, gates, cues, a synthesized soundtrack, a preview and a motion-blurred master. It proves the machine is ready before an agent spends an hour on a film. After `npm install`, the gates, cues, soundtrack and preview take a little over a minute, and the blurred master about four and a half more. The timings in the comments were measured on a 4-CPU Linux machine.
+This renders the starter's 13-second placeholder demo end to end: scaffold, gates, cues, a synthesized soundtrack, a preview and a motion-blurred master. It proves the machine is ready before an agent spends an hour on a film. After `npm install`, the gates, cues, soundtrack and preview take a little over a minute, and the blurred master about four and a half more. The timings in the comments were measured on a 4-CPU Linux machine.
 
 Set `SKILL` to the folder that holds the installed `SKILL.md`. Use an absolute path, because the steps below change directory:
 
@@ -260,12 +288,12 @@ Set `SKILL` to the folder that holds the installed `SKILL.md`. Use an absolute p
 | skills CLI or manual copy, Claude Code, global | `$HOME/.claude/skills/cinetic` |
 | skills CLI or manual copy, Claude Code, project | `$PWD/.claude/skills/cinetic` (run from the project root) |
 | skills CLI, Codex, Cursor, OpenCode and the other `.agents` agents | `$HOME/.agents/skills/cinetic` (global) or `$PWD/.agents/skills/cinetic` (project) |
-| Claude Code plugin | `$HOME/.claude/plugins/cache/cinetic/cinetic/1.0.0/skills/cinetic` (the next-to-last folder is the installed version) |
+| Claude Code plugin | `$HOME/.claude/plugins/cache/cinetic/cinetic/1.1.0/skills/cinetic` (the next-to-last folder is the installed version) |
 | a clone of this repository | `$PWD/skills/cinetic` (run from the clone's root) |
 
 ```bash
 SKILL="$HOME/.claude/skills/cinetic"
-bash "$SKILL/scripts/new-film.sh" films/first-film --fps 60 --bpm 120 --size 1920x1080
+bash "$SKILL/scripts/new-film.sh" films/first-film --fps 60 --size 1920x1080
 cd films/first-film
 ```
 
@@ -276,26 +304,29 @@ cd films/first-film
 | `<dir>` | (required) | target folder; must be empty unless `--force` |
 | `--engine remotion\|hyperframes` | `remotion` | which starter to copy |
 | `--fps N` | `60` | frame rate |
-| `--bpm N` | `120` | tempo; one beat must be a whole number of frames (at 60 fps: 90 → 40 f, 100 → 36, 120 → 30, 144 → 25, 150 → 24) |
+| `--bpm N` | the starter's own: Remotion 100, HyperFrames 120 (120 with `--pace crisp`) | tempo; one beat must be a whole number of frames (at 60 fps: 90 → 40 f, 100 → 36, 120 → 30, 144 → 25, 150 → 24) |
+| `--pace calm\|crisp` | `calm` | the film's pace (`PACE_NAME`): calm fragments that take turns with the picture, or the denser crisp tempo for a brief that asks for energy |
 | `--size WxH` | `1920x1080` | frame size, even in both dimensions (`1080x1920` for 9:16, `1080x1080` for 1:1) |
 | `--name NAME` | the folder name | project and package name |
 | `--font NAME` | none | vendor a `@fontsource-variable/*` family (repeatable) |
 | `--browser PATH` | `$CHROMIUM_PATH` | bake a headless-shell path into `remotion.config.ts` |
-| `--link-modules DIR` | none | symlink an existing `node_modules` instead of running `npm install` |
+| `--link-modules DIR` | none | link an existing `node_modules` instead of running `npm install` (a symlink; a directory junction on Windows, where `ln -s` would copy the folder) |
 | `--no-install` | off | skip `npm install` |
 | `--force` | off | allow a non-empty `<dir>` |
 
 Now run the gates and build the sound:
 
 ```bash
-npm run check    # 3-8 s. Fails on purpose: "lint-film: 30 files, 5 errors, 0 warnings -> FAIL"
-npm run cues     # 1 s. "wrote out/cues.json: 20 events (...), 16 cues, 9.00 s at 60 fps, 120 BPM"
-npm run audio    # 6 s. "PASS  public/audio/soundtrack.wav  9.0s  -14.0 LUFS  TP -2.27 dBTP ..."
+npm run check    # 3-8 s. Fails on purpose: "lint-film: 32 files, 5 errors, 0 warnings -> FAIL"
+npm run cues     # 1 s. "wrote out/cues.json: 8 events (text 2, land 3, whoosh 1, tock 1, hit 1), 12 cues, 3 copy entries, 13.00 s at 60 fps, 100 BPM"
+npm run kit      # 30-75 s the first time, seconds after. "kit calm: 64 takes in audio/kit (64 rendered, 0 cached) ..."
+npm run audio    # 6-20 s. "PASS  public/audio/soundtrack.wav  13.0s  -18.05 LUFS (target -18, ...)  TP -2.27 dBTP ..."
 ```
 
 - `npm run check` runs `tsc`, `lint-film.mjs` and `grid-check.ts`. On the starter the lint fails with `placeholder` errors: the palette, typeface, mark and name are stand-ins, and no film may ship on them. Replacing them is the agent's Step 2. `tsc` passing is the part that matters here. Because the lint stops the chain, run the grid check on its own: `npx tsx scripts/grid-check.ts src/timeline.ts` should print `-> pass (0 errors, 0 warnings)`.
 - `npm run cues` exports the sync frames from the picture code (`scripts/export-cues.ts`).
-- `npm run audio` synthesizes and masters the score (`scripts/audio/score.py`) into `public/audio/soundtrack.wav`, with stems in `out/stems/` and a report in `out/qa/score.json`.
+- `npm run kit` has earshot render the film's sound kit into `audio/kit/` (`scripts/audio/kit.py`; [Sound from earshot](#sound-from-earshot)). Without earshot it prints an install hint and what `score.py` will play instead, and the chain goes on.
+- `npm run audio` places the kit's takes on the cue frames and masters the soundtrack (`scripts/audio/score.py`) into `public/audio/soundtrack.wav`, with stems in `out/stems/` and a report in `out/qa/score.json`. The starter is effects only (`"music": "none"`), so it masters to −18 LUFS; its second line names where the effects came from (`sfx: earshot kit calm ...`, or `synth (fallback)` with a warning when no kit was rendered).
 
 Render a preview, then the motion-blurred master:
 
@@ -304,7 +335,7 @@ bash scripts/render.sh Film out/preview.mp4 --preview   # about 1 min (same as: 
 bash scripts/render.sh Film out/film.mp4 --blur         # about 4.5 min (same as: npm run render)
 ```
 
-Both commands take the soundtrack from `public/audio/soundtrack.wav` by default (`--audio FILE` to change it, `--no-audio` for a silent loop) and end with two gates: `check-sync.py` (audio lag at most 48 samples, true peak at most −1 dBTP after decoding) and `probe.py` (size, fps, frame count, yuv420p, BT.709 tags, AAC at 48 kHz). A good run ends with `check-sync PASS`, `probe PASS` and `done: out/preview.mp4 (0.6 MB, 9.000s, preview)`. Exit code 0 means every gate passed.
+Both commands take the soundtrack from `public/audio/soundtrack.wav` by default (`--audio FILE` to change it, `--no-audio` for a silent loop) and end with two gates: `check-sync.py` (audio lag at most 48 samples, true peak at most −1 dBTP after decoding) and `probe.py` (size, fps, frame count, yuv420p, BT.709 tags, AAC at 48 kHz). A good run ends with `check-sync PASS`, `probe PASS` and `done: out/preview.mp4 (<size> MB, 13.000s, preview)`. Exit code 0 means every gate passed.
 
 Other useful commands in the Remotion starter: `npm run studio` (Remotion Studio, with each act as its own composition), `npm run stills` (the mark at 16 px, at full size and across sizes, into `out/stills/`), and `npm run qa` (probe, forensics, A/V audit and a contact sheet of `out/film.mp4`).
 
@@ -316,11 +347,12 @@ Continuing from `films/first-film`, with `SKILL` still set:
 
 ```bash
 cd ../..                          # back to where you ran the first new-film.sh
-bash "$SKILL/scripts/new-film.sh" films/hf-film --engine hyperframes --fps 60 --bpm 120 --size 1920x1080
+bash "$SKILL/scripts/new-film.sh" films/hf-film --engine hyperframes --fps 60 --size 1920x1080   # its own 120 BPM
 cd films/hf-film
 node scripts/lint-film.mjs .      # fails on purpose until the placeholder palette, font and mark in index.html are replaced
+node scripts/grid-check.ts timeline.js   # the grid, the reads and the text flow: "-> pass (0 errors, 0 warnings)"
 npm run lint                      # HyperFrames' own lint: must show 0 errors
-npm run cues && npm run audio
+npm run cues && npm run kit && npm run audio
 npm run render:preview            # hf-finish.sh --preview -> out/preview.mp4
 npm run render                    # hf-finish.sh with the soundtrack -> out/film.mp4
 ```
@@ -415,7 +447,11 @@ The full pipeline is in [`references/finishing.md`](../skills/cinetic/references
 |---|---|---|
 | `render.sh: soundtrack public/audio/soundtrack.wav not found` | cues and audio were not built | `npm run cues && npm run audio`; or pass `--build-audio` to rebuild both first; or `--no-audio` for a silent film |
 | `render.sh: warning: src/... is newer than public/audio/soundtrack.wav` | the picture changed after the score was made | rerun `npm run cues && npm run audio` before rendering; an old WAV under a retimed picture is the most common sync bug |
-| `npm run audio` prints `FAIL` with `integrated ... LUFS not within -14.0+-0.5` | the master missed its loudness target (±0.5 LU) | read `warnings` and `limiter_hot` in `out/qa/score.json`; pull a loud bed down rather than raising the ceiling; a calm brand or a sting of 8 s or less may target −16: set `"master": {"lufs": -16}` in `audio/score.json` (or pass `--lufs -16`), then rerun `npm run audio` |
+| `npm run audio` prints `FAIL` with `integrated ... LUFS not within ...` | the master missed its loudness target (±0.5 LU; −14 with music, −18 for an effects-only film unless `master.lufs` says otherwise) | read `warnings` and `limiter_hot` in `out/qa/score.json`; pull a loud bed down rather than raising the ceiling; a sting of 8 s or less with music may target −16: set `"master": {"lufs": -16}` in `audio/score.json` (or pass `--lufs -16`), then rerun `npm run audio` |
+| `warning: blind synthesis fallback: ...` and `sfx: synth (fallback)` | no rendered kit in `audio/kit/` and no earshot found | install earshot and set `EARSHOT_PYTHON` ([Sound from earshot](#sound-from-earshot)), then `npm run kit && npm run audio`; or copy a kit rendered on another machine: `python3 scripts/audio/kit.py vendor --from <its audio/kit>` |
+| `kit.py: earshot not found (...)` | `EARSHOT_PYTHON` unset or wrong, or an earshot older than 0.3 (no `earshot kit`) | `python3 scripts/audio/kit.py where` lists what it tried; point `EARSHOT_PYTHON` at the interpreter of earshot's virtual environment |
+| `... changed since the takes were rendered; earshot is not available ...: playing the takes as they are` | `audio/kit.json` was edited on a machine without earshot | render the kit where earshot is installed (`npm run kit`) and keep `audio/kit/` with the project |
+| `listen.py` writes `"listened": false` | earshot or its models are missing, or a model failed to load (memory, network on first use) | the reason is in `out/qa/listen.json`; `python3 -m earshot doctor --load` in earshot's environment checks the models. Listening never blocks a build |
 | `FAIL: true peak ... dBTP above -1.5` | the ceiling was raised, or sounds were added after mastering | restore `"ceiling": 0.77` in `audio/score.json` and rerun `npm run audio`; master a supplied track with `python3 scripts/audio/master.py mix.wav public/audio/soundtrack.wav --lufs -14` |
 | `check-sync` fails on true peak after the mux | the AAC encode adds 0.5–1 dB of peak | the same fix as above: keep the 0.77 ceiling so the WAV stays at or under −1.5 dBTP |
 | A Python script of your own dies with `Segmentation fault` inside `librosa.onset` or `librosa.util.peak_pick` | a stale numba cache, or a numba build that does not match numpy | `av-audit.py` no longer uses librosa's numba code; for your own scripts, `export NUMBA_CACHE_DIR=$(mktemp -d)` or upgrade numba and numpy together |
@@ -430,7 +466,7 @@ The full pipeline is in [`references/finishing.md`](../skills/cinetic/references
 | Stepped copies of a moving wordmark in the master | too few samples on its fastest frames | grab them with `bash scripts/grab.sh out/film.mp4 <frame>`; raise the floor for that range with `--floor A-B:N` |
 | `--blur needs the sub-frame composition 'XSub'` | a composition without a registered `...Sub` twin | register one in `src/Root.tsx` like `FilmSub`, pass `--sub ID`, or blur a range of `Film` with `--frames A-B` |
 | The output shows older code than the source | `src/` was edited while the render ran | render again; `render.sh` warns when this happens |
-| On macOS, a `--blur` render stops right after the sharp pass | the system `date` does not support `%N` | run it with GNU coreutils first on `PATH` ([macOS](#macos-homebrew)) |
+| `probe.py` fails the `bt709` check with `bt709/None/None/tv` | ffmpeg 7.1 or newer takes the colour tags from the frames, and the encode had no `setparams` step: scripts copied into the project by cinetic 1.0.0 or earlier, or an encode of your own | copy the skill's current scripts into the project ([Updating a project's scripts](#updating-a-projects-scripts)) and render again; in your own encodes end `-vf` with `setparams` ([`references/finishing.md` §4](../skills/cinetic/references/finishing.md#4-colour-bt709-everywhere)) |
 
 ### HyperFrames
 
@@ -438,10 +474,21 @@ The full pipeline is in [`references/finishing.md`](../skills/cinetic/references
 |---|---|---|
 | The first `npx -y hyperframes@0.8.79 ...` is slow or fails offline | `npx` downloads the pinned CLI on first use | run `npx -y hyperframes@0.8.79 doctor` once while online; point `HF_CLI` at a local install for `hf-finish.sh` |
 | HyperFrames downloads a browser, or `doctor` reports one missing | no browser configured | set `HYPERFRAMES_BROWSER_PATH` to a local headless shell (`CHROMIUM_PATH` reaches only `hf-finish.sh`); `npx -y hyperframes@0.8.79 browser` helps diagnose |
+| On macOS, `npm run cues` or a render stops with `hf-finish.sh: line 301: unexpected EOF while looking for matching`, or the render step fails with `render wrote      300 frames, expected 300` | the project's copy of `hf-finish.sh` is from cinetic 1.0.0 or earlier, which macOS's bash 3.2 cannot parse and whose frame count broke on BSD `wc` | copy the skill's current scripts into the project ([Updating a project's scripts](#updating-a-projects-scripts)) |
 | `setup: missing node_modules/gsap/dist/gsap.min.js` | `npm install` did not run | `npm install` in the project (it runs `setup.mjs`), or `node setup.mjs` after linking `node_modules` |
 | `check` reports "0 samples" and looks clean | a lint error disables the layout audit | get `npm run lint` to 0 errors first |
 | `hf-finish: ... has transparent pixels` | PNG capture drops the `html`/`body` background, which would encode as black | put the background on a full-bleed `.clip` layer, or pass `--allow-transparent` |
 | Extra skills appeared in `~/.claude/skills` | `hyperframes init` installs its vendor's agent skills | start projects with `new-film.sh --engine hyperframes`, not `init`; `hf-finish.sh` sets `HYPERFRAMES_SKIP_SKILLS=1` and turns telemetry off (`HYPERFRAMES_NO_TELEMETRY=1`) |
 | Motion over about 18 px per frame shows separate copies after `--blur` | HyperFrames blur is capped at 240 fps (K ≤ 4 at 60 fps) | build fast films in Remotion, whose `render.sh --blur` adds samples with speed |
 
-Still stuck: every script except the internal `brand-svg.ts` helper prints `--help`, and [`references/remotion-engine.md`](../skills/cinetic/references/remotion-engine.md), [`references/hyperframes-engine.md`](../skills/cinetic/references/hyperframes-engine.md), [`references/chromium-rendering.md`](../skills/cinetic/references/chromium-rendering.md) and [`references/finishing.md`](../skills/cinetic/references/finishing.md) cover each engine's traps in more depth. Report a problem at [github.com/Leonxlnx/cinetic/issues](https://github.com/Leonxlnx/cinetic/issues).
+### Updating a project's scripts
+
+A project keeps its own copy of the scripts, made when `new-film.sh` scaffolded it, so a fix in a newer cinetic reaches an existing project only when you copy the scripts again. Copy them the way the scaffold does, which leaves out the skill's own tests (`scripts/test/`, whose fixtures break the rules on purpose) and Python caches. From the project root, with `SKILL` set as in [section 4](#4-a-first-test-render):
+
+```bash
+(cd "$SKILL/scripts" && tar --exclude=__pycache__ --exclude='*.pyc' --exclude=./test -cf - .) | (cd scripts && tar -xf -)
+```
+
+This replaces the scripts cinetic ships and keeps any file of your own in `scripts/`.
+
+Still stuck: every script except the internal `brand-svg.ts` and `hf-preflight.cjs` helpers prints `--help`, and [`references/remotion-engine.md`](../skills/cinetic/references/remotion-engine.md), [`references/hyperframes-engine.md`](../skills/cinetic/references/hyperframes-engine.md), [`references/chromium-rendering.md`](../skills/cinetic/references/chromium-rendering.md) and [`references/finishing.md`](../skills/cinetic/references/finishing.md) cover each engine's traps in more depth. Report a problem at [github.com/Leonxlnx/cinetic/issues](https://github.com/Leonxlnx/cinetic/issues).

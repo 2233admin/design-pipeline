@@ -1,0 +1,9 @@
+{
+  "set": "ignoredone",
+  "style": "broadsheet",
+  "outputs": [{ "files": ["card.html", "card.svg"], "width": 1080, "height": 1440 }],
+  "minFontPx": 22,
+  "hierarchy": { "levels": 3, "ratio": 2.0 },
+  "profile": "poster",
+  "controls": false
+}

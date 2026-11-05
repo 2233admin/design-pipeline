@@ -37,14 +37,15 @@ test("bundles the pinned dimabraven/design-md example tree", () => {
 });
 
 test("offline search stays inspiration-only and does not require a directory catalog", () => {
-  const result = searchDesignMdSource({ query: "keyboard-first", limit: 2 });
+  // kind: example keeps the ranking independent of a fetched brand design-system catalog.
+  const result = searchDesignMdSource({ query: "keyboard-first", kind: "example", limit: 2 });
   assert.equal(result.results[0].id, "design-md:example:linear");
   assert.equal(result.results[0].status, "reference-only");
   assert.equal(result.results[0].executableReady, false);
   assert.ok(fs.existsSync(result.results[0].contentPath));
 
   const child = spawnSync(process.execPath, [
-    cli, "designmd", "search", "--root", repoRoot, "--query", "geist", "--limit", "1", "--json",
+    cli, "designmd", "search", "--root", repoRoot, "--kind", "example", "--query", "geist", "--limit", "1", "--json",
   ], { cwd: repoRoot, encoding: "utf8", windowsHide: true });
   assert.equal(child.status, 0, child.stderr || child.stdout);
   const output = JSON.parse(child.stdout);
