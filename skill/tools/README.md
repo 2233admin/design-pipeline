@@ -9,8 +9,8 @@ by the visual problem; using a helper does not create a film project or select a
 | The visible goal needs a method or implementation beyond the current tools | [Find and apply a capability](open-source-design.md) | Active GitHub/upstream discovery, source inspection, a rendered study and task-local adoption |
 | Find visual references, assets or a specific design operation | [Design sources](design-sources.md) | User's design directory, task-based lookup and transfer into existing reference/preview tools |
 | Choose web component sources before build | [Component decision](../references/workflow-web.md#components), [index routing](../references/pipeline-reference.md#design-system-knowledge-and-adoption) | Project paths first, then indexed sources; named GitHub or scratch choices, on-demand source loading and the web build manifest/license contract |
-| New-site design, existing-project redesign, aesthetic critique or a chosen UI style | [Built-in Taste suite](../references/taste-skill.md) | Thirteen complete local methods; select by task and keep the project stack and checks |
-| Website/mobile concept images, brand boards or image-to-code | [Taste output selection](../references/taste-skill.md#choose-the-deliverable) | Image-only guidance uses an available provider; user references can go directly to verified frontend implementation |
+| New-site design, existing-project redesign, app screens or critique of a render | [Built-in Taste skill](../references/taste-skill.md) | One complete local skill with four routes; keep the project stack and checks |
+| Taste direction draw, real-browser inspection, source lint or open-licence pictures | [Taste optional tools](../references/taste-skill.md#optional-upstream-tools) | Run from the packaged copy in the target project; findings about taste are advisory, never a gate |
 | Continuous ink, pressure, path reveal, static paper grain | [Canvas craft](visual-craft/README.md) | Callable, caller-sized Canvas helpers and browser study |
 | Fit short labels, keep a readable minimum, place/crop images, choose sprite frames | [Canvas craft](visual-craft/README.md) | Measured layout and explicit overflow; keep product text in semantic DOM |
 | Choose and obtain a font, compare real copy, handle CJK/Latin and font variants | [Font sources and selection](fonts.md) | FontLab and primary sources, project-local acquisition, actual-family and rendering checks |
@@ -18,7 +18,7 @@ by the visual problem; using a helper does not create a film project or select a
 | Find where a sampled reference video changes | [Visual diagnostics](visual-diagnostics/README.md) | `reference analyze-video`, timed frames and spatial motion maps |
 | Watercolor, impasto, flow fields, lighting, print and post effects | [Art Motion](art-motion/README.md) | Isolated, caller-sized Canvas runtime |
 | Charts, diagrams, collage, type treatments, cameras, character construction | [Art Motion](art-motion/README.md) | Callable namespaces, optional style/grammar studies and transitions |
-| Font subsets, glyph coverage, matte/sprite preparation, synthesis | [Asset/audio tools](art-motion/assets-audio.md) | Maintained tools with explicit inputs and fresh outputs |
+| Font subsets, glyph coverage, matte/sprite preparation, collage cutting, synthesis | [Asset/audio tools](art-motion/assets-audio.md) | Maintained tools with explicit inputs and fresh outputs |
 | Multi-world travel, interaction pauses and style boundaries | [Scroll helper](art-motion/scroll.md) | Caller-owned world, subject and camera callbacks |
 | Style recipes, cue-driven clips, exact-frame/alpha export, audiovisual reference breakdown | [Art Motion](art-motion/README.md) | 35 style studies, 8 clip grammars, full method routing |
 | Phone and tablet web: viewport units, safe areas, input zoom, touch targets, hover gating | [Mobile web](../references/mobile-web.md) | Project-owned rules with checks to run on a real device |

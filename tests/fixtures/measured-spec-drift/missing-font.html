@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Missing font</title>
+<style>
+  /* the token family is named but never loaded: no @font-face, not installed */
+  body { margin: 0; font-family: "Fixture Display", "DejaVu Sans", sans-serif; color: #1a1a2e; background: #fff; }
+  .cta { background: #3366ff; color: #fff; }
+</style>
+</head>
+<body>
+  <h1>Token family that never loads</h1>
+  <p>Every line here falls back, though the stylesheet names the token family first.</p>
+  <button class="cta">Primary action</button>
+</body>
+</html>

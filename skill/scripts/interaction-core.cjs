@@ -7,6 +7,8 @@
 
 const { assertEnum, assertKeys, assertObject, assertString, fail, isObject } = require("./contract-utils.cjs");
 const { AUDIT_CODES, EXTERNAL_FIX, OPTIONAL_CODES, auditViewports, bindable, summarizeAudit, validateAuditProbe } = require("./interaction-audit.cjs");
+const { stressCoverageFailure } = require("./interaction-stress.cjs");
+const { HINTS: SCROLL_HINTS, evaluateScroll, scrollResultFailure, validateScrollProbe } = require("./interaction-scroll.cjs");
 
 const SCHEMA = "design-pipeline.interaction-probe.v1";
 const RESULT_SCHEMA = "design-pipeline.interaction-result.v1";
@@ -58,6 +60,7 @@ const HINTS = {
   "external-request": "Serve every listed resource from the page's own origin: vendor the fonts, scripts and images next to the page so the probe runs with no network, or point the probe at the origin that already serves them.",
   "state-mismatch": "Wire the real input to the declared state and business readout; repair the listener or state transition, then repeat the unchanged journey and check the selected value still survives the final step.",
   "state-target-missing": "Render one matching element inside the declared stable wrapper; repair the selector or component structure instead of treating an absent, ambiguous or unrelated element as a false or null state.",
+  ...SCROLL_HINTS,
 };
 
 // ---------- probe document ----------
@@ -209,7 +212,14 @@ function validateProbeFile(doc) {
   const ids = new Set();
   const probes = doc.probes.map((probe, index) => {
     const label = `probes[${index}]`;
-    // An audit probe names its kind; motion and journey probes keep their key-shaped contracts.
+    // Audit and scroll probes name their kind; motion and journey probes keep their key-shaped contracts.
+    if (isObject(probe) && Object.hasOwn(probe, "kind") && probe.kind !== "audit") {
+      if (probe.kind !== "scroll") fail(SCOPE, `${label}.kind has invalid value ${String(probe.kind)}; allowed: audit, scroll (motion probes have input and expect, journeys have steps)`);
+      const scroll = validateScrollProbe(probe, label);
+      if (ids.has(scroll.id)) fail(SCOPE, `${label} duplicates probe id ${scroll.id}`);
+      ids.add(scroll.id);
+      return scroll;
+    }
     if (isObject(probe) && Object.hasOwn(probe, "kind")) {
       const errors = validateAuditProbe(probe, { label });
       if (errors.length) fail(SCOPE, errors.join("; "));
@@ -557,6 +567,9 @@ function auditResultFailure(probe, row) {
       || checks.some(check => !auditCheckSettled(check) || !Number.isInteger(check.checked) || check.checked < 0 || (check.status === "passed" && check.checked === 0) || (check.status === "not-declared" && check.checked !== 0))) {
       return `${label} at ${viewport.width}x${viewport.height} does not cover every audit check with a passing status.`;
     }
+    // A declared stress pass is part of the row: every viewport needs its settled stress record.
+    const stressFailure = probe.stress ? stressCoverageFailure(entry) : null;
+    if (stressFailure) return `${label} at ${viewport.width}x${viewport.height} ${stressFailure}.`;
   }
   return null;
 }
@@ -570,7 +583,7 @@ function evaluateAudit(probe, shot, project) {
     const recorded = shot.viewports[index]?.viewport;
     if (recorded?.width !== viewport.width || recorded?.height !== viewport.height) fail(SCOPE, `capture ${probe.id} audit viewport ${index} is missing or reordered`);
   });
-  const summary = summarizeAudit(probe.id, shot.viewports, project, shot.requests);
+  const summary = summarizeAudit(probe.id, shot.viewports, project, shot.requests, { stress: Boolean(probe.stress) });
   if (summary.contractErrors.length) fail(SCOPE, `probe ${probe.id}: ${summary.contractErrors.join("; ")}. Fix: correct the selector in the audit probe, then rerun`, { code: "AUDIT_SELECTOR_INVALID" });
   return { id: probe.id, kind: "audit", status: summary.status, coverage: summary.coverage, findings: summary.findings };
 }
@@ -603,6 +616,12 @@ function evaluateProbeFile(doc, capture, options = {}) {
     if (!shot) fail(SCOPE, `capture is missing probe ${probe.id}`);
     if (probe.steps) return evaluateJourney(probe, shot, capture.pageOrigin, insideProject);
     if (probe.kind === "audit") return evaluateAudit(probe, shot, options.project);
+    if (probe.kind === "scroll") {
+      const row = evaluateScroll(probe, shot);
+      const external = externalUrls(shot.requests, capture.pageOrigin, insideProject);
+      if (external.length) row.findings.push(externalFinding(external, capture.pageOrigin, Boolean(insideProject)));
+      return { ...row, status: row.findings.some((finding) => finding.severity === "error") ? "failed" : "passed" };
+    }
     const result = evaluateSamples({ ...probe, pageOrigin: capture.pageOrigin, insideProject }, shot.samples, shot.requests ?? []);
     const samples = shot.samples;
     return {
@@ -623,7 +642,9 @@ function evaluateProbeFile(doc, capture, options = {}) {
     status: probes.some((probe) => probe.status === "failed") ? "failed" : "passed",
     probes,
     findings: probes.flatMap((probe) => probe.findings.map((finding) => ({ probeId: probe.id, ...finding }))),
+    // Measurement notes that are not findings (a scroll point that snapped away from its plan).
+    ...(probes.some((probe) => probe.notes) ? { notes: probes.flatMap((probe) => (probe.notes || []).map((note) => `${probe.id}: ${note}`)) } : {}),
   };
 }
 
-module.exports = { SCHEMA, RESULT_SCHEMA, HINTS, validateProbeFile, evaluateSamples, evaluateProbeFile, journeyResultFailure, auditResultFailure };
+module.exports = { SCHEMA, RESULT_SCHEMA, HINTS, validateProbeFile, evaluateSamples, evaluateProbeFile, journeyResultFailure, auditResultFailure, scrollResultFailure };

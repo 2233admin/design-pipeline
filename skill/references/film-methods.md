@@ -22,8 +22,8 @@ Read one selected full entry before applying it:
 
 - **Cinetic:** [complete SKILL.md](../vendor/cinetic/upstream/skills/cinetic/UPSTREAM-SKILL.md),
   [source inventory](../vendor/cinetic/manifest.json), [MIT license](../vendor/cinetic/upstream/LICENSE).
-  [Leonxlnx/cinetic](https://github.com/Leonxlnx/cinetic/tree/bee5d7807205d5543472c38312507f9bf366cbbf)
-  at `bee5d7807205d5543472c38312507f9bf366cbbf`; this is a different repository from Taste.
+  [Leonxlnx/cinetic](https://github.com/Leonxlnx/cinetic/tree/ecfa6605de1adb9345ce937724810dc32267d068)
+  at `ecfa6605de1adb9345ce937724810dc32267d068`; this is a different repository from Taste.
 - **Product Film:** [complete SKILL.md](../vendor/product-film-skill/upstream/plugins/product-film/skills/product-film/UPSTREAM-SKILL.md),
   [source inventory](../vendor/product-film-skill/manifest.json), [MIT license](../vendor/product-film-skill/upstream/LICENSE).
   [Rieranthony/product-film-skill](https://github.com/Rieranthony/product-film-skill/tree/fe11efc429d5903e37274d0b294e1b95745b2881)
@@ -187,14 +187,14 @@ Remotion and HyperFrames starters, treatment template and critic prompts. Only t
 motion kit is adapted into the maintained primitive API here. Starter films/tokens are examples,
 not the user's brand, and the example `timeline.js` is not installed as a second timing authority.
 
-| Cinetic script group (all 27, excluding tests) | Maintained choice and status |
+| Cinetic script group (all 30, excluding tests) | Maintained choice and status |
 | --- | --- |
 | `new-film.sh` | Use existing `film scaffold`; upstream shell source only. |
 | `pick.py` | Explicit-ID catalog selection in `film methods`; source randomizer not executed. |
 | `add-font.mjs`, `palette.py`, `brand-kit.sh`, `brand-svg.ts`, `outline-text.py`, `dither-gradient.py` | Use existing font, asset and artwork paths as needed; upstream font/brand/export helpers remain source only. No global installs or brand redefinition. |
 | `lint-film.mjs`, `grid-check.ts`, `layout-audit.sh` | Existing storyboard/timeline/composition and task checks; source tools not run and their bans/quotas are not new policy. |
-| `export-cues.ts`, `audio/score.py`, `audio/master.py`, `audio/synth.py` | Adapter cue calculations plus existing film score/audio tools; full upstream score/stem pipeline remains source only. |
-| `render.sh`, `render-chunks.sh`, `hf-finish.sh`, `measure-speed.py`, `accumulate.py` | Existing HyperFrames/render and film checks; upstream shell renderer, optical-flow blur/float accumulation not executed or claimed. |
+| `export-cues.ts`, `audio/score.py`, `audio/master.py`, `audio/synth.py`, `audio/kit.py`, `audio/listen.py` | Adapter cue calculations plus existing film score/audio tools; full upstream score/stem pipeline remains source only. |
+| `render.sh`, `render-chunks.sh`, `hf-preflight.cjs`, `hf-finish.sh`, `measure-speed.py`, `accumulate.py` | Existing HyperFrames/render and film checks; upstream shell renderer, optical-flow blur/float accumulation not executed or claimed. |
 | `grab.sh`, `sheet.py`, `probe.py`, `check-sync.py`, `forensics.py`, `av-audit.py`, `deliver.sh` | Existing capture/FFmpeg/contact-sheet/audio/render evidence and requested delivery; upstream forensic/A-V/stem/social/alpha export scripts remain source only. |
 
 All script bytes, tests and fixtures are retained in the local [Cinetic scripts directory](../vendor/cinetic/upstream/skills/cinetic/scripts/).
@@ -222,3 +222,42 @@ They test preparation and actual selected existing render/check paths, not arbit
 scripts or automatic component discovery. See the change's QA evidence for platform, versions,
 failures, observed frames and limits. Audio not heard stays unverified, and no tool pass grants
 Visual Acceptance.
+
+## Code-video libraries audited (2026-11-04)
+
+Two public code-video skill libraries were read (never executed) against this workflow:
+[howseen-ai/claude-motion-design](https://github.com/howseen-ai/claude-motion-design) at
+`3d90d349ef3fdde9b7e89de4df4a2159c9e8697f` (MIT, Copyright (c) 2026 Howseen AI) and
+[XiaoyeCodes/code-animation-prompts](https://github.com/XiaoyeCodes/code-animation-prompts) at
+`69ccbeaf0b821591a40936572c2f559d8f4cfb68` (mixed: free-sharing terms plus three MIT sets; see
+[prompt-motion.md](prompt-motion.md#code-animation-style-library-companion-not-bundled)). What we
+lacked landed in the existing guides, in our words, with no new gate or command:
+
+| Mechanism | Where it landed | Check |
+| --- | --- | --- |
+| Drawing purely from time; seeded randomness; assets ready before registering | [hyperframes.md](hyperframes.md#code-drawn-from-time-seekt-pages-and-ported-code-animations) | Render with one and with several workers as PNG sequences; frame hashes must match |
+| Motion blur by averaging subframes (180° shutter), cuts on whole frames | [workflow-film.md](workflow-film.md#deliver) | `verify film-render` on the blended file; strips of text moves |
+| Strips of consecutive frames around fast moves, phone-width sheet, loop seam strip | [workflow-film.md](workflow-film.md#review) | Viewed by the reviewer; the seam strip adds speed and direction to `loop-seam-jump` |
+| A reader who did not build the film states it in one sentence, muted | [workflow-film.md](workflow-film.md#review) | Review only |
+| Named reference style instead of adjectives (director's brief) | [product-film-direction.md](product-film-direction.md) section 2 | Review only |
+| Sound effects anchored by shape: hits by onset on the cue frame, swells by their loudest RMS window (`riser` cue), never by file start | [film-score.md](film-score.md#placing-sound-effects-hits-by-onset-swells-by-peak) | Audio gate after mastering; hit cues are timed by onset |
+| Style library with reference stills | Companion route in [prompt-motion.md](prompt-motion.md#code-animation-style-library-companion-not-bundled) | None; not vendored |
+
+Already covered here, so not added again: the paused-timeline clock and its adapters
+(HyperFrames), the brief and storyboard with beats, layers and a sound plan (intake, `sound.md`,
+storyboard), picture-derived cue times (the motion adapter above), loudness mastering (`audio
+master`), side-by-side reference review (`film compare`, `film proof`), cut sheets and contact
+sheets of beat midpoints (`film cut-sheet`, `verify film-render`), real product capture instead of
+invented screens (product source admission), parallel render workers (`--workers`), and code-made
+music (`film score`).
+
+Not adopted: fixed style bans and quotas (one accent colour, no particles, damping floors, "one
+thing moves at a time", a new idea every 2–4 s), self-scores repeated until every score is 8+, the
+asset and stock-music sources tied to one studio, chunked-render shell scripts, platform-specific
+caption and poster tricks, and per-shot parallel build agents. Bans and quotas are contextual
+(see "Project authority" above) and a self-score is not acceptance; the rest is either one
+studio's setup or already done by the HyperFrames CLI.
+
+Every adopted mechanism and every rejected ban above is a candidate layer for the design-skill
+ablation eval (#260): an adopted one stays only if films made with it beat the same briefs without
+it, and a rejected ban can be tried there as a variant rather than argued about.

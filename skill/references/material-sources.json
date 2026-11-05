@@ -1,0 +1,242 @@
+{
+  "schema": "design-pipeline.material-sources.v1",
+  "purpose": "Public-domain and CC0 image sources for collage, sticker and print-texture materials. Reachability is what this environment measured on the stated date; rerun `materials probe` before relying on it.",
+  "openLicenses": [
+    "CC0",
+    "PDM",
+    "public-domain"
+  ],
+  "sources": [
+    {
+      "id": "cleveland",
+      "name": "Cleveland Museum of Art Open Access",
+      "homepage": "https://openaccess-api.clevelandart.org/",
+      "adapter": "cleveland",
+      "query": {
+        "search": "GET https://openaccess-api.clevelandart.org/api/artworks/?q=<terms>&cc0=1&has_image=1&limit=<n>",
+        "object": "GET https://openaccess-api.clevelandart.org/api/artworks/<id>",
+        "image": "images.print.url (high resolution) or images.web.url"
+      },
+      "license": {
+        "field": "share_license_status",
+        "open": "CC0",
+        "note": "Search is filtered with cc0=1; fetch still requires share_license_status == CC0 on the object record."
+      },
+      "reachability": {
+        "status": "reachable",
+        "checkedAt": "2026-11-05",
+        "evidence": "search 200 application/json (q=key: 89 CC0 results); images.web.url 200 image/jpeg"
+      },
+      "strengths": "Engravings, botanical and insect plates, prints with print-size images, objects photographed on plain grounds.",
+      "probes": {
+        "search": "https://openaccess-api.clevelandart.org/api/artworks/?q=key&cc0=1&has_image=1&limit=1"
+      }
+    },
+    {
+      "id": "met",
+      "name": "The Metropolitan Museum of Art Open Access",
+      "homepage": "https://metmuseum.github.io/",
+      "adapter": "met",
+      "query": {
+        "search": "GET https://collectionapi.metmuseum.org/public/collection/v1.1/search?q=<terms>&hasImages=true&isPublicDomain=true",
+        "object": "GET https://collectionapi.metmuseum.org/public/collection/v1/objects/<id>",
+        "image": "primaryImage (original) or primaryImageSmall"
+      },
+      "license": {
+        "field": "isPublicDomain",
+        "open": true,
+        "note": "Open Access images are CC0; isPublicDomain must be true on the object record."
+      },
+      "reachability": {
+        "status": "reachable",
+        "checkedAt": "2026-11-05",
+        "evidence": "v1.1 search 200 (q=key: 5839 ids); object 200; images.metmuseum.org 200 image/jpeg. The v1 search endpoint answers 410: retired 2026-10-01."
+      },
+      "strengths": "Keys, locks, watches, arms and armour, decorative objects photographed on plain grey or white grounds.",
+      "probes": {
+        "search": "https://collectionapi.metmuseum.org/public/collection/v1.1/search?q=key&hasImages=true&isPublicDomain=true",
+        "retired-v1-search": "https://collectionapi.metmuseum.org/public/collection/v1/search?q=key&hasImages=true"
+      }
+    },
+    {
+      "id": "rijksmuseum",
+      "name": "Rijksmuseum data services (Linked Art)",
+      "homepage": "https://data.rijksmuseum.nl/",
+      "adapter": "rijksmuseum",
+      "query": {
+        "search": "GET https://data.rijksmuseum.nl/search/collection?description=<terms>&imageAvailable=true (also title=, creator=, type=)",
+        "object": "GET https://id.rijksmuseum.nl/<id> with Accept: application/ld+json",
+        "image": "subject_of[].digitally_carried_by[].access_point[].id (IIIF at iiif.micr.io; size via /full/<w>,/0/default.jpg)"
+      },
+      "license": {
+        "field": "digitally_carried_by[].referred_to_by[].content",
+        "open": [
+          "https://creativecommons.org/publicdomain/mark/1.0/",
+          "https://creativecommons.org/publicdomain/zero/1.0/"
+        ],
+        "note": "The image's own rights statement decides, not the object's metadata licence."
+      },
+      "reachability": {
+        "status": "reachable",
+        "checkedAt": "2026-11-05",
+        "evidence": "new search API 200 application/ld+json without a key (description=key: 83 objects); object 200; iiif.micr.io 200 image/jpeg. The old /api/<lang>/collection?key= endpoint answers 410."
+      },
+      "strengths": "Dutch prints, drawings, paintings and objects; many prints and plates.",
+      "probes": {
+        "search": "https://data.rijksmuseum.nl/search/collection?description=key&imageAvailable=true",
+        "retired-v0-api": "https://www.rijksmuseum.nl/api/en/collection?q=key&imgonly=true"
+      }
+    },
+    {
+      "id": "wikimedia",
+      "name": "Wikimedia Commons",
+      "homepage": "https://commons.wikimedia.org/",
+      "adapter": "wikimedia",
+      "query": {
+        "search": "not used: list=search answers 429 from this environment",
+        "object": "GET https://commons.wikimedia.org/w/api.php?action=query&titles=File:<name>&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=<w>&format=json",
+        "image": "imageinfo.thumburl (or Special:FilePath/<name>?width=<w>); send a descriptive User-Agent"
+      },
+      "license": {
+        "field": "imageinfo.extmetadata.LicenseShortName",
+        "open": [
+          "Public domain",
+          "PD-*",
+          "CC0"
+        ],
+        "note": "Commons hosts many licences; only public domain or CC0 file pages pass. Attribution-required licences are refused, not converted."
+      },
+      "reachability": {
+        "status": "rate-limited",
+        "intermittent": true,
+        "checkedAt": "2026-11-05",
+        "evidence": "list=search: 3 of 6 requests within 10 s answered 429 'too many requests' (independent of User-Agent); imageinfo by exact title 200; Special:FilePath 302 to thumb.wikimedia.org 200 image/jpeg"
+      },
+      "fix": "Find the exact File: name in a browser (or from a Wikipedia article), then fetch it by --id 'File:<name>'. Do not loop or rotate clients around the 429.",
+      "strengths": "Scientific plates (Haeckel, Seba, Merian), book illustrations, scans of public-domain prints.",
+      "probes": {
+        "search": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=butterfly%20engraving&srnamespace=6&format=json&srlimit=1",
+        "object": "https://commons.wikimedia.org/w/api.php?action=query&titles=File:Haeckel_Tineida.jpg&prop=imageinfo&iiprop=url&format=json"
+      }
+    },
+    {
+      "id": "nypl",
+      "name": "NYPL Digital Collections (public domain)",
+      "homepage": "https://digitalcollections.nypl.org/",
+      "adapter": null,
+      "query": {
+        "search": "GET https://api.repo.nypl.org/api/v2/items/search?q=<terms>&publicDomainOnly=true (Authorization: Token token=<key>)"
+      },
+      "license": {
+        "field": "rightsStatement / publicDomainOnly filter",
+        "open": "public domain"
+      },
+      "reachability": {
+        "status": "needs-key",
+        "checkedAt": "2026-11-05",
+        "evidence": "API 401 'HTTP Token: Access denied'; website 200 but an Incapsula bot-challenge page, not content"
+      },
+      "fix": "Have the owner download chosen items in a browser (rights statement: public domain) and register them with `materials add --source nypl`.",
+      "strengths": "Book illustrations, maps, botanical prints, ephemera.",
+      "probes": {
+        "search": "https://api.repo.nypl.org/api/v2/items/search?q=butterfly&publicDomainOnly=true",
+        "site": "https://digitalcollections.nypl.org/search/index?keywords=butterfly"
+      }
+    },
+    {
+      "id": "old-book-illustrations",
+      "name": "Old Book Illustrations",
+      "homepage": "https://www.oldbookillustrations.com/",
+      "adapter": null,
+      "query": {
+        "search": "HTML site search https://www.oldbookillustrations.com/?s=<terms>; no API (wp-json answers 404)"
+      },
+      "license": {
+        "field": "per-page source and rights note",
+        "open": "public domain originals",
+        "note": "The site's scans are of public-domain books; read the page's terms for the scan itself before reuse."
+      },
+      "reachability": {
+        "status": "html-only",
+        "checkedAt": "2026-11-05",
+        "evidence": "search page 200 text/html; /wp-json/ 404"
+      },
+      "fix": "Browse manually, read each page's rights note, download, then `materials add --source old-book-illustrations --license public-domain`.",
+      "strengths": "Wood engravings and line illustrations already isolated on white.",
+      "probes": {
+        "site": "https://www.oldbookillustrations.com/?s=butterfly",
+        "search": "https://www.oldbookillustrations.com/wp-json/wp/v2/search?search=butterfly"
+      }
+    },
+    {
+      "id": "smithsonian",
+      "name": "Smithsonian Open Access",
+      "homepage": "https://www.si.edu/openaccess",
+      "adapter": null,
+      "query": {
+        "search": "GET https://api.si.edu/openaccess/api/v1.0/search?q=<terms>&api_key=<api.data.gov key>"
+      },
+      "license": {
+        "field": "content.descriptiveNonRepeating.metadata_usage.access",
+        "open": "CC0"
+      },
+      "reachability": {
+        "status": "needs-key",
+        "checkedAt": "2026-11-05",
+        "evidence": "without a key: 403 API_KEY_MISSING; with DEMO_KEY: 429 OVER_RATE_LIMIT"
+      },
+      "fix": "Needs an api.data.gov key from the owner. Without one, download in a browser and `materials add --source smithsonian --license CC0`.",
+      "strengths": "Natural history specimens, insects, tools, design objects.",
+      "probes": {
+        "search": "https://api.si.edu/openaccess/api/v1.0/search?q=butterfly"
+      }
+    },
+    {
+      "id": "bhl",
+      "name": "Biodiversity Heritage Library",
+      "homepage": "https://www.biodiversitylibrary.org/",
+      "adapter": null,
+      "query": {
+        "search": "GET https://www.biodiversitylibrary.org/api3?op=PublicationSearch&searchterm=<terms>&format=json&apikey=<key>"
+      },
+      "license": {
+        "field": "item CopyrightStatus / LicenseUrl",
+        "open": "public domain / CC0 items only"
+      },
+      "reachability": {
+        "status": "needs-key",
+        "checkedAt": "2026-11-05",
+        "evidence": "api3 401 'invalid or unauthorized API key'; website 403 Cloudflare 'Just a moment' challenge, so even browsing is not scriptable"
+      },
+      "fix": "Needs a free BHL API key from the owner; the website challenge is not to be scripted around. Without a key, the owner downloads plates and registers them with `materials add --source bhl`.",
+      "strengths": "Natural-history plates: insects, shells, plants.",
+      "probes": {
+        "search": "https://www.biodiversitylibrary.org/api3?op=PublicationSearch&searchterm=butterfly&format=json",
+        "site": "https://www.biodiversitylibrary.org/"
+      }
+    },
+    {
+      "id": "artic",
+      "name": "Art Institute of Chicago API",
+      "homepage": "https://api.artic.edu/docs/",
+      "adapter": null,
+      "query": {
+        "search": "GET https://api.artic.edu/api/v1/artworks/search?q=<terms>&query[term][is_public_domain]=true&fields=id,title,image_id"
+      },
+      "license": {
+        "field": "is_public_domain",
+        "open": true
+      },
+      "reachability": {
+        "status": "blocked",
+        "checkedAt": "2026-11-05",
+        "evidence": "API and IIIF both 403 Cloudflare challenge from this environment"
+      },
+      "fix": "Blocked here; download in a browser and register with `materials add --source artic --license CC0`.",
+      "strengths": "Prints, Japanese woodblocks, decorative arts.",
+      "probes": {
+        "search": "https://api.artic.edu/api/v1/artworks/search?q=butterfly&limit=1&fields=id,title,image_id"
+      }
+    }
+  ]
+}

@@ -2,8 +2,8 @@
 
 Load this guide only when selecting/preparing raster artwork, processing a supplied voice track, subsetting a supplied font,
 checking sampled frames against a deliberately chosen light-background region, or creating
-short synthetic effects. These helpers do not fetch assets, choose a typeface, compose a full
-score, or decide that a design is visually accepted.
+short synthetic effects. These helpers do not choose a typeface, compose a full score, or decide that a design is
+visually accepted; public-domain images are fetched with `materials` ([material sources](../design-sources.md#public-domain-collage-materials)).
 
 ## Choose and check image assets
 
@@ -80,6 +80,49 @@ each cropped frame. Sprite splitting expects transparent gaps (key the sheet fir
 choose axis, gap, alpha, minimum span/area and padding from the actual sheet rather than relying
 on the old script's fixed 40px span. Review every split and alpha edge; automatic segmentation
 cannot know whether detached shapes belong to one pose.
+
+## Cut collage material
+
+`materials cut` (CLI) and `cutCollage(bytes, options)` in `assets.cjs` cut a recorded PNG into
+collage pieces. Pick the matte mode from the actual backdrop:
+
+| Mode | Backdrop | Notes |
+| --- | --- | --- |
+| `border` | plain studio ground (Met / Cleveland object photos) | one reference colour from the image border |
+| `paper` | printed sheet whose tone drifts, a studio gradient / vignette, or a soft cast shadow | fits a smooth surface to the backdrop, then separates what differs from it |
+| `white-matte` | white ground | distance from white |
+| `none` | no matte | for `ink` and `plate` finishes only |
+
+Finishes: `cut` (RGBA piece, tight crop), `sticker` (paper-white cut edge rounded like scissors
+plus a soft drop shadow), `ink` (black with alpha = ink density against the sheet's own paper
+tone, for tinting or screen-print looks) and `plate` (rectangle with a seeded hand-cut edge,
+white border and shadow). Tune with `--params` JSON: `threshold` (Lab distance), `keep` and
+`minFraction` (largest components kept), `close` / `open` / `holeMax` (mask clean-up),
+`roi` / `exclude` / `box` (`[x0,y0,x1,y1]` fractions), `edgePx`, `shadow` `[dx,dy,blur,opacity]`,
+`paper` RGB and `seed`.
+
+```sh
+designer-pipeline materials cut --project-root . --file materials/raw/pocket-watch.png --mode border --params '{"threshold":14}'
+designer-pipeline materials cut --project-root . --file materials/raw/hollar-insects.png --mode paper \
+  --finish cut,sticker,ink,plate --params '{"threshold":26,"keep":6,"roi":[0.045,0.07,0.955,0.93]}'
+```
+
+Pieces land in `materials/cut/<stem>/` and inherit the source's licence; each record keeps
+`derivedFrom` (source file, its hash, finish, placement, mode and params), so `materials check`
+reports a piece cut from an earlier version of its source as stale. The result flags likely
+dirty mattes with a fix: `matte-uneven-background` (gradient, vignette or texture under a
+`border` matte: switch to `paper`), `matte-touches-frame` (a piece runs into the image or roi
+edge and probably carries plate border or a neighbour), `matte-dropped-component` (a component
+left out is at least a quarter of the smallest kept piece: raise `keep` if it is a wanted wing or
+motif), `matte-cast-shadow` (10-50% of a piece is smooth, neutral and just darker than the
+backdrop, next to an object body that is textured or a clearly different tone: confirm the shadow
+is really there, then rerun with `paper`, which models soft shading, or raise `threshold`),
+`matte-empty` and `ink-low-contrast`. They do not catch everything: a shadow beside an equally
+smooth grey object is not told apart from it (smooth silver, porcelain and enamel are deliberately
+not flagged), a pale low-contrast object on white can vanish in `paper` mode (`matte-empty`: use
+`border`), very pale watercolour washes fall below the threshold or break into partial pieces,
+and touching motifs come out as one piece. Look
+at every piece at its use size; the flags are not visual acceptance.
 
 ## Font subset and glyph route
 
