@@ -20,7 +20,11 @@ const SCOPE = "texture stats";
 const BAND_EDGES_MM = Object.freeze([0.25, 0.5, 1, 2, 4, 8, 16, 32, 64]);
 const QUANTILES = Object.freeze([1, 5, 10, 25, 50, 75, 90, 95, 99]);
 const KINDS = Object.freeze(["paper", "print", "halftone"]);
-const EPS = 0.02; // L* floor so an empty band does not dominate the dB distance
+const EPS = 0.02;
+// A screen's fundamental and its 90-degree partner each stand this far above the median of their
+// ring. Measured: real and generated AM screens 76 to 9e7; FM, paper, ink flats, laid lines, noise
+// and flat fields 0 to 7.6.
+const SCREEN_PEAK_MIN = 20; // L* floor so an empty band does not dominate the dB distance
 
 // ---- FFT ------------------------------------------------------------------------------------
 
@@ -232,7 +236,22 @@ function halftoneStats(image, { pxPerMm = null, roi } = {}) {
     const p = power[ky * n + kx] * r * r;
     if (p > best.p) best = { p, fx, fy, r };
   }
-  if (!best.p) fail(SCOPE, "no screen peak between 2.5 and 40 px; this does not look like a halftone at this resolution", { code: "MEASURE_FAILED" });
+  // A screen is a 2-D lattice: a spike at the fundamental and at the same frequency turned 90
+  // degrees, each far above the other bins of its ring. Laid lines and wood grain give one spike
+  // and no orthogonal one; noise, paper or a flat field give none.
+  const ringRatio = (fx, fy) => {
+    const r = Math.hypot(fx, fy), x0 = Math.round(fx), y0 = Math.round(fy), ring = [];
+    let peak = 0;
+    for (let dy = -1; dy <= 1; dy += 1) for (let dx = -1; dx <= 1; dx += 1) peak = Math.max(peak, power[(((y0 + dy) % n) + n) % n * n + (((x0 + dx) % n) + n) % n]);
+    for (let ky = 0; ky < n; ky += 1) for (let kx = 0; kx < n; kx += 1) if (Math.abs(Math.hypot(freq(kx, n), freq(ky, n)) - r) < 0.75) ring.push(power[ky * n + kx]);
+    ring.sort((a, b) => a - b);
+    const median = ring[ring.length >> 1] || 0;
+    return median > 0 ? peak / median : peak > 0 ? 1e9 : 0;
+  };
+  const peakRatio = best.p ? Math.min(ringRatio(best.fx, best.fy), ringRatio(-best.fy, best.fx)) : 0;
+  if (!(peakRatio >= SCREEN_PEAK_MIN)) {
+    return { pxPerMm: pxPerMm ? round(pxPerMm, 3) : null, region: { x: rect.x, y: rect.y, width: rect.w, height: rect.h, tile: n }, screen: false, screenPeakRatio: round(peakRatio, 1) };
+  }
   const at = (fx, fy, radius = 2) => {
     let sum = 0;
     for (let dy = -radius; dy <= radius; dy += 1) for (let dx = -radius; dx <= radius; dx += 1) {
@@ -272,6 +291,8 @@ function halftoneStats(image, { pxPerMm = null, roi } = {}) {
   return {
     pxPerMm: pxPerMm ? round(pxPerMm, 3) : null,
     region: { x: rect.x, y: rect.y, width: rect.w, height: rect.h, tile: n },
+    screen: true,
+    screenPeakRatio: round(peakRatio, 1),
     periodPx: round(periodPx, 3),
     ...(pxPerMm ? { periodMm: round(periodPx / pxPerMm, 4), lpi: round((25.4 * pxPerMm) / periodPx, 1) } : {}),
     angleDeg: round((((Math.atan2(best.fy, best.fx) * 180) / Math.PI) % 90 + 90) % 90, 1),
@@ -319,6 +340,7 @@ function surfaceDistance(a, b, within = null) {
 }
 
 function halftoneDistance(a, b) {
+  if (a.screen === false || b.screen === false) return { comparable: true, screen: false, reason: `no halftone screen (a 2-D lattice peak at least ${SCREEN_PEAK_MIN}x its ring) in the ${a.screen === false ? "measured image" : "reference"}` };
   const db = (x, y) => 20 * Math.log10((x + 1e-3) / (y + 1e-3));
   return {
     comparable: true,
@@ -337,16 +359,45 @@ function distance(a, b, within = null) {
 }
 
 // Place a distance against the yardsticks of its reference profile.
-// natural: two crops of the same real sheet; between: two different real papers/flats.
-function assess(kind, d, yardsticks = {}) {
-  if (!d.comparable) return { level: "not-comparable", reason: d.reason };
-  const metric = kind === "halftone" ? "offLattice" : "spectralDb";
-  const value = d[metric], natural = yardsticks.natural?.[metric], between = yardsticks.between?.[metric];
-  let level = "no-yardstick";
-  if (Number.isFinite(natural) && value <= Math.max(natural * 1.5, kind === "halftone" ? 0.02 : 1)) level = "within-natural-variation";
-  else if (Number.isFinite(between) && value <= between) level = "within-real-range";
-  else if (Number.isFinite(between) || Number.isFinite(natural)) level = "unlike-reference";
-  return { metric, value, natural: natural ?? null, between: between ?? null, level };
+// natural: two crops of the same real sheet; between: the profile's nearest other real sheet
+// (another paper, another flat). A profile whose natural spread is not clearly below its between
+// distance (natural >= 0.8 x between on any metric) cannot say "like this sheet rather than
+// another": it is not calibrated, and only a gross miss (beyond both yardsticks) is graded.
+const FLOORS = Object.freeze({ spectralDb: 1, histogramL: 0.25 });
+const SURFACE_METRICS = Object.freeze(["spectralDb", "histogramL"]);
+const ORDER = ["within-natural-variation", "within-real-range", "unlike-reference"];
+
+function calibration(kind, natural, between) {
+  if (kind === "halftone") {
+    if (!Number.isFinite(between?.offLattice)) return { calibrated: false, reason: "one halftone sample only: no between-sample yardstick. Calibrate with owner screentone scans (materials measure --kind halftone --name <id>)" };
+    return natural.offLattice < 0.8 * between.offLattice ? { calibrated: true } : { calibrated: false, reason: `natural off-lattice spread ${natural.offLattice} is not below 0.8 x between ${between.offLattice}` };
+  }
+  const weak = SURFACE_METRICS.filter((m) => !(Number.isFinite(natural?.[m]) && Number.isFinite(between?.[m]) && natural[m] < 0.8 * between[m]));
+  return weak.length ? { calibrated: false, reason: weak.map((m) => `${m}: natural ${natural?.[m] ?? "?"} vs between ${between?.[m] ?? "?"}`).join("; ") + " (natural must be below 0.8 x between)" } : { calibrated: true };
 }
 
-module.exports = { BAND_EDGES_MM, KINDS, assess, distance, fft2, halves, isPow2, lightness, measure, roiRect };
+function assess(kind, d, yardsticks = {}) {
+  if (!d.comparable) return { level: "not-comparable", reason: d.reason };
+  const natural = yardsticks.natural || {}, between = yardsticks.between || {};
+  const grading = yardsticks.grading || calibration(kind, natural, between);
+  if (kind === "halftone") {
+    if (d.screen === false) return { metric: "screen", value: null, natural: null, between: null, level: "unlike-reference", reason: d.reason };
+    if (!grading.calibrated) return { metric: "offLattice", value: d.offLattice, natural: natural.offLattice ?? null, between: between.offLattice ?? null, level: "not-calibrated", reason: grading.reason };
+    const level = d.offLattice <= Math.max(1.5 * natural.offLattice, 0.02) && d.offLattice <= between.offLattice ? ORDER[0] : d.offLattice <= between.offLattice ? ORDER[1] : ORDER[2];
+    return { metric: "offLattice", value: d.offLattice, natural: natural.offLattice, between: between.offLattice, level };
+  }
+  const metrics = {};
+  for (const m of SURFACE_METRICS) {
+    const value = d[m], nat = natural[m], btw = between[m], close = Math.max(1.5 * (nat ?? 0), FLOORS[m]);
+    let level;
+    if (!grading.calibrated) level = value > Math.max(close, btw ?? 0) ? ORDER[2] : "not-calibrated";
+    else level = value <= Math.min(close, btw) ? ORDER[0] : value <= btw ? ORDER[1] : ORDER[2];
+    metrics[m] = { value, natural: nat ?? null, between: btw ?? null, level };
+  }
+  // The worst metric decides: a spectrum like paper with the wrong histogram is not like paper.
+  const levels = Object.values(metrics).map((x) => x.level);
+  const level = levels.includes(ORDER[2]) ? ORDER[2] : !grading.calibrated ? "not-calibrated" : ORDER[Math.max(...levels.map((l) => ORDER.indexOf(l)))];
+  return { metric: "spectralDb", value: d.spectralDb, natural: natural.spectralDb ?? null, between: between.spectralDb ?? null, histogramL: metrics.histogramL, level, ...(grading.calibrated ? {} : { reason: grading.reason }) };
+}
+
+module.exports = { BAND_EDGES_MM, KINDS, SCREEN_PEAK_MIN, assess, calibration, distance, fft2, halves, isPow2, lightness, measure, roiRect };

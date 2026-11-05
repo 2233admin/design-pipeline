@@ -14,7 +14,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { decodePng } = require("../skill/scripts/png-core.cjs");
-const { distance, measure } = require("../skill/tools/art-motion/texture-stats.cjs");
+const { calibration, distance, measure } = require("../skill/tools/art-motion/texture-stats.cjs");
 
 const ROOT = path.resolve(__dirname, "..");
 const OUT = path.join(ROOT, "skill/references/material-calibration.json");
@@ -72,15 +72,22 @@ for (const s of SAMPLES) {
   };
 }
 
-// Between-sample yardstick: the smallest distance between two different real papers (or flats).
+// Between-sample yardstick, per profile: its distance to the nearest other real sample of the same
+// kind (per metric). A profile is graded only when its natural spread is clearly below that.
 const yardsticks = {};
-for (const kind of ["paper", "print"]) {
-  const ids = Object.keys(profiles).filter((id) => profiles[id].kind === kind), values = [];
+for (const kind of ["paper", "print", "halftone"]) {
+  const ids = Object.keys(profiles).filter((id) => profiles[id].kind === kind), pairs = [];
   for (let i = 0; i < ids.length; i += 1) for (let j = i + 1; j < ids.length; j += 1) {
     const d = distance(profiles[ids[i]].stats, profiles[ids[j]].stats);
-    if (d.comparable) values.push({ pair: [ids[i], ids[j]], spectralDb: d.spectralDb, histogramL: d.histogramL });
+    if (d.comparable) pairs.push({ pair: [ids[i], ids[j]], ...(kind === "halftone" ? { offLattice: d.offLattice } : { spectralDb: d.spectralDb, histogramL: d.histogramL }) });
   }
-  yardsticks[kind] = { pairs: values, between: values.length ? { spectralDb: Math.min(...values.map((v) => v.spectralDb)), histogramL: Math.min(...values.map((v) => v.histogramL)) } : null };
+  yardsticks[kind] = { pairs };
+  for (const id of ids) {
+    const mine = pairs.filter((p) => p.pair.includes(id)), metrics = kind === "halftone" ? ["offLattice"] : ["spectralDb", "histogramL"];
+    const between = mine.length ? Object.fromEntries(metrics.map((m) => [m, Math.min(...mine.map((p) => p[m]))])) : null;
+    profiles[id].between = between;
+    profiles[id].grading = calibration(kind, profiles[id].natural, between);
+  }
 }
 
 const doc = {
@@ -92,4 +99,4 @@ const doc = {
   yardsticks,
 };
 fs.writeFileSync(OUT, `${JSON.stringify(doc, null, 2)}\n`);
-process.stdout.write(`${JSON.stringify(Object.fromEntries(Object.entries(profiles).map(([id, p]) => [id, { rmsL: p.stats.rmsL, natural: p.natural }])), null, 1)}\n${JSON.stringify(Object.fromEntries(Object.entries(yardsticks).map(([k, v]) => [k, v.between])))}\n`);
+process.stdout.write(`${JSON.stringify(Object.fromEntries(Object.entries(profiles).map(([id, p]) => [id, { natural: p.natural.spectralDb ?? p.natural.offLattice, naturalHist: p.natural.histogramL, between: p.between, grading: p.grading }])), null, 1)}\n`);

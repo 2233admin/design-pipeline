@@ -32,6 +32,18 @@ function num(params, key, fallback, min, max) {
   return value;
 }
 
+function int(params, key, fallback, min, max) {
+  const value = num(params, key, fallback, min, max);
+  if (!Number.isInteger(value)) fail(SCOPE, `params.${key} must be a whole number from ${min} to ${max}`, { code: "OPTION_VALUE_INVALID" });
+  return value;
+}
+
+function bool(params, key, fallback) {
+  const value = params[key] ?? fallback;
+  if (typeof value !== "boolean") fail(SCOPE, `params.${key} must be true or false`, { code: "OPTION_VALUE_INVALID" });
+  return value;
+}
+
 function pick(params, key, fallback, allowed) {
   const value = params[key] ?? fallback;
   if (!allowed.includes(value)) fail(SCOPE, `params.${key} must be one of ${allowed.join(", ")}`, { code: "OPTION_VALUE_INVALID" });
@@ -63,7 +75,9 @@ function builtinProfiles() {
 
 // A profile id is either built in or a project file materials/calibration/<id>.json.
 function loadProfile(id, project) {
-  const builtin = builtinProfiles().profiles[id];
+  // Ids name files under materials/calibration/: no separators, no dots, no traversal.
+  if (typeof id !== "string" || !/^[a-z0-9-]+$/.test(id)) fail(SCOPE, `calibration profile id ${JSON.stringify(id)} must match ^[a-z0-9-]+$`, { code: "OPTION_VALUE_INVALID" });
+  const builtin = Object.hasOwn(builtinProfiles().profiles, id) ? builtinProfiles().profiles[id] : null;
   if (builtin) return { id, origin: "builtin", ...builtin };
   if (project) {
     const file = path.join(project, "materials", "calibration", `${id}.json`);
@@ -274,7 +288,7 @@ function paperField(width, height, params, random, project) {
 function paper(params, seed, project) {
   const p = { ...PAPER_DEFAULTS, ...params };
   const [width, height] = size(p, [1024, 1024]);
-  num(p, "pxPerMm", 4, 0.5, 60); num(p, "strength", 1, 0, 4); num(p, "creases", 0, 0, 20); num(p, "wrinkle", 0, 0, 3); num(p, "age", 0, 0, 2); num(p, "foxing", 0, 0, 5); num(p, "stains", 0, 0, 10);
+  num(p, "pxPerMm", 4, 0.5, 60); num(p, "strength", 1, 0, 4); int(p, "creases", 0, 0, 20); num(p, "wrinkle", 0, 0, 3); num(p, "age", 0, 0, 2); num(p, "foxing", 0, 0, 5); int(p, "stains", 0, 0, 10); bool(p, "laid", true);
   pick(p, "output", "color", ["color", "multiply"]); num(p, "whiteQuantile", 0.6, 0.5, 1);
   const random = seededRandom(seed), { field, A, B, base, profile } = paperField(width, height, p, random, project), out = image(width, height);
   if (p.output === "multiply") {
@@ -332,7 +346,7 @@ const HALFTONE_DEFAULTS = Object.freeze({ periodPx: 12, angleDeg: 45, shape: "ro
 function halftoneParams(params) {
   const p = { ...HALFTONE_DEFAULTS, ...params };
   if (params.lpi !== undefined) p.periodPx = (25.4 * num(p, "pxPerMm", 4, 0.5, 60)) / num(params, "lpi", 0, 5, 400);
-  num(p, "periodPx", 12, 2, 400); num(p, "angleDeg", 45, -360, 360); num(p, "roughness", 0.35, 0, 2); num(p, "mottle", 0.08, 0, 1); num(p, "gain", 0.08, 0, 0.5); num(p, "supersample", 3, 1, 6);
+  num(p, "periodPx", 12, 2, 400); num(p, "angleDeg", 45, -360, 360); num(p, "roughness", 0.35, 0, 2); num(p, "mottle", 0.08, 0, 1); num(p, "gain", 0.08, 0, 0.5); int(p, "supersample", 3, 1, 6);
   pick(p, "shape", "round", Object.keys(SPOTS)); pick(p, "mode", "am", ["am", "fm"]); hex(p.ink, "params.ink");
   return p;
 }
@@ -426,7 +440,7 @@ function halftone(params, seed, project) {
   const p = halftoneParams(params);
   const [width, height] = size(p, [1024, 1024]);
   const random = seededRandom(seed), alpha = screen(width, height, coverageFunction(p.coverage, width, height), p, random);
-  return { image: inkOnPaper(width, height, [{ alpha, ink: hex(p.ink, "params.ink") }], p.paper, random, project, p.pxPerMm), params: { ...p, width, height }, measureAs: { kind: "halftone", pxPerMm: p.pxPerMm } };
+  return { image: inkOnPaper(width, height, [{ alpha, ink: hex(p.ink, "params.ink") }], p.paper, random, project, p.pxPerMm), params: { ...p, width, height }, ...(p.mode === "am" ? { measureAs: { kind: "halftone", pxPerMm: p.pxPerMm } } : {}) };
 }
 
 // ---- print (ink flats) -------------------------------------------------------------------------
@@ -496,7 +510,7 @@ function architecture(params, seed) {
   pick(p, "scene", "corridor", SCENES);
   for (const key of ["stroke", "fill", "accent", "floorA", "floorB"]) hex(p[key], `params.${key}`);
   if (!Array.isArray(p.vp) || p.vp.length !== 2 || p.vp.some((v) => !Number.isFinite(v) || v < -1 || v > 2)) fail(SCOPE, "params.vp must be [x, y] fractions of the canvas (may lie outside, -1..2)", { code: "OPTION_VALUE_INVALID" });
-  num(p, "depth", 8, 1, 40); num(p, "ratio", 0.74, 0.3, 0.97); num(p, "strokeWidth", 4, 0.5, 40); num(p, "tiles", 8, 2, 40); num(p, "doors", 3, 0, 20);
+  int(p, "depth", 8, 1, 40); num(p, "ratio", 0.74, 0.3, 0.97); num(p, "strokeWidth", 4, 0.5, 40); int(p, "tiles", 8, 2, 40); int(p, "doors", 3, 0, 20); bool(p, "lights", true);
   const random = seededRandom(seed), vp = [p.vp[0] * W, p.vp[1] * H], sw = p.strokeWidth, o = [], residuals = [];
   const S = (q) => `stroke="${p.stroke}" stroke-width="${q.toFixed(2)}"`;
   if (p.scene === "corridor" || p.scene === "arcade") {
@@ -574,7 +588,7 @@ function architecture(params, seed) {
     for (let r = 0; r <= rows; r += 1) residuals.push(lineResidual(P(0, r / rows), P(cols, r / rows), vp));
   }
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="${p.fill}"/>${o.join("")}</svg>\n`;
-  return { svg, params: { ...p, width: W, height: H }, geometry: { vanishingPoint: vp.map((v) => +v.toFixed(2)), vanishingResidualPx: +Math.max(0, ...residuals).toFixed(4), linesChecked: residuals.length } };
+  return { svg, params: { ...p, width: W, height: H }, geometry: { vanishingPoint: vp.map((v) => +v.toFixed(2)), vanishingResidualPx: +Math.max(0, ...residuals).toFixed(4), linesChecked: residuals.length }, usesSeed: (p.scene === "corridor" && p.doors > 0) || p.scene === "windows" };
 }
 
 // ---- motif (SVG) -------------------------------------------------------------------------------
@@ -585,7 +599,7 @@ const MOTIFS = ["gear", "rosette", "star", "sunburst", "rings", "spiral", "latti
 function motif(params, seed) {
   const p = { ...MOTIF_DEFAULTS, ...params };
   const [W, H] = size(p, [1024, 1024]);
-  pick(p, "motif", "gear", MOTIFS); num(p, "count", 14, 3, 96); num(p, "inner", 0.78, 0.1, 0.98); hex(p.fill, "params.fill"); hex(p.accent, "params.accent");
+  pick(p, "motif", "gear", MOTIFS); int(p, "count", 14, 3, 96); num(p, "inner", 0.78, 0.1, 0.98); hex(p.fill, "params.fill"); hex(p.accent, "params.accent");
   if (p.background !== "none") hex(p.background, "params.background");
   const random = seededRandom(seed), cx = W / 2, cy = H / 2, R = Math.min(W, H) * 0.46, n = Math.round(p.count), o = [];
   const polar = (r, a) => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
@@ -617,7 +631,7 @@ function motif(params, seed) {
     }
   }
   const bg = p.background === "none" ? "" : `<rect width="${W}" height="${H}" fill="${p.background}"/>`;
-  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${bg}${o.join("")}</svg>\n`, params: { ...p, width: W, height: H } };
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${bg}${o.join("")}</svg>\n`, params: { ...p, width: W, height: H }, usesSeed: p.motif === "lattice" };
 }
 
 // ---- generator entry ---------------------------------------------------------------------------
@@ -812,7 +826,7 @@ function checkEffectParams(effect, p) {
   if (effect === "woodcut") { num(p, "periodPx", 6, 2, 200); num(p, "angleDeg", 30, -360, 360); num(p, "warp", 0.35, 0, 3); num(p, "pxPerMm", 4, 0.5, 60); num(p, "contrast", 1.2, 0.1, 10); hex(p.ink, "params.ink"); paperSpec("paper"); if (typeof p.grain !== "string") fail(SCOPE, "params.grain must be an ink-flat profile id", { code: "OPTION_VALUE_INVALID" }); }
   if (effect === "photocopy") { num(p, "contrast", 2.2, 0.1, 10); num(p, "threshold", 0.5, 0, 1); num(p, "toner", 0.0025, 0, 0.2); num(p, "streaks", 0.5, 0, 2); num(p, "bloomPx", 1.5, 0, 20); num(p, "background", 0.04, 0, 1); }
   if (effect === "papercut") {
-    num(p, "layers", 3, 1, 5); num(p, "pxPerMm", 4, 0.5, 60); num(p, "minFeatureMm", 1.2, 0, 20); num(p, "edgeRoughMm", 0.25, 0, 5); num(p, "shadowMm", 1.2, 0, 20); num(p, "lift", 0.5, 0, 1);
+    int(p, "layers", 3, 1, 5); num(p, "pxPerMm", 4, 0.5, 60); num(p, "minFeatureMm", 1.2, 0, 20); num(p, "edgeRoughMm", 0.25, 0, 5); num(p, "shadowMm", 1.2, 0, 20); num(p, "lift", 0.5, 0, 1);
     if (typeof p.paper !== "string" || !/^[a-z0-9-]+$/.test(p.paper)) fail(SCOPE, "params.paper must be a paper profile id (each sheet is cut from it)", { code: "OPTION_VALUE_INVALID" });
     if (p.palette !== null && (!Array.isArray(p.palette) || p.palette.some((c, i) => !hex(c, `params.palette[${i}]`)))) fail(SCOPE, "params.palette must be a list of #rrggbb colours, base sheet first", { code: "OPTION_VALUE_INVALID" });
   }

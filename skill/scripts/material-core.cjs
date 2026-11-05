@@ -215,8 +215,6 @@ function parseSeed(raw) {
   return seed;
 }
 
-// The profile a generated texture is held to: its own calibration profile, else the built-in
-// halftone sample for halftones; project profiles carry the hash of their JSON for lineage.
 function profileFile(project, id) {
   return path.join(materialsDir(project), "calibration", `${id}.json`);
 }
@@ -225,13 +223,22 @@ function profileRef(project, id) {
   return { id, origin: procedural.loadProfile(id, project).origin };
 }
 
-// Every project calibration profile a generated or processed file was made from (its own profile,
-// the paper it is printed on, a woodcut's grain), with the hash of the profile JSON: editing one
-// makes the file stale in materials check. Built-in profiles ship with the generator version.
-function calibrationUsed(project, params) {
-  const ids = [...new Set(["profile", "paper", "grain"].map((key) => params?.[key]).filter((v) => typeof v === "string" && v !== "none" && !v.startsWith("#")))];
-  return ids.filter((id) => !procedural.builtinProfiles().profiles[id] && fs.existsSync(profileFile(project, id)))
-    .map((id) => ({ id, file: `${MATERIALS_DIR}/calibration/${id}.json`, sha256: sha256(fs.readFileSync(profileFile(project, id))) }));
+// Digest of one calibration profile as it is now: a built-in entry of
+// references/material-calibration.json, or a project file materials/calibration/<id>.json.
+function profileDigest(project, id) {
+  const builtin = procedural.builtinProfiles().profiles[id];
+  if (builtin) return { id, origin: "builtin", file: `references/material-calibration.json#${id}`, sha256: sha256(Buffer.from(JSON.stringify(builtin))) };
+  const file = profileFile(project, id);
+  return fs.existsSync(file) ? { id, origin: "project", file: `${MATERIALS_DIR}/calibration/${id}.json`, sha256: sha256(fs.readFileSync(file)) } : null;
+}
+
+// Every calibration profile a generated or processed file was made or graded from (its own
+// profile, the paper it is printed on, a woodcut's grain, the --reference it was measured
+// against), with the digest of the profile: changing one, built in or the owner's, makes the file
+// stale in materials check.
+function calibrationUsed(project, params, extraIds = []) {
+  const ids = [...new Set([...["profile", "paper", "grain"].map((key) => params?.[key]), ...extraIds].filter((v) => typeof v === "string" && v !== "none" && !v.startsWith("#")))];
+  return ids.map((id) => profileDigest(project, id)).filter(Boolean);
 }
 
 function similarityTo(project, stats, kind, referenceId) {
@@ -242,7 +249,7 @@ function similarityTo(project, stats, kind, referenceId) {
   // Held out: the generator was fitted on region A of the scan; it is compared with region B.
   const reference = profile.heldOut || profile.stats;
   const distance = textureStats.distance({ ...stats, kind: reference.kind }, reference, profile.stats);
-  const yardsticks = { natural: profile.natural, between: (procedural.builtinProfiles().yardsticks?.[profile.kind] || {}).between };
+  const yardsticks = { natural: profile.natural, between: profile.between, grading: profile.grading };
   return { reference: { id, origin: profile.origin, kind: profile.kind, description: profile.description }, distance, assessment: textureStats.assess(kind, distance, yardsticks) };
 }
 
@@ -275,13 +282,15 @@ function generateMaterial(project, options) {
   const params = parseParams(options.params), seed = parseSeed(options.seed);
   const { run, bytes } = runGenerator(project, options.generator, params, seed);
   const dir = materialsDir(project), records = readRecords(dir);
-  const stem = slug(options.name || `${options.generator}-${run.params.profile || run.params.scene || run.params.motif || run.params.shape || "out"}-s${seed}`);
+  // The default name carries the seed only when the output depends on it.
+  const stem = slug(options.name || `${options.generator}-${run.params.profile || run.params.scene || run.params.motif || run.params.shape || "out"}${run.usesSeed === false ? "" : `-s${seed}`}`);
   const rel = `generated/${stem}.${run.format}`, target = path.join(dir, rel);
   if ((fs.existsSync(target) || records[rel]) && !options.replace) fail(SCOPE, `${MATERIALS_DIR}/${rel} exists. Fix: pass --replace or --name <other>`, { code: "OUTPUT_EXISTS" });
   let similarity = null;
   if (run.image && run.measureAs) {
     const stats = textureStats.measure(run.image, run.measureAs.kind, run.measureAs);
     similarity = similarityTo(project, stats, run.measureAs.kind, options.reference || run.profile?.id);
+    if (similarity) run.calibration = calibrationUsed(project, run.params, [similarity.reference.id]);
     if (similarity) similarity = { ...similarity, measured: { rmsL: stats.rmsL, visibleRmsL: stats.visibleRmsL, ...(stats.offLatticeFraction !== undefined ? { offLatticeFraction: stats.offLatticeFraction, periodPx: stats.periodPx } : {}) } };
   }
   fs.mkdirSync(path.dirname(target), { recursive: true });
@@ -289,7 +298,7 @@ function generateMaterial(project, options) {
   const record = generatedRecord(run, {
     ...(options.use ? { use: options.use } : {}),
     ...(run.geometry ? { geometry: run.geometry } : {}),
-    ...(similarity ? { similarity: { reference: similarity.reference.id, metric: similarity.assessment.metric, value: similarity.assessment.value, natural: similarity.assessment.natural, between: similarity.assessment.between, level: similarity.assessment.level } } : {}),
+    ...(similarity ? { similarity: { reference: similarity.reference.id, metric: similarity.assessment.metric, value: similarity.assessment.value, natural: similarity.assessment.natural, between: similarity.assessment.between, ...(similarity.assessment.histogramL ? { histogramL: similarity.assessment.histogramL } : {}), level: similarity.assessment.level, ...(similarity.assessment.reason ? { reason: similarity.assessment.reason } : {}) } } : {}),
     sha256: sha256(bytes), bytes: bytes.length, width: run.params.width, height: run.params.height,
   });
   records[rel] = record;
@@ -314,14 +323,20 @@ function replayMaterial(project, file) {
   if (!record || !record.generator) fail(SCOPE, `${rel} has no generator record. Fix: only files written by materials generate can be replayed`, { code: "OPTION_VALUE_INVALID" });
   const { name, version, seed, params } = record.generator;
   if (procedural.GENERATORS[name] !== version) {
-    return { status: "version-changed", file: `${MATERIALS_DIR}/${rel}`, recorded: version, current: procedural.GENERATORS[name] ?? null, fix: `The ${name} generator is now version ${procedural.GENERATORS[name]}; regenerate with materials generate --generator ${name} --params '${JSON.stringify(params)}' --seed ${seed} --name ${path.basename(rel, path.extname(rel))} --replace and re-check the pieces that use it` };
+    return { status: "version-changed", file: `${MATERIALS_DIR}/${rel}`, recorded: version, current: procedural.GENERATORS[name] ?? null, fix: `The ${name} generator is now version ${procedural.GENERATORS[name]}; regenerate with materials generate --project-root ${project} --generator ${name} --params '${JSON.stringify(params)}' --seed ${seed} --name ${path.basename(rel, path.extname(rel))} --replace and re-check the pieces that use it` };
   }
-  const { bytes } = runGenerator(project, name, params, seed);
-  const now = sha256(bytes), onDisk = sha256(fs.readFileSync(path.join(dir, rel)));
-  const status = now === record.sha256 && onDisk === record.sha256 ? "reproduced" : "differs";
+  // Pixels, not deflate bytes, are what a generator promises: a PNG encoder or zlib update may
+  // change the bytes of identical pixels. SVG is text and compared as is.
+  const { run } = runGenerator(project, name, params, seed);
+  const raw = fs.readFileSync(path.join(dir, rel)), fileUnchanged = sha256(raw) === record.sha256;
+  const content = (image) => sha256(Buffer.concat([Buffer.from(`${image.width}x${image.height}:`), image.data]));
+  const regenerated = run.format === "svg" ? sha256(Buffer.from(run.svg)) : content(run.image);
+  let onDisk;
+  try { onDisk = run.format === "svg" ? sha256(raw) : content(decodePng(raw, rel)); } catch { onDisk = null; }
+  const status = fileUnchanged && regenerated === onDisk ? "reproduced" : "differs";
   return {
-    status, file: `${MATERIALS_DIR}/${rel}`, recorded: record.sha256, regenerated: now, onDisk,
-    ...(status === "differs" ? { fix: onDisk !== record.sha256 ? "The file was edited after generation; re-record it with materials add --replace if the edit is intended" : "The same generator version no longer gives the same bytes (a calibration profile it uses changed?); regenerate with --replace" } : {}),
+    status, file: `${MATERIALS_DIR}/${rel}`, compared: run.format === "svg" ? "svg-text" : "decoded-rgba", recorded: record.sha256, regenerated, onDisk,
+    ...(status === "differs" ? { fix: !fileUnchanged ? `The file was edited after generation; re-record it with materials add --project-root ${project} --replace if the edit is intended, or regenerate it with --replace` : `The same generator version no longer gives the same pixels (a calibration profile it uses changed?); regenerate: materials generate --project-root ${project} --generator ${name} --params '${JSON.stringify(params)}' --seed ${seed} --name ${path.basename(rel, path.extname(rel))} --replace` } : {}),
   };
 }
 
@@ -391,9 +406,19 @@ function measureMaterial(project, options) {
       pxPerMm, fitRoi: a, heldOutRoi: b, stats: fit, heldOut: held, natural: textureStats.distance(fit, held),
       measured: today(),
     };
+    // Between: the nearest built-in sample of the same kind, per metric; the profile grades only
+    // when the owner's sheet is clearly more like itself than like another real sheet.
+    const metrics = kind === "halftone" ? ["offLattice"] : ["spectralDb", "histogramL"], others = [];
+    for (const [otherId, other] of Object.entries(procedural.builtinProfiles().profiles)) {
+      if (other.kind !== kind) continue;
+      const d = textureStats.distance(fit, other.stats);
+      if (d.comparable && metrics.every((m) => Number.isFinite(d[m]))) others.push({ id: otherId, ...Object.fromEntries(metrics.map((m) => [m, d[m]])) });
+    }
+    profile.between = others.length ? Object.fromEntries(metrics.map((m) => [m, Math.min(...others.map((o) => o[m]))])) : null;
+    profile.grading = textureStats.calibration(kind, profile.natural, profile.between);
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, `${JSON.stringify(profile, null, 2)}\n`);
-    Object.assign(out, { status: "calibrated", profile: { id, file: `${MATERIALS_DIR}/calibration/${id}.json`, natural: profile.natural }, next: [kind === "halftone" ? `materials measure --file <generated halftone> --reference ${id}` : `materials generate --generator ${kind === "print" ? "print" : "paper"} --params '{"profile":"${id}","pxPerMm":4}' --seed 1`] });
+    Object.assign(out, { status: "calibrated", profile: { id, file: `${MATERIALS_DIR}/calibration/${id}.json`, natural: profile.natural, between: profile.between, grading: profile.grading }, next: [kind === "halftone" ? `materials measure --file <generated halftone> --reference ${id}` : `materials generate --generator ${kind === "print" ? "print" : "paper"} --params '{"profile":"${id}","pxPerMm":4}' --seed 1`] });
   }
   const referenceId = options.reference || generated?.params?.profile || (kind === "halftone" && generated ? "autotype-1904" : null);
   if (referenceId && pxPerMm) Object.assign(out, similarityTo(project, stats, kind, referenceId));
@@ -435,27 +460,26 @@ function checkMaterials(project) {
   for (const rel of files) {
     const record = records[rel];
     if (!record) {
-      findings.push({ code: "material-unrecorded", severity: "error", file: rel, message: `${rel} has no licence record`, fix: `Record it: materials add --file ${MATERIALS_DIR}/${rel} --license <licence> --by <author> [--url <source page>], or delete the file` });
+      findings.push({ code: "material-unrecorded", severity: "error", file: rel, message: `${rel} has no licence record`, fix: `Record it: materials add --project-root ${project} --file ${MATERIALS_DIR}/${rel} --license <licence> --by <author> [--url <source page>], or delete the file` });
       continue;
     }
-    if (!record.license || record.license === "unrecorded") findings.push({ code: "material-license-missing", severity: "error", file: rel, message: `${rel} has no licence`, fix: "Set the licence from the source's own rights field (materials add --replace --license ...)" });
+    if (!record.license || record.license === "unrecorded") findings.push({ code: "material-license-missing", severity: "error", file: rel, message: `${rel} has no licence`, fix: `Set the licence from the source's own rights field (materials add --project-root ${project} --replace --license ...)` });
     const missing = PROVENANCE_FIELDS.filter((field) => !record[field]);
-    if (missing.length) findings.push({ code: "material-provenance-incomplete", severity: "error", file: rel, message: `${rel} is missing ${missing.join(", ")}`, fix: `Re-record with materials add --replace and supply ${missing.join(", ")}` });
+    if (missing.length) findings.push({ code: "material-provenance-incomplete", severity: "error", file: rel, message: `${rel} is missing ${missing.join(", ")}`, fix: `Re-record with materials add --project-root ${project} --replace and supply ${missing.join(", ")}` });
     if (record.generator) {
       const g = record.generator, missingG = ["name", "version", "seed", "params"].filter((key) => g[key] === undefined);
       if (missingG.length) findings.push({ code: "material-generator-incomplete", severity: "error", file: rel, message: `${rel} records a generator without ${missingG.join(", ")}, so it cannot be reproduced`, fix: "Regenerate it with materials generate (which records name, version, params and seed) and --replace" });
-      else if (procedural.GENERATORS[g.name] !== g.version) findings.push({ code: "material-generator-version", severity: "warn", file: rel, message: `${rel} was made by ${g.name}@${g.version}; the current generator is ${procedural.GENERATORS[g.name] ?? "gone"}, so a replay may not give the same bytes`, fix: `Keep the file (its bytes are recorded), or regenerate: materials generate --generator ${g.name} --params '${JSON.stringify(g.params)}' --seed ${g.seed} --name ${path.basename(rel, path.extname(rel))} --replace` });
+      else if (procedural.GENERATORS[g.name] !== g.version) findings.push({ code: "material-generator-version", severity: "warn", file: rel, message: `${rel} was made by ${g.name}@${g.version}; the current generator is ${procedural.GENERATORS[g.name] ?? "gone"}, so a replay may not give the same bytes`, fix: `Keep the file (its bytes are recorded), or regenerate: materials generate --project-root ${project} --generator ${g.name} --params '${JSON.stringify(g.params)}' --seed ${g.seed} --name ${path.basename(rel, path.extname(rel))} --replace` });
     }
     for (const used of Array.isArray(record.calibration) ? record.calibration : []) {
-      const profilePath = path.join(dir, "calibration", `${used.id}.json`);
-      const now = fs.existsSync(profilePath) ? sha256(fs.readFileSync(profilePath)) : null;
+      const current = /^[a-z0-9-]+$/.test(String(used.id)) ? profileDigest(project, used.id) : null, now = current && current.origin === used.origin ? current.sha256 : null;
       if (now === used.sha256) continue;
       const again = record.generator
-        ? `materials generate --generator ${record.generator.name} --params '${JSON.stringify(record.generator.params)}' --seed ${record.generator.seed} --name ${path.basename(rel, path.extname(rel))} --replace`
-        : record.derivedFrom?.operation === "process" ? `materials process --file ${MATERIALS_DIR}/${record.derivedFrom.file} --effect ${record.derivedFrom.effect} --seed ${record.derivedFrom.seed} --params '${JSON.stringify(record.derivedFrom.params)}' --name ${path.basename(rel, ".png")} --replace` : "re-make it";
-      findings.push({ code: "material-calibration-stale", severity: "error", file: rel, message: `${rel} was made from calibration profile ${used.id}, which ${now ? "has changed" : "is gone"}`, fix: now ? `Regenerate with the current profile: ${again}` : `Restore ${MATERIALS_DIR}/calibration/${used.id}.json, or ${again} with another profile` });
+        ? `materials generate --project-root ${project} --generator ${record.generator.name} --params '${JSON.stringify(record.generator.params)}' --seed ${record.generator.seed} --name ${path.basename(rel, path.extname(rel))} --replace`
+        : record.derivedFrom?.operation === "process" ? `materials process --project-root ${project} --file ${MATERIALS_DIR}/${record.derivedFrom.file} --effect ${record.derivedFrom.effect} --seed ${record.derivedFrom.seed} --params '${JSON.stringify(record.derivedFrom.params)}' --name ${path.basename(rel, ".png")} --replace` : "re-make it";
+      findings.push({ code: "material-calibration-stale", severity: "error", file: rel, message: `${rel} was made from calibration profile ${used.id}, which ${now ? "has changed" : "is gone"}`, fix: now ? `Regenerate with the current profile: ${again}` : `Restore ${used.file}, or ${again} with another profile` });
     }
-    if (record.sha256 && hashOf(rel) !== record.sha256 && !record.derivedFrom) findings.push({ code: "material-changed", severity: "error", file: rel, message: `${rel} no longer matches its recorded hash`, fix: "If the edit is intended, re-record it with materials add --replace; then re-cut its pieces" });
+    if (record.sha256 && hashOf(rel) !== record.sha256 && !record.derivedFrom) findings.push({ code: "material-changed", severity: "error", file: rel, message: `${rel} no longer matches its recorded hash`, fix: `If the edit is intended, re-record it with materials add --project-root ${project} --replace; then re-cut its pieces` });
     if (record.derivedFrom) {
       const parent = records[record.derivedFrom.file];
       const parentHash = hashOf(record.derivedFrom.file);
@@ -463,8 +487,8 @@ function checkMaterials(project) {
       else if (parentHash !== record.derivedFrom.sha256) {
         const made = record.derivedFrom.operation === "process" ? "processed" : "cut";
         const again = record.derivedFrom.operation === "process"
-          ? `Process again: materials process --file ${MATERIALS_DIR}/${record.derivedFrom.file} --effect ${record.derivedFrom.effect} --seed ${record.derivedFrom.seed} --params '${JSON.stringify(record.derivedFrom.params)}' --name ${path.basename(rel, ".png")} --replace`
-          : `Cut again: materials cut --file ${MATERIALS_DIR}/${record.derivedFrom.file} --mode ${record.derivedFrom.mode} --replace`;
+          ? `Process again: materials process --project-root ${project} --file ${MATERIALS_DIR}/${record.derivedFrom.file} --effect ${record.derivedFrom.effect} --seed ${record.derivedFrom.seed} --params '${JSON.stringify(record.derivedFrom.params)}' --name ${path.basename(rel, ".png")} --replace`
+          : `Cut again: materials cut --project-root ${project} --file ${MATERIALS_DIR}/${record.derivedFrom.file} --mode ${record.derivedFrom.mode} --replace`;
         findings.push({ code: "material-derived-stale", severity: "error", file: rel, message: `${rel} was ${made} from an earlier version of ${record.derivedFrom.file}`, fix: again });
       }
       else if (parent.license !== record.license) findings.push({ code: "material-license-mismatch", severity: "error", file: rel, message: `${rel} records ${record.license} but its source records ${parent.license}`, fix: "Derived pieces carry their source's licence; cut again with --replace" });

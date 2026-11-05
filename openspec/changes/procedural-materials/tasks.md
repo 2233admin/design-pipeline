@@ -20,3 +20,12 @@
 - [x] 3.3 Before/after on the 夜想回廊 poster and 14 cards (design.md, acceptance).
 - [x] 3.4 Repository QA: `npm test`.
 - [x] 3.5 CHANGELOG entry.
+
+## 4. Review fixes (PR #297)
+
+- [x] 4.1 Halftone needs a 2-D screen peak; no consistent autotype region, so halftone grading is `not-calibrated` until a second sample.
+- [x] 4.2 Per-profile nearest-other `between`; `not-calibrated` when natural ≥ 0.8 × between; `histogramL` graded; noise and flat fields unlike every profile (test).
+- [x] 4.3 Composition gate: capture samples the ground under image-backed text, `text-contrast` judges the worst 5%, `contrast-unmeasured` instead of silence; guide on strength under text; acceptance redone with the gate (red flat at strength 0.1).
+- [x] 4.4 `--reference` and built-in profile entries in `calibration` lineage; profile ids `^[a-z0-9-]+$`.
+- [x] 4.5 Booleans and whole-number params validated; seed-free default names where the output ignores the seed; `--project-root` in every re-run command; replay compares decoded RGBA.
+- [x] 4.6 Focused tests, `npm run specs:check`, full `npm test`.

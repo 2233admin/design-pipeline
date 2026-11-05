@@ -153,6 +153,13 @@
         "visibleRmsRatio": 0.946,
         "anisotropy": 0.06,
         "meanDeltaE": 1.07
+      },
+      "between": {
+        "spectralDb": 10.022,
+        "histogramL": 4.476
+      },
+      "grading": {
+        "calibrated": true
       }
     },
     "wove-cream": {
@@ -292,6 +299,14 @@
         "visibleRmsRatio": 1.369,
         "anisotropy": 0.006,
         "meanDeltaE": 1.91
+      },
+      "between": {
+        "spectralDb": 3.024,
+        "histogramL": 0.792
+      },
+      "grading": {
+        "calibrated": false,
+        "reason": "spectralDb: natural 3.151 vs between 3.024 (natural must be below 0.8 x between)"
       }
     },
     "wove-toned": {
@@ -436,6 +451,13 @@
         "visibleRmsRatio": 1.128,
         "anisotropy": 0.043,
         "meanDeltaE": 1.96
+      },
+      "between": {
+        "spectralDb": 3.024,
+        "histogramL": 0.792
+      },
+      "grading": {
+        "calibrated": true
       }
     },
     "woodblock-indigo": {
@@ -590,6 +612,13 @@
         "visibleRmsRatio": 0.896,
         "anisotropy": 0.009,
         "meanDeltaE": 1.99
+      },
+      "between": {
+        "spectralDb": 2.198,
+        "histogramL": 1.245
+      },
+      "grading": {
+        "calibrated": true
       }
     },
     "litho-red": {
@@ -724,6 +753,14 @@
         "visibleRmsRatio": 0.827,
         "anisotropy": 0.007,
         "meanDeltaE": 1.66
+      },
+      "between": {
+        "spectralDb": 2.198,
+        "histogramL": 1.245
+      },
+      "grading": {
+        "calibrated": false,
+        "reason": "spectralDb: natural 2.206 vs between 2.198 (natural must be below 0.8 x between)"
       }
     },
     "autotype-1904": {
@@ -773,6 +810,8 @@
           "height": 320,
           "tile": 128
         },
+        "screen": true,
+        "screenPeakRatio": 418.3,
         "periodPx": 5.009,
         "periodMm": 0.1605,
         "lpi": 158.2,
@@ -793,6 +832,8 @@
           "height": 320,
           "tile": 128
         },
+        "screen": true,
+        "screenPeakRatio": 76.3,
         "periodPx": 5.009,
         "periodMm": 0.1605,
         "lpi": 158.2,
@@ -811,6 +852,11 @@
         "contrastL": 2.38,
         "lpiRatio": 1,
         "angleDeg": 0
+      },
+      "between": null,
+      "grading": {
+        "calibrated": false,
+        "reason": "one halftone sample only: no between-sample yardstick. Calibrate with owner screentone scans (materials measure --kind halftone --name <id>)"
       }
     }
   },
@@ -841,11 +887,7 @@
           "spectralDb": 3.024,
           "histogramL": 0.792
         }
-      ],
-      "between": {
-        "spectralDb": 3.024,
-        "histogramL": 0.792
-      }
+      ]
     },
     "print": {
       "pairs": [
@@ -857,11 +899,10 @@
           "spectralDb": 2.198,
           "histogramL": 1.245
         }
-      ],
-      "between": {
-        "spectralDb": 2.198,
-        "histogramL": 1.245
-      }
+      ]
+    },
+    "halftone": {
+      "pairs": []
     }
   }
 }

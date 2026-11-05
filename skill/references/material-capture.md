@@ -62,7 +62,10 @@ designer-pipeline materials measure --project-root . --file materials/generated/
 `within-natural-variation` means the generated texture is as close to the held-out half as the
 two halves of the real sheet are to each other on these statistics (octave-band spectrum of L*,
 lightness quantiles); `within-real-range` means closer than two different real papers in the
-built-in set; `unlike-reference` exits 2. None of these is visual acceptance. Spectrum and
+built-in set; `unlike-reference` exits 2. `not-calibrated` means the profile's own two halves differ about as
+much as it differs from the nearest built-in sheet, so it cannot tell one paper from another: scan
+a larger, more even area and measure again. Halftone profiles need a second screentone scan before
+they grade. None of these is visual acceptance. Spectrum and
 histogram do not carry phase structure: single hairs, wood-grain lines and chain lines are not
 reproduced by the synthesis even when the numbers match, so look at the result at 100%.
 

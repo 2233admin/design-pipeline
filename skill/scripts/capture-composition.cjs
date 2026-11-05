@@ -11,6 +11,40 @@ const { pathToFileURL } = require("node:url");
 const { resolvePuppeteer } = require("./film-capture-core.cjs");
 const { resolveBrowser } = require("./browser-locate.cjs");
 const { fail, jsonResult } = require("./contract-utils.cjs");
+const { decodePng } = require("./png-core.cjs");
+
+// Hides every glyph (fill, stroke, shadow, decoration) and nothing else, so the screenshot shows
+// the ground each text sits on: image, gradient, texture, other elements.
+const HIDE_TEXT = "*,*::before,*::after{color:transparent!important;-webkit-text-fill-color:transparent!important;-webkit-text-stroke:0!important;text-shadow:none!important;text-decoration-color:transparent!important;caret-color:transparent!important}";
+
+const luminance = (rgb) => {
+  const [r, g, b] = rgb.map((v) => { const c = v / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+
+// For each text with an unknown (image-backed) background: the ground under its box with text
+// hidden, as its mean colour and the 0th..100th percentiles of relative luminance. The gate turns
+// these into the contrast of every ground pixel against the text colour and judges the worst 5%.
+function groundSamples(ground, items) {
+  for (const item of items) {
+    if (item.kind !== "text" || item.background) continue;
+    const x0 = Math.max(0, Math.floor(item.box.x)), y0 = Math.max(0, Math.floor(item.box.y));
+    const x1 = Math.min(ground.width, Math.ceil(item.box.x + item.box.w)), y1 = Math.min(ground.height, Math.ceil(item.box.y + item.box.h));
+    const lum = [], sum = [0, 0, 0];
+    for (let y = y0; y < y1; y += 1) for (let x = x0; x < x1; x += 1) {
+      const i = (y * ground.width + x) * 4, rgb = [ground.data[i], ground.data[i + 1], ground.data[i + 2]];
+      lum.push(luminance(rgb)); for (let c = 0; c < 3; c += 1) sum[c] += rgb[c];
+    }
+    if (!lum.length) continue;
+    lum.sort((a, b) => a - b);
+    item.ground = {
+      source: "ground.png",
+      pixels: lum.length,
+      mean: sum.map((v) => Math.round(v / lum.length)),
+      luminancePercentiles: Array.from({ length: 101 }, (_, p) => Number(lum[Math.round((p / 100) * (lum.length - 1))].toFixed(5))),
+    };
+  }
+}
 
 function parseArgs(argv) {
   const allowed = new Set(["--composition", "--url", "--output", "--width", "--height", "--seek", "--chrome", "--puppeteer-module"]);
@@ -28,7 +62,8 @@ function parseArgs(argv) {
 }
 
 // Runs in the page. Effective background walks ancestors to the first opaque background color;
-// a background image or gradient on the way makes the background unknown (contrast skipped).
+// a background image or gradient on the way makes the background unknown (null). Such text is
+// then judged on the pixels under it: groundSamples() reads a second screenshot with text hidden.
 function extract() {
   const parse = (value) => {
     const m = String(value).match(/rgba?\(([^)]+)\)/);
@@ -94,6 +129,11 @@ function extract() {
     fs.mkdirSync(output, { recursive: true });
     await page.screenshot({ path: path.join(output, "screenshot.png"), type: "png" });
     const elements = await page.evaluate(extract);
+    if (elements.items.some((item) => item.kind === "text" && !item.background)) {
+      await page.addStyleTag({ content: HIDE_TEXT });
+      await page.screenshot({ path: path.join(output, "ground.png"), type: "png" });
+      groundSamples(decodePng(fs.readFileSync(path.join(output, "ground.png")), "ground.png"), elements.items);
+    }
     fs.writeFileSync(path.join(output, "elements.json"), `${JSON.stringify(elements, null, 2)}\n`);
     process.stdout.write(`${JSON.stringify(jsonResult(true, { status: "captured", output, screenshot: "screenshot.png", elements: "elements.json", items: elements.items.length }))}\n`);
   } catch (error) {

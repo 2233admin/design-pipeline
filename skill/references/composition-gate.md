@@ -18,12 +18,16 @@ designer-pipeline verify composition --image qa/comp/screenshot.png --elements q
 HyperFrames headless shell, else an installed Chrome, Edge or Chromium; see installation.md). It
 needs `puppeteer-core` in the project or `--puppeteer-module <absolute path to puppeteer-core>`
 on the call; without either it fails with `puppeteer-core not found`. It writes `screenshot.png`
-plus `elements.json` (visible text with box, size, weight and effective colors).
+plus `elements.json` (visible text with box, size, weight and effective colors). When a text sits
+on a background image, gradient or texture, it also writes `ground.png` (the page with every glyph
+hidden) and records that text's `ground`: mean colour and luminance percentiles under its box.
 `--seek` positions registered GSAP timelines first. Without
 `--elements` the gate runs on pixels alone.
 
-Errors fail the gate: `blank-frame`, `low-contrast`, `text-contrast` (WCAG 4.5:1, 3:1 large),
-`text-off-canvas`. Warnings are review prompts: `weak-separation`, `off-balance`, `dead-band`,
+Errors fail the gate: `blank-frame`, `low-contrast`, `text-contrast` (WCAG 4.5:1, 3:1 large;
+on a sampled image or textured ground, against the worst 5% of the pixels under the text),
+`text-off-canvas`. Warnings are review prompts: `contrast-unmeasured` (text on an image or
+gradient whose ground was not sampled; recapture), `weak-separation`, `off-balance`, `dead-band`,
 `no-focal-point`, `clutter`, `palette-sprawl`, `edge-crowding`, `alignment-near-miss`,
 `flat-hierarchy`, `type-scale-sprawl`. Every finding carries a `fix`. Allow a warning only when
 the composition deliberately does that (`--allow dead-band` for intended negative space) and say

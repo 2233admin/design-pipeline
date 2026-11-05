@@ -2,12 +2,12 @@
 
 ### Requirement: Generated material is seeded, recorded and measured against real scans
 
-`materials generate` SHALL write paper, halftone, ink-flat, architecture or motif material under `materials/generated/` with its generator name, version, resolved params and seed in `materials/licenses.json`; the same record SHALL replay to the same bytes. Paper and ink textures SHALL record their distance to a held-out region of a real scan with the scan's natural variation; owners SHALL be able to calibrate to their own scans.
+`materials generate` SHALL write paper, halftone, ink-flat, architecture or motif material under `materials/generated/` with its generator name, version, resolved params and seed in `materials/licenses.json`; the same record SHALL replay to the same decoded pixels. Paper and ink textures SHALL record their distance to a held-out region of a real scan with the scan's natural variation; owners SHALL be able to calibrate to their own scans.
 
 #### Scenario: Replay
 
 - **WHEN** `materials generate --file materials/generated/<x>.png` runs on an untouched generated file
-- **THEN** it SHALL report `reproduced` and exit 0, and SHALL report `differs` with a fix and exit 2 when the file was edited
+- **THEN** it SHALL compare the regenerated and on-disk decoded RGBA (SVG: text) and report `reproduced` and exit 0, also when the PNG's deflate bytes differ, and SHALL report `differs` with a fix and exit 2 when the file was edited
 
 #### Scenario: Seed is part of the record
 
@@ -18,6 +18,21 @@
 
 - **WHEN** paper is generated from a built-in profile
 - **THEN** the record SHALL hold `similarity` with the metric value, the profile's natural variation and a level, and the profile SHALL name its scan's source, licence, hash and px/mm evidence
+
+#### Scenario: Grading needs separating yardsticks
+
+- **WHEN** a profile's natural spread is not below 0.8 × its distance to the nearest other real sample on the spectral or histogram metric, or a halftone profile has no second sample
+- **THEN** a texture judged against it SHALL be `not-calibrated` with the reason unless it is farther than both yardsticks, and a calibrated profile SHALL grade by the worse of `spectralDb` and `histogramL`
+
+#### Scenario: Noise is not material
+
+- **WHEN** white noise (±4 grey) or a flat field is measured against any built-in profile
+- **THEN** the level SHALL be `unlike-reference`, and a halftone measurement without a 2-D screen peak SHALL report `screen: false` and `unlike-reference`
+
+#### Scenario: Calibration lineage
+
+- **WHEN** a built-in profile entry or a project profile that a generated or processed file was made or graded from (profile, paper, grain or `--reference`) changes
+- **THEN** `materials check` SHALL report `material-calibration-stale` with a re-run command naming `--project-root`; a profile id outside `^[a-z0-9-]+$` SHALL be refused with `OPTION_VALUE_INVALID`
 
 #### Scenario: Unlike paper
 

@@ -29,7 +29,8 @@ const FIX = {
   "clutter": "Too many separate shapes compete. Group related items, remove decoration, or increase spacing so the frame reads as a few masses.",
   "palette-sprawl": "Too many saturated hues. Keep one accent hue plus neutrals; move other colors to tints of the accent.",
   "edge-crowding": "Content presses against the canvas edge. Add a margin of at least 4% of the short side, or make the bleed clearly intentional.",
-  "text-contrast": "Text fails WCAG contrast against its background. Darken or lighten the text or its background until it reaches 4.5:1 (3:1 for large text).",
+  "text-contrast": "Text fails WCAG contrast against its background (on a textured or image ground: against the worst 5% of the pixels under it). Darken or lighten the text or its background until it reaches 4.5:1 (3:1 for large text); on a texture, lower the texture's strength under the text or back the text with a flat panel.",
+  "contrast-unmeasured": "Text sits on an image, gradient or texture whose pixels were not sampled, so its contrast is unknown. Recapture with `composition capture` (it samples the ground under each text box with text hidden), or give the text an opaque backing colour.",
   "text-off-canvas": "Text extends outside the viewport. Move it inward or reduce its size.",
   "alignment-near-miss": "Edges almost align but miss by a few pixels. Snap these elements to the same left, center or right edge.",
   "flat-hierarchy": "Text sizes are too similar to show order. Make the headline at least 1.5x the body size, or change weight/color to separate levels.",
@@ -231,11 +232,20 @@ function checkElements(elements, add) {
     const box = item.box;
     if (!box) fail(SCOPE, `element ${item.id || item.text} has no box`);
     if (box.x < -1 || box.y < -1 || box.x + box.w > viewport.width + 1 || box.y + box.h > viewport.height + 1) add("text-off-canvas", `"${String(item.text).slice(0, 40)}" at ${Math.round(box.x)},${Math.round(box.y)} leaves the ${viewport.width}x${viewport.height} viewport`, "error", item.id);
+    const large = item.fontSize >= 24 || (item.fontSize >= 18.66 && item.fontWeight >= 700);
+    const need = large ? 3 : 4.5;
     if (item.background && item.color) {
       const ratio = contrastRatio(parseColor(item.color), parseColor(item.background));
-      const large = item.fontSize >= 24 || (item.fontSize >= 18.66 && item.fontWeight >= 700);
-      const need = large ? 3 : 4.5;
       if (ratio < need) add("text-contrast", `"${String(item.text).slice(0, 40)}" is ${ratio.toFixed(2)}:1, needs ${need}:1`, "error", item.id);
+    } else if (item.color && Array.isArray(item.ground?.luminancePercentiles) && item.ground.luminancePercentiles.length > 1) {
+      // Image-backed text: judged on the ground pixels under it (text hidden). Each ground
+      // percentile gives a contrast against the text; the 5th percentile of those is the worst 5%.
+      const textY = luminance(...parseColor(item.color));
+      const ratios = item.ground.luminancePercentiles.map((y) => (Math.max(textY, y) + 0.05) / (Math.min(textY, y) + 0.05)).sort((a, b) => a - b);
+      const ratio = ratios[Math.floor(0.05 * (ratios.length - 1))], meanRatio = item.ground.mean ? contrastRatio(parseColor(item.color), parseColor(item.ground.mean)) : null;
+      if (ratio < need) add("text-contrast", `"${String(item.text).slice(0, 40)}" is ${ratio.toFixed(2)}:1 against the worst 5% of its ground${meanRatio ? ` (${meanRatio.toFixed(2)}:1 at the mean)` : ""}, needs ${need}:1`, "error", item.id);
+    } else if (item.color && !item.background) {
+      add("contrast-unmeasured", `"${String(item.text).slice(0, 40)}" sits on an image or gradient that was not sampled; its contrast is unknown`, "warn", item.id);
     }
   }
   const blocks = items.filter((item) => item.box && item.box.w > 0 && item.box.h > 0);
@@ -268,11 +278,11 @@ function checkElements(elements, add) {
   return { texts: texts.length, blocks: blocks.length, nearMisses: nearMisses.length };
 }
 
-// The text findings of a capture's elements.json alone (contrast and off-canvas), for callers with no image.
+// The text findings of a capture's elements.json alone (contrast, unmeasured contrast and off-canvas), for callers with no image.
 function checkTextLegibility(elements) {
   const findings = [];
   checkElements(elements, (code, message, severity, target) => {
-    if (code === "text-contrast" || code === "text-off-canvas") findings.push({ code, severity, message, fix: FIX[code], ...(target ? { target } : {}) });
+    if (code === "text-contrast" || code === "text-off-canvas" || code === "contrast-unmeasured") findings.push({ code, severity, message, fix: FIX[code], ...(target ? { target } : {}) });
   });
   return findings;
 }

@@ -155,16 +155,28 @@ fit region, held-out region and natural variation): `laid-cream` (Arches laid, s
 laid lines, about 4.9 L* RMS), `wove-cream` (smooth, about 0.9), `wove-toned` (about 1.5),
 `woodblock-indigo` and `litho-red` (ink flats), `autotype-1904` (a 160 lpi halftone). Each
 generated texture records its distance to the held-out region (`similarity`): `spectralDb` (RMS of
-per-band dB differences) for paper and ink, the off-lattice variance share for halftones, with the
-yardsticks `natural` (two regions of the same real sheet) and `between` (two different real papers).
+per-band dB differences) and `histogramL` (lightness quantiles) for paper and ink, the off-lattice
+variance share for halftones, with the yardsticks `natural` (two regions of the same real sheet)
+and `between` (the nearest other real sheet). The worse metric decides the level. A profile grades
+only when its natural spread is clearly below its between distance; `wove-cream`, `litho-red` and
+`autotype-1904` are `not-calibrated` (they report the distance and the reason, and only a gross miss
+is `unlike-reference`). A halftone without a 2-D screen peak (noise, FM, paper) is
+`unlike-reference` against a halftone profile.
 Owners calibrate to their own scans with `materials measure --name` ([capturing material](../../references/material-capture.md)).
 
 Limits, measured: spectrum + histogram synthesis does not reproduce phase structure (single hairs,
 wood-grain lines, chain lines) even when the numbers match; a near-black ink (#0d0b0b) clips the
-darker half of a profile's grain and lands `unlike-reference`; a halftone's natural variation is
-wide (two crops of the same autotype print differ by 0.43 in off-lattice share), so that yardstick
-separates a clean digital screen (about 0.04) from print but not one print from another. Visual
+darker half of a profile's grain and lands `unlike-reference`; crops of the one autotype sample
+differ by 0.01-0.90 in off-lattice share, so halftone screens are not graded until owner screentone
+scans arrive. Visual
 use is still a decision at 100% where the material sits.
+
+Under text, the texture spends the contrast budget. Run `composition capture` and `verify
+composition --elements` on the page: text over an image or texture is judged against the worst 5%
+of the pixels under it. On saturated or dark grounds (a red, an indigo, a black flat) with text
+close to the 3:1 or 4.5:1 line, lower the flat's `strength` (and the paper's) until the gate passes.
+Measured in the 夜想回廊 cards: black type on a #d10e1f litho flat is 3.57:1 flat; strength 0.55
+gave 2.78:1 at the worst 5%, 0.2 gave 2.96, 0.1 passed at 3.03.
 
 ## Font subset and glyph route
 

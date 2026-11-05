@@ -143,6 +143,7 @@
     "art-motion-assets-audio.test.cjs",
     "materials.test.cjs",
     "procedural-materials.test.cjs",
+    "composition-ground.test.cjs",
     "art-motion-tools.test.cjs",
     "taste-skill.test.cjs",
     "art-motion-voice.test.cjs",
