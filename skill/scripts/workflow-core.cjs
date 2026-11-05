@@ -16,7 +16,7 @@ const { assertEnum, canonicalJson, fail, readJson, resolveInside, sha256 } = req
 const { validatePlan } = require("./plan-core.cjs");
 const { createArtifactMetadata, validateArtifactMetadata } = require("./artifact-core.cjs");
 const { captureGitSnapshot, inspectGitChanges, samePath } = require("./execution-target-core.cjs");
-const { RESULT_SCHEMA, validateProbeFile, journeyResultFailure, auditResultFailure } = require("./interaction-core.cjs");
+const { RESULT_SCHEMA, validateProbeFile, journeyResultFailure, auditResultFailure, scrollResultFailure } = require("./interaction-core.cjs");
 const { advanceChange } = require("./pipeline-state-core.cjs");
 const { readState: readNativeState } = require("./control-runtime-core.cjs");
 const { downstreamPhases, invalidateDownstream } = require("./invalidation-core.cjs");
@@ -698,6 +698,12 @@ function interactionResultFailure(report, rawProbe) {
     // Audit rows carry per-viewport check coverage, never motion samples.
     if (probe.probes[index].kind === "audit") {
       const failure = auditResultFailure(probe.probes[index], row);
+      if (failure) return failure;
+      continue;
+    }
+    // Scroll rows carry per-viewport, per-pass progress coverage, never motion samples.
+    if (probe.probes[index].kind === "scroll") {
+      const failure = scrollResultFailure(probe.probes[index], row);
       if (failure) return failure;
       continue;
     }

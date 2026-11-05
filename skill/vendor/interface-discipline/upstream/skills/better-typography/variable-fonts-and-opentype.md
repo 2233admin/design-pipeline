@@ -1,30 +1,29 @@
 # Variable fonts and OpenType
 
-What a font file can do beyond drawing letters, and how to reach those abilities from CSS.
+What a font file can do beyond drawing letters and how to reach those abilities from CSS.
 
 ## Static vs variable
 
-- **Static font:** one weight and one style per file. Regular + medium + bold = three files.
-- **Variable font:** an entire range in one file. Any value in the range works, e.g. `font-weight: 589`.
+- **Static font:** one weight and one style per file. Regular, medium and bold is three files.
+- **Variable font:** a whole range in one file. Any value in it works, such as `font-weight: 589`.
 
-A variable font is not automatically better. One or two weights: static files can be smaller. Several weights, optical sizes or custom axes: a variable font usually makes more sense.
+A variable font is not automatically better. At one or two weights, static files can be smaller. At several weights, optical sizes or custom axes, a variable font usually wins.
 
-## Load intended weights and styles
+## Disable synthesis narrowly
 
-When you use a weight or style the active family does not provide, the browser may synthesize it. Prefer loading the faces the design actually uses. Disable synthesis only after verifying the complete fallback stack and every semantic emphasis state; `none` disables weight, style, small-cap, superscript, and subscript synthesis together and can erase distinctions when the real face is unavailable.
+`font-synthesis: none` disables weight, style, small-cap and position synthesis together. Scope it to an isolated treatment you have verified across the fallback stack:
 
 ```css
 .brand-wordmark {
-  /* Safe only after this isolated treatment is verified */
   font-synthesis: none;
 }
 ```
 
-For body and interface text, keep synthesis enabled unless a verified font setup supplies every requested form. If only one mode is unwanted, use the specific longhand (`font-synthesis-weight`, `font-synthesis-style`, and related properties) instead of the blanket shorthand.
+To disable one mode, use its longhand: `font-synthesis-weight`, `font-synthesis-style`, `font-synthesis-small-caps` or `font-synthesis-position`.
 
 ## Axes
 
-Variable-font controls, each with a four-letter tag. A font only supports the axes its designer included.
+Variable-font controls, each with a four-letter tag. A font supports only the axes its designer included.
 
 | Axis | Tag | Controls |
 | --- | --- | --- |
@@ -36,17 +35,16 @@ Variable-font controls, each with a four-letter tag. A font only supports the ax
 
 Inter's variable file exposes only `wght` and `opsz`.
 
-Optical sizes predate variable fonts and many fonts still ship them as separate files: Heldane Text is sturdier and more spaced for reading sizes, Heldane Display has finer details for large sizes.
+Optical sizes predate variable fonts. Many families still ship them as separate `Text` and `Display` files instead of an `opsz` axis.
 
-## Properties over axis tags
+## Raw tags only for custom axes
 
-When a property exists, use it. `font-weight` keeps working when a non-variable fallback renders; `font-variation-settings` silently does nothing. Save the raw tags for custom axes with no property of their own:
+`font-variation-settings` silently does nothing on a non-variable fallback, where `font-weight` still picks the nearest face:
 
 ```css
 /* Good: common axes use the properties */
 .heading {
   font-weight: 650;
-  font-optical-sizing: auto;
 }
 
 /* Good: custom axis with no property of its own */
@@ -62,7 +60,7 @@ When a property exists, use it. `font-weight` keeps working when a non-variable 
 
 ## OpenType features
 
-OpenType is the standard behind almost every modern font. Features are extra built-in options and, unlike axes, they work the same on static and variable fonts. A font only ships the features its designer included.
+Unlike axes, features work the same on static and variable fonts. A font ships only the features its designer included.
 
 | Tag | Feature |
 | --- | --- |
@@ -72,7 +70,7 @@ OpenType is the standard behind almost every modern font. Features are extra bui
 | `ss01`–`ss20` | Stylistic sets (numbered slots) |
 | `cv01`–`cv99` | Character variants (numbered slots) |
 
-Same rule as axes: prefer the `font-variant-*` properties, reserve `font-feature-settings` for tags with no property:
+Common features have a `font-variant-*` property, and `font-feature-settings` is for the rest:
 
 ```css
 /* Good: common features use the properties */
@@ -80,7 +78,6 @@ Same rule as axes: prefer the `font-variant-*` properties, reserve `font-feature
   font-variant-numeric: tabular-nums;
 }
 
-/* Good: slashed zero via the property too */
 .id {
   font-variant-numeric: slashed-zero;
 }
@@ -91,12 +88,10 @@ Same rule as axes: prefer the `font-variant-*` properties, reserve `font-feature
 }
 ```
 
-Tabular numbers matter for changing values: without them each digit has a different width and the layout shifts as values update.
-
 ## Small caps, superscripts, subscripts
 
 - **Small capitals:** uppercase letters drawn at a smaller size. Enable real ones with `font-variant-caps`.
-- **Superscripts** sit above the normal line (the 2 in x²), **subscripts** below it (H₂O). Enable proper glyphs with `font-variant-position`.
+- **Superscripts** sit above the normal line, the 2 in x², and **subscripts** below it, as in H₂O. Enable proper glyphs with `font-variant-position`.
 
 Both require the font to include the glyphs.
 

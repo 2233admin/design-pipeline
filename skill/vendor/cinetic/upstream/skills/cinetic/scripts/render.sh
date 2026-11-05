@@ -40,7 +40,8 @@
 #                       forensics.py --loop or deliver.sh --loop
 #   --audio-offset F    film frame at which this composition starts (default: the --frames start;
 #                       set it when rendering a per-act composition with sound)
-#   --build-audio       first run scripts/export-cues.ts and scripts/audio/score.py to rebuild the WAV
+#   --build-audio       first run scripts/export-cues.ts, scripts/audio/kit.py render (the earshot kit,
+#                       cached) and scripts/audio/score.py to rebuild the WAV
 #   --entry FILE        Remotion entry point (default src/index.ts)
 #   --sub ID            sub-frame composition for --blur (default <Comp>Sub)
 #   --frames A-B        render only film frames A..B (inclusive); audio is taken from the same range
@@ -136,6 +137,11 @@ if [[ $BUILD_AUDIO -eq 1 && $NOAUDIO -eq 0 ]]; then
   [[ -f "$SCRIPT_DIR/export-cues.ts" && -f "$SCRIPT_DIR/audio/score.py" ]] || die "--build-audio needs scripts/export-cues.ts and scripts/audio/score.py"
   step "rebuilding cues and soundtrack"
   npx tsx "$SCRIPT_DIR/export-cues.ts" >&2
+  # the earshot kit first (cached: seconds when nothing changed); without earshot score.py plays the
+  # rendered takes in audio/kit, or its synth voices with a warning
+  if [[ -f audio/kit.json && -f "$SCRIPT_DIR/audio/kit.py" ]]; then
+    python3 "$SCRIPT_DIR/audio/kit.py" render >&2 || echo "render.sh: the kit was not rendered (above); score.py falls back" >&2
+  fi
   python3 "$SCRIPT_DIR/audio/score.py" --cues out/cues.json --score audio/score.json --out "$AUDIO" --stems out/stems --json out/qa/score.json >&2
 fi
 if [[ $NOAUDIO -eq 0 ]]; then
@@ -178,6 +184,19 @@ RARGS+=(${EXTRA[@]+"${EXTRA[@]}"})
 PIC="$WORK/picture.mp4"
 step "$COMP: ${SIZE}@${FPS}, frames $FROM-$TO ($N f, ${DUR}s), mode $MODE"
 
+# subframe_span SAMPLES A B: the first and last sub-frame of film frames A-B. A function, because
+# bash 3.2 (macOS) cannot parse a heredoc inside $( ).
+subframe_span() {
+  python3 - "$@" <<'PY'
+import json, sys
+g = [max(1, int(x)) for x in json.load(open(sys.argv[1]))['groups']]
+a, b = int(sys.argv[2]), int(sys.argv[3])
+g += [1] * max(0, b + 1 - len(g))  # FilmSub renders missing entries once
+before = sum(g[:a])
+print(before, before + sum(g[a:b + 1]) - 1)
+PY
+}
+
 case "$MODE" in
   preview|master)
     if [[ $MODE == preview ]]; then Q=(--crf="${CRF:-20}" --x264-preset=veryfast); else Q=(--crf="${CRF:-14}" --x264-preset=slow); fi
@@ -216,15 +235,7 @@ import json, sys
 d = json.load(open(sys.argv[1])); d['sharp_s_per_frame'] = float(sys.argv[2]); json.dump(d, open(sys.argv[1], 'w'))
 PY
     fi
-    read -r SA SB <<< "$(python3 - "$SAMPLES" "$FROM" "$TO" <<'PY'
-import json, sys
-g = [max(1, int(x)) for x in json.load(open(sys.argv[1]))['groups']]
-a, b = int(sys.argv[2]), int(sys.argv[3])
-g += [1] * max(0, b + 1 - len(g))  # FilmSub renders missing entries once
-before = sum(g[:a])
-print(before, before + sum(g[a:b + 1]) - 1)
-PY
-)"
+    read -r SA SB <<< "$(subframe_span "$SAMPLES" "$FROM" "$TO")"
     # The estimate, measured on the starter (4 CPUs): a sub-frame renders in about the time of a
     # sharp frame, and the float accumulation costs about 0.75 of that again per sub-frame.
     FASTRC=0

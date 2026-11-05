@@ -4,6 +4,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { storedPath, upstreamFiles } = require("./upstream-path.cjs");
+const brandSystems = require("./brand-design-systems-core.cjs");
 
 const defaultManifest = path.resolve(__dirname, "../vendor/design-md/manifest.json");
 const schema = "design-pipeline.design-md-source.v1";
@@ -166,8 +167,14 @@ function normalize(text) {
   return text.toLocaleLowerCase("en-US").replace(/[^a-z0-9]+/g, " ").trim();
 }
 
-function searchDesignMdSource({ query = "", kind = null, limit = 20, manifestFile = defaultManifest } = {}) {
-  if (kind && kind !== "example") invalid(`unknown kind ${kind}`);
+const KINDS = ["example", brandSystems.KIND];
+
+// Searches the bundled dimabraven examples and, once fetched, the brand design-system catalog
+// (`sources fetch --bundle brand-design-systems`). `kind` narrows to one; asking for design systems
+// before the fetch fails TOOL_MISSING naming the command. `catalog` passes options (manifestFile,
+// env) to the catalog for tests.
+function searchDesignMdSource({ query = "", kind = null, limit = 20, manifestFile = defaultManifest, catalog = {} } = {}) {
+  if (kind && !KINDS.includes(kind)) invalid(`unknown kind ${kind}; use ${KINDS.join(" or ")}`);
   const limitText = String(limit);
   if (!/^[1-9]\d*$/.test(limitText) || Number(limitText) < 1) invalid("limit must be a positive integer");
   const parsedLimit = Number(limitText);
@@ -175,22 +182,48 @@ function searchDesignMdSource({ query = "", kind = null, limit = 20, manifestFil
   const verification = verifyDesignMdSource(manifestFile);
   if (verification.status !== "ready") invalid(`snapshot verification failed: ${verification.issues.join("; ")}`);
   const phrase = normalize(query);
-  const results = loaded.manifest.examples
+  const scored = kind === brandSystems.KIND ? [] : loaded.manifest.examples
     .map((example) => {
       const content = fs.readFileSync(path.join(loaded.root, example.path), "utf8");
-      const haystack = normalize(`${example.id} ${example.slug} ${example.name} ${example.description} ${content}`);
-      const score = !phrase ? 1 : haystack.includes(phrase) ? 100 : phrase.split(" ").filter((token) => token.length > 1).reduce((sum, token) => sum + (haystack.includes(token) ? 4 : 0), 0);
-      return { score, example };
+      const head = normalize(`${example.id} ${example.slug} ${example.name} ${example.description}`);
+      const score = brandSystems.scoreEntry(phrase, head, normalize(content), [example.name, example.slug]);
+      return {
+        score,
+        entry: {
+          ...example,
+          status: "reference-only",
+          contentPath: path.join(loaded.root, example.path),
+          executableReady: false,
+          instruction: brandSystems.INSTRUCTION,
+        },
+      };
     })
-    .filter(({ score }) => score > 0)
-    .sort((left, right) => right.score - left.score || left.example.id.localeCompare(right.example.id))
+    .filter(({ score }) => score > 0);
+  const catalogs = [];
+  if (kind !== "example") {
+    const state = brandSystems.verifyBrandDesignSystems(catalog.manifestFile || brandSystems.findManifest(), catalog);
+    if (kind === brandSystems.KIND || state.status === "ready") {
+      // --kind design-system fails here (TOOL_MISSING before the fetch, SOURCE_CHANGED when blocked).
+      const found = brandSystems.searchBrandDesignSystems({ query, limit: parsedLimit, ...catalog, verification: state });
+      scored.push(...found.results);
+      catalogs.push({ bundle: found.bundle, status: "ready", systems: found.systems });
+    } else if (state.status === "missing") {
+      catalogs.push({ bundle: state.bundle, status: "missing", systems: state.systems, fetch: state.fetch });
+    } else {
+      // A catalog that no longer verifies never breaks the example search; it is reported instead.
+      const where = state.fetched?.root;
+      catalogs.push({
+        bundle: state.bundle || "brand-design-systems",
+        status: "blocked",
+        issues: state.issues,
+        fix: where ? `remove ${where} and run ${state.fetch}` : "reinstall the package",
+      });
+    }
+  }
+  const results = scored
+    .sort(brandSystems.compareScored)
     .slice(0, parsedLimit)
-    .map(({ example }) => ({
-      ...example,
-      status: "reference-only",
-      contentPath: path.join(loaded.root, example.path),
-      executableReady: false,
-    }));
+    .map(({ entry }) => entry);
   return {
     schema: "design-pipeline.design-md-source-search.v1",
     status: "ready",
@@ -198,11 +231,13 @@ function searchDesignMdSource({ query = "", kind = null, limit = 20, manifestFil
     revision: loaded.manifest.source.revision,
     count: results.length,
     results,
-    instruction: "Treat bundled DESIGN.md files as inspiration-only; synthesize a product DESIGN.md instead of installing a template.",
+    catalogs,
+    instruction: "Treat bundled DESIGN.md examples and brand design systems as inspiration-only; synthesize a product DESIGN.md instead of installing a template. `designmd inspect --id <design-system id>` returns a system's normalised token front matter for comparison.",
   };
 }
 
-function inspectDesignMdSource(id, manifestFile = defaultManifest) {
+function inspectDesignMdSource(id, manifestFile = defaultManifest, catalog = {}) {
+  if (String(id).startsWith(brandSystems.ID_PREFIX)) return brandSystems.inspectBrandDesignSystem(id, catalog);
   const loaded = loadDesignMdSource(manifestFile);
   const verification = verifyDesignMdSource(manifestFile);
   if (verification.status !== "ready") invalid(`snapshot verification failed: ${verification.issues.join("; ")}`);

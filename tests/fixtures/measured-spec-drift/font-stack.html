@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Font stack</title>
+<style>
+  @font-face { font-family: "Fixture Display"; src: url("fixture.woff") format("woff"); }
+  /* the first family is not installed anywhere; the token family behind it renders */
+  body { margin: 0; font-family: "Zzqx Sans", "Fixture Display", serif; color: #1a1a2e; background: #fff; }
+</style>
+</head>
+<body>
+  <h1>Token family reached through the stack</h1>
+  <p>The first family named is missing, so every line renders in the token family that follows it.</p>
+</body>
+</html>

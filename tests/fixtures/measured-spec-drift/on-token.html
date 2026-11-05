@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>On token</title>
+<style>
+  @font-face { font-family: "Fixture Display"; src: url("fixture.woff") format("woff"); }
+  html { background: white; }
+  body { margin: 0; font-family: "Fixture Display", sans-serif; color: #1a1a2e; }
+  /* color(srgb) and a named colour, so the canvas normalisation has to convert them */
+  .cta { background: color(srgb 0.2 0.4 1); color: white; padding: 12px 24px; border: 0; font: inherit; }
+  /* hidden and fully transparent text must not count */
+  .hidden { display: none; color: #ff0000; }
+  .ghost { opacity: 0; color: #00ff00; }
+</style>
+</head>
+<body>
+  <h1>Measured drift fixture heading</h1>
+  <p>Body copy is set in the token family and painted with the ink token across this paragraph.</p>
+  <button class="cta">Primary action</button>
+  <p class="hidden">Hidden red text never paints.</p>
+  <p class="ghost">Transparent green text never paints.</p>
+</body>
+</html>
