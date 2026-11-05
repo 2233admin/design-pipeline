@@ -67,6 +67,22 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "if": {
+          "properties": {
+            "outcome": {
+              "enum": ["accepted-context", "not-applicable"]
+            }
+          }
+        },
+        "then": {
+          "required": ["rationale"],
+          "properties": {
+            "rationale": {
+              "description": "Why this rule is waived on this target. The evaluator counts characters without whitespace and punctuation, a CJK ideograph, kana or hangul syllable as 2, and requires at least 24; the same rationale (ignoring case, spacing and punctuation) on two waived rules is refused. minLength 12 is the bound JSON Schema can express.",
+              "minLength": 12
+            }
+          }
         }
       }
     }

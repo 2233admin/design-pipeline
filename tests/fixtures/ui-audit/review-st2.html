@@ -1,0 +1,30 @@
+<!doctype html><html><head><style>
+body{font:16px/1.5 Arial;background:#fff;color:#111;margin:0;padding:20px}
+.skip{position:absolute;left:-9999px;top:0;background:#000;color:#fff;padding:8px}.skip:focus{left:10px}
+.tw{outline:none;border:1px solid #d1d5db;padding:8px;background:#fff}
+.tw:focus-visible{box-shadow:0 0 #0000,0 0 0 0 #fff,0 0 0 2px rgb(59 130 246 / .5),0 0 #0000}
+.tw2{outline:none;border:1px solid #d1d5db;padding:8px}
+.tw2:focus-visible{box-shadow:0 0 0 2px #fff,0 0 0 4px rgb(59 130 246);border-color:#3b82f6}
+.bs{border:1px solid #ced4da;padding:8px;outline:0}.bs:focus{border-color:#86b7fe;box-shadow:0 0 0 .25rem rgba(13,110,253,.25)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:-1px}
+.sr+label{border:2px solid #999;padding:6px;display:inline-block}.sr:focus-visible+label{outline:3px solid #1d4ed8;outline-offset:2px}
+.sr2{opacity:0;position:absolute}
+.sr2+label{padding:6px;display:inline-block}.sr2:focus-visible+label{outline:3px solid #1d4ed8}
+nav li{display:inline-block;position:relative;list-style:none;margin-right:20px}
+nav .dd{display:none;position:absolute;top:100%;left:0;background:#1e293b;width:180px;z-index:5}
+nav li:hover .dd,nav li:focus-within .dd{display:block}
+nav .dd a{display:block;color:#f8fafc;padding:6px}
+.grad{background:linear-gradient(90deg,#7c3aed,#2563eb);color:#fff;border:0;padding:10px 16px}
+.grad:hover{filter:brightness(1.1)}.grad:focus-visible{outline:2px solid #111;outline-offset:2px}
+.card a{color:#1d4ed8}.card:hover a{color:#fff}
+.card{background:#fff;padding:10px}.card:hover{background:#1d4ed8}
+</style></head><body>
+<a class="skip" href="#m">Skip to content</a>
+<h1>States 2</h1>
+<nav><ul><li><a href="#p">Products</a><div class="dd"><a href="#1">One</a><a href="#2">Two</a></div></li><li><a href="#q">Company</a><div class="dd"><a href="#3">Three</a></div></li></ul></nav>
+<p>Para under nav text lorem ipsum.</p>
+<p><input class="tw" value="tailwind ring-2 blue-500/50"> <input class="tw2" value="tailwind ring+offset+border"> <input class="bs" value="bootstrap"></p>
+<p><input type="checkbox" class="sr" id="c1"><label for="c1">sr-only check</label> <input type="checkbox" class="sr2" id="c2"><label for="c2">opacity0 check</label></p>
+<p><button class="grad">gradient</button></p>
+<div class="card"><a href="#z">card link, whole card hover</a></div>
+</body></html>

@@ -5,7 +5,7 @@
 - [x] 1.1 proposal.md, design.md and the `design-pipeline` spec delta.
 - [x] 1.2 `npm exec -- openspec validate hyperframes-0-8-221 --strict` and `npm run specs:check`.
 
-## 2. Bump (after refresh-upstream-snapshots)
+## 2. Bump (after track-latest-upstream; lock entry `hyperframes`, #262)
 
 - [ ] 2.1 `HYPERFRAMES_VERSION` 0.8.221; evals; notice commit `f4bbbe10741bbcfe2ae866203611797e4a1999d4`; every doc and test naming the version; QA check that they agree.
 - [ ] 2.2 `references/hyperframes.md` route section (proposal).

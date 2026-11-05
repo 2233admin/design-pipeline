@@ -24,6 +24,11 @@ function tone(dir, name, expr, seconds = 12) {
   return file;
 }
 const fadeOut = (level, seconds = 12) => `${level}*sin(2*PI*220*t)*min(1,(${seconds}-t)/1)`;
+// A decaying 90 Hz hit whose attack sits exactly at `at` seconds.
+const hit = (at, level = 0.8) => `if(gte(t,${at}),${level}*exp(-60*(t-${at}))*sin(2*PI*90*(t-${at})),0)`;
+// The example storyboard's hit cues: accent 2.4 s, downbeat 5 s, impact 8.8 s.
+const exampleHits = [2.4, 5, 8.8];
+const scored = (cues, fps = 30) => ({ fps, sound: { mode: "scored", assets: [{ id: "own", license: "user-owned", commercialUse: true }], cues: [{ id: "in", atSec: 0, kind: "entry" }, ...cues] } });
 
 test("storyboard accepts sound usage and license assets, rejects malformed ones", () => {
   assert.equal(checkStoryboard(example()).status, "passed");
@@ -124,7 +129,7 @@ test("a scored film without an audio stream fails; CLI exit codes and target err
     const run = spawnSync("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "color=c=gray:s=64x36:r=10:d=2", "-c:v", "libx264", "-pix_fmt", "yuv420p", path.join(dir, "mute.mp4")], { windowsHide: true, encoding: "utf8" });
     assert.equal(run.status, 0, run.stderr);
     assert.deepEqual(codes(checkAudio(path.join(dir, "mute.mp4"), { storyboard: example() })), ["audio-missing"]);
-    tone(dir, "ok.wav", fadeOut(0.02));
+    tone(dir, "ok.wav", [fadeOut(0.02), ...exampleHits.map((at) => hit(at, 0.2))].join("+"));
     fs.writeFileSync(path.join(dir, "storyboard.json"), JSON.stringify(example()));
     const failed = spawnSync(process.execPath, [cli, "verify", "audio", "--root", dir, "--audio", "ok.wav"], { encoding: "utf8" });
     assert.equal(failed.status, 2, failed.stdout);
@@ -134,5 +139,97 @@ test("a scored film without an audio stream fails; CLI exit codes and target err
     assert.equal(passed.status, 0, passed.stdout);
     const target = spawnSync(process.execPath, [cli, "verify", "audio", "--root", dir, "--audio", "m.wav", "--target", "cinema"], { encoding: "utf8" });
     assert.match(target.stdout, /allowed: web, podcast, broadcast/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("hit cues are timed against measured onsets: on the frame, off the frame, unsounded", { skip }, () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "audio-"));
+  try {
+    const file = tone(dir, "hits.wav", [fadeOut(0.05), ...exampleHits.map((at) => hit(at))].join("+"));
+    const onCue = checkAudio(file, { storyboard: scored([{ id: "a", atSec: 2.4, kind: "accent" }, { id: "d", atSec: 5, kind: "downbeat" }, { id: "i", atSec: 8.8, kind: "impact" }]) });
+    const sync = onCue.metrics.cueSync;
+    assert.deepEqual([sync.cues, sync.onFrame, sync.heard], [3, 3, 3], JSON.stringify(sync));
+    assert.ok(sync.chance < 0.2, JSON.stringify(sync));
+    assert.ok(sync.chanceOnFrame > 0 && sync.chanceOnFrame < sync.chance, JSON.stringify(sync));
+    for (const code of ["impact-unsounded", "cue-unsounded", "cue-off-frame", "sync-at-chance"]) assert.ok(!codes(onCue).includes(code), code);
+    // A cue 60 ms before its hit (two frames at 30 fps) is off the frame; an impact on nothing fails.
+    const off = checkAudio(file, { storyboard: scored([{ id: "a", atSec: 2.34, kind: "accent" }, { id: "i", atSec: 7, kind: "impact" }, { id: "d", atSec: 3.5, kind: "downbeat" }]) });
+    const row = (id) => off.metrics.cueSync.rows.find((r) => r.id === id);
+    assert.equal(row("a").status, "off-frame");
+    assert.ok(Math.abs(row("a").offsetMs - 60) <= 10, JSON.stringify(row("a")));
+    // 60 ms is far enough that the onset may be the music's: rule out a buried effect before shifting.
+    assert.match(off.findings.find((f) => f.code === "cue-off-frame").fix, /First rule out that the effect is buried \(quieter than the music; the onset found may be the music's\).*shift that sound by -\d+ ms/);
+    assert.equal(off.findings.find((f) => f.code === "impact-unsounded").severity, "error");
+    assert.equal(off.findings.find((f) => f.code === "cue-unsounded").severity, "warn");
+    assert.equal(off.status, "failed");
+    // 40 ms early: still off the frame, and the fix is the shift alone.
+    const near = checkAudio(file, { storyboard: scored([{ id: "a", atSec: 2.36, kind: "accent" }]) }).findings.find((f) => f.code === "cue-off-frame");
+    assert.match(near.fix, /more than one frame\. Shift that sound by -\d+ ms/);
+    assert.doesNotMatch(near.fix, /buried/);
+    // A downbeat on the very first sample is found at 0.
+    const first = tone(dir, "first.wav", [hit(0), hit(4)].join("+"), 6);
+    assert.equal(checkAudio(first, { storyboard: scored([{ id: "d0", atSec: 0, kind: "downbeat" }]) }).metrics.cueSync.rows[0].status, "on-frame");
+    // At 12 fps the same 60 ms is within a frame.
+    assert.equal(checkAudio(file, { storyboard: scored([{ id: "a", atSec: 2.34, kind: "accent" }], 12) }).metrics.cueSync.rows[0].status, "on-frame");
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("dense onsets make cue matches meaningless and say so", { skip }, () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "audio-"));
+  try {
+    const busy = Array.from({ length: 70 }, (_, k) => hit((0.5 + k * 0.15).toFixed(2), 0.5));
+    const file = tone(dir, "busy.wav", [fadeOut(0.05), ...busy].join("+"));
+    const result = checkAudio(file, { storyboard: scored([{ id: "a", atSec: 2, kind: "accent" }, { id: "b", atSec: 4.03, kind: "accent" }, { id: "c", atSec: 6.6, kind: "impact" }]) });
+    assert.ok(result.metrics.cueSync.chance >= 0.5, JSON.stringify(result.metrics.cueSync));
+    const finding = result.findings.find((f) => f.code === "sync-at-chance");
+    assert.ok(finding, JSON.stringify(result.findings));
+    assert.match(finding.fix, /verify audio --audio <effects-stem\.wav>/);
+    // One hit cue is enough to warn; at chance an off-frame cue gets no shift, since the onset may be the bed's.
+    const one = checkAudio(file, { storyboard: scored([{ id: "a", atSec: 2.06, kind: "accent" }]) });
+    assert.ok(codes(one).includes("sync-at-chance"), JSON.stringify(one.findings));
+    const offFrame = one.findings.find((f) => f.code === "cue-off-frame");
+    assert.ok(offFrame, JSON.stringify(one.metrics.cueSync.rows));
+    assert.doesNotMatch(offFrame.fix, /hift that sound by/);
+    assert.match(offFrame.fix, /effects stem on its own/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("audio with nothing audible leaves every hit cue unsounded", { skip }, () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "audio-"));
+  try {
+    const file = tone(dir, "hiss.wav", "0.002*(random(0)*2-1)", 8);
+    const result = checkAudio(file, { storyboard: scored([{ id: "i", atSec: 3, kind: "impact" }, { id: "a", atSec: 5, kind: "accent" }]) });
+    assert.equal(result.metrics.firstAudibleSec, null);
+    assert.deepEqual(result.metrics.cueSync.rows.map((row) => row.status), ["unsounded", "unsounded"]);
+    assert.equal(result.findings.find((f) => f.code === "impact-unsounded").severity, "error");
+    assert.ok(codes(result).includes("cue-unsounded"));
+    assert.equal(result.status, "failed");
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("riser, voiceover, entry and exit cues are not timed as hits", { skip }, () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "audio-"));
+  try {
+    const file = tone(dir, "pad.wav", fadeOut(0.05));
+    const result = checkAudio(file, { storyboard: scored([{ id: "r", atSec: 4, kind: "riser" }, { id: "v", atSec: 6, kind: "voiceover" }]) });
+    assert.equal(result.metrics.cueSync, undefined);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("hits mixed over a real music bed are found on their frames", { skip }, () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "audio-"));
+  try {
+    // The repository's seed score, 12 s, with a bright tick and a low hit at known times riding over it.
+    const bed = path.join(__dirname, "../examples/seed-film-reference/assets/field-notes-score.wav");
+    const tick = (at) => `if(gte(t,${at}),0.5*exp(-120*(t-${at}))*sin(2*PI*2400*(t-${at})),0)`;
+    const times = [2.31, 4.87, 7.4, 9.93];
+    const hits = [tick(times[0]), hit(times[1], 0.5), tick(times[2]), hit(times[3], 0.5)].join("+");
+    const file = path.join(dir, "bed-hits.wav");
+    const run = spawnSync("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-t", "12", "-i", bed, "-f", "lavfi", "-i", `aevalsrc='${hits}|${hits}':s=48000:d=12`, "-filter_complex", "[0:a]aresample=48000,aformat=channel_layouts=stereo[b];[b][1:a]amix=inputs=2:normalize=0[o]", "-map", "[o]", file], { windowsHide: true, encoding: "utf8" });
+    assert.equal(run.status, 0, run.stderr);
+    const result = checkAudio(file, { storyboard: scored(times.map((atSec, i) => ({ id: `h${i}`, atSec, kind: i % 2 ? "impact" : "accent" }))) });
+    const sync = result.metrics.cueSync;
+    assert.equal(sync.onFrame, 4, JSON.stringify(sync.rows));
+    assert.ok(sync.chance < 0.5, JSON.stringify(sync));
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });

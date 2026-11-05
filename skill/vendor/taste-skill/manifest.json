@@ -2,11 +2,11 @@
   "schema": "design-pipeline.taste-skill-source.v1",
   "source": {
     "repository": "https://github.com/Leonxlnx/taste-skill",
-    "revision": "b482f7a970abb98c4108d4a9f761e458c64cefc8",
-    "gitTree": "2589404b7fd08979aafbeb8074d4bc416fe428a3",
-    "committedAt": "2026-10-07T08:20:58+02:00",
+    "revision": "12af471f627f866411b4bd785b19646d3672784c",
+    "gitTree": "db698c9093437ee7daea871f70b48d06a838038e",
+    "committedAt": "2026-10-25T01:42:19+02:00",
     "license": "MIT",
-    "reviewedAt": "2026-10-08",
+    "reviewedAt": "2026-11-03",
     "scope": [
       "**"
     ]
@@ -20,28 +20,36 @@
   ],
   "snapshot": {
     "root": "upstream",
-    "fileCount": 62,
-    "byteCount": 4824721,
-    "treeSha256": "5c05edf236140ec2152a02c95f079911ce4636dd1b15089ad9292be9d0b5a40a",
-    "executableFiles": [],
+    "fileCount": 72,
+    "byteCount": 3093372,
+    "treeSha256": "e12cc2e63faba012ac716039de7cdd26da29cf1b2b48e065eca81aec910fc91e",
+    "executableFiles": [
+      "install.sh"
+    ],
     "objects": [
+      {
+        "path": ".agents/plugins/marketplace.json",
+        "mode": "100644",
+        "oid": "786a26e57bc6f3427d6a167c7f2e742852f7584a",
+        "size": 410
+      },
       {
         "path": ".claude-plugin/marketplace.json",
         "mode": "100644",
-        "oid": "f47a6ac716aadb9a59f51247de5620e514a36e01",
-        "size": 501
+        "oid": "15cb0635a4ea9b6c92c4da8d2e5933bc27e16792",
+        "size": 945
       },
       {
-        "path": ".claude-plugin/plugin.json",
+        "path": ".codex-plugin/plugin.json",
         "mode": "100644",
-        "oid": "846009b299d5d95d4658dd4a4f19921f3695fdf3",
-        "size": 447
+        "oid": "82cc22a264538fbc8ed658ac5b86730fd3a7701e",
+        "size": 1218
       },
       {
-        "path": ".github/copilot-instructions.md",
+        "path": ".gitattributes",
         "mode": "100644",
-        "oid": "c9ca993e9d93dfb759361158b2c41516f48e6378",
-        "size": 959
+        "oid": "dfdb8b771ce07609491fa2e83698969fd917a135",
+        "size": 17
       },
       {
         "path": ".github/FUNDING.yml",
@@ -50,52 +58,28 @@
         "size": 17
       },
       {
-        "path": "assets/.gitkeep",
+        "path": ".github/workflows/check-skills.yml",
         "mode": "100644",
-        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
-        "size": 0
+        "oid": "5343a89039e0b4bbff4a3fa22aef8314cddb1f66",
+        "size": 903
       },
       {
-        "path": "assets/readme-banner.webp",
+        "path": ".gitignore",
         "mode": "100644",
-        "oid": "983cdce1b604f294c5b0f277ca8327555eaaf3bc",
-        "size": 99902
+        "oid": "ca155c0d7d442aef9b5c75d2d54b63257732a801",
+        "size": 48
       },
       {
-        "path": "assets/readme-cta-tasteskill.svg",
+        "path": "assets/readme-tastecode-dark.webp",
         "mode": "100644",
-        "oid": "c4499f62691db13fb206d13442d2026f35ee4933",
-        "size": 4864
+        "oid": "feb4ff50ef41fcf8d107acb40dd90cbf5ecc6659",
+        "size": 48042
       },
       {
         "path": "assets/readme-tastecode.webp",
         "mode": "100644",
-        "oid": "bc29406b39913b4a39491b61cb0e67c1bceedcc0",
-        "size": 32914
-      },
-      {
-        "path": "assets/sponsors/animations-dev.webp",
-        "mode": "100644",
-        "oid": "c101842c7cd64964d8c22ca92f5b5f0ae181d2a8",
-        "size": 16024
-      },
-      {
-        "path": "assets/sponsors/emil-animations-dev.webp",
-        "mode": "100644",
-        "oid": "9ce57f969a1fc9b3004589d8de884b388c278ec8",
-        "size": 39216
-      },
-      {
-        "path": "assets/sponsors/fluxion-ai-banner.png",
-        "mode": "100644",
-        "oid": "8f72a484f506f3109188b549099b6544dd76a73c",
-        "size": 1757134
-      },
-      {
-        "path": "assets/sponsors/fluxion-ai.png",
-        "mode": "100644",
-        "oid": "990fafe5b0df2ed31ca2501a854de4f8d7ea2797",
-        "size": 1363728
+        "oid": "a177e9055aeb9ebef1ab9ff7b21d891f5167909a",
+        "size": 29104
       },
       {
         "path": "assets/sponsors/imgly-logo.svg",
@@ -128,22 +112,16 @@
         "size": 3937
       },
       {
-        "path": "assets/sponsors/reactbits-logo-dark.svg",
-        "mode": "100644",
-        "oid": "9d6bc8aaeadd8e56d58f4780e0e1f7daed56ae6a",
-        "size": 12502
-      },
-      {
-        "path": "assets/sponsors/reactbits-logo-light.svg",
-        "mode": "100644",
-        "oid": "bf6b0c18e342b83eb8977ac24d6f40277faaf523",
-        "size": 12536
-      },
-      {
         "path": "assets/sponsors/sentdm.png",
         "mode": "100644",
         "oid": "f93b23958966bb3eb90880b7f984773feadd02a7",
         "size": 4382
+      },
+      {
+        "path": "assets/sponsors/sidrune-ai.png",
+        "mode": "100644",
+        "oid": "6ce494dcabaa592247337a15f13bb825e5698915",
+        "size": 21326
       },
       {
         "path": "assets/sponsors/vercel-logo.svg",
@@ -152,16 +130,16 @@
         "size": 242
       },
       {
-        "path": "assets/taste-skill-logo.png",
+        "path": "assets/taste-skill-wordmark-dark.png",
         "mode": "100644",
-        "oid": "c5e8bd8130ed4abb4f0af104d182bd4bcf36993d",
-        "size": 17279
+        "oid": "5ed03e0a3ee8ee77b5a92caa5c4edd61a7deeb0d",
+        "size": 61650
       },
       {
-        "path": "assets/taste-skill-logo.webp",
+        "path": "assets/taste-skill-wordmark.png",
         "mode": "100644",
-        "oid": "f1eb55cf7953abdabf9c412ef6f4b2e1f1b4a483",
-        "size": 3280
+        "oid": "a62a052968687e76d69868cb283dd175ff8285e1",
+        "size": 51509
       },
       {
         "path": "assets/vercel-oss-program-badge.svg",
@@ -172,26 +150,44 @@
       {
         "path": "CHANGELOG.md",
         "mode": "100644",
-        "oid": "f0ef4d4aac258b9605ac8c3d1432ef782e10127a",
-        "size": 8272
+        "oid": "99479e10c3a86a015eea43aca412792872b6a99e",
+        "size": 28030
       },
       {
-        "path": "examples/floria-bottom.webp",
+        "path": "examples/v2/coffee-questions.webp",
         "mode": "100644",
-        "oid": "03df81069eef559c86446118db97a6fb23c487ee",
-        "size": 170130
+        "oid": "3146bb097de91e35fd91afa3c27212702af971ca",
+        "size": 26692
       },
       {
-        "path": "examples/floria-full.webp",
+        "path": "examples/v2/coffee-roast.webp",
         "mode": "100644",
-        "oid": "633c8df081b053e200cae73828a69a6f8015bd10",
-        "size": 568180
+        "oid": "4189800b0e1a63b5501c6a16176a03e068e8e2b1",
+        "size": 113142
       },
       {
-        "path": "examples/floria-top.webp",
+        "path": "examples/v2/coffee-storefront.webp",
         "mode": "100644",
-        "oid": "ae133b51315b632ea796dea0714802019b1de8a6",
-        "size": 303012
+        "oid": "ab0d6abcf888d4feb30be3a7369f5398cb65c68f",
+        "size": 29172
+      },
+      {
+        "path": "examples/v2/CREDITS.md",
+        "mode": "100644",
+        "oid": "a31747d6056a80fb53e19ea92005602be879119c",
+        "size": 10491
+      },
+      {
+        "path": "examples/v2/night-dates.webp",
+        "mode": "100644",
+        "oid": "2f0d60f9a63bb06d947a1b4d65d2d3439fd63afa",
+        "size": 173606
+      },
+      {
+        "path": "install.sh",
+        "mode": "100755",
+        "oid": "9ac14c2171df2f140fed785f0def46f36d9f4c06",
+        "size": 4012
       },
       {
         "path": "LICENSE",
@@ -202,281 +198,275 @@
       {
         "path": "README.md",
         "mode": "100644",
-        "oid": "0ce225263413fa416b3ac013fd4b42cbe1f6f9dd",
-        "size": 17782
+        "oid": "8efa355f7d03ada51edccea568dccf26e628b511",
+        "size": 15088
       },
       {
-        "path": "research/laziness/findings/empirical-results.md",
+        "path": "skills/taste-skill/assets/app.css",
         "mode": "100644",
-        "oid": "5023f3edea9465553b68d7a15472177fc912104e",
-        "size": 2820
+        "oid": "865e4ed4804556aaff51897d22bf0c1bcbee9549",
+        "size": 15918
       },
       {
-        "path": "research/laziness/findings/references.md",
+        "path": "skills/taste-skill/assets/base.css",
         "mode": "100644",
-        "oid": "fe0f291fce8a157d6de8a8ea2d2788d3ba1338e2",
-        "size": 1512
+        "oid": "75915d3b1ea8780090a365eabfb5c4b697cc6e86",
+        "size": 6520
       },
       {
-        "path": "research/laziness/README.md",
+        "path": "skills/taste-skill/assets/base.js",
         "mode": "100644",
-        "oid": "bfea0a5aa09b3ac8591c22eff8ec06c912ad7701",
-        "size": 1870
+        "oid": "86ec0afacba394f64db238c44b8e7b980f2383b3",
+        "size": 2162
       },
       {
-        "path": "research/laziness/remediation/architectural-patterns.md",
+        "path": "skills/taste-skill/assets/charts.js",
         "mode": "100644",
-        "oid": "eb58186c981b657601e13e5c389e25f755f11562",
-        "size": 3142
+        "oid": "8060404d133089930638804830e192218436eaa7",
+        "size": 59016
       },
       {
-        "path": "research/laziness/remediation/parameter-tuning.md",
+        "path": "skills/taste-skill/assets/scenes/stage.css",
         "mode": "100644",
-        "oid": "5bf2a25d48d672e0037d446cb5056bf21cd68fb1",
-        "size": 2856
+        "oid": "190763d3c1661e7a602bec21fce952dece67bf15",
+        "size": 1141
       },
       {
-        "path": "research/laziness/remediation/prompt-engineering.md",
+        "path": "skills/taste-skill/assets/scenes/stage.js",
         "mode": "100644",
-        "oid": "9f3704bdd601e9cc4fa0b1021b298e9bdd05bc9f",
-        "size": 3261
+        "oid": "315b1d9d2ec4b160979a904b13488ea7179b48e9",
+        "size": 7691
       },
       {
-        "path": "research/laziness/remediation/reference-prompts.md",
+        "path": "skills/taste-skill/evals/evals.json",
         "mode": "100644",
-        "oid": "185ad869b2ceae7dcfee3dcd6adcba22f6394c79",
-        "size": 2363
+        "oid": "f6d598008f22d980d135a863a7a151609822bb3f",
+        "size": 8198
       },
       {
-        "path": "research/laziness/root-causes/cognitive-shortcuts.md",
+        "path": "skills/taste-skill/library/app.json",
         "mode": "100644",
-        "oid": "ad67fa113edd92ddec40f41ee7213742c52045a4",
-        "size": 2124
+        "oid": "c06fb45f8bb6b09398f19ba35b2f71ae2363a310",
+        "size": 74229
       },
       {
-        "path": "research/laziness/root-causes/output-limits.md",
+        "path": "skills/taste-skill/library/directions.json",
         "mode": "100644",
-        "oid": "3d346ef074d816e0c1819aa83b97ae369b952718",
-        "size": 2568
+        "oid": "f7f82e1a921e7009da7ce6f88410d2c8a94cf214",
+        "size": 61466
       },
       {
-        "path": "research/laziness/root-causes/rlhf-and-compute.md",
+        "path": "skills/taste-skill/library/heroes.json",
         "mode": "100644",
-        "oid": "5ef6783d4f958b76d8fc88e713aeb076b974e62c",
-        "size": 2165
+        "oid": "74227d956a049f548d99f7b420ccc6218ae3c40e",
+        "size": 108240
       },
       {
-        "path": "research/laziness/root-causes/training-data-bias.md",
+        "path": "skills/taste-skill/library/motions.json",
         "mode": "100644",
-        "oid": "1aa2c7a7f10b91803c5dbb85a5fba39f6ded5ed6",
-        "size": 1666
+        "oid": "ff3818f561f338b15dbe1ff45620729ef0ff8d3b",
+        "size": 9033
       },
       {
-        "path": "research/README.md",
+        "path": "skills/taste-skill/library/palettes.json",
         "mode": "100644",
-        "oid": "3436417bae2f0dab79119411e56b758f95603b3c",
-        "size": 368
+        "oid": "9de29b16db9c9f57b977dd38648a47f866572e54",
+        "size": 34753
       },
       {
-        "path": "scripts/build-emil-sponsor-row.mjs",
+        "path": "skills/taste-skill/library/photos.json",
         "mode": "100644",
-        "oid": "d2e8277eb6f5765f2077693150624001b1449312",
-        "size": 1112
+        "oid": "f403b772d3d6ae11ef07cfe44514fb019d918820",
+        "size": 160632
       },
       {
-        "path": "scripts/convert-readme-assets-webp.mjs",
+        "path": "skills/taste-skill/library/sections.json",
         "mode": "100644",
-        "oid": "8ab1baa20750803a8d1e94c5ed853e5c5163bad7",
-        "size": 4228
+        "oid": "042b8ab18ef1aa6e67a6f0f2c171fa9357528623",
+        "size": 276146
       },
       {
-        "path": "scripts/process-readme-buttons.mjs",
+        "path": "skills/taste-skill/library/sites.json",
         "mode": "100644",
-        "oid": "c73e53037e98146004039d15f134cb3b24e823da",
-        "size": 3010
+        "oid": "ef070e3ccdf5cb9c388bab1fd0aacb0371cba413",
+        "size": 869073
       },
       {
-        "path": "scripts/process-sponsor-badge.mjs",
+        "path": "skills/taste-skill/library/type.json",
         "mode": "100644",
-        "oid": "515558bf9e6cb316fcf63734c93c75ad2a87bc6f",
-        "size": 2396
+        "oid": "f2a9e6ee47774029dd50fa2856cf963d4e69352f",
+        "size": 82326
       },
       {
-        "path": "skill.sh",
+        "path": "skills/taste-skill/README.md",
         "mode": "100644",
-        "oid": "7f19ae7b92ed36a38645431638feaaee3e80b420",
-        "size": 897
+        "oid": "a98ba126ce373ba5e639560d8628834d5fa43347",
+        "size": 5345
       },
       {
-        "path": "skills/brandkit/SKILL.md",
+        "path": "skills/taste-skill/references/app-screens.md",
         "mode": "100644",
-        "oid": "d76399f666af97ac8c142928e02602d9732e78aa",
-        "size": 15992
+        "oid": "784439ed799484a98958764a5bf3ede2a1d25296",
+        "size": 85358
       },
       {
-        "path": "skills/brutalist-skill/SKILL.md",
+        "path": "skills/taste-skill/references/colour.md",
         "mode": "100644",
-        "oid": "f5375b908340e1376ed391232a31c5d82d5babfb",
-        "size": 8456
+        "oid": "a20a810fa1f080414035a5e0fdc5002977e56ab2",
+        "size": 6853
       },
       {
-        "path": "skills/gpt-tasteskill/SKILL.md",
+        "path": "skills/taste-skill/references/copy.md",
         "mode": "100644",
-        "oid": "03ed209b8fdc0a3cd6bccf8a5b3bfffe56aa4558",
-        "size": 7857
+        "oid": "69f20af2bff6d40cc07d4dcadaa45440ced550bf",
+        "size": 9436
       },
       {
-        "path": "skills/image-to-code-skill/SKILL.md",
+        "path": "skills/taste-skill/references/critique.md",
         "mode": "100644",
-        "oid": "d19f8de112252ea88724c540647cad85b7653d46",
-        "size": 36442
+        "oid": "1989a85c83232e86aec66baf733a843947392b37",
+        "size": 11157
       },
       {
-        "path": "skills/imagegen-frontend-mobile/SKILL.md",
+        "path": "skills/taste-skill/references/imagery.md",
         "mode": "100644",
-        "oid": "9d8d55f3ca7a77e18329922ea8a67694dee52ebb",
-        "size": 40326
+        "oid": "ddd88d7a31dd3a5d7f4675ead4524f34d037f665",
+        "size": 51025
       },
       {
-        "path": "skills/imagegen-frontend-web/SKILL.md",
+        "path": "skills/taste-skill/references/layout.md",
         "mode": "100644",
-        "oid": "26b293b8d0088631c41ebefde4a650768d01cf22",
-        "size": 36854
+        "oid": "dae26af173b4b60f96291f816700f390ffd8e37e",
+        "size": 18315
       },
       {
-        "path": "skills/llms.txt",
+        "path": "skills/taste-skill/references/motion.md",
         "mode": "100644",
-        "oid": "74a7527f7822497812e5cc192149085616a33948",
-        "size": 1846
+        "oid": "c8f649d4fa45c369c53ce375a00d2f125182f181",
+        "size": 55400
       },
       {
-        "path": "skills/minimalist-skill/SKILL.md",
+        "path": "skills/taste-skill/references/research.md",
         "mode": "100644",
-        "oid": "44ead27ef04ffe79ade0c6df7fd696dbcf7b246b",
-        "size": 7901
+        "oid": "c38364af48f9e95dc90a2e6b47ae75ffdc24731e",
+        "size": 24262
       },
       {
-        "path": "skills/output-skill/SKILL.md",
+        "path": "skills/taste-skill/references/scenes.md",
         "mode": "100644",
-        "oid": "d983bbcf040b6f433c624ce2212a2c044ad2da3c",
-        "size": 2592
+        "oid": "c2c568b5f1d18128658b28a273e90028fc22bb30",
+        "size": 9817
       },
       {
-        "path": "skills/redesign-skill/SKILL.md",
+        "path": "skills/taste-skill/references/tells.md",
         "mode": "100644",
-        "oid": "c8304f0c9301385e3641b052d6b25b8af11cb6c1",
-        "size": 15060
+        "oid": "9cfa4a89e466eb6df81b7a1b776421c378aad840",
+        "size": 7420
       },
       {
-        "path": "skills/soft-skill/SKILL.md",
+        "path": "skills/taste-skill/references/type.md",
         "mode": "100644",
-        "oid": "4038f41ec0137ec92e98ed0151fe3b7038b9329e",
-        "size": 10561
+        "oid": "c1552b700e9bebb2fedf79f82c875615d0f876ac",
+        "size": 8495
       },
       {
-        "path": "skills/stitch-skill/DESIGN.md",
+        "path": "skills/taste-skill/scripts/assets.mjs",
         "mode": "100644",
-        "oid": "ef78a972599e7b1791580a5bcd6cf0242abac65b",
-        "size": 12053
+        "oid": "4f9c5b1c1fcc5a821685c5cea35f326bcf15d75b",
+        "size": 64522
       },
       {
-        "path": "skills/stitch-skill/SKILL.md",
+        "path": "skills/taste-skill/scripts/draw.mjs",
         "mode": "100644",
-        "oid": "19d958cdb5f83d14e4021fac942c1bcf8395c042",
-        "size": 11851
+        "oid": "6db3d89422057902457c97643c13f4b351d1459b",
+        "size": 54140
       },
       {
-        "path": "skills/taste-skill-v1/SKILL.md",
+        "path": "skills/taste-skill/scripts/inspect.mjs",
         "mode": "100644",
-        "oid": "4054982cd292c7fe6d01170c2372e986a427d776",
-        "size": 21195
+        "oid": "f1790ca0f1a7c26221455c4e1e91e69e16363dff",
+        "size": 28853
+      },
+      {
+        "path": "skills/taste-skill/scripts/lib/app-draw.mjs",
+        "mode": "100644",
+        "oid": "e246a38f15d4f3b163a3d3aa5378c71462a4c24f",
+        "size": 14715
+      },
+      {
+        "path": "skills/taste-skill/scripts/lib/cdp.mjs",
+        "mode": "100644",
+        "oid": "03ef99c144923d0905ffc6222189bc8901836f4a",
+        "size": 11920
+      },
+      {
+        "path": "skills/taste-skill/scripts/lib/inspection-files.mjs",
+        "mode": "100644",
+        "oid": "d375fcb6b1db149eb11b9ccde3d2f485060b51ca",
+        "size": 478
+      },
+      {
+        "path": "skills/taste-skill/scripts/lib/probe.mjs",
+        "mode": "100644",
+        "oid": "d45372bc2f594e2ab674889646ca6fc846cec6b8",
+        "size": 82552
+      },
+      {
+        "path": "skills/taste-skill/scripts/lib/rules.mjs",
+        "mode": "100644",
+        "oid": "daf22a9cd2fe19339796f406aca6aa9a24872a96",
+        "size": 37298
+      },
+      {
+        "path": "skills/taste-skill/scripts/lint.mjs",
+        "mode": "100644",
+        "oid": "9277761d18222e5fc75c85ed79aa032f3d086598",
+        "size": 11747
+      },
+      {
+        "path": "skills/taste-skill/scripts/scenes.mjs",
+        "mode": "100644",
+        "oid": "7bbde8e6bdf27859af0d54db1e1b2756de3a7d56",
+        "size": 8980
       },
       {
         "path": "skills/taste-skill/SKILL.md",
         "mode": "100644",
-        "oid": "b72132fcd466da605623ffe96e370b3991fc5285",
-        "size": 87253
+        "oid": "d8444f13b76be100b3b088dfdae738e85288d6b6",
+        "size": 39537
+      },
+      {
+        "path": "tests/frontmatter.mjs",
+        "mode": "100644",
+        "oid": "68aa94ef6cd339b03c24b650c0cf416255f137e0",
+        "size": 4069
+      },
+      {
+        "path": "tests/inspection-files.mjs",
+        "mode": "100644",
+        "oid": "b6466df124f78e0b10bc001b2bd6e4e5f86273f9",
+        "size": 1626
+      },
+      {
+        "path": "tests/profile-cleanup.mjs",
+        "mode": "100644",
+        "oid": "caa65e0204321d745bebb0a738367bd7335e81ad",
+        "size": 4845
+      },
+      {
+        "path": "tests/text-encoding.mjs",
+        "mode": "100644",
+        "oid": "7cb27f63f0403d0aee7b10b4bfca837872f3f4d2",
+        "size": 1796
       }
     ]
   },
   "skills": [
     {
-      "name": "brandkit",
-      "directory": "brandkit",
-      "path": "upstream/skills/brandkit/SKILL.md",
-      "description": "Premium brand-kit image generation skill for creating high-end brand-guidelines boards, logo systems, identity decks, and visual-world presentations. Trained for minimalist, cinematic, editorial, dark-tech, luxury, cultural, security, gaming, developer-tool, and consumer-app brand systems. Optimized for intentional logo concepting, refined composition, sparse typography, strong symbolic meaning, premium mockups, art-directed imagery, and flexible grid layouts."
-    },
-    {
-      "name": "industrial-brutalist-ui",
-      "directory": "brutalist-skill",
-      "path": "upstream/skills/brutalist-skill/SKILL.md",
-      "description": "Raw mechanical interfaces fusing Swiss typographic print with military terminal aesthetics. Rigid grids, extreme type scale contrast, utilitarian color, analog degradation effects. For data-heavy dashboards, portfolios, or editorial sites that need to feel like declassified blueprints."
-    },
-    {
-      "name": "gpt-taste",
-      "directory": "gpt-tasteskill",
-      "path": "upstream/skills/gpt-tasteskill/SKILL.md",
-      "description": "Elite UX/UI & Advanced GSAP Motion Engineer. Enforces Python-driven true randomization for layout variance, strict AIDA page structure, wide editorial typography (bans 6-line wraps), gapless bento grids, strict GSAP ScrollTriggers (pinning, stacking, scrubbing), inline micro-images, and massive section spacing."
-    },
-    {
-      "name": "image-to-code",
-      "directory": "image-to-code-skill",
-      "path": "upstream/skills/image-to-code-skill/SKILL.md",
-      "description": "Elite website image-to-code skill for Codex. For visually important web tasks, it must first generate the design image(s) itself, deeply analyze them, then implement the website to match them as closely as possible. In Codex, it must prefer large, readable, section-specific images instead of tiny compressed boards, generate fresh standalone images for sections or detail views instead of cropping old ones, avoid lazy under-generation, avoid cards-inside-cards-inside-cards UI, and keep the hero clean, spacious, readable, and visible on a small laptop."
-    },
-    {
-      "name": "imagegen-frontend-mobile",
-      "directory": "imagegen-frontend-mobile",
-      "path": "upstream/skills/imagegen-frontend-mobile/SKILL.md",
-      "description": "Elite mobile app image-generation skill for creating premium, app-native screen concepts and flows. Designed for iOS, Android, and cross-platform mobile products. Prioritizes clean hierarchy, comfortably readable text, strong multi-screen consistency, controlled color palettes, non-generic creative direction, textured surfaces, image-led composition, tasteful custom iconography, and clean phone mockup framing. By default, screens should be shown inside a subtle premium iPhone or similar phone mockup with a visible frame, while the main focus stays on the app content itself. This skill generates images only. It does not write code."
-    },
-    {
-      "name": "imagegen-frontend-web",
-      "directory": "imagegen-frontend-web",
-      "path": "upstream/skills/imagegen-frontend-web/SKILL.md",
-      "description": "Elite frontend image-direction skill for generating premium, conversion-aware website design references. CRITICAL OUTPUT RULE — generate ONE separate horizontal image FOR EVERY section. A landing page with 8 sections produces 8 images. Never compress multiple sections into one image. Enforces composition variety (not always left-text / right-image), background-image freedom, varied CTAs, varied hero scales (giant / mid / mini minimalist), narrative concept spine, second-read moments, and a single consistent palette across all images. Optimized for landing pages, marketing sites, and product comps that developers or coding models can accurately recreate."
-    },
-    {
-      "name": "minimalist-ui",
-      "directory": "minimalist-skill",
-      "path": "upstream/skills/minimalist-skill/SKILL.md",
-      "description": "Clean editorial-style interfaces. Warm monochrome palette, typographic contrast, flat bento grids, muted pastels. No gradients, no heavy shadows."
-    },
-    {
-      "name": "full-output-enforcement",
-      "directory": "output-skill",
-      "path": "upstream/skills/output-skill/SKILL.md",
-      "description": "Overrides default LLM truncation behavior. Enforces complete code generation, bans placeholder patterns, and handles token-limit splits cleanly. Apply to any task requiring exhaustive, unabridged output."
-    },
-    {
-      "name": "redesign-existing-projects",
-      "directory": "redesign-skill",
-      "path": "upstream/skills/redesign-skill/SKILL.md",
-      "description": "Upgrades existing websites and apps to premium quality. Audits current design, identifies generic AI patterns, and applies high-end design standards without breaking functionality. Works with any CSS framework or vanilla CSS."
-    },
-    {
-      "name": "high-end-visual-design",
-      "directory": "soft-skill",
-      "path": "upstream/skills/soft-skill/SKILL.md",
-      "description": "Teaches the AI to design like a high-end agency. Defines the exact fonts, spacing, shadows, card structures, and animations that make a website feel expensive. Blocks all the common defaults that make AI designs look cheap or generic."
-    },
-    {
-      "name": "stitch-design-taste",
-      "directory": "stitch-skill",
-      "path": "upstream/skills/stitch-skill/SKILL.md",
-      "description": "Semantic Design System Skill for Google Stitch. Generates agent-friendly DESIGN.md files that enforce premium, anti-generic UI standards — strict typography, calibrated color, asymmetric layouts, perpetual micro-motion, and hardware-accelerated performance."
-    },
-    {
-      "name": "design-taste-frontend-v1",
-      "directory": "taste-skill-v1",
-      "path": "upstream/skills/taste-skill-v1/SKILL.md",
-      "description": "The original v1 taste-skill, preserved for projects depending on its exact behavior. The current default is `design-taste-frontend` (v2 experimental), which is a substantial rewrite. Use this v1 install name only if you need exact backward compatibility."
-    },
-    {
       "name": "design-taste-frontend",
       "directory": "taste-skill",
       "path": "upstream/skills/taste-skill/SKILL.md",
-      "description": "Anti-slop frontend skill for landing pages, portfolios, and redesigns. The agent reads the brief, infers the right design direction, and ships interfaces that do not look templated. Real design systems when applicable, audit-first on redesigns, strict pre-flight check."
+      "description": "tasteskill v2, the anti-slop frontend skill. Art direction for websites, distilled from a study of 247 curated gallery sites (One Page Love, Awwwards Sites of the Day). Deals researched directions (idea, composition, type, palette, photographs, section blueprints) from a library, enforces a strict no-slop house style with a real-browser inspector, and runs a look-and-fix loop on screenshots. Use this whenever you build, design, redesign, restyle, polish or review a landing page, marketing site, portfolio, product page, one-pager, hero or any public-facing web page, in any stack (HTML/CSS, React, Next.js, Vue, Svelte, Astro, Tailwind) — also when the user says a page looks generic, templated, \"AI-made\", sloppy, or asks to make it look designed, premium, award-level or less like every other site. Also for app screens: dashboards, admin and analytics views, settings, inboxes and other screens people work in, with their own run and rules."
     }
   ],
   "boundary": {

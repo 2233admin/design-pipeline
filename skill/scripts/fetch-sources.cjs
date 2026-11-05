@@ -9,9 +9,12 @@ const { verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
 const { verifyIartSnapshot } = require("./iart-motion-skills-core.cjs");
 const { partialBundles } = require("./vendor-cache.cjs");
 const { verifyDirectionLibrary } = require("./design-direction-library-core.cjs");
+const { schema: brandSchema, verifyBrandDesignSystems } = require("./brand-design-systems-core.cjs");
 
 const VERIFY = { "mengto-skills": verifyMengToSnapshot, "iart-motion-skills": verifyIartSnapshot };
-for (const { bundle } of partialBundles()) VERIFY[bundle] = verifyDirectionLibrary;
+for (const { bundle, schema, manifestFile } of partialBundles()) {
+  VERIFY[bundle] = schema === brandSchema ? () => verifyBrandDesignSystems(manifestFile) : verifyDirectionLibrary;
+}
 
 (async () => {
   const bundles = process.argv.slice(2);

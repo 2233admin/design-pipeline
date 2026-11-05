@@ -58,6 +58,26 @@ class MixedContentTest(unittest.TestCase):
 class VerifyIndependenceTest(unittest.TestCase):
     """校验的对照源必须独立于提取逻辑：提取阶段丢的字，校验必须报出来。"""
 
+    def test_verify_reports_text_on_missing_slides(self):
+        import pptx_from_rendered as m
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "missing.pptx")
+            prs = Presentation()
+            slide = prs.slides.add_slide(prs.slide_layouts[6])
+            slide.shapes.add_textbox(0, 0, 1000000, 1000000).text = "First page"
+            prs.save(out)
+            self.assertEqual(
+                m.verify_text(["First page", "Missing second page"], out),
+                [[], ["missingsecondpage"]],
+            )
+
+    def test_verify_reports_text_when_no_slides_remain(self):
+        import pptx_from_rendered as m
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "empty.pptx")
+            Presentation().save(out)
+            self.assertEqual(m.verify_text(["Missing page"], out), [["missingpage"]])
+
     def test_verify_reports_text_missing_from_pptx(self):
         import pptx_from_rendered as m
         with tempfile.TemporaryDirectory() as d:

@@ -1,32 +1,32 @@
 <p align="center">
-  <img src="assets/readme-banner.webp" alt="Taste Skill - Anti-slop Agent Skills for premium frontends" width="100%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/taste-skill-wordmark-dark.png" />
+    <img src="assets/taste-skill-wordmark.png" alt="Taste Skill" width="340" />
+  </picture>
 </p>
-
-<h1 align="center">Taste Skill</h1>
 
 <p align="center">
-  <em>The Anti-Slop Frontend Framework for AI Agents</em>
-</p>
-
-<p align="center" style="margin-bottom: 8px;">
   <a href="https://tasteskill.dev" title="Visit tasteskill.dev"><img src="https://img.shields.io/badge/website-tasteskill.dev-24292f?style=flat" alt="Visit tasteskill.dev" /></a>
   &nbsp;
   <a href="https://tastecode.dev" title="Visit tastecode.dev"><img src="https://img.shields.io/badge/new-TasteCode-ff6b00?style=flat" alt="New: TasteCode" /></a>
+  &nbsp;
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-24292f?style=flat&amp;logo=github&amp;logoColor=white" alt="MIT License" /></a>
+  &nbsp;
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/changelog-view-24292f?style=flat" alt="Changelog" /></a>
 </p>
 
 <p align="center">
-  <a href="https://tastecode.dev"><img src="assets/readme-tastecode.webp" alt="TasteCode is here. A new home for your coding agents, with a design agent built in. Visit tastecode.dev" width="100%" /></a>
+  <a href="https://tastecode.dev">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/readme-tastecode-dark.webp" />
+      <img src="assets/readme-tastecode.webp" alt="TasteCode is here. Taste Skill as a desktop app, with a design agent built in. Free and open source. Download at tastecode.dev" width="100%" />
+    </picture>
+  </a>
 </p>
-
-<p align="center"><sub>From the Taste Skill team: <a href="https://tastecode.dev"><strong>TasteCode</strong></a>, a local desktop workspace for Codex, Claude Code and Grok with a design agent that briefs, builds and visually reviews your UI. <a href="https://github.com/Leonxlnx/tastecode">Source on GitHub</a>.</sub></p>
 
 <h3 align="center">Sponsors</h3>
 
 <table align="center">
-  <tr>
-    <td align="center" width="104"><a href="https://fluxionai.world/register?source=github&amp;campaign=tasteskill&amp;promo=TASTESKILL"><img src="assets/sponsors/fluxion-ai.png" alt="Fluxion AI" width="80" height="80" /></a></td>
-    <td><sub><a href="https://fluxionai.world/register?source=github&amp;campaign=tasteskill&amp;promo=TASTESKILL"><strong>Fluxion AI</strong></a> provides reliable, cost-efficient access to GPT, Claude, and other leading AI models through one unified API.<br />Save up to 70% compared with official API pricing and get $3 in API credits when you sign up through this link.</sub></td>
-  </tr>
   <tr>
     <td align="center" width="104">
       <a href="https://interfaces.dev/?utm_source=tasteskill&utm_medium=sponsorship">
@@ -58,130 +58,115 @@
 
 <p align="center"><sub><a href="https://github.com/sponsors/Leonxlnx">Become a sponsor</a></sub></p>
 
-Portable **Agent Skills** that upgrade AI-built interfaces: stronger layout, typography, motion, and spacing instead of boilerplate-looking UIs. This repo also includes **image-generation skills** for reference boards (web, mobile, brand kits). Pair them with **ChatGPT Images** or similar generators, then hand the frames to Codex, Cursor, or Claude Code for implementation.
+**Taste Skill** is an Agent Skill that makes coding agents design websites and app screens instead of assembling the average landing page. It gives the agent an art direction, real pictures and a way to check its own work in a real browser.
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-24292f?style=flat&amp;logo=github&amp;logoColor=white" alt="MIT License" /></a>
-  &nbsp;
-  <a href="https://github.com/vercel-labs/agent-skills"><img src="https://img.shields.io/badge/Agent_Skills-compatible-24292f?style=flat&amp;logo=github&amp;logoColor=white" alt="Agent Skills compatible" /></a>
-  &nbsp;
-  <a href="#installing"><img src="https://img.shields.io/badge/Codex_%2F_Cursor_%2F_Claude-install-24292f?style=flat" alt="Codex, Cursor, Claude" /></a>
-  &nbsp;
-  <a href="https://www.tasteskill.dev/changelog"><img src="https://img.shields.io/badge/changelog-view-24292f?style=flat" alt="Changelog" /></a>
-</p>
+Pages it has built, each from one brief:
 
-## Disclaimer
+<table>
+  <tr>
+    <td width="50%"><img src="examples/v2/coffee-storefront.webp" alt="Coffee shop page with a drawn storefront as its hero" /></td>
+    <td width="50%"><img src="examples/v2/night-dates.webp" alt="Techno night page with its dates set into an archive photograph" /></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="examples/v2/coffee-roast.webp" alt="Coffee shop page section showing the roast in four photographs" /></td>
+    <td width="50%"><img src="examples/v2/coffee-questions.webp" alt="Coffee shop page questions as stacked index cards" /></td>
+  </tr>
+</table>
 
-Taste Skill has no official token, coin, or crypto project. Any token using my name, image, or project is unaffiliated and not endorsed by me.
+The photographs are real, found in open archives and credited by the skill ([credits](examples/v2/CREDITS.md)). Watch the [launch film](https://github.com/Leonxlnx/taste-skill/releases/tag/v2.0.0).
 
-<p align="center"><sub><a href="#disclaimer">Disclaimer</a> · <a href="#installing">Install</a> · <a href="#skills">Skills</a> · <a href="#settings-taste-skill-only">Settings</a> · <a href="#examples">Examples</a> · <a href="#sponsors">Sponsors</a> · <a href="#research">Research</a> · <a href="#common-questions">FAQ</a> · <a href="#license">License</a></sub></p>
-
-## Feedback & Contributions
-
-We would love your feedback. Suggestions and bug reports:
-
-- Open a Pull Request or Issue on GitHub  
-- DM [@lexnlin](https://x.com/lexnlin) or [@blueemi99](https://x.com/blueemi99)  
-- Email us at [hello@tasteskill.dev](mailto:hello@tasteskill.dev)
-
-## Installing
-
-The [`npx skills add`](https://github.com/vercel-labs/agent-skills) CLI scans the `skills/` folder in this repo, so **all skills below (code and image-generation) install the same way.**
-
-```bash
-npx skills add https://github.com/Leonxlnx/taste-skill
-```
-
-Install a single skill by its **install name** (the `name:` field inside the SKILL frontmatter, not the folder name):
+## Install
 
 ```bash
 npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend"
 ```
 
-You can also copy any `SKILL.md` into your project or paste it into ChatGPT / Codex conversations.
+That installs the skill with the [`npx skills`](https://github.com/vercel-labs/agent-skills) CLI.
 
-### Updating from the previous version
+The skill runs its scripts with **Node 22+** and an installed **Chrome, Edge or Chromium**. It installs nothing and needs no API keys. Finding pictures needs network access.
 
-The default `taste-skill` (install name `design-taste-frontend`) is now **v2 (experimental)**, a substantial rewrite of the original v1. If you already have v1 installed, just re-run the install command and you will be upgraded:
+<details>
+<summary>Claude Code plugin</summary>
 
-```bash
-npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend"
+Run these inside Claude Code. The skill is namespaced under `taste-skill:`, so it does not collide with your other skills.
+
+```
+/plugin marketplace add Leonxlnx/taste-skill
+/plugin install taste-skill@taste-skill
 ```
 
-The install name did not change, so no script updates are needed. The newer SKILL.md replaces the older one in place.
+`/plugin update` upgrades it later.
 
-If you depend on the exact behavior of v1 and want to pin to it explicitly:
+</details>
+
+<details>
+<summary>Codex plugin</summary>
 
 ```bash
-npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend-v1"
+codex plugin marketplace add Leonxlnx/taste-skill
+codex plugin add taste-skill@taste-skill
 ```
 
-See [CHANGELOG.md](CHANGELOG.md) for the full v1 to v2 diff and the rationale.
+Start a new Codex session afterwards so the skill is loaded.
 
-## Skills
+</details>
 
-Each skill does one job; you do not need all of them at once. **Implementation skills** output code. **Image-generation skills** output reference images only.
+<details>
+<summary>From a clone, linked instead of copied</summary>
 
-The `Install name` column is the exact value you pass to `--skill`.
+`./install.sh` symlinks the skill into Claude Code (`--codex` for Codex, `--all-agents` for both), so a `git pull` updates it in place.
 
-| Skill (folder) | Install name | Description |
-| --- | --- | --- |
-| **taste-skill** | `design-taste-frontend` | 🆕 **v2 (experimental)** - substantial rewrite of the default skill. Reads the brief, infers the design language, tunes three dials (VARIANCE / MOTION / DENSITY). Brief inference, design-system map, hard em-dash ban, canonical GSAP code skeletons, redesign-audit protocol, strict pre-flight check. Actively iterating toward v2.0.0 stable. |
-| **taste-skill-v1** | `design-taste-frontend-v1` | The original v1 of taste-skill, preserved for projects depending on its exact behavior. Use only if the v2 default breaks something specific in your workflow. |
-| **gpt-tasteskill** | `gpt-taste` | Stricter variant for GPT/Codex: higher layout variance, stronger GSAP direction, aggressive anti-slop. |
-| **image-to-code-skill** | `image-to-code` | Image-first pipeline: generate site references, analyze them, then implement the frontend to match. |
-| **redesign-skill** | `redesign-existing-projects` | Existing projects: audit the UI first, then fix layout, spacing, hierarchy, styling. |
-| **soft-skill** | `high-end-visual-design` | Polished, calm, expensive UI with softer contrast, whitespace, premium fonts, spring motion. |
-| **output-skill** | `full-output-enforcement` | When the model ships half-finished work: full output, no placeholder comments. |
-| **minimalist-skill** | `minimalist-ui` | Editorial product UI (Notion/Linear vibes), restrained palette, crisp structure. |
-| **brutalist-skill** | `industrial-brutalist-ui` | Hard mechanical language: Swiss type, sharp contrast, experimental layout. |
-| **stitch-skill** | `stitch-design-taste` | Google Stitch-compatible rules, including optional `DESIGN.md` export format. |
+</details>
 
-### Image generation skills
+Already have the skill? Run the install command again; the install name did not change. Looking for one of the older skills? See [Moved skills](#moved-skills).
 
-These produce design images only (no code). Use with ChatGPT Images, Codex image mode, or any agent that generates images.
+## How v2 works
 
-| Skill (folder) | Install name | Description |
-| --- | --- | --- |
-| **imagegen-frontend-web** | `imagegen-frontend-web` | Website comps: hero, landing, multi-section with strong typography, spacing, anti-slop art direction. |
-| **imagegen-frontend-mobile** | `imagegen-frontend-mobile` | Mobile screens and flows: iOS/Android/cross-platform, mockups, readable type, coherent sets. |
-| **brandkit** | `brandkit` | Brand-kit boards: logo directions, palettes, type, identity applications across categories. |
+The skill is built from a study of 247 curated sites. A build runs in six steps:
 
-### Which one should I use?
+1. Reads the brief and lists what only this client has.
+2. A script deals three of 20 researched directions and the agent picks one.
+3. Finds the idea: one sentence tying the client's own material to that direction.
+4. Builds with real pictures and footage from open collections, credited.
+5. Checks the page in a real browser at three widths and fails it on slop.
+6. Looks at its own screenshots and fixes the top three problems, up to three rounds.
 
-- Start with **taste-skill** for the safest general default. (Now v2 experimental - see what changed in the [CHANGELOG](CHANGELOG.md).)
-- If you depend on the exact behavior of the original taste-skill, install **taste-skill-v1** instead. 
-- Use **gpt-taste** when you want the stricter GPT/Codex-oriented rules and motion/layout enforcement. 
-- Use **image-to-code-skill** for image → analyze → code website workflows. 
-- Use **redesign-skill** to improve an existing codebase instead of greenfield styling. 
-- Add **soft-skill**, **minimalist-skill**, or **brutalist-skill** when the visual direction is already chosen. 
-- Add **output-skill** if the agent keeps truncating output. 
-- Use **imagegen-frontend-web**, **imagegen-frontend-mobile**, or **brandkit** when the deliverable is **images** (comps, flows, identity boards), then pass results to your coding agent.
+A build takes roughly 30 to 45 minutes and a few hundred thousand tokens. Details are in the [changelog](CHANGELOG.md) and the [study](skills/taste-skill/references/research.md).
 
-### Image-first tip
+Dashboards and app screens (v2.1) take their own route: the skill deals one of the app styles distilled from real product screens, builds the shell, the data, the charts and the tables to those numbers, and checks the result with app rules: quiet panels, aligned figures, colour spent on data, a phone layout where the navigation folds away. A product's landing page builds the app it shows the same way, so its screenshots look like a working product.
 
-For **image-to-code-skill**, state the pipeline in the prompt, e.g.: `follow the skill: generate images, then analyze, then code`.
+v2.1 also checks the frame of every page (a clear title on the first screen, equal margins, no section shoved to one side, no random blank stretches) and moves the way strong award sites do, measured on the latest 100 Awwwards Sites of the Day.
 
-### ChatGPT Images and Codex
+## Moved skills
 
-Attach or paste **`imagegen-frontend-web`**, **`imagegen-frontend-mobile`**, or **`brandkit`** and ask for the frames you need, then feed the renders to Codex, Cursor, or Claude Code. Use **image-to-code-skill** when you want one workflow that both generates references and implements the site in code.
+This repo holds one skill, `design-taste-frontend`. The others moved to repos of their own and kept their install names:
 
-## Settings (taste-skill only)
+| Install name | Where it lives now |
+| --- | --- |
+| `high-end-visual-design`, `minimalist-ui`, `industrial-brutalist-ui`, `gpt-taste`, `stitch-design-taste`, `design-taste-frontend-v1`, `design-taste-frontend-v2-experimental` | **[Leonxlnx/taste-skill-classics](https://github.com/Leonxlnx/taste-skill-classics)** |
+| `imagegen-frontend-web`, `imagegen-frontend-mobile`, `brandkit`, `image-to-code` | **[Leonxlnx/imagegen-skills](https://github.com/Leonxlnx/imagegen-skills)** |
+| `redesign-existing-projects` | Part of `design-taste-frontend`, which audits an existing page in a real browser before changing anything |
+| `full-output-enforcement` | Removed. For the same problem, see **[Leonxlnx/unlazy](https://github.com/Leonxlnx/unlazy)** |
 
-Numbers at the top of the file are 1-10 dials:
+Install a moved skill from its new repo under the same name:
 
-- **DESIGN_VARIANCE**: Layout experimentation (lower: centered/clean · higher: asymmetric/modern).
-- **MOTION_INTENSITY**: Animation depth (lower: hover · higher: scroll/magnetic).
-- **VISUAL_DENSITY**: Information per viewport (lower: spacious · higher: dense dashboards).
+```bash
+npx skills add https://github.com/Leonxlnx/taste-skill-classics --skill "high-end-visual-design"
+```
 
-## Examples
+## Common Questions
 
-Created with taste-skill:
+**What does the skill need?**  
+Node 22 or newer and Chrome, Edge or Chromium. It installs nothing and uses no API keys. It needs the internet only to find pictures.
 
-<p>
-  <img src="examples/floria-top.webp" width="400" />
-  <img src="examples/floria-bottom.webp" width="400" />
-</p>
+**Where do the pictures come from, and can I use them?**  
+From open collections such as Wikimedia Commons, Openverse and the Met. Only public domain, CC0, CC BY and CC BY-SA files are offered, and the skill puts the credits on the page. Replace them with your own when you have them.
+
+**Does it work with React, Vue, Svelte, plain HTML?**  
+Yes. The rules are about design, not a framework.
+
+**Is it for dashboards and app screens?**  
+Yes, since v2.1. The skill tells a page from an app screen and builds a dashboard, an admin view or a settings screen with its own run: a style dealt from a study of real product screens, quiet panels, honest data and charts, and its own checks (`inspect.mjs --app`).
 
 ## Support the project
 
@@ -204,6 +189,7 @@ If Taste Skill helps you, consider sponsoring:
 
 ### Community Sponsors
 
+<p>
 <a href="https://github.com/dnakov"><img src="https://github.com/dnakov.png" width="40" height="40" style="border-radius:50%" alt="dnakov" title="dnakov" /></a>
 <a href="https://github.com/AkramReshad"><img src="https://github.com/AkramReshad.png" width="40" height="40" style="border-radius:50%" alt="AkramReshad" title="AkramReshad" /></a>
 <a href="https://github.com/ajmalaksar25"><img src="https://github.com/ajmalaksar25.png" width="40" height="40" style="border-radius:50%" alt="ajmalaksar25" title="ajmalaksar25" /></a>
@@ -225,6 +211,9 @@ If Taste Skill helps you, consider sponsoring:
 <a href="https://github.com/KANA-33"><img src="https://github.com/KANA-33.png" width="40" height="40" style="border-radius:50%" alt="KANA-33" title="KANA-33" /></a>
 <a href="https://github.com/emilkowalski"><img src="https://github.com/emilkowalski.png" width="40" height="40" style="border-radius:50%" alt="emilkowalski" title="emilkowalski" /></a>
 <a href="https://github.com/AnthonyLiuVa"><img src="https://github.com/AnthonyLiuVa.png" width="40" height="40" style="border-radius:50%" alt="AnthonyLiuVa" title="AnthonyLiuVa" /></a>
+<a href="https://github.com/Wolfy18"><img src="https://github.com/Wolfy18.png" width="40" height="40" style="border-radius:50%" alt="Wolfy18" title="Wolfy18" /></a>
+<a href="https://github.com/Gigslol"><img src="https://github.com/Gigslol.png" width="40" height="40" style="border-radius:50%" alt="Gigslol" title="Gigslol" /></a>
+</p>
 
 <p align="center">
  <a href="https://www.star-history.com/leonxlnx/taste-skill">
@@ -236,23 +225,9 @@ If Taste Skill helps you, consider sponsoring:
  </a>
 </p>
 
-## Research
+<sub>Feedback: open an issue or pull request, DM [@lexnlin](https://x.com/lexnlin) or [@blueemi99](https://x.com/blueemi99), or email [hello@tasteskill.dev](mailto:hello@tasteskill.dev).</sub>
 
-Background writing that shaped these skills lives in [`research/`](research/).
-
-## Common Questions
-
-**How is this different from other AI design skills?**  
-Multiple specialized variants, adjustable dials in key skills, anti-repetition rules informed by dedicated research. All are framework agnostic across major coding agents.
-
-**Does it work with React, Vue, Svelte?**  
-Yes. Rules target design intent, not a single framework API.
-
-**What is SKILL.md?**  
-A portable instruction file agents can load automatically; install via `npx skills add` or by copying into a repo or conversation.
-
-**Do image-generation skills install with `npx skills add`?**  
-Yes. They live under `skills/` alongside the code skills so the same CLI discovers them.
+<sub>Taste Skill has no official token, coin, or crypto project. Any token using my name, image, or project is unaffiliated and not endorsed by me.</sub>
 
 ## License
 

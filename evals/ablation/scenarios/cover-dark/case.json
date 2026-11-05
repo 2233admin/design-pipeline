@@ -1,0 +1,21 @@
+{
+  "set": "core",
+  "style": "foundry-console",
+  "outputs": [
+    {
+      "files": [
+        "cover.html",
+        "cover.svg"
+      ],
+      "width": 1080,
+      "height": 1440
+    }
+  ],
+  "minFontPx": 20,
+  "hierarchy": {
+    "levels": 3,
+    "ratio": 2.5
+  },
+  "profile": "poster",
+  "controls": false
+}

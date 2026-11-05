@@ -7,7 +7,7 @@ sourceMeta:
   reviewedContentHash: 68945441b0bbd6b79f2849206c019c2c7bc01a13a2bbd5c267c9c3d5c069c1b4
   contentHashScope: ordered UTF-8 sourceFiles with path-and-newline separators
   sourceFiles: README.md, LICENSE
-  reviewedAt: 2026-09-28T00:00:00.000Z
+  reviewedAt: 2026-11-04T00:00:00.000Z
   freshnessDays: 30
   license: CC-BY-NC-4.0
   useBoundary: reference-only; ideas only; do not install, execute, copy, or bundle upstream code, text or assets

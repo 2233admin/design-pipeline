@@ -75,7 +75,7 @@ function load(manifestFile) {
 
 // The packaged manifest of the library under a skill root's vendor folder, or null.
 function findManifest(skillRoot = path.resolve(__dirname, "..")) {
-  return partialBundles(path.join(skillRoot, "vendor"))[0]?.manifestFile || null;
+  return partialBundles(path.join(skillRoot, "vendor")).find((found) => found.schema === schema)?.manifestFile || null;
 }
 
 // status: "ready" (shipped and fetched verified), "missing" (shipped verified, binaries not
