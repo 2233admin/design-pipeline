@@ -2,20 +2,20 @@
   "schema": "design-pipeline.mengto-skills-source.v1",
   "source": {
     "repository": "https://github.com/MengTo/skills",
-    "revision": "83a47fee32f0b6349bff1fede99257a5ef03dc93",
-    "gitTree": "4c231bc88ecbad19627105dcd8a16fd122ddf5e7",
-    "committedAt": "2026-10-06T22:20:24+08:00",
+    "revision": "1de14e21b2ba8937c0f7f6ddca581cf7cd9d94af",
+    "gitTree": "8f1fd0384a302803c8dff9b9cd06438face91e56",
+    "committedAt": "2026-11-03T14:26:41+08:00",
     "license": "MIT",
-    "reviewedAt": "2026-10-07",
+    "reviewedAt": "2026-11-04",
     "scope": [
       "**"
     ]
   },
   "snapshot": {
     "root": "upstream",
-    "fileCount": 1313,
-    "byteCount": 136325371,
-    "treeSha256": "856f257256ae8022de29a9518df9adebe1e67043d2d1e5a8b442b4c4b7a9ed4c",
+    "fileCount": 1447,
+    "byteCount": 140866597,
+    "treeSha256": "086de3eb7cece47628c80571a7f7184b0d6eab19a20ba8227196823e19cd01d5",
     "executableFiles": [
       "agent-skills/codex/audit-reference-originality/scripts/build_evidence_inventory.py",
       "agent-skills/codex/browser-video-recording/scripts/render_browser_demo.py",
@@ -31,6 +31,17 @@
       "agent-skills/game-combat/game-dev-combat-animation/scripts/tools/vidcompose.py",
       "agent-skills/game-development/build-rigged-game-assets/scripts/validate_asset_manifest.py",
       "agent-skills/game-development/build-vesperfall-review-assets/scripts/validate_pair.py",
+      "agent-skills/media/html-reel/scripts/bubble.mjs",
+      "agent-skills/media/html-reel/scripts/decursor.py",
+      "agent-skills/media/html-reel/scripts/fil-words.py",
+      "agent-skills/media/html-reel/scripts/flash-crop.mjs",
+      "agent-skills/media/html-reel/scripts/join-takes.py",
+      "agent-skills/media/html-reel/scripts/record-window.mjs",
+      "agent-skills/media/html-reel/scripts/render-frames.mjs",
+      "agent-skills/media/html-reel/scripts/split-flip.mjs",
+      "agent-skills/media/html-reel/scripts/timemap.py",
+      "agent-skills/media/html-reel/scripts/verify-export.mjs",
+      "agent-skills/media/html-reel/scripts/vo-words.py",
       "agent-skills/web-design/add-shader-cursor-trail/scripts/verify-cursor-trail.mjs",
       "agent-skills/workflow/workflow-progress-screenshots/scripts/capture.mjs",
       "agent-skills/workflow/workflow-progress-screenshots/scripts/compare.py",
@@ -3478,6 +3489,708 @@
         "size": 6225
       },
       {
+        "path": "agent-skills/media/create-ai-avatar/agents/openai.yaml",
+        "mode": "100644",
+        "oid": "4ab7bcb7ffa1d8106b6ae81cd415236aab3b0cb7",
+        "size": 398
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/demo/avatar-iii.mp4",
+        "mode": "100644",
+        "oid": "d5067a1424aece891191611cd63ab21088454574",
+        "size": 703449
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/demo/avatar-iii.webp",
+        "mode": "100644",
+        "oid": "58c84e45c889ad4eb159f666d29d90635c98f56e",
+        "size": 14524
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/demo/avatar-iv.mp4",
+        "mode": "100644",
+        "oid": "582478bba46e9023f4440d336e1955489bf92ff3",
+        "size": 624874
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/demo/avatar-iv.webp",
+        "mode": "100644",
+        "oid": "3ffd4840c611aaca6f16a9282e65bbf021a0e9f2",
+        "size": 18084
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/demo/avatar-v.mp4",
+        "mode": "100644",
+        "oid": "13858fa60504311441ff2ea4024b9e0ded72b098",
+        "size": 635144
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/demo/avatar-v.webp",
+        "mode": "100644",
+        "oid": "631f2fb84d519a72b04854c5606825c4e8bbda44",
+        "size": 17366
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/demo/index.html",
+        "mode": "100644",
+        "oid": "1cff8394e7a40fe1c76927291dc511800ddc6121",
+        "size": 8744
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/demo/mouths.jpg",
+        "mode": "100644",
+        "oid": "170ca38d0d4acfb64ead4718c0e1fdd0f6eecb86",
+        "size": 121510
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/demo/preview.jpg",
+        "mode": "100644",
+        "oid": "4727158558edc3a5307b79a6edec091088cd1229",
+        "size": 69847
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/demo/PROMPT.md",
+        "mode": "100644",
+        "oid": "b5b76b40d85d0373de1311d73afdbecf3e0f90ca",
+        "size": 1326
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/references/footage.md",
+        "mode": "100644",
+        "oid": "7600b34f65ff2567510b7d3e84d72320d6d8f960",
+        "size": 2684
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/references/heygen.md",
+        "mode": "100644",
+        "oid": "63211e24ce2471bd7e15c057b880ca5d550301e7",
+        "size": 3286
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/references/judging.md",
+        "mode": "100644",
+        "oid": "0edd04e70d4a82d41c43e357652403a5249f01b4",
+        "size": 2427
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/scripts/balance.mjs",
+        "mode": "100644",
+        "oid": "19e747f50bd68914e73baf15282ea8df8189f110",
+        "size": 294
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/scripts/consent.mjs",
+        "mode": "100644",
+        "oid": "1894bb42fec44903cb4d695f4730d5eb11e510db",
+        "size": 843
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/scripts/hear.mjs",
+        "mode": "100644",
+        "oid": "4ec31816a87f061c755f2195e3a142d39235e415",
+        "size": 1167
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/scripts/keys.mjs",
+        "mode": "100644",
+        "oid": "fe21c43a3e841f2bb4c5635c15b460480c24059b",
+        "size": 2281
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/scripts/mouths.sh",
+        "mode": "100644",
+        "oid": "9d9c00ba27cf56c3c6dd9bb508ac663f25f7e82f",
+        "size": 1933
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/scripts/prep-footage.sh",
+        "mode": "100644",
+        "oid": "b2d92974d426f2ded837a4ef57f44819303d117c",
+        "size": 1731
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/scripts/render.mjs",
+        "mode": "100644",
+        "oid": "7ab31809325ab07e89671be2c32e400f2902b5d3",
+        "size": 4122
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/scripts/train.mjs",
+        "mode": "100644",
+        "oid": "94e6a82893e998d309add7f281623d8520c64631",
+        "size": 3209
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/scripts/upload.mjs",
+        "mode": "100644",
+        "oid": "a901cabad753b24b4dd35753e3f292cb6aa95dab",
+        "size": 2014
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/scripts/voice.mjs",
+        "mode": "100644",
+        "oid": "41cc55313139bc60cceb86b539db05d41fa5fc52",
+        "size": 1885
+      },
+      {
+        "path": "agent-skills/media/create-ai-avatar/SKILL.md",
+        "mode": "100644",
+        "oid": "fdf2064282e7c22e8fcaf425943989bd3662f294",
+        "size": 9498
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/agents/openai.yaml",
+        "mode": "100644",
+        "oid": "9131e530e1f960a67d5d096d781bfc4f68faa709",
+        "size": 250
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/film.css",
+        "mode": "100644",
+        "oid": "f77e6662b930b413aac26af43512e1e142f4671a",
+        "size": 20934
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/film.html",
+        "mode": "100644",
+        "oid": "33483aef19fa65fb37eaa00ef2ee67c97f49e608",
+        "size": 8960
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/film.js",
+        "mode": "100644",
+        "oid": "6d664fa01d60b95a799e8638072400314e9dbcdc",
+        "size": 21592
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/index.html",
+        "mode": "100644",
+        "oid": "34417c340de24dd0e9fc6b3ba1102d762f9e581a",
+        "size": 4323
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/looks/night.css",
+        "mode": "100644",
+        "oid": "52bdf6241f78dbaafd431407022a54fa8be1196c",
+        "size": 1380
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/looks/paper.css",
+        "mode": "100644",
+        "oid": "7169cc749a80e5341a492b8d989f3579cc5a73b3",
+        "size": 2342
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/looks/poster.css",
+        "mode": "100644",
+        "oid": "80780c7aa27887d23a885769eef6f05b3f47d55f",
+        "size": 2894
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/looks/terminal.css",
+        "mode": "100644",
+        "oid": "820c004417a28a29f624feb005b9e4927ebac2d8",
+        "size": 2336
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/looks/terminal.md",
+        "mode": "100644",
+        "oid": "932265a1f8e255fd53b390ef1d3b8a3594206607",
+        "size": 1741
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/pictures/box.webp",
+        "mode": "100644",
+        "oid": "0eb8dff17ec5ed3c13691f130766a194d92dfee1",
+        "size": 99740
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/pictures/fil.png",
+        "mode": "100644",
+        "oid": "b8aace972e942689c97b5e394414504950f01369",
+        "size": 16535
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/pictures/ridge.webp",
+        "mode": "100644",
+        "oid": "92637da95ac18c6d01d1bd4af1635bd0a04e60e0",
+        "size": 64544
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/preview.jpg",
+        "mode": "100644",
+        "oid": "a84b0844cbccd1c8b89e1394b897cf5464e8d391",
+        "size": 84531
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/PROMPT.md",
+        "mode": "100644",
+        "oid": "55c5abce68f03ceda18e15076c65e391ad196823",
+        "size": 1458
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/script.txt",
+        "mode": "100644",
+        "oid": "3b970e3d5cde30a18205e64ab7a3d64e5cb4f9c7",
+        "size": 761
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/voice.mp3",
+        "mode": "100644",
+        "oid": "6703503b1dc90254a8c89c4fbbf6e1198fbcde75",
+        "size": 901998
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/words.js",
+        "mode": "100644",
+        "oid": "d277a72277a3ef9b8c3447d4bf3a8eabe8f428e6",
+        "size": 3626
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/demo/words.json",
+        "mode": "100644",
+        "oid": "e790c5265e4641d447c0178d30591623f09d6056",
+        "size": 3817
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/references/camera.md",
+        "mode": "100644",
+        "oid": "0eb1168f72f4c046ab8b964dabe287eec457bac9",
+        "size": 6263
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/references/checks.md",
+        "mode": "100644",
+        "oid": "2d4e7dd5bd3c6238640d80b55375aa3b20f0276b",
+        "size": 4553
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/references/fil-editor.md",
+        "mode": "100644",
+        "oid": "6732a8ec195b43d74e51a2e530cbadc16a48027e",
+        "size": 7091
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/references/format.md",
+        "mode": "100644",
+        "oid": "1aeb9f03863a7b7c464fc0e9a24e36dda3c5327a",
+        "size": 5264
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/references/looks.md",
+        "mode": "100644",
+        "oid": "59a9e5038bee98438ff6049eb409e1b63c2691b1",
+        "size": 7418
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/references/sound.md",
+        "mode": "100644",
+        "oid": "c909ba28ba8a9b1478e6aba4c36d3039c872d0fe",
+        "size": 3737
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/scripts/check-film.mjs",
+        "mode": "100644",
+        "oid": "ce355a73189f5d82503f89a1934079ea8774a10f",
+        "size": 10192
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/scripts/explainer.css",
+        "mode": "100644",
+        "oid": "15def813ec3f661ac0adaf827c64ed375fe52e95",
+        "size": 6852
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/scripts/explainer.js",
+        "mode": "100644",
+        "oid": "edac74b6c76674a8737258642043a5d9ebe5b632",
+        "size": 28558
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/scripts/preview.mjs",
+        "mode": "100644",
+        "oid": "86113e2adb504feb383ec2004a180cebefe9d11f",
+        "size": 4039
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/scripts/read-look.mjs",
+        "mode": "100644",
+        "oid": "8e469d489e17c34bd143cffd2d2a8c89ae9790c6",
+        "size": 13269
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/scripts/render.mjs",
+        "mode": "100644",
+        "oid": "edef6fa5c197a534f68257c9d7a677da4e5c401d",
+        "size": 8493
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/scripts/sfx.mjs",
+        "mode": "100644",
+        "oid": "92b6391e33d09d20cc4fa0c16efa484da70c2428",
+        "size": 5790
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/scripts/words.py",
+        "mode": "100644",
+        "oid": "e236fdd0464f8948580f066d8208056250c4c19a",
+        "size": 4958
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/SKILL.md",
+        "mode": "100644",
+        "oid": "5326cec466cbdc96d7d3a0b8cdca0d5b5b7f3668",
+        "size": 16370
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/bell_A4.mp3",
+        "mode": "100644",
+        "oid": "6079250db57160030cb136cedd66631e318cb0b0",
+        "size": 8493
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/bell_C5.mp3",
+        "mode": "100644",
+        "oid": "d3a6af304e85f745a10900c1e68e8cfc3877bedb",
+        "size": 8109
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/bell_E5.mp3",
+        "mode": "100644",
+        "oid": "05ff74da69e220b8e4e2d068a289b2115a04dca7",
+        "size": 8109
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/click_1.mp3",
+        "mode": "100644",
+        "oid": "1e0ba41d5149a1dd1351f0ad5347ff434c37eb6a",
+        "size": 3117
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/click_2.mp3",
+        "mode": "100644",
+        "oid": "48338cfa6a84689d84dd3b8d12d41e279824bbf9",
+        "size": 3117
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/click-confirm_1.mp3",
+        "mode": "100644",
+        "oid": "6aad6ccdadafe3b1820dad0a3e35af2304bc087b",
+        "size": 7725
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/drop_1.mp3",
+        "mode": "100644",
+        "oid": "ae53a3708b3907f393eefe29cdae2863b389c85b",
+        "size": 6189
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/hit_1.mp3",
+        "mode": "100644",
+        "oid": "a4f96bdf8a778d49bf49ea3184444604315a30ff",
+        "size": 5421
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/key_1.mp3",
+        "mode": "100644",
+        "oid": "0c9d2da0ddec000e65344ca1b53a6bcad193b573",
+        "size": 4269
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/key_2.mp3",
+        "mode": "100644",
+        "oid": "d7a084c261082d67e3391e6b2e8d800d49f69405",
+        "size": 3885
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/key_3.mp3",
+        "mode": "100644",
+        "oid": "99e7a3b111d6ff1eaeecdc57db5fcc2a88d00cff",
+        "size": 4653
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/key-return_1.mp3",
+        "mode": "100644",
+        "oid": "b877e3d695043fad61211a583b9198dcf9eff034",
+        "size": 4269
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/kit.json",
+        "mode": "100644",
+        "oid": "a03b1cf7388565c9ada2f26519e09d75d4e9cb2a",
+        "size": 4750
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/land_1.mp3",
+        "mode": "100644",
+        "oid": "737f00644663d06c25921ee1c5376b9c54bc295f",
+        "size": 3885
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/land_2.mp3",
+        "mode": "100644",
+        "oid": "b9ba54a0c1394bf9c9d66e21f86eb540d1302e67",
+        "size": 3885
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/land-light_1.mp3",
+        "mode": "100644",
+        "oid": "f4ae823bc537f8e78268eac5699780e63209dc4f",
+        "size": 3117
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/LICENSE.txt",
+        "mode": "100644",
+        "oid": "cfa96d6a91fe8daca90f04a60e3e7031db61db90",
+        "size": 1065
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/pop_1.mp3",
+        "mode": "100644",
+        "oid": "02b84bf1c511ec414847f56ca8d2fde3e396d729",
+        "size": 3885
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/pop_2.mp3",
+        "mode": "100644",
+        "oid": "60d6cc6ea2a724cf4cd2cef45aabba6fb3cb07c4",
+        "size": 3885
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/riser_1.mp3",
+        "mode": "100644",
+        "oid": "96575c5a890712285ad205d5c0fa7756b9af0ab0",
+        "size": 16173
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/snap_1.mp3",
+        "mode": "100644",
+        "oid": "399c122db4f74f0fc3bc270721d50ad5f7ecbc15",
+        "size": 5037
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/swell_1.mp3",
+        "mode": "100644",
+        "oid": "11b0c24a3bcd9f26f43bd8ad75839ad723c0d97f",
+        "size": 15789
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/tick-crisp_1.mp3",
+        "mode": "100644",
+        "oid": "bc4bb020d9f333c00093647e326a578bffc13a77",
+        "size": 1581
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/whoosh-long_1.mp3",
+        "mode": "100644",
+        "oid": "e6b180f22990c38726a2cdcc0e333e3adcbe05dd",
+        "size": 17325
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/whoosh-short_1.mp3",
+        "mode": "100644",
+        "oid": "6b1d9eeb45439bc296f116769e754e327034f68c",
+        "size": 18093
+      },
+      {
+        "path": "agent-skills/media/html-explainer-video/sounds/whoosh-short_2.mp3",
+        "mode": "100644",
+        "oid": "9db483a93113704d41ec2de39e5cd2b2f915b0fa",
+        "size": 17325
+      },
+      {
+        "path": "agent-skills/media/html-reel/agents/openai.yaml",
+        "mode": "100644",
+        "oid": "32d1314bd91514c67e923320ed73cdfb144c7fe8",
+        "size": 482
+      },
+      {
+        "path": "agent-skills/media/html-reel/demo/index.html",
+        "mode": "100644",
+        "oid": "d7b91d97ca982f80dc57b4c532e4d526ede186c8",
+        "size": 71893
+      },
+      {
+        "path": "agent-skills/media/html-reel/demo/preview.jpg",
+        "mode": "100644",
+        "oid": "336ca2fe135b9a8d2c17af9e28fa57857d265dd9",
+        "size": 112211
+      },
+      {
+        "path": "agent-skills/media/html-reel/demo/PROMPT.md",
+        "mode": "100644",
+        "oid": "e2bc806f7ac7124091568387f136356166f22845",
+        "size": 5667
+      },
+      {
+        "path": "agent-skills/media/html-reel/references/fil-editor.md",
+        "mode": "100644",
+        "oid": "c1e4a62bbf1f6df76dfde5e0f40aaf99ed568dc0",
+        "size": 13631
+      },
+      {
+        "path": "agent-skills/media/html-reel/references/formula.md",
+        "mode": "100644",
+        "oid": "87aeaac4c7db13e7ff0ce34579b84db48198ffbf",
+        "size": 6605
+      },
+      {
+        "path": "agent-skills/media/html-reel/references/judging.md",
+        "mode": "100644",
+        "oid": "17a7c34588286afcfeea3cf288204dc91a6511c3",
+        "size": 2544
+      },
+      {
+        "path": "agent-skills/media/html-reel/references/retime.md",
+        "mode": "100644",
+        "oid": "ac4a55ffd7064e08fa0633dd6de5f24eab79d8db",
+        "size": 5100
+      },
+      {
+        "path": "agent-skills/media/html-reel/references/source.md",
+        "mode": "100644",
+        "oid": "f339656a9f065a7b88bef8be5fdea1800208d333",
+        "size": 9972
+      },
+      {
+        "path": "agent-skills/media/html-reel/references/structures.md",
+        "mode": "100644",
+        "oid": "7263e6a3c495b2367836e8b9f6228155e1dd65e5",
+        "size": 6827
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/bubble.mjs",
+        "mode": "100755",
+        "oid": "3d5b14b388baa8b16041d24bad135648c3180384",
+        "size": 7796
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/choreo-example.mjs",
+        "mode": "100644",
+        "oid": "dd30014475c2e1064d132a56b13a1d6e8099dbbd",
+        "size": 2993
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/cursors/grab.png",
+        "mode": "100644",
+        "oid": "0ade70031845f99d90dcffcb3bc80ff64629cd2f",
+        "size": 3930
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/cursors/open.png",
+        "mode": "100644",
+        "oid": "6e38edd585c88a158528f837e26e96382ea80b74",
+        "size": 5549
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/decursor.py",
+        "mode": "100755",
+        "oid": "376aa2bf3346bf6b3ec03f7cc1f46614ca1582a0",
+        "size": 21477
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/fil-words.py",
+        "mode": "100755",
+        "oid": "8c37a5da5faeb6e3686d1ed564b52094309db789",
+        "size": 4261
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/flash-crop.mjs",
+        "mode": "100755",
+        "oid": "d7f9c46534492478cc22e5ec11c5f0753029fa2c",
+        "size": 4077
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/frame-video.mjs",
+        "mode": "100644",
+        "oid": "fd019236a12fd036591622680c56a89295d94c97",
+        "size": 13998
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/join-takes.py",
+        "mode": "100755",
+        "oid": "52fbe1b9b9552b45d87dbddb9b47eb46aa8d2359",
+        "size": 8053
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/named-times.py",
+        "mode": "100644",
+        "oid": "2b5146a8675d5bfbdd710e8ba2692ff5ad761eb0",
+        "size": 1840
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/preview-reel.mjs",
+        "mode": "100644",
+        "oid": "30773dc514a66e895634c6004975f87a03957bb6",
+        "size": 18195
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/read-source.mjs",
+        "mode": "100644",
+        "oid": "6349d9a4933be129d742197c1ef57ed421a0f67e",
+        "size": 24591
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/record-window.mjs",
+        "mode": "100755",
+        "oid": "63a996a63962cc53d096668a7a5d326df92fdec7",
+        "size": 10627
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/reel-clock.css",
+        "mode": "100644",
+        "oid": "a0495ddee89c73857efddcb55d0eff164061d01b",
+        "size": 4358
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/reel-clock.js",
+        "mode": "100644",
+        "oid": "e05b9186bc582d3a9b56299f1dc1856c14ad7bf1",
+        "size": 15844
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/render-frames.mjs",
+        "mode": "100755",
+        "oid": "18dc511fdf7d45c87e2c423aa280c7e2f106cafb",
+        "size": 13268
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/split-flip.mjs",
+        "mode": "100755",
+        "oid": "36fc8297db342288a580edf0eb9976a3210ec3e9",
+        "size": 4648
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/tighten-voice.py",
+        "mode": "100644",
+        "oid": "fbd8e7546d6debe254cc6b93aa39c22c7fe9616b",
+        "size": 3378
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/timemap.py",
+        "mode": "100755",
+        "oid": "efbd81191455b205a3e153d620bab9354110422e",
+        "size": 6471
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/verify-export.mjs",
+        "mode": "100755",
+        "oid": "d7eb34ccf6746838cba068e81101e49706601656",
+        "size": 6713
+      },
+      {
+        "path": "agent-skills/media/html-reel/scripts/vo-words.py",
+        "mode": "100755",
+        "oid": "a5aee5aedb41173e871e8d0a3ad31c4e01069cbb",
+        "size": 6364
+      },
+      {
+        "path": "agent-skills/media/html-reel/SKILL.md",
+        "mode": "100644",
+        "oid": "f98512fa2e3b28f93e5693654d1f0fdc8fd7389e",
+        "size": 27660
+      },
+      {
         "path": "agent-skills/media/unsplash-asset-images/demo/index.html",
         "mode": "100644",
         "oid": "5177188f5cc9f7c70aca7b11446e8548b4b7d457",
@@ -5740,6 +6453,108 @@
         "size": 10120
       },
       {
+        "path": "agent-skills/web-design/html-demo/agents/openai.yaml",
+        "mode": "100644",
+        "oid": "c89b8fbe6c147ae50bc5338250940dc0f7b87204",
+        "size": 381
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/demo/avatar.webp",
+        "mode": "100644",
+        "oid": "75a59bef5df582c543bfa9431add13c04aca666a",
+        "size": 3006
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/demo/cathedral.webp",
+        "mode": "100644",
+        "oid": "4799e876ba2c32949c032e19cf75ef98d85f8c3b",
+        "size": 51958
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/demo/index.html",
+        "mode": "100644",
+        "oid": "5c4d48dd9bb487a1b0757b7e7e2ee9825821b85c",
+        "size": 46008
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/demo/knight.webp",
+        "mode": "100644",
+        "oid": "242096b781cb0be32141bfe7aa0d4b8d7d26d101",
+        "size": 32420
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/demo/preview.jpg",
+        "mode": "100644",
+        "oid": "fd0dda701f4015dbee7328c920952b14eb336f35",
+        "size": 78219
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/demo/PROMPT.md",
+        "mode": "100644",
+        "oid": "3411b6562c28d02890a66f035d61e7c4748aa37c",
+        "size": 3549
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/references/brief.md",
+        "mode": "100644",
+        "oid": "eeb79f890c443b252e2a5f9f5bb03abe60ff7d58",
+        "size": 5428
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/references/contract.md",
+        "mode": "100644",
+        "oid": "2ec7fe87e6f0851a4a2d12a7bf5800a2bc2b9401",
+        "size": 5173
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/references/film.md",
+        "mode": "100644",
+        "oid": "7f1fc619db03aa0b0bab3bac8961e4fb0f697c41",
+        "size": 5048
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/scripts/example-steps.jsx",
+        "mode": "100644",
+        "oid": "e1f5024190b821d1140ee372cf4404714cac3d14",
+        "size": 4044
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/scripts/preview-plugin.mjs",
+        "mode": "100644",
+        "oid": "fef08fbd88c5dc5d8e5b6d0df047dd68499920dc",
+        "size": 2001
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/scripts/shoot.mjs",
+        "mode": "100644",
+        "oid": "eaba36ad8b7117a79b9f9f32c3424d3fdbb5961e",
+        "size": 2356
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/scripts/step-window.css",
+        "mode": "100644",
+        "oid": "82fc214f81c45f5d94bbf95b988e5627c59b21b4",
+        "size": 5411
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/scripts/step-window.js",
+        "mode": "100644",
+        "oid": "605771574f43f7a34e838d4970323c76d37704a7",
+        "size": 8424
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/scripts/StepWindow.jsx",
+        "mode": "100644",
+        "oid": "3d0e643bae645bc6a9f0663940099fea9b7bee67",
+        "size": 9892
+      },
+      {
+        "path": "agent-skills/web-design/html-demo/SKILL.md",
+        "mode": "100644",
+        "oid": "78864efdfb1ced6ddac73e553d5c2731e45bd278",
+        "size": 14485
+      },
+      {
         "path": "agent-skills/web-design/image-first-grid-layout/demo/assets/page-01-65695f80-23f9-46ee-8487-cbb6c93cc48b-3840w.webp",
         "mode": "100644",
         "oid": "14c17545abe76f947ee8bf0df2c35fb5e6d37adc",
@@ -7931,9 +8746,9 @@
     "game-combat": 6,
     "game-development": 20,
     "illustration": 14,
-    "media": 2,
+    "media": 5,
     "ui": 3,
-    "web-design": 91,
+    "web-design": 92,
     "workflow": 4
   },
   "skills": [
@@ -8833,6 +9648,42 @@
       ]
     },
     {
+      "id": "media/create-ai-avatar",
+      "name": "create-ai-avatar",
+      "category": "media",
+      "description": "Make an AI avatar of yourself that looks and sounds like you. A HeyGen digital twin trained on a couple of minutes of your own footage says lines you never recorded, in your own ElevenLabs voice, lip-synced from the audio, on the engine whose mouth moves most like yours. Covers picking and joining takes, training, consent, making the voice, rendering the same line on Avatar V, IV and III, and judging them mouth to mouth against your real footage before anything else is made. Use when someone wants a digital twin, an AI avatar or talking head of themselves or a consenting person, a HeyGen avatar from their YouTube videos or recordings, their avatar to speak in their own cloned voice, a lip-synced talking video from a photo and audio, or says their avatar looks wrong, over-acts or its mouth isn't theirs.",
+      "path": "upstream/agent-skills/media/create-ai-avatar/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation"
+      ]
+    },
+    {
+      "id": "media/html-explainer-video",
+      "name": "html-explainer-video",
+      "category": "media",
+      "description": "Turn a product, a feature or an idea into a finished one-minute explainer video in any look: a script (hook, benefit, quick tutorial, try it), a voice whose words are the clock, HTML scenes drawn from that one clock and rendered frame by frame at 2×, and an edit in Fil's video editor over MCP with captions, music, sound effects and chapters. The look is an input, read from the person's site or a named style, so the same film can wear any type, colour, corners and motion. The shape is an input (4:3, 16:9, 1:1, 9:16). No camera by default: a voice-led film whose scenes fill the frame; ask for a camera and it adds record slots, layouts by keyframes and a teleprompter. Use when someone wants an explainer, a feature video, a product walkthrough, an onboarding video, a how-it-works video or a launch video, wants one in their own brand, or wants it without filming anything.",
+      "path": "upstream/agent-skills/media/html-explainer-video/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation"
+      ]
+    },
+    {
+      "id": "media/html-reel",
+      "name": "html-reel",
+      "category": "media",
+      "description": "Turn a tweet, a video, a YouTube video or a landing page into a 9:16 reel (Instagram Reels, TikTok, Shorts) that says what the source says and looks like it, with every cut on a word. Read the source (its words, its media, its measured fonts and colours), pick a structure (a promo, a showcase, \"found this\", an explainer, before and after), write the script in the creator's voice from the source's own facts, make the voice with timestamps (their cloned ElevenLabs voice), then build the picture from HTML scenes drawn from one clock (window.__frame(t)) in the source's look, opening on its cover (the hook's best moment as the first frame), its demo video framed and cut to words, and assemble it in Fil's video editor over MCP. The creator is in it from the first draft as a placeholder in the camera layouts (a backlit studio silhouette) (full frame, a bubble, half the frame), swapped for their phone takes when they record, and everything retimed to their own words by word anchors, t = W(τ); a reel can also be faceless. Use when someone wants a reel, a short or a vertical video from a post, a thread, a launch, a landing page, a demo video or a YouTube video, \"a reel like this one\", or a talking-head promo cut to their own delivery.",
+      "path": "upstream/agent-skills/media/html-reel/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation"
+      ]
+    },
+    {
       "id": "media/unsplash-asset-images",
       "name": "unsplash-asset-images",
       "category": "media",
@@ -9526,6 +10377,19 @@
       "category": "web-design",
       "description": "Build scene-by-scene chapters that advance left to right on one fixed stage while the user scrolls vertically, with native scroll as the only input. One pure function turns scrollY into scene, dwell and move, so forward, reverse, scrollbar drags, fast skips and reload at depth all land on the right frame. Covers dwell versus transition budgets, a burn-wipe or pan between scenes, chapter index and progress UI, glide-to-scene links that skip intermediate scenes, keyboard and reduced-motion behaviour. Use for horizontal scrollytelling, multi-scene product tours, \"scroll down to travel sideways\", chapter carousels driven by the wheel, or any piece where a wheel-jacked slider keeps breaking on touch, keys, refresh or back.",
       "path": "upstream/agent-skills/web-design/horizontal-scroll-scenes/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation",
+        "qa"
+      ]
+    },
+    {
+      "id": "web-design/html-demo",
+      "name": "html-demo",
+      "category": "web-design",
+      "description": "Show an app working on a web page by drawing it live in HTML instead of recording it. A Mac-style window plays the app step by step, and every frame is a pure function of one clock, View(t), drawn on a fixed 1200 × 750 stage that one CSS scale fits to any width. The pointer is scripted, labels and pictures come from the real app, a steps bar sits under the window, it plays only while on screen, and reduced motion gets designed end frames. Use when someone wants a product demo, an animated app window or hero, a feature walkthrough, \"the UI animated and simulated in HTML\", \"like a screen recording but HTML\", an interactive product tour on a landing or download page, or wants to replace screen recordings, GIFs or MP4s of their UI with crisp live HTML. Also use to build many such windows at once with helper agents, or to scrub, freeze and screenshot them.",
+      "path": "upstream/agent-skills/web-design/html-demo/SKILL.md",
       "activation": "automatic",
       "stages": [
         "directions",

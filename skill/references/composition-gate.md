@@ -18,7 +18,9 @@ designer-pipeline verify composition --image qa/comp/screenshot.png --elements q
 HyperFrames headless shell, else an installed Chrome, Edge or Chromium; see installation.md). It
 needs `puppeteer-core` in the project or `--puppeteer-module <absolute path to puppeteer-core>`
 on the call; without either it fails with `puppeteer-core not found`. It writes `screenshot.png`
-plus `elements.json` (visible text with box, size, weight and effective colors).
+plus `elements.json` (visible text with box, size, weight, alignment, own fill or gradient stop and
+effective colors; a separate `media` list of image, video, canvas, svg and url() background boxes,
+with natural size where known, that the appearance ledger reads).
 `--seek <sec>` positions the page first. A page whose loaded DOM has a `[data-composition-id]`
 root is a HyperFrames composition (a mention in a comment or string does not count). It is reloaded
 the way `hyperframes render` prepares a frame: the render frame rate (the root's `data-fps`, else 30)

@@ -29,6 +29,11 @@ function tools() {
   }
 }
 const TOOLS = tools();
+// The render comparison runs `hyperframes render`, which needs ffmpeg and ffprobe on PATH even for a
+// PNG sequence; film render checks skip without them (AGENTS.md), and the CI QA runner has neither.
+// The capture-only tests below still run there.
+const hasFfmpeg = spawnSync("ffmpeg", ["-version"], { windowsHide: true }).status === 0 && spawnSync("ffprobe", ["-version"], { windowsHide: true }).status === 0;
+const RENDER_SKIP = TOOLS.skip || (!hasFfmpeg && "ffmpeg and ffprobe not on PATH (hyperframes render needs them)");
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "dp-capture-seek-"));
 
 // Three clips: #world for the whole film, #early 0-1 s (ends exactly at a sampled time), #late
@@ -87,7 +92,7 @@ function unmatchedInk(captureFile, renderFile) {
   return { unmatched, lit };
 }
 
-test("--seek on a HyperFrames composition matches the rendered frame", { skip: TOOLS.skip, timeout: 600000 }, () => {
+test("--seek on a HyperFrames composition matches the rendered frame", { skip: RENDER_SKIP, timeout: 600000 }, () => {
   const dir = tmp();
   try {
     film(dir, { withRuntime: true });

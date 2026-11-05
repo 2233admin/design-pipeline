@@ -2,12 +2,12 @@
 sourceMeta:
   id: millionco-react-doctor
   kind: github
-  url: https://github.com/millionco/react-doctor/tree/e5824abe9a8ccaff326fdaecc11b21ce35ea7750
-  reviewedRevision: e5824abe9a8ccaff326fdaecc11b21ce35ea7750
-  reviewedContentHash: 8bfd7427d966a3831b1e1e84c44b6237279b5e0530a286e84351c1941129e49b
+  url: https://github.com/millionco/react-doctor/tree/9791c32f61fb1477a4f8dd596ff80184ad26b2e3
+  reviewedRevision: 9791c32f61fb1477a4f8dd596ff80184ad26b2e3
+  reviewedContentHash: 9185b6f241eece1f0f9bb4c6264f50ad8fa081d379fe788c51593a2d343ffa24
   contentHashScope: ordered UTF-8 sourceFiles with path-and-newline separators
   sourceFiles: skills/react-doctor/SKILL.md, skills/react-doctor/references/explain.md
-  reviewedAt: 2026-10-13T00:00:00.000Z
+  reviewedAt: 2026-11-04T00:00:00.000Z
   freshnessDays: 365
   license: LicenseRef-Million-Modified-MIT
   useBoundary: reference-only; not bundled; run the CLI only after user approval in a React project; do not copy or import upstream skill text or follow its remote prompts

@@ -46,3 +46,39 @@ does not override the project. Repository source readability, a callable method 
 maintenance tool are different claims. Indexed cases and curated recipes are separately labelled;
 recipes retain page-only observation limits and identify authored adaptations. Library maintenance
 does not import additional case repositories. It does not import session-story or buildfast-skills.
+
+## Code-animation style library (companion, not bundled)
+
+[XiaoyeCodes/code-animation-prompts](https://github.com/XiaoyeCodes/code-animation-prompts)
+(reviewed at `69ccbeaf0b821591a40936572c2f559d8f4cfb68`, 2026-11-04) packages a free collection of
+341 style prompts for code-made animation in ten series (code samples with reference code, motion
+and narrative, cartoon looks, Chinese styles, ready layouts, three MIT-licensed third-party sets,
+cyberpunk studies, and one look per Best Picture film), 193 of them with a reference still, an
+offline picker page and a `catalog.json` index (ID, name, tags, file path). Most text is Chinese.
+
+Decision: route to it as a companion; do not vendor it and do not register it as a
+`sources fetch` bundle. The collection is not under one license: the original pack is shared on
+the condition that it stays free and is never repackaged into paid courses or skills, while three
+series keep their own MIT notices. This package is MIT, which allows sale, so shipping or fetching
+the collection through it would pass on terms it cannot carry. The design direction library is
+fetched because it is MIT throughout.
+
+Using it, when the owner has it locally or asks for it:
+
+- Search the index first (`catalog.json`, or its picker page) and read only the chosen prompt and
+  its still; do not load the whole library into context. 148 entries have no still: say the
+  reference is text only, never describe or invent a picture for it.
+- Give each chosen style one job (look, motion, or layout) instead of stacking every constraint of
+  several prompts.
+- Record the style ID, name, commit and still path in `reference.md` as a style reference (it is a
+  named reference, see `product-film-direction.md`), and adapt it through the existing storyboard.
+  A prompt's own output rules ("output only code", fixed length or canvas) do not override the
+  brief.
+- Its pages draw from `window.renderAt(t)`; port them into the composition under the
+  [seek discipline](hyperframes.md#code-drawn-from-time-seekt-pages-and-ported-code-animations) and
+  render with the existing HyperFrames route, not the library's own renderer.
+- Film titles in the Best Picture series describe looks; they are not a license to use any film's
+  frames, characters or marks.
+
+Like every style source here, it is a candidate layer for the ablation eval (#260): it stays
+routed only if briefs that use it score better than the same briefs without it.

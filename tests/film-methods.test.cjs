@@ -36,7 +36,7 @@ test("explicit film methods retain real source identity and return the selected 
     assert.equal(result.components[0].sha256, sha256(sourceBytes));
     assert.equal(result.components[0].mode, "frame-twin");
     assert.deepEqual(result.techniques, [JSON.parse(fs.readFileSync(sourceLibrary)).techniques.find((item) => item.id === "cam-isolating-push")]);
-    assert.equal(result.sources[0].revision, "bee5d7807205d5543472c38312507f9bf366cbbf");
+    assert.equal(result.sources[0].revision, "ecfa6605de1adb9345ce937724810dc32267d068");
     assert.equal(result.sources[1].revision, "fe11efc429d5903e37274d0b294e1b95745b2881");
     assert.equal(result.fps, 30);
     assert.equal(result.creativeAcceptance, "not-assessed");

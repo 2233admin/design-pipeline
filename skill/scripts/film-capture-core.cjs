@@ -17,7 +17,7 @@ const PROBE = path.join(__dirname, "../references/film-choreography/timeline-pro
 const LAYOUT_PROBE = path.join(__dirname, "../references/film-choreography/layout-probe.js");
 // The reviewed HyperFrames release (references/hyperframes.md); `film scaffold` pins the same one.
 const HYPERFRAMES_VERSION = "0.8.137";
-const GSAP_VERSION = "3.15.0";
+const GSAP_VERSION = "3.15.1";
 // npx package spec: the reviewed pin unless a caller names another release explicitly.
 const hyperframesCli = (version) => `hyperframes@${version || HYPERFRAMES_VERSION}`;
 

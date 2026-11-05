@@ -181,8 +181,9 @@ pre {
    so one class turns a part over from light to dark. Every color is mixed
    from those in tokens.css, as in "OKLCH color". */
 .band,
-.site-header {
-  --soft: color-mix(in oklch, var(--ink) 66%, transparent);
+.site-header,
+.notes {
+  --soft: color-mix(in oklch, var(--ink) 68%, transparent);
   --text: color-mix(in oklch, var(--ink) 86%, transparent);
   --line: color-mix(in oklch, var(--ink) 45%, transparent);
   --art-ground: var(--ground);
@@ -641,6 +642,23 @@ pre {
   }
 }
 
+/* On a category's or an entry's own page the header lies over the top of
+   the band, which reaches up under it, so the band's ghost shows through.
+   It stays there when the page grows. A narrow screen has a sticky bar. */
+@media (width >= 56rem) {
+  .site-header-over {
+    background: transparent;
+
+    & + [data-grows],
+    & + main [data-grows] {
+      --header-block: calc(3.5rem + var(--header-bar));
+
+      margin-block-start: calc(-1 * var(--header-block));
+      padding-block-start: calc(var(--space-band) + var(--header-block));
+    }
+  }
+}
+
 @media (width < 56rem) {
   /* A link into the page stops below the bar, as in "Anchor targets that
      clear a sticky header". */
@@ -958,7 +976,7 @@ pre {
   justify-content: space-between;
 
   & span + span {
-    color: color-mix(in oklch, var(--ink) 60%, transparent);
+    color: var(--soft);
   }
 }
 
@@ -1147,6 +1165,8 @@ pre {
   scroll-padding-inline: var(--pad);
   overscroll-behavior-x: contain;
   scrollbar-width: none;
+  /* A mouse drags the row, so a drag selects no text. */
+  user-select: none;
 
   /* Each card is a container too, and sizes what it holds in `cqi`. */
   & > * {
@@ -1154,6 +1174,17 @@ pre {
     flex: none;
     inline-size: var(--card);
     scroll-snap-align: start;
+  }
+
+  /* While a mouse drags it the row follows the pointer and does not snap.
+     main.js lands it on a card. */
+  &[data-dragging] {
+    scroll-snap-type: none;
+    cursor: grabbing;
+
+    & a {
+      cursor: inherit;
+    }
   }
 }
 
@@ -1446,7 +1477,8 @@ pre {
   gap: 1.125rem;
   max-inline-size: 56.25rem;
 
-  & h2 {
+  /* An h1 on a category's own page. */
+  & :is(h1, h2) {
     font-size: var(--text-opener);
     font-weight: 800;
     line-height: 0.96;
@@ -1494,11 +1526,18 @@ pre {
   border: 1.5px solid var(--ink);
   overflow: clip;
 
-  & li {
+  & li,
+  &:has(> li:last-child:nth-child(odd))::after {
     margin-block-start: -1px;
     margin-inline-start: -1.5px;
     border-block-start: 1px solid var(--ink);
     border-inline-start: 1.5px solid var(--ink);
+  }
+
+  /* With an odd count the last cell of the second column is empty. The
+     pseudo-element fills it and draws its lines as a cell does. */
+  &:has(> li:last-child:nth-child(odd))::after {
+    content: "";
   }
 
   & a {
@@ -1538,6 +1577,25 @@ pre {
 
 .entries {
   margin-block-start: var(--space-entry);
+}
+
+/* On an entry's own page the entry leads and its category follows. */
+.entry-page .entries {
+  margin-block: 0 var(--space-entry);
+}
+
+/* The entry's own number stands behind it, so the category's steps aside. */
+.entry-page > .ghost {
+  display: none;
+}
+
+.entry-index a[aria-current="page"] {
+  background: var(--bp-lime);
+  color: var(--bp-dark);
+
+  & .label {
+    color: inherit;
+  }
 }
 
 /* Entry ------------------------------------------------------------------- */
@@ -1592,7 +1650,7 @@ pre {
   }
 }
 
-.entry h3 {
+.entry :is(h1, h2, h3) {
   font-size: var(--text-title);
   font-weight: 800;
   line-height: 1.136;
@@ -1602,6 +1660,13 @@ pre {
   & code {
     font: inherit;
   }
+}
+
+/* A title that links to its own page looks like the title. Only the
+   pointer says it is a link. */
+:is(.entry, .opener-text) :is(h1, h2, h3) a {
+  color: inherit;
+  text-decoration: none;
 }
 
 .lede {
@@ -1786,7 +1851,7 @@ pre {
     background: none;
     font: inherit;
     font-size: 0.6875rem;
-    color: color-mix(in oklch, var(--panel-ink) 66%, transparent);
+    color: color-mix(in oklch, var(--panel-ink) 72%, transparent);
     outline-offset: -2px;
     cursor: pointer;
 
@@ -1873,30 +1938,68 @@ pre {
   &::-webkit-details-marker {
     display: none;
   }
-
-  /* The sign in a ring. The two are one mask, so both take the ink. */
-  &::after {
-    content: "";
-    flex: none;
-    inline-size: 1.75rem;
-    block-size: 1.75rem;
-    background: currentColor;
-    mask:
-      url("/icons/plus.svg") center / 0.75rem no-repeat,
-      radial-gradient(closest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px) 100%, transparent 100%);
-  }
 }
 
-/* Open, the summary is the ink, and the sign sits on a sulphur disc. */
+/* Open, the summary is the ink. */
 .fold[open] summary {
   background: var(--ink);
   color: var(--ground);
+}
 
-  /* The sign is drawn in the dark on the disc, as text on sulphur is
-     everywhere, so it reads on a light band and a dark one alike. */
-  &::after {
-    background: linear-gradient(var(--bp-dark) 0 0) center / 0.75rem 1.6px no-repeat, var(--bp-lime);
-    mask: radial-gradient(closest-side, #000 calc(100% - 0.5px), transparent 100%);
+/* The sign, a plus in a ring, drawn in index.html on the center of its box.
+   Open, a sulphur disc grows over the ring and the upright of the plus
+   turns down onto its bar, so the plus becomes the minus. The sign is drawn
+   in the dark on the disc, as text on sulphur is everywhere, so it reads on
+   a light band and a dark one alike. */
+.fold-sign {
+  flex: none;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+
+  & * {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  & .fold-disc {
+    fill: var(--bp-lime);
+    stroke: none;
+    scale: 0;
+  }
+
+  .fold[open] & {
+    stroke: var(--bp-dark);
+
+    & .fold-ring {
+      stroke: var(--bp-lime);
+    }
+
+    & .fold-disc {
+      scale: 1;
+    }
+
+    & .fold-bar {
+      rotate: 90deg;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fold summary {
+    transition:
+      background-color 0.3s var(--ease-out),
+      color 0.3s var(--ease-out);
+  }
+
+  .fold-sign * {
+    transition:
+      stroke 0.3s var(--ease-out),
+      scale 0.3s var(--ease-out),
+      rotate 0.3s var(--ease-out);
   }
 }
 
@@ -1912,7 +2015,7 @@ pre {
 
 .fold-meta {
   text-align: end;
-  opacity: 0.66;
+  opacity: 0.68;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -2064,8 +2167,13 @@ details[open]::details-content {
 }
 
 /* The notes: a label on one side and its items on the other, one part
-   under the other with a line between. */
+   under the other with a line between. Like the code they are on the
+   deepest dark in every band, and they turn over as a band does, so the
+   sulphur in them reads on a light band too. */
 .notes {
+  --ink: var(--bp-tint);
+  --ground: var(--bp-deep);
+
   padding: 0.625rem 2.5rem 1.125rem;
 }
 
@@ -2407,7 +2515,7 @@ details[open]::details-content {
 }
 
 .footer-soft {
-  opacity: 0.8;
+  font-weight: 500;
 }
 
 /* The arrow of an outside link follows its last word. */
@@ -2663,10 +2771,10 @@ details[open]::details-content {
     gap: 0.375rem 1rem;
     padding-block: 0.875rem;
     padding-inline-start: 1.125rem;
+  }
 
-    &::after {
-      grid-area: sign;
-    }
+  .fold-sign {
+    grid-area: sign;
   }
 
   .fold-title {
@@ -2682,6 +2790,11 @@ details[open]::details-content {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: none;
     grid-auto-flow: row;
+  }
+
+  /* One column has no empty cell. */
+  .entry-index:has(> li:last-child:nth-child(odd))::after {
+    display: none;
   }
 
   .opener {

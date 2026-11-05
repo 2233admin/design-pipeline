@@ -3,11 +3,11 @@
   "name": "shadcn",
   "source": {
     "repository": "https://github.com/shadcn-ui/ui",
-    "revision": "993eb2c3151997ce08a49635c10fd8c8ef3713c7",
-    "gitTree": "73f30996a5cbbc3a75ada6818781d1f121636082",
-    "committedAt": "2026-10-12T13:05:21+04:00",
+    "revision": "4aaea19d9cff3e0908e12a8c1d504b8c5ec34610",
+    "gitTree": "8a97d119a36489d039c9aa3fe9a63d6de1c9e7b3",
+    "committedAt": "2026-11-02T11:02:07+04:00",
     "license": "MIT",
-    "reviewedAt": "2026-10-13",
+    "reviewedAt": "2026-11-04",
     "scope": [
       "skills/shadcn/**",
       "LICENSE.md"
@@ -24,8 +24,8 @@
   "snapshot": {
     "root": "upstream",
     "fileCount": 22,
-    "byteCount": 149817,
-    "treeSha256": "fb90fd9ad20aba550f87fbc2e1aa0e5d0bd7f12035a14ac99f280506365e3fce",
+    "byteCount": 159725,
+    "treeSha256": "b95ba26ff8d9f25a347176a8949d45ab1beb8bb71a11b553cd0a06b9d101f63e",
     "executableFiles": [],
     "objects": [
       {
@@ -136,9 +136,9 @@
       {
         "path": "skills/shadcn/rules/chat.md",
         "mode": "100644",
-        "oid": "9e1a6bf8de28de688c730ff95016a03347b49014",
-        "size": 8018,
-        "sha256": "de29c12524a27578a59ecf8c95ea939278c1a3572a3706bfc99f6f92cb770b7b"
+        "oid": "b493fbd348190123a5fe0f4c66b115836ae9a0bc",
+        "size": 17626,
+        "sha256": "4b4610d487ddc9751f3cfe0c554a06560ac723fcc2460abad77a1d3c7c9a4b95"
       },
       {
         "path": "skills/shadcn/rules/composition.md",
@@ -178,9 +178,9 @@
       {
         "path": "skills/shadcn/SKILL.md",
         "mode": "100644",
-        "oid": "c1e7388d2d9b9e90af44af9a5f135dae1b3a870a",
-        "size": 21306,
-        "sha256": "0185f715bc985deca4223be426f898aa17f7d1a297a9857dfa79055e473bc34d"
+        "oid": "54da13fb6fdca971ec9ee4651cf5ff2cdab2236d",
+        "size": 21606,
+        "sha256": "93951e5e83f616a3e046491c00d770bd54c0a64164706cd1191822a233d27592"
       }
     ]
   },
