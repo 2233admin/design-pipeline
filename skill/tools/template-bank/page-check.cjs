@@ -337,13 +337,7 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
       const style = document.createElementNS(svgRoot ? "http://www.w3.org/2000/svg" : "http://www.w3.org/1999/xhtml", "style");
       style.textContent = css;
       (document.head || document.documentElement).appendChild(style);
-      // Load every declared face before measuring: fonts.ready alone settles once nothing is
-      // pending, and a face the layout has not requested yet would otherwise load between the
-      // shots (each shot then sees different glyphs).
-      if (document.fonts) {
-        await Promise.all([...document.fonts].map((face) => face.load().catch(() => null)));
-        await document.fonts.ready;
-      }
+      if (document.fonts) await document.fonts.ready;
       await Promise.all([...document.images].map((img) => (img.complete ? 0 : new Promise((resolve) => { img.onload = img.onerror = resolve; }))));
     }, STYLE);
     await new Promise((resolve) => setTimeout(resolve, 120));
