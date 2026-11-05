@@ -132,6 +132,9 @@ does not install or repair anything.
   images and audio (about 40 MB) are fetched the same way with
   `designer-pipeline sources fetch --bundle design-direction-library`. Without them the library's
   text still works.
+- The brand design-system catalog ships only its manifest and licences; its 198 systems (about
+  9.3 MB of text) are fetched with `designer-pipeline sources fetch --bundle brand-design-systems`
+  and searched through `designmd search` (`references/design-md.md`).
 - Browser-backed commands (film and composition capture, score render, interaction probes, Art
   Motion render) use the project-local `puppeteer-core` and one shared browser resolver. It takes
   `--chrome <path>`, then `PUPPETEER_EXECUTABLE_PATH`, then the HyperFrames headless shell

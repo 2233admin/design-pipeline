@@ -23,11 +23,11 @@ links: an upstream link to `SKILL.md` means the `UPSTREAM-SKILL.md` in the same 
 | `emil-design-eng/` | [Interaction polish](../references/ui-craft-sources.md#emil-design-eng) | `manifest.json`, scoped snapshot hash |
 | `make-interfaces-feel-better/` | [Interface details](../references/ui-craft-sources.md#make-interfaces-feel-better) | `manifest.json`, scoped snapshot hash |
 | `fixing-accessibility/` | [Accessibility fixes](../references/ui-craft-sources.md#fixing-accessibility) | `manifest.json`, scoped snapshot hash |
-| `12-principles-of-animation/` | [Animation principles checklist](../references/ui-craft-sources.md#12-principles-of-animation) | `manifest.json`, scoped snapshot hash |
 | `shadcn/` | [shadcn/ui component workflow](../references/ui-craft-sources.md#shadcn) | `manifest.json`, scoped snapshot hash |
 | `playwright-cli/` | [Exploratory browser driving](../references/ui-craft-sources.md#playwright-cli) | `manifest.json`, scoped snapshot hash |
 | `taste-skill/` | [Visual direction and interface recipes](../references/taste-skill.md) | `manifest.json`, source Git tree and snapshot hashes |
 | `design-direction-library/` | [Style specimens, directions, brand protocol, critique](../references/design-direction-library.md) | `manifest.json`, pinned Git tree; binaries fetched by `sources fetch --bundle design-direction-library` |
+| `brand-design-systems/` | [Brand design systems](../references/design-md.md) | `manifest.json`, two pinned sources, licences; the systems fetched by `sources fetch --bundle brand-design-systems` |
 | `good-css/` | [CSS practices and specimens](../references/good-css.md) | `manifest.json`, source Git tree, snapshot hashes and separate font notices |
 | `answer-me-with-html/` | [Offline explanations](../tools/answer-me-with-html/README.md) | `manifest.json`, pinned source/build/runtime hashes and complete dependency/font `LICENSES.txt`; original skill instructions inert |
 | `cinetic/` | [Film methods and techniques](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |

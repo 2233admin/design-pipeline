@@ -11,7 +11,7 @@ const { fail, jsonResult, readJson } = require("./contract-utils.cjs");
 const SCOPE = "interaction capture";
 
 function parseArgs(argv) {
-  const allowed = new Set(["--probe", "--chrome", "--puppeteer-module", "--timeout-ms"]);
+  const allowed = new Set(["--probe", "--chrome", "--puppeteer-module", "--timeout-ms", "--frames-dir"]);
   const result = {};
   for (let index = 0; index < argv.length; index += 2) {
     const name = argv[index];
@@ -36,6 +36,8 @@ function parseArgs(argv) {
       chrome: options["--chrome"],
       puppeteerModule: options["--puppeteer-module"],
       timeoutMs: options["--timeout-ms"] ? Number(options["--timeout-ms"]) : undefined,
+      // Contact sheets of scroll probes; without it a scroll probe still measures, it only draws nothing.
+      framesDir: options["--frames-dir"],
     });
     process.stdout.write(`${JSON.stringify(jsonResult(true, { status: "captured", capture }))}\n`);
   } catch (error) {

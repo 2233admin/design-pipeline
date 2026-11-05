@@ -1,0 +1,361 @@
+{
+ "schema": "design-pipeline.font-sources.v1",
+ "checked": "2026-11-05",
+ "note": "Reviewed font sources for `designer-pipeline fonts`. Revisions are pinned; `fonts refresh` reads these files at these revisions. Bump a revision only after reviewing that commit.",
+ "licenses": {
+  "OFL": {
+   "name": "SIL Open Font License 1.1",
+   "commercial": true,
+   "embed": true,
+   "modify": true,
+   "conditions": "Fonts may be used, embedded and modified, but not sold by themselves; a modified version (a subset counts) may not use a Reserved Font Name, if the licence text declares one, and must stay under the OFL."
+  },
+  "APACHE2": {
+   "name": "Apache License 2.0",
+   "commercial": true,
+   "embed": true,
+   "modify": true,
+   "conditions": "Keep the licence and NOTICE; state changes in modified files."
+  },
+  "UFL": {
+   "name": "Ubuntu Font Licence 1.0",
+   "commercial": true,
+   "embed": true,
+   "modify": true,
+   "conditions": "Modified versions must be renamed so they cannot be confused with the original."
+  }
+ },
+ "sources": [
+  {
+   "id": "google-fonts",
+   "kind": "google-fonts",
+   "measure": true,
+   "repository": "https://github.com/google/fonts",
+   "revision": "bbda7253fc363238b05d97515ca71f8ae49c4fa9",
+   "fetch": "raw.githubusercontent.com/google/fonts/<revision>/<directory>/<file>, read by HTTP Range (directory, cmap, name, OS/2, head, fvar, and the 十 glyph)",
+   "licenseField": "METADATA.pb `license` in the family directory, plus the licence text file beside it (OFL.txt, LICENSE.txt or UFL.txt)",
+   "categoryField": "METADATA.pb `category`",
+   "discovery": {
+    "url": "https://fonts.google.com/metadata/fonts",
+    "subsets": "^(chinese-simplified|chinese-traditional|chinese-hongkong|japanese)$",
+    "note": "Advisory: `fonts refresh --discover` lists Google Fonts families with these subsets that the registry does not list yet."
+   },
+   "scope": "Every Google Fonts family whose subsets include chinese-simplified, chinese-traditional, chinese-hongkong or japanese on 2026-11-05 (97 families). Korean-only families are out of scope.",
+   "families": [
+    "apache/kosugi",
+    "apache/kosugimaru",
+    "ofl/aoboshione",
+    "ofl/bizudgothic",
+    "ofl/bizudmincho",
+    "ofl/bizudpgothic",
+    "ofl/bizudpmincho",
+    "ofl/bpmfhuninn",
+    "ofl/bpmfiansui",
+    "ofl/bpmfzihikaistd",
+    "ofl/cactusclassicalserif",
+    "ofl/cherrybombone",
+    "ofl/chirongoroundtc",
+    "ofl/chironheihk",
+    "ofl/chironsunghk",
+    "ofl/chocolateclassicalsans",
+    "ofl/chokokutai",
+    "ofl/darumadropone",
+    "ofl/delagothicone",
+    "ofl/dotgothic16",
+    "ofl/hachimarupop",
+    "ofl/hinamincho",
+    "ofl/huninn",
+    "ofl/iansui",
+    "ofl/ibmplexsansjp",
+    "ofl/kaiseidecol",
+    "ofl/kaiseiharunoumi",
+    "ofl/kaiseiopti",
+    "ofl/kaiseitokumin",
+    "ofl/kapakana",
+    "ofl/kiwimaru",
+    "ofl/kleeone",
+    "ofl/lineseedjp",
+    "ofl/liujianmaocao",
+    "ofl/longcang",
+    "ofl/lxgwmarkergothic",
+    "ofl/lxgwwenkaimonotc",
+    "ofl/lxgwwenkaitc",
+    "ofl/mashanzheng",
+    "ofl/mochiypopone",
+    "ofl/mochiypoppone",
+    "ofl/monomaniacone",
+    "ofl/mplus1",
+    "ofl/mplus1code",
+    "ofl/mplus1p",
+    "ofl/mplus2",
+    "ofl/mplusrounded1c",
+    "ofl/mplusu",
+    "ofl/murecho",
+    "ofl/newtegomin",
+    "ofl/notosanshk",
+    "ofl/notosansjp",
+    "ofl/notosanssc",
+    "ofl/notosanstc",
+    "ofl/notoserifhk",
+    "ofl/notoserifjp",
+    "ofl/notoserifsc",
+    "ofl/notoseriftc",
+    "ofl/palettemosaic",
+    "ofl/pottaone",
+    "ofl/rampartone",
+    "ofl/reggaeone",
+    "ofl/rock3d",
+    "ofl/rocknrollone",
+    "ofl/sawarabigothic",
+    "ofl/sawarabimincho",
+    "ofl/shipporiantique",
+    "ofl/shipporiantiqueb1",
+    "ofl/shipporimincho",
+    "ofl/shipporiminchob1",
+    "ofl/shizuru",
+    "ofl/slacksideone",
+    "ofl/stick",
+    "ofl/trainone",
+    "ofl/tsukimirounded",
+    "ofl/uoqmunthenkhung",
+    "ofl/wdxllubrifontjpn",
+    "ofl/wdxllubrifontsc",
+    "ofl/wdxllubrifonttc",
+    "ofl/yomogi",
+    "ofl/yujiboku",
+    "ofl/yujihentaiganaakari",
+    "ofl/yujihentaiganaakebono",
+    "ofl/yujimai",
+    "ofl/yujisyuku",
+    "ofl/yuseimagic",
+    "ofl/zcoolkuaile",
+    "ofl/zcoolqingkehuangyou",
+    "ofl/zcoolxiaowei",
+    "ofl/zenantique",
+    "ofl/zenantiquesoft",
+    "ofl/zenkakugothicantique",
+    "ofl/zenkakugothicnew",
+    "ofl/zenkurenaido",
+    "ofl/zenmarugothic",
+    "ofl/zenoldmincho",
+    "ofl/zhimangxing"
+   ],
+   "styleOverrides": {
+    "apache/kosugimaru": {
+     "styles": [
+      "gothic",
+      "round"
+     ],
+     "reason": "丸ゴシック: rounded stroke ends; category says only SANS_SERIF"
+    },
+    "ofl/mplusrounded1c": {
+     "styles": [
+      "gothic",
+      "round"
+     ],
+     "reason": "Rounded gothic by name and design"
+    },
+    "ofl/zenmarugothic": {
+     "styles": [
+      "gothic",
+      "round"
+     ],
+     "reason": "丸ゴシック by name and design"
+    },
+    "ofl/chirongoroundtc": {
+     "styles": [
+      "gothic",
+      "round"
+     ],
+     "reason": "圓體 (GoRound) by name and design"
+    },
+    "ofl/tsukimirounded": {
+     "styles": [
+      "gothic",
+      "round"
+     ],
+     "reason": "Rounded kana face by name; no kanji"
+    },
+    "ofl/kiwimaru": {
+     "styles": [
+      "round"
+     ],
+     "reason": "Rounded mincho (丸明朝): category SERIF but 十 measures 1.03, so neither mincho nor gothic fits"
+    },
+    "ofl/newtegomin": {
+     "styles": [
+      "mincho"
+     ],
+     "reason": "Low-contrast old-style mincho; 十 measures 1.28, below the serif threshold"
+    },
+    "ofl/yujiboku": {
+     "styles": [
+      "display"
+     ],
+     "reason": "Brush-written serif; even strokes in 十, used for display"
+    },
+    "ofl/yujimai": {
+     "styles": [
+      "display"
+     ],
+     "reason": "Brush-written serif; even strokes in 十, used for display"
+    },
+    "ofl/yujisyuku": {
+     "styles": [
+      "display"
+     ],
+     "reason": "Brush-written serif; even strokes in 十, used for display"
+    },
+    "ofl/lxgwwenkaitc": {
+     "styles": [
+      "kai",
+      "handwriting"
+     ],
+     "reason": "文楷: a kai design; category HANDWRITING"
+    },
+    "ofl/lxgwwenkaimonotc": {
+     "styles": [
+      "kai",
+      "mono"
+     ],
+     "reason": "文楷 monospaced"
+    },
+    "ofl/bpmfzihikaistd": {
+     "styles": [
+      "kai"
+     ],
+     "reason": "字嗨楷: a kai design with bopomofo; category says SANS_SERIF"
+    },
+    "ofl/kleeone": {
+     "styles": [
+      "kai",
+      "handwriting"
+     ],
+     "reason": "教科書体 (textbook kai-like pencil design)"
+    },
+    "ofl/mashanzheng": {
+     "styles": [
+      "kai",
+      "handwriting"
+     ],
+     "reason": "Kai calligraphy (马善政楷书)"
+    },
+    "ofl/zcoolxiaowei": {
+     "styles": [
+      "mincho",
+      "display"
+     ],
+     "reason": "Song-style display face; category says SANS_SERIF"
+    }
+   }
+  },
+  {
+   "id": "lxgw-wenkai",
+   "kind": "github-files",
+   "measure": true,
+   "repository": "https://github.com/lxgw/LxgwWenKai",
+   "revision": "da0fdf92a0adc5d83c82ecde06d6665c97a2a45e",
+   "fetch": "raw.githubusercontent.com/lxgw/LxgwWenKai/<revision>/<path>, read by HTTP Range",
+   "family": "LXGW WenKai",
+   "license": "OFL",
+   "licenseFile": "OFL.txt",
+   "licenseField": "OFL.txt at the repository root",
+   "category": "HANDWRITING",
+   "styles": [
+    "kai",
+    "handwriting"
+   ],
+   "scope": "The simplified-Chinese WenKai (Google Fonts carries only the TC build).",
+   "files": [
+    {
+     "path": "fonts/TTF/LXGWWenKai-Light.ttf",
+     "weight": 300
+    },
+    {
+     "path": "fonts/TTF/LXGWWenKai-Regular.ttf",
+     "weight": 400
+    },
+    {
+     "path": "fonts/TTF/LXGWWenKai-Medium.ttf",
+     "weight": 500
+    }
+   ]
+  },
+  {
+   "id": "zhuque-fangsong",
+   "kind": "github-release",
+   "measure": false,
+   "repository": "https://github.com/TrionesType/zhuque",
+   "revision": "005a8d0d620cb1fe2a576620a69daea3cc7477b4",
+   "family": "Zhuque Fangsong (朱雀仿宋)",
+   "license": "OFL",
+   "licenseFile": "LICENSE.txt",
+   "status": "blocked",
+   "reason": "The repository holds only the Glyphs source and LICENSE.txt; built fonts are GitHub Release assets, and github.com/.../releases answered 403 through this proxy on 2026-11-05. Not bypassed. The catalog has no fangsong face until a reachable release host is reviewed."
+  },
+  {
+   "id": "fontsource",
+   "kind": "discovery",
+   "measure": false,
+   "url": "https://api.fontsource.org/v1/fonts",
+   "status": "not-measured",
+   "reason": "Reachable (HTTP 200 on 2026-11-05). It mirrors Google Fonts metadata and serves unicode-range subsets (WOFF2 per subset), not whole files, so coverage is measured from google/fonts instead."
+  },
+  {
+   "id": "free-font-list",
+   "kind": "discovery",
+   "measure": false,
+   "repository": "https://github.com/wordshub/free-font",
+   "revision": "8de624069342f03a78e83e81636126e37c9c7ac9",
+   "status": "list-only",
+   "reason": "A curated list of free-for-commercial-use Chinese fonts (README). Its families come from many publishers with their own agreements; add one as a github-files source only after reading its licence at the publisher."
+  }
+ ],
+ "reachability": [
+  {
+   "url": "https://raw.githubusercontent.com/<owner>/<repo>/<revision>/<path>",
+   "result": "200; Range requests answer 206",
+   "used": true
+  },
+  {
+   "url": "https://github.com/<owner>/<repo>/raw/<revision>/<path>",
+   "result": "403 from the proxy",
+   "used": false
+  },
+  {
+   "url": "https://github.com/<owner>/<repo>/releases/...",
+   "result": "403 from the proxy",
+   "used": false
+  },
+  {
+   "url": "https://api.github.com/repos/...",
+   "result": "403 (unauthorised without a token)",
+   "used": false
+  },
+  {
+   "url": "git ls-remote https://github.com/<owner>/<repo>",
+   "result": "works; used by `fonts refresh --revision head`",
+   "used": true
+  },
+  {
+   "url": "https://fonts.google.com/metadata/fonts",
+   "result": "200 (2.7 MB JSON); used only by `fonts refresh --discover`",
+   "used": true
+  },
+  {
+   "url": "https://api.fontsource.org/v1/fonts",
+   "result": "200",
+   "used": false
+  }
+ ],
+ "glyphSets": {
+  "tongyong-3500": "First line of tongyong-guifan-hanzi.txt",
+  "tongyong-8105": "All three lines of tongyong-guifan-hanzi.txt",
+  "source": {
+   "file": "tongyong-guifan-hanzi.txt",
+   "from": "https://github.com/shengdoushi/common-standard-chinese-characters-table at d9b599a9c9cc0dd2d58cad829e285bc780cd4451 (level-1/2/3.txt, 3500/3000/1605 characters)",
+   "original": "《通用规范汉字表》(State Council, 2013), http://www.gov.cn/gzdt/att/att/site1/20130819/tygfhzb.pdf"
+  },
+  "derived": "gb2312, jis-level-1 and big5-common are decoded with Node TextDecoder (gbk, euc-jp, big5) over the standard code ranges; latin and cjk-punctuation are fixed lists in font-catalog-core.cjs"
+ }
+}

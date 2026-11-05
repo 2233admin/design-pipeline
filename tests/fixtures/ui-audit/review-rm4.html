@@ -1,0 +1,24 @@
+<!doctype html><html><head><style>
+body{font:16px/1.5 Arial;background:#fff;color:#111;margin:0;padding:20px}
+details{border:1px solid #888;padding:8px;margin:8px 0}
+.spin{width:24px;height:24px;border:3px solid #ccc;border-top-color:#111;border-radius:50%;animation:s 1s linear infinite;display:inline-block}
+@keyframes s{to{transform:rotate(360deg)}}
+.sk{height:20px;width:300px;background:linear-gradient(90deg,#eee 25%,#ddd 50%,#eee 75%);background-size:200% 100%;animation:sh 1.5s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.car{overflow:hidden;width:300px;border:1px solid #888}
+.track{display:flex;width:900px;animation:slide 9s infinite}
+.track>div{width:300px;padding:10px;box-sizing:border-box}
+@keyframes slide{0%,30%{transform:translateX(0)}35%,65%{transform:translateX(-300px)}70%,100%{transform:translateX(-600px)}}
+.pulse{animation:p 2s infinite}@keyframes p{50%{opacity:.4}}
+.menu{display:none}.menu.open{display:block}
+.tip{opacity:0;pointer-events:none}.tip-w:hover .tip{opacity:1}
+</style></head><body>
+<h1>Motion kinds</h1>
+<details><summary>Closed accordion</summary><p>Hidden panel text</p></details>
+<p><span class="spin" role="status" aria-label="loading"></span> Loading…</p>
+<div class="sk" aria-hidden="true"></div>
+<div class="car"><div class="track"><div>Slide 1</div><div>Slide 2</div><div>Slide 3</div></div></div>
+<p class="pulse">pulse</p>
+<div class="menu">menu</div>
+<div class="tip-w">hover me <span class="tip">tooltip</span></div>
+</body></html>

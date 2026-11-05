@@ -56,10 +56,16 @@ designer-pipeline template distill <provenance.csv> --images <dir> -o <out-dir> 
   - `--param` sets a parameter inside its measured range, or a palette role:
     `--param palette.accent=#E0344F`.
   - `--size` takes any size with the template's aspect; `list` shows the tested sizes.
+  - `--tone <image-slot>=#RRGGBB` declares the tone of a real image under text when no browser
+    can sample it (also on `check`).
   - `--png` rasterises through the headless browser used by `composition capture`
-    (`--chrome`, `--puppeteer-module` as there).
-- `check` re-measures any render, including one edited by hand after rendering, and any HTML page
-  or hand-written SVG (those get the browser half only).
+    (`--chrome`, `--puppeteer-module` as there). The check runs first; if the capture fails, the
+    result still carries the check, plus a warning.
+- `check` re-measures any render, including one whose geometry was edited by hand after rendering,
+  and any HTML page or hand-written SVG (those get the browser half only). The rules it applies to
+  a render (figure zones, which slots are titles, alignment lines, accent budget) are written into
+  the file at render time, so an edit cannot add or move them; and the check does not track an image
+  swapped into the file by hand: re-render with `--set` instead.
 - `--style <id>` on `list` prints the pack: font roles, grammar, materials, motion grammar, checks.
 - `--font-dir <dir>`: the style's font files (TTF, OTF, TTC or WOFF, matched by file name). Each
   string is then set in the first font of its role that covers every character, never glyph by
@@ -78,10 +84,13 @@ Measured on the rendered SVG, from its geometry and the rules embedded at render
 
 | Rule | Measured | Limit |
 | --- | --- | --- |
-| `text-overflow` | Each text slot's extent (lettering from its path coordinates; `<text>` from an advance model at or above the bold widths of the named CJK fonts) against the slot's box, and wrapped lines against the slot's line budget | Inside the box |
+| `text-overflow` | Each text slot's extent (lettering from its path coordinates; `<text>` from the advance model below) against the slot's box, and wrapped lines against the slot's line budget | Inside the box |
 | `text-length` | Characters against the slot's budget | `maxChars` |
 | `type-size` | Font size, or cap height for lettering | 12 px, 9 px cap |
-| `contrast` | Text colour against the ground composited under nine points of its extent (shapes, opacity, gradients; image slots count as their declared ground tone) | 4.5:1, 3:1 for large text |
+| `contrast` | Text colour against the ground under 27 points of its extent: shapes, opacity and gradients composited from the file; an empty image slot counts as its declared ground tone; a real image is sampled as rendered pixels in a browser, or taken as its `--tone` | 4.5:1, 3:1 for large text |
+| `contrast-unverified` | Text on a real image whose pixels could not be sampled and has no `--tone` | Fails; the fix names both options |
+| `lettering-fallback` | Characters a lettering slot cannot draw; the slot falls back to the CJK font, so its style changed | None allowed (lowercase is drawn as capitals and only noted) |
+| `unsupported-geometry` | Nested `<svg>`, `<use>`, `<foreignObject>`, CSS transforms or font styles (`@font-face` rules that only load faces are allowed), tspans with `dx`/`x`/`y`/`rotate`, transform functions other than translate, rotate, scale and matrix | None allowed: a file the check cannot measure fails |
 | `figure-zone` | Horizontal overlap of title slots with the figure zone while they share rows | 30% of the title width |
 | `safe-zone` | Listed slots inside a crop zone (the 16:9 centre crop of a 16:10 cover) | Inside |
 | `accent-budget` | Area of accent-role or accent-coloured paint, clipped to the canvas; text at 45% of its extent | The template's `accent_max_share` |
@@ -92,6 +101,14 @@ Measured on the rendered SVG, from its geometry and the rules embedded at render
 
 Decoration slots (watermark words, micro-markers, barcodes) are exempt from size and contrast; slots
 marked `bleed` are exempt from the box.
+
+**What the text-width model guarantees.** The fonts are named, not bundled, so `<text>` widths come
+from per-character tables measured in headless Chrome with Noto Sans and Noto Serif CJK SC (one table
+for the sans at 400 to 700, one for the sans at 900 and the serif), with floors for wide Latin. For
+every string in the calibration set (`tests/template-bank-browser.test.cjs`) and every family and
+weight the layouts use, the model is at least Chrome's width; that test skips where Chrome or the
+fonts are missing. Nothing more is promised: another font, or a fallback font the browser picks for a
+glyph the named fonts lack, can be wider. Render `--png` and look when the copy is unusual.
 
 ### The browser half
 
@@ -115,8 +132,9 @@ Mark your own layers so they group and exempt correctly: `data-chk="<id>"` names
 element holding marked children is a container), `data-grp="<group>/<n>"` makes a lock-up whose
 parts may touch, `data-deco` exempts decoration from overlap and contrast, `data-bleed` from the
 canvas edge, `data-collage` marks a cut-out drawn in SVG. When both halves run, the browser's pixel
-contrast replaces the static estimate. When the ground is an image slot, the result notes it: check
-contrast again on the real image (`--png` and sample it).
+contrast replaces the static estimate.
+Without it, the static check samples the rendered pixels under text on a real image slot (or
+takes a declared `--tone`).
 
 ## Variation knobs: so outputs do not all look the same
 
@@ -125,12 +143,18 @@ Every parameter has a class in the manifest:
 - `proportion`: measured relations (margins, title column, figure position, zone edges). Keep them
   inside their range; they are why the template works.
 - `rhythm`: sizes, gaps, the display lettering's width, stroke, chamfer and stencil, tracking.
-  These are the knobs for variety. `--seed <n>` picks every rhythm value inside its range
-  (repeatable: the same seed gives the same render); `--param` overrides it.
+  `--seed <n>` picks every rhythm value inside its measured range (the same seed gives the same
+  render); `--param` overrides it.
 - `decoration`: on/off layers and counts (watermark, glow, ticks, shards, rank marks).
 
-Vary on purpose: change the palette roles to the project's colours, run a few seeds, turn decoration
-off where the subject is busy. Keep the relations the manifest lists in `relations`. The same template
+Be clear about what a seed does: it changes type sizes, gaps, tracking and the lettering's shape
+within the measured ranges. It does not change the layout; every seed of a template has the same
+structure. Layout variation comes from choosing another template, or from setting the `proportion`
+parameters yourself (title column, figure position, plate position) inside their ranges.
+
+Vary on purpose: change the palette roles to the project's colours, pick the template that fits the
+subject, set the layout parameters, then use seeds for the finer rhythm, and turn decoration off
+where the subject is busy. Keep the relations the manifest lists in `relations`. The same template
 with the same knobs on every cover is a house style at best and a cliché at worst.
 
 ## Glyph coverage and the font catalog
@@ -143,9 +167,11 @@ Without either, coverage is reported as unknown, never as covered.
 ## Fonts
 
 Font roles live in the style (`fonts.roles`: stack, weight, use). In the Arknights / Endfield
-pack, Latin display slots use the code-drawn lettering (`lettering.cjs`, 53 glyphs, condensed,
-chamfered, optional stencil); it renders as paths and needs no font. Text the glyph set cannot draw
-(CJK) falls back to the manifest's open fonts: Source Han Sans / Serif or Noto Sans / Serif CJK
+pack, Latin display slots use the code-drawn lettering (`lettering.cjs`: A-Z, 0-9, space and
+`/ \ - _ + . , : ; [ ] < > | # % ! ? ' " & €`; condensed, chamfered, optional stencil); it renders
+as paths and needs no font. Lowercase is drawn as capitals. Any other character (CJK, accented
+letters, emoji) makes the whole slot fall back to the style's open fonts, and `check` reports it
+as `lettering-fallback`, because the style changed: Source Han Sans / Serif or Noto Sans / Serif CJK
 (SIL OFL 1.1). They are named, not bundled: install them where you render the SVG or PNG.
 
 ## Shinbo pack: what it encodes

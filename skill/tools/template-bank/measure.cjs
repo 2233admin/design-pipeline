@@ -5,56 +5,74 @@
 // rendered file (geometry, fills and the embedded check rules), so `template check` audits what
 // was actually written, not what the generator intended.
 //
-// Text set in <text> is measured with the advance model below (the fonts are named, not bundled):
-// full-width CJK, kana, Hangul and symbols take 1 em; Latin takes per-class widths at or above the
-// bold widths of Source Han Sans / Noto Sans CJK, so the model errs towards overflow, not under.
+// Text set in <text> is measured with the advance model below, because the fonts are named, not
+// bundled. The model is calibrated against headless Chrome with Noto Sans / Serif CJK SC installed
+// (tests/template-bank-fonts.test.cjs, skipped where those are missing): for every calibration
+// string, at the weights the layouts use, the model is at least the browser's width. That is the
+// whole guarantee: another font, a glyph outside the calibration classes, or a fallback font the
+// browser picks for a missing glyph can be wider than the model.
 // Lettering (<path> glyphs) is measured exactly from its path coordinates.
 
 const ASCENT = 0.88;
 const DESCENT = 0.12;
 const TEXT_INK_FACTOR = 0.45; // share of a text extent covered by ink, for the accent budget
+// Per-character advances (em) for printable ASCII, measured in headless Chrome with Noto Sans /
+// Serif CJK SC: the maximum over the faces each table covers, plus 2 percent, rounded up. REGULAR
+// covers the sans at 400, 500 and 700; HEAVY covers the sans at 900 and the serif (the layouts set
+// serif at 600 and 900). Floors keep the model conservative for wide Latin.
+const REGULAR = parseTable("00.61 10.61 20.61 30.61 40.61 50.61 60.61 70.61 80.61 90.61 !0.38 \"0.59 #0.61 $0.61 %0.99 &0.76 '0.34 (0.39 )0.39 *0.52 +0.61 ,0.34 -0.38 .0.34 /0.4 :0.34 ;0.34 <0.61 =0.61 >0.61 ?0.53 @1.03 A0.66 B0.7 C0.64 D0.73 E0.63 F0.6 G0.74 H0.78 I0.34 J0.54 K0.7 L0.59 M0.88 N0.77 O0.79 P0.69 Q0.79 R0.7 S0.62 T0.64 U0.77 V0.65 W0.94 X0.64 Y0.6 Z0.62 [0.39 \\0.4 ]0.39 ^0.61 _0.58 `0.64 a0.61 b0.66 c0.51 d0.66 e0.6 f0.37 g0.61 h0.66 i0.32 j0.32 k0.62 l0.33 m0.99 n0.66 o0.64 p0.66 q0.66 r0.45 s0.51 t0.41 u0.65 v0.59 w0.89 x0.58 y0.59 z0.53 {0.39 |0.31 }0.39 ~0.61");
+const HEAVY = parseTable("00.63 10.63 20.63 30.63 40.63 50.63 60.63 70.63 80.63 90.63 !0.41 \"0.65 #0.65 $0.63 %1.01 &0.84 '0.36 (0.41 )0.41 *0.54 +0.63 ,0.36 -0.4 .0.36 /0.4 :0.36 ;0.36 <0.63 =0.63 >0.63 ?0.55 @1.07 A0.78 B0.73 C0.72 D0.8 E0.69 F0.67 G0.8 H0.89 I0.45 J0.56 K0.81 L0.66 M1.04 N0.85 O0.83 P0.71 Q0.83 R0.79 S0.64 T0.74 U0.84 V0.77 W1.14 X0.76 Y0.73 Z0.66 [0.41 \\0.4 ]0.41 ^0.63 _0.63 `0.65 a0.62 b0.71 c0.59 d0.69 e0.61 f0.4 g0.63 h0.72 i0.37 j0.39 k0.69 l0.38 m1.05 n0.72 o0.66 p0.7 q0.68 r0.54 s0.53 t0.44 u0.71 v0.62 w0.92 x0.63 y0.62 z0.55 {0.41 |0.36 }0.41 ~0.63");
+const FLOORS = { upper: 0.72, digit: 0.62, wide: 0.95, bang: 0.42, at: 1.05 };
+const EMOJI = 1.3;
+const OTHER_SCRIPT = { regular: 1.1, heavy: 1.25 }; // Latin-1 letters, Greek, Cyrillic, ©, ½ ...
+const SPACE = 0.25;
 
-const NARROW = new Set([..."il.,:;!'|`ıj"]);
-const SEMI = new Set([..."ftrIJ()[]{}-\"/\\ "]);
-const WIDE_UPPER = new Set([..."MWQOGD@%&"]);
-const WIDE_LOWER = new Set([..."mw"]);
+function parseTable(text) {
+  return new Map(text.split(" ").map((item) => [item[0], Number(item.slice(1))]));
+}
 
 function isFullWidth(code) {
   return (code >= 0x1100 && code <= 0x11ff) || (code >= 0x2e80 && code <= 0x9fff) || (code >= 0xa960 && code <= 0xa97f)
     || (code >= 0xac00 && code <= 0xd7ff) || (code >= 0xf900 && code <= 0xfaff) || (code >= 0xfe30 && code <= 0xfe4f)
-    || (code >= 0xff00 && code <= 0xff60) || (code >= 0xffe0 && code <= 0xffe6) || code >= 0x20000;
+    || (code >= 0xff00 && code <= 0xff60) || (code >= 0xffe0 && code <= 0xffe6) || (code >= 0x20000 && code <= 0x3ffff);
 }
 
 function isCjk(ch) { return isFullWidth(ch.codePointAt(0)); }
+const isEmoji = (code) => (code >= 0x1f000 && code <= 0x1faff) || (code >= 0x2600 && code <= 0x27bf && code !== 0x2713);
+const isHeavy = ({ serif = false, weight = 400 } = {}) => serif || weight >= 900;
 
-function advanceEm(ch) {
+// Advance in em of one character in the named sans (or, when heavy, the serif or a 900 weight).
+function advanceEm(ch, font = {}) {
+  const heavy = isHeavy(font);
   const code = ch.codePointAt(0);
-  if (isFullWidth(code) || code > 0x2000) return 1; // CJK, full-width forms, arrows, dingbats, ©-like symbols beyond Latin-1
-  if (code === 0x20) return 0.25;
-  if (NARROW.has(ch)) return 0.3;
-  if (SEMI.has(ch)) return 0.4;
-  if (/[A-Z]/.test(ch)) return WIDE_UPPER.has(ch) ? 0.82 : 0.68;
-  if (/[a-z]/.test(ch)) return WIDE_LOWER.has(ch) ? 0.86 : 0.57;
-  if (/[0-9]/.test(ch)) return 0.6;
-  if (WIDE_UPPER.has(ch)) return 0.9;
-  if (code < 0x80) return 0.6;
-  return 1; // other Latin-1 symbols (©, ·, ×): counted full-width
+  if (code === 0x200d || (code >= 0xfe00 && code <= 0xfe0f)) return 0; // joiners and variation selectors
+  if (isEmoji(code)) return EMOJI;
+  if (isFullWidth(code) || code > 0x2000) return 1; // CJK, full-width forms, arrows, symbols past U+2000
+  if (code === 0x20) return SPACE;
+  if (code >= 0x80) return heavy ? OTHER_SCRIPT.heavy : OTHER_SCRIPT.regular;
+  let value = (heavy ? HEAVY : REGULAR).get(ch) ?? 0.66;
+  if (/[A-Z]/.test(ch)) value = Math.max(value, FLOORS.upper);
+  if (/[0-9]/.test(ch)) value = Math.max(value, FLOORS.digit);
+  if ("WMmw".includes(ch)) value = Math.max(value, FLOORS.wide);
+  if (ch === "!") value = Math.max(value, FLOORS.bang);
+  if (ch === "@") value = Math.max(value, FLOORS.at);
+  return value;
 }
 
-function textWidth(text, size, letterSpacing = 0) {
+function textWidth(text, size, letterSpacing = 0, font = {}) {
   const chars = [...String(text)];
   if (!chars.length) return 0;
-  return chars.reduce((sum, ch) => sum + advanceEm(ch) * size, 0) + letterSpacing * (chars.length - 1);
+  return chars.reduce((sum, ch) => sum + advanceEm(ch, font) * size, 0) + letterSpacing * (chars.length - 1);
 }
 
 // Greedy wrap by measured width: CJK breaks between any characters, Latin at spaces.
-function wrapText(text, size, maxWidth, letterSpacing = 0) {
-  const tokens = String(text).match(/[ᄀ-ᇿ⺀-鿿가-퟿豈-﫿︰-﹏＀-￦]|[^\sᄀ-ᇿ⺀-鿿가-퟿豈-﫿︰-﹏＀-￦]+|\s+/gu) || [];
+function wrapText(text, size, maxWidth, letterSpacing = 0, font = {}) {
+  const tokens = String(text).match(/[\u1100-\u11ff\u2e80-\u9fff\uac00-\ud7ff\uf900-\ufaff\ufe30-\ufe4f\uff00-\uffe6]|[^\s\u1100-\u11ff\u2e80-\u9fff\uac00-\ud7ff\uf900-\ufaff\ufe30-\ufe4f\uff00-\uffe6]+|\s+/gu) || [];
   const lines = [];
   let line = "";
   for (const token of tokens) {
     const candidate = line + token;
-    if (line && textWidth(candidate.trimEnd(), size, letterSpacing) > maxWidth && token.trim()) {
+    if (line && textWidth(candidate.trimEnd(), size, letterSpacing, font) > maxWidth && token.trim()) {
       lines.push(line.trimEnd());
       line = token.trimStart();
     } else {
@@ -325,7 +343,8 @@ function paints(tree) {
       const box = numberList(node.attrs["data-box"]);
       const m = ctm(node);
       const rings = [[[box[0], box[1]], [box[0] + box[2], box[1]], [box[0] + box[2], box[1] + box[3]], [box[0], box[1] + box[3]]].map((p) => apply(m, p))];
-      out.push({ node, order, slot: node.attrs["data-slot"], rings, rule: "nonzero", fill: node.attrs["data-ground"] || null, opacity: 1, image: true });
+      const hasImage = node.children.some((child) => child.name === "image");
+      out.push({ node, order, slot: node.attrs["data-slot"], rings, rule: "nonzero", fill: node.attrs["data-ground"] || null, opacity: 1, image: true, hasImage });
       continue;
     }
     if (slot && slot.attrs["data-kind"] === "image") continue; // placeholder hatch and label stand for the ground colour above
@@ -371,9 +390,13 @@ function paintArea(paint, canvasBox) {
 }
 
 // Ground colour at a point: composite every paint below `order` that covers it, over white.
-function groundAt(point, layers, grads, beforeOrder, skipSlot) {
+// An image slot counts as its declared ground tone, or as `tones[slot]` when the caller declared the
+// real image's tone. `realImages` lists image slots holding an actual <image> with no declared tone:
+// their pixels decide, so the caller must sample them (or report the contrast as unverified).
+function groundAt(point, layers, grads, beforeOrder, skipSlot, tones = {}) {
   let color = [255, 255, 255];
   let assumed = null;
+  const realImages = [];
   for (const layer of layers) {
     if (layer.order >= beforeOrder) break;
     if (skipSlot && layer.slot === skipSlot) continue;
@@ -386,12 +409,52 @@ function groundAt(point, layers, grads, beforeOrder, skipSlot) {
       if (sample) color = mix(color, sample.color, sample.opacity * layer.opacity);
       continue;
     }
-    const rgb = parseColor(layer.fill);
+    const declared = layer.image && Object.hasOwn(tones, layer.slot) ? tones[layer.slot] : null;
+    const rgb = parseColor(declared || layer.fill);
     if (!rgb) continue;
     color = mix(color, rgb, layer.opacity);
-    if (layer.image) assumed = layer.slot;
+    if (!layer.image && layer.opacity >= 0.99) { assumed = null; realImages.length = 0; } // an opaque shape hides what is under it
+    if (layer.image) {
+      assumed = layer.slot;
+      if (layer.hasImage && !declared) realImages.push(layer.slot);
+    }
   }
-  return { color, assumed };
+  return { color, assumed, realImages };
+}
+
+// The points under a text extent that contrast is judged on: 9 x 3 inside the box.
+function samplePoints([x, y, w, h]) {
+  const points = [];
+  for (const fy of [0.25, 0.5, 0.75]) for (let i = 0; i < 9; i += 1) points.push([x + w * (0.05 + (0.9 * i) / 8), y + h * fy]);
+  return points;
+}
+
+// Geometry the measurement does not model. Any of it makes the check fail rather than pass blind.
+const TRANSFORMS = new Set(["matrix", "translate", "scale", "rotate"]);
+function unsupportedGeometry(tree) {
+  const found = [];
+  const where = (node) => {
+    const slot = slotAncestor(node);
+    return slot ? `slot ${slot.attrs["data-slot"]}` : node.attrs.id ? `#${node.attrs.id}` : "the file";
+  };
+  for (const node of walk(tree)) {
+    if (node.name === "svg" && node.parent && node.parent.name !== "#root") found.push({ element: where(node), what: "a nested <svg>" });
+    if (["use", "foreignObject", "textPath", "switch", "symbol"].includes(node.name)) found.push({ element: where(node), what: `<${node.name}>` });
+    // @font-face rules only load faces (template render --font-dir embeds them); they move nothing.
+    if (node.name === "style" && /transform|translate|rotate|scale|matrix|writing-mode|letter-spacing|font/i.test(String(node.text || "").replace(/@font-face\s*\{[^}]*\}/gi, ""))) found.push({ element: "<style>", what: "CSS rules that move or restyle elements" });
+    const style = node.attrs.style;
+    if (style && /transform|translate|rotate|scale|font-size|letter-spacing|writing-mode/i.test(style)) found.push({ element: where(node), what: `a style attribute (${style.slice(0, 40)})` });
+    if (node.attrs.transform) {
+      const unknown = [...String(node.attrs.transform).matchAll(/([a-zA-Z]+)\s*\(/g)].map((m) => m[1]).filter((fn) => !TRANSFORMS.has(fn));
+      if (unknown.length) found.push({ element: where(node), what: `transform ${unknown.join(", ")}()` });
+    }
+    if (node.name === "tspan") {
+      const parentX = node.parent?.attrs?.x;
+      if (node.attrs.dx !== undefined || node.attrs.rotate !== undefined || node.attrs.y !== undefined) found.push({ element: where(node), what: "a <tspan> with dx, y or rotate" });
+      else if (node.attrs.x !== undefined && Number(node.attrs.x) !== Number(parentX)) found.push({ element: where(node), what: "a <tspan> with its own x" });
+    }
+  }
+  return found;
 }
 
 // ---- slots ----------------------------------------------------------------------------------
@@ -411,6 +474,12 @@ function textLines(textNode) {
   return tspans.map((tspan, index) => ({ text: textContent(tspan), dy: index === 0 ? 0 : Number(tspan.attrs.dy || 0) }));
 }
 
+// The first family decides: a name with "Serif" and without "Sans", or the generic serif.
+function isSerifFamily(value) {
+  const first = String(value || "").split(",")[0].replace(/['"]/g, "").trim();
+  return (/serif/i.test(first) && !/sans/i.test(first));
+}
+
 function textExtent(textNode) {
   const a = textNode.attrs;
   const size = Number(a["font-size"] || 16);
@@ -421,11 +490,12 @@ function textExtent(textNode) {
   const vertical = /vertical/.test(a["writing-mode"] || "");
   const m = ctm(textNode);
   const lines = textLines(textNode);
+  const font = { serif: isSerifFamily(a["font-family"] || attr(textNode, "font-family")), weight: Number(a["font-weight"] || attr(textNode, "font-weight") || 400) };
   const measured = [];
   let offset = 0;
   for (const line of lines) {
     offset += line.dy;
-    const length = vertical ? [...line.text].length * size + spacing * Math.max(0, [...line.text].length - 1) : textWidth(line.text, size, spacing);
+    const length = vertical ? [...line.text].length * size + spacing * Math.max(0, [...line.text].length - 1) : textWidth(line.text, size, spacing, font);
     let box;
     if (vertical) {
       const lx = x - offset;
@@ -501,5 +571,5 @@ module.exports = {
   advanceEm, isCjk, textWidth, wrapText,
   parseXml, walk, textContent, ctm, apply, bounds, polygonArea, clipToBox,
   parseColor, hex, luminance, contrastRatio, mix,
-  gradients, paints, paintArea, groundAt, readSlots, round, roundBox,
+  gradients, paints, paintArea, groundAt, samplePoints, unsupportedGeometry, readSlots, round, roundBox,
 };

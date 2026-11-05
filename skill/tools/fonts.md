@@ -34,6 +34,14 @@ asset/design notes. A web build also records its chosen family under Typography 
 ([workflow-web.md#probe](../references/workflow-web.md#probe)). This source list was checked on
 2026-10-07; verify the selected release on use.
 
+For CJK work, query the measured open-font catalog before shortlisting:
+`designer-pipeline fonts query --text-file <copy> --style mincho|gothic|kai|... [--weight 700]`
+returns only families whose cmap covers every character, each with its licence, the source file
+that declares it, the pinned revision and the raw file URLs. Near misses list the characters they
+lack. Read the [CJK coverage check](../references/cjk-typography.md#check-coverage-before-choosing-a-family)
+for the options; the registry of sources, pinned revisions and blocked hosts is
+`references/fonts/sources.json`.
+
 Acquire only the needed files into the consuming project's asset directory, with their notices.
 Use an existing local font when its identity and intended-use rights are known. Do not install
 an entire catalogue into the OS or inflate the skill package just to make a font selectable.
