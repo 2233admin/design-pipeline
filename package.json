@@ -34,6 +34,6 @@
     "answer-html:build": "node scripts/build-answer-me-with-html-runtime.cjs"
   },
   "devDependencies": {
-    "@fission-ai/openspec": "1.15.0"
+    "@fission-ai/openspec": "1.16.0"
   }
 }
