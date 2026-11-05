@@ -450,7 +450,8 @@ function update(options) {
           const oldRevisions = [...new Set([current, ...repoPins.map((pin) => pin.revision)])];
           const checkout = group.entries.some((entry) => BUNDLE_KINDS.has(entry.kind)) ? target : null;
           const fetched = fetchRepository(group.entries[0].repo, path.join(tempRoot, group.key.replace("/", "__")), [target, ...oldRevisions.filter((revision) => revision.length === 40)], checkout);
-          const committedAt = safeGit(fetched.dir, ["show", "-s", "--format=%cI", target]);
+          // Newer Git prints a UTC commit time as ...Z; the lock keeps one spelling (+00:00) on every machine.
+          const committedAt = safeGit(fetched.dir, ["show", "-s", "--format=%cI", target]).replace(/Z$/, "+00:00");
           // Cited paths must still exist; cited license texts must be unchanged.
           const problems = [];
           for (const pin of repoPins.filter((item) => item.path)) {
