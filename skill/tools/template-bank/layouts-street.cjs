@@ -70,10 +70,22 @@ function morePill(d, name, x, y, s) {
   d.text(name, x + w / 2 - 10 * s, y + h / 2 + 6.5 * s, 18 * s, { role: "white", family: "head", anchor: "middle", tracking: 40, box: [x + 6 * s, y + 4 * s, w - 34 * s, h - 8 * s] });
   d.raw(`<g data-deco="1">${chevron(x + w - 34 * s, y + h / 2, s, d.pal.white)}</g>`);
 }
+// Ink height of the digit 0 (bbox, overshoot included) in em, read from the font files with fontTools
+// (Anton-Regular, Oswald[wght] at 400, Noto Sans SC at 900: the stack families of the "num" role).
+const DIGIT_EM = { Anton: 0.875, Oswald: 0.826, "Noto Sans SC": 0.772 };
+// The family the number is drawn and sized in: the first stack family whose face --font-dir supplies;
+// with none supplied, Anton (named, not bundled) is taken as absent and the next family is used.
+function numFamily(d) {
+  const stack = d.roles.num.stack.filter((f) => DIGIT_EM[f]);
+  const shipped = stack.find((f) => d.faces.some((face) => face.family === f));
+  return shipped || stack[1] || stack[0];
+}
 // Three-line section title: CJK (head 900) / Latin caps (label) / giant number (num), on one edge.
 function titleBlock(d, x, y, s, { right = false } = {}) {
   const anchor = right ? "end" : "start";
-  const zh = 50 * s; const en = 25 * s; const no = 140 * s; // Anton digits are 0.868 em tall: number ink = 2.7 x CJK ink
+  const zh = 50 * s; const en = 25 * s;
+  // number ink = 2.75 x CJK ink (measured on the rendered PNG; CJK ink is ~0.85 em of its size): the size follows the resolved family's digit height, so it holds without Anton
+  const numFam = numFamily(d); const dh = DIGIT_EM[numFam]; const no = (zh * 2.6) / dh;
   const span = (n) => (right ? [x - n, 0] : [x, 0]);
   const { text: cjk } = d.value("title_cjk"); const { text: lat } = d.value("title_latin");
   const zw = [...String(cjk)].length * zh * 1.02; const ew = String(lat).length * en * 0.62 + en; const nw = 2 * no * 0.62 + no * 0.12;
@@ -82,8 +94,8 @@ function titleBlock(d, x, y, s, { right = false } = {}) {
   d.text("title_latin", x, ey + en * 0.8, en, { role: "ink", family: "label", anchor, box: [span(ew)[0] - 4 * s, ey - 4 * s, ew + 8 * s, en * 1.2] });
   digits(d, "number");
   const ny = ey + en + 18 * s;
-  d.text("number", x, ny + no * 0.87, no, { role: "ink", family: "num", anchor, box: [span(nw)[0] - 6 * s, ny - no * 0.08, nw + 12 * s, no * 1.12] });
-  return { bottom: ny + no * 0.9 };
+  d.text("number", x, ny + no * dh, no, { role: "ink", family: "num", resolved: numFam, anchor, box: [span(nw)[0] - 6 * s, ny - no * 0.08, nw + 12 * s, no * 1.12] });
+  return { bottom: ny + no * (dh + 0.03) };
 }
 // Cassette mark of the placeholder brand sticker (two reels, a tape bar, rewind triangles).
 function cassette(x, y, w, h, fg, bg, acid) {

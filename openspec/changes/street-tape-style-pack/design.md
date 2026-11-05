@@ -10,9 +10,13 @@
   each measure dx/dy 0.86-0.87; the brief's first guess was 45); acid `#D8FA00` on the board, `#D4FF00` in
   the case and the pack (the brief's value; same family, our own); stripes 3.9 on a 13.2 pitch; title ink
   heights 1 : 0.42 : 2.6-2.9; capsule sizes 103 x 35 and 93 x 33; the 6-unit ring on dark capsules.
-- **The number is sized from Anton's digit height** (0.868 em, measured from the face): 140 units at 1920
-  gives 2.7 times the CJK ink. Without Anton the stack falls back to Oswald 400, thinner but not
-  overlapping (its digits are 0.817 em); the guide says to install Anton or pass `--font-dir`.
+- **The number is sized from the resolved family's digit height**, so 2.6-2.9 holds with or without Anton:
+  a per-family table (digit 0 ink bbox in em, read from the font files: Anton 0.875, Oswald 0.826, Noto Sans
+  SC 0.772) and the size is 2.6 x the CJK size / that height (Anton: 148 units at 1920). The family is the
+  first of the `num` stack that `--font-dir` supplies; with none supplied Anton (named, not bundled) counts
+  as absent and the number is pinned to Oswald 400 (the stack starts there, recorded in `fontSwitches`), so
+  the browser cannot substitute an installed Anton of another size. The test measures ink rows in the
+  rendered PNG, not the formula.
 - **Stripes the static check can read**: a band is a flat `#222122` path (the ground the static check
   sees) with the 49-degree lines as a clipped, stroked decoration group; clip ids count per render so
   `template.svg` stays byte-stable. Thumbs lean as parallelograms instead of `skewX` (the static check does

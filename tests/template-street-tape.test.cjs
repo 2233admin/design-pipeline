@@ -11,6 +11,7 @@ const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
 const { spawnSync } = require("node:child_process");
+const { PNG } = require("pngjs");
 const bank = require("../skill/tools/template-bank/bank.cjs");
 const { CUT } = require("../skill/tools/template-bank/layouts-street.cjs");
 
@@ -77,7 +78,7 @@ test("street-tape templates pass the static check at every size and for 50 seeds
   }
 });
 
-test("one 49-degree cut, and the measured title ratio", () => {
+test("one 49-degree cut", () => {
   assert.equal(CUT, 49);
   const svg = bank.render("kv.tape-cut-carousel").svg;
   const acid = /<path d="([^"]+)" fill="#D4FF00" data-role="acid"\/>/.exec(svg);
@@ -89,10 +90,6 @@ test("one 49-degree cut, and the measured title ratio", () => {
     if (Math.abs(dx) > 1 && Math.abs(dy) > 1 && (!best || Math.hypot(dx, dy) > best.len)) best = { len: Math.hypot(dx, dy), angle: Math.atan2(Math.abs(dy), Math.abs(dx)) * 180 / Math.PI };
   }
   assert.ok(best && Math.abs(best.angle - 49) < 0.5, JSON.stringify(best));
-  const size = (slot) => Number(new RegExp(`data-slot="${slot}"[^>]*font-size="([\\d.]+)"`).exec(svg)[1]);
-  // ink heights: Anton digits 0.868 em, CJK about 0.9 em; the board measured 1 : 2.6-2.9
-  const ratio = (size("number") * 0.868) / (size("title_cjk") * 0.9);
-  assert.ok(ratio > 2.6 && ratio < 2.9, `number : CJK ink ${ratio.toFixed(2)}`);
 });
 
 test("structural slots reject copy they cannot draw, with a fix", () => {
@@ -113,4 +110,49 @@ test("every street-tape default render passes the browser check too", { skip: BR
     assert.equal(result.status, 0, `${id}: ${JSON.stringify(result.payload?.check?.findings || result.payload?.error || result.stderr)}`);
     assert.equal(result.payload.check.status, "passed", id);
   }
+});
+
+// Ink rows of a slot in the rendered PNG: dark-ink pixels inside the slot's data-box (canvas = PNG pixels).
+function inkRows(svg, png, slot) {
+  const tag = new RegExp(`<text data-slot="${slot}"[^>]*>`).exec(svg)[0];
+  const [bx, by, bw, bh] = /data-box="([^"]+)"/.exec(tag)[1].split(",").map(Number);
+  const rows = [];
+  for (let y = Math.max(0, Math.floor(by)); y < Math.min(png.height, Math.ceil(by + bh)); y += 1) {
+    let hit = false;
+    for (let x = Math.max(0, Math.floor(bx)); x < Math.min(png.width, Math.ceil(bx + bw)) && !hit; x += 1) {
+      const i = (y * png.width + x) * 4;
+      hit = png.data[i] < 70 && png.data[i + 1] < 70 && png.data[i + 2] < 70 && png.data[i + 3] > 200;
+    }
+    if (hit) rows.push(y);
+  }
+  assert.ok(rows.length, `${slot}: no ink in its box`);
+  return rows[rows.length - 1] - rows[0] + 1;
+}
+function renderMeasured(root, id, name, ...args) {
+  const result = cli(root, "template", "render", id, "-o", `${name}.svg`, "--png", `${name}.png`, "--chrome", BROWSER.chrome, "--puppeteer-module", BROWSER.puppeteerModule, ...args);
+  assert.equal(result.status, 0, `${id}: ${JSON.stringify(result.payload?.check?.findings || result.payload?.error || result.stderr)}`);
+  assert.equal(result.payload.check.status, "passed", id);
+  const svg = fs.readFileSync(path.join(root, `${name}.svg`), "utf8");
+  const png = PNG.sync.read(fs.readFileSync(path.join(root, `${name}.png`)));
+  return { result, svg, ratio: inkRows(svg, png, "number") / inkRows(svg, png, "title_cjk") };
+}
+
+test("the section number's measured ink is 2.6-2.9 times the CJK title's, with or without Anton", { skip: BROWSER.skip, timeout: 600000 }, (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "street-tape-ratio-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  // No --font-dir: Anton is not shipped, the num role resolves to its Oswald fallback and the stack says so.
+  const bare = renderMeasured(root, "card.tape-section-title", "bare");
+  assert.deepEqual(bare.result.payload.fontSwitches.filter((f) => f.role === "num").map((f) => `${f.from}>${f.to}`), ["Anton>Oswald"]);
+  assert.match(bare.svg, /data-slot="number"[^>]*font-family="'Oswald'/);
+  assert.ok(bare.ratio > 2.6 && bare.ratio < 2.9, `Oswald number : CJK ink ${bare.ratio.toFixed(2)}`);
+  const right = renderMeasured(root, "card.tape-section-title", "right", "--param", "side=right", "--set", "number=03");
+  assert.ok(right.ratio > 2.6 && right.ratio < 2.9, `right-aligned number : CJK ink ${right.ratio.toFixed(2)}`);
+  // With Anton in --font-dir the number is Anton, sized from Anton's digit height, and the ratio holds too.
+  const fonts = path.join(root, "fonts");
+  fs.mkdirSync(fonts);
+  fs.copyFileSync(path.join(__dirname, "..", "skill", "tools", "art-motion", "fonts", "Anton-400.woff"), path.join(fonts, "Anton-Regular.woff"));
+  const anton = renderMeasured(root, "card.tape-section-title", "anton", "--font-dir", fonts);
+  assert.equal((anton.result.payload.fontSwitches || []).filter((f) => f.role === "num").length, 0);
+  assert.match(anton.svg, /data-slot="number"[^>]*font-family="'Anton'/);
+  assert.ok(anton.ratio > 2.6 && anton.ratio < 2.9, `Anton number : CJK ink ${anton.ratio.toFixed(2)}`);
 });

@@ -243,8 +243,9 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
   board, not 45). The section number (`number`) and the pager's `current` / `next` take digits only; `date`
   takes digits and `/ . -`. Anton and Oswald are Latin-only roles (`num`, `label`): put mixed CJK and
   Latin copy in `head` or `body`, or the browser check reports glyph coverage. The number is sized from
-  Anton's digit height (0.868 em) so its ink is 2.7 times the CJK title's, as measured; without Anton
-  installed it falls back to Oswald at 400, which is thinner (pass `--font-dir` with Anton). `side=right`
+  the resolved family's digit height so its ink is 2.6-2.9 times the CJK title's, measured on the render;
+  without Anton in `--font-dir` it is pinned to Oswald at 400 (recorded in `fontSwitches`), which is thinner
+  (pass `--font-dir` with Anton for the board's look). `side=right`
   mirrors the slabs and the title edge; `kv.tape-cut-carousel --param control=dots` swaps the thumb track
   for dots. Pictures go in `media`; characters come from an image-generation task sheet (#311).
 
