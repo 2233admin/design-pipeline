@@ -436,7 +436,7 @@ function draftStyle({ id, board, measured, th, palette, arch, fonts, categories,
     palette: paletteRoles,
     fonts: { roles, faces: [], licence: "Open defaults (SIL OFL 1.1) until the catalog candidates are reviewed.", bundled: false, note: "Measured type roles; the stacks are open defaults or catalog candidates, not the references' fonts." },
     layout: { grammar: grammar.rules, archetypes: arch.slice(0, 6).map((a) => ({ key: a.key, n: a.n, nearest: a.nearest[0] || null, ...(a.skeleton ? { skeleton: a.skeleton } : {}) })) },
-    materials: { procedural: [], collage: [], sources: "Not measured: materials (collage, paper, screentone pieces) are listed by hand.", budget: { textureHfMax: th.spec_hf.limit } },
+    materials: { procedural: [], collage: [], sources: "Not measured: materials (collage, paper, screentone pieces) are listed by hand.", budget: { textureHfMax: th.spec_hf.support === "measured" ? th.spec_hf.limit : null } },
     motion: null,
     motionNote: "Stills carry no motion: cut rhythm is not measured from a reference board.",
     checks: {

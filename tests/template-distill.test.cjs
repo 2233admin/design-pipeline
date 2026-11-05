@@ -225,6 +225,7 @@ test("distill: thresholds are the reference quartiles, archetype finds the left-
   assert.equal(r.draft.draft, true);
   bank.validateStyle(r.draft, "gen-kv");
   assert.equal(r.draft.checks.measured.accent_share.limit, th.accent_share.limit);
+  assert.equal(r.draft.materials.budget.textureHfMax, th.spec_hf.limit, "measured texture limit becomes the budget");
   // Comparison with the hand-made pack: rows for its numbers, palette distances, hand-only parts.
   const rows = Object.fromEntries(r.comparison.rows.map((row) => [row.label, row]));
   assert.equal(rows["accent share max"].hand, 0.03);
@@ -306,6 +307,8 @@ test("support levels: thin data stays out of the draft's grammar and is listed a
   assert.ok(thin.tendencies.some((line) => /Title on the left in 4\/4 annotated references \(a tendency, not a rule\)\. \[thin: 4 references\]/.test(line)), thin.tendencies.join("\n"));
   const md = distill.reportMarkdown(thin);
   assert.match(md, /## Tendencies \(thin data\)/);
+  assert.equal(thin.thresholds.spec_hf.support, "thin");
+  assert.equal(thin.draft.materials.budget.textureHfMax, null, "a thin texture limit is not a budget");
   assert.doesNotMatch(md.split("## Tendencies")[0], /\| accent_share \|/, "thin thresholds are not under Supported by data");
   const gapDir = kvBoard(path.join(tempRoot(t), "gap"), { count: 2 });
   const gap = distill.distill({ board: path.join(gapDir, "provenance.csv"), images: gapDir, annotations: path.join(gapDir, "annotations.csv"), id: "gen-gap" });
@@ -323,6 +326,16 @@ test("small and strip images: measured at a 480 px long edge like the study; und
   assert.deepEqual(a.measuredAt, [480, 240]);
   assert.ok(Math.abs(a.features.accent_share - 0.08) < 0.01, `area kept when upscaled (${a.features.accent_share})`);
   assert.ok(Number.isFinite(a.features.quiet_share));
+  // Enlarging uses nearest neighbour (cv2 INTER_AREA on an integer upscale): a 160 x 90 picture
+  // measures exactly like the same picture with every pixel repeated 3 x 3.
+  const texture = canvas(160, 90, [242, 238, 228]);
+  for (let y = 0; y < 90; y += 1) for (let x = 0; x < 160; x += 1) if ((x * 7 + y * 13) % 5 < 2) rect(texture, x, y, x + 1, y + 1, [13, 11, 11]);
+  rect(texture, 100, 10, 140, 60, [209, 14, 31]);
+  const big = canvas(480, 270, [0, 0, 0]);
+  for (let y = 0; y < 270; y += 1) for (let x = 0; x < 480; x += 1) texture.data.copy(big.data, (y * 480 + x) * 4, (Math.floor(y / 3) * 160 + Math.floor(x / 3)) * 4, (Math.floor(y / 3) * 160 + Math.floor(x / 3)) * 4 + 4);
+  const up = measure.measurePixels(measure.decode(save(path.join(dir, "texture.png"), texture))).features;
+  const ref = measure.measurePixels(measure.decode(save(path.join(dir, "texture3x.png"), big))).features;
+  for (const key of ["quiet_share", "quiet_lr", "spec_hf", "spec_slope", "accent_share", "lr_symmetry"]) assert.equal(up[key], ref[key], key);
   const strip = canvas(600, 4, [242, 238, 228]);
   const b = measure.measurePixels(measure.decode(save(path.join(dir, "strip.png"), strip)));
   assert.ok(b.measuredAt[1] < 16);
@@ -364,6 +377,11 @@ test("CLI: template distill writes the draft, measures and report, never the ima
   assert.equal(cli(root, "template", "distill", "board/provenance.csv", "--images", "board", "--compare", "no-such-style", "-o", "x").payload.error.code, "OPTION_VALUE_INVALID");
   assert.equal(cli(root, "template", "distill", "board/provenance.csv", "--images", "board", "--category", "NOPE", "-o", "x").payload.error.code, "OPTION_VALUE_INVALID");
   assert.equal(cli(root, "template", "distill", "board/provenance.csv", "--images", "board", "--annotations", "board/provenance.csv", "-o", "x").status, 0, "a CSV with no annotation columns adds nothing");
+  // A browser that does not exist: the ablation is not run, with exactly one fix.
+  const nochrome = cli(root, "template", "distill", "board/provenance.csv", "--images", "board", "-o", "nochrome", "--ablate", "--chrome", path.join(root, "no-such-chrome"));
+  assert.equal(nochrome.status, 0, nochrome.stderr);
+  assert.equal(nochrome.payload.ablation.status, "not-run");
+  assert.equal(nochrome.payload.ablation.reason.match(/Fix:/g).length, 1, nochrome.payload.ablation.reason);
   // A file column pointing outside --root is skipped, not read.
   const outside = tempRoot(t);
   fs.copyFileSync(path.join(dir, "R00.png"), path.join(outside, "far.png"));

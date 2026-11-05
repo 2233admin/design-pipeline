@@ -73,7 +73,9 @@ function decode(file, { longEdge = LONG_EDGE, crop = null, tools = {} } = {}) {
   const fit = Math.min(1, Math.sqrt((MAX_BUFFER * 0.9) / (w * h * 3)));
   const k = longEdge ? longEdge / Math.max(w, h) : fit;
   const [tw, th] = [Math.max(8, Math.round(w * k)), Math.max(8, Math.round(h * k))];
-  if (tw !== w || th !== h) filters.push(`scale=${tw}:${th}:flags=area`);
+  // Area filter to shrink; nearest neighbour to enlarge, which is what cv2 INTER_AREA does on an
+  // integer upscale (the study's resize), so small references measure as in Python.
+  if (tw !== w || th !== h) filters.push(`scale=${tw}:${th}:flags=${tw > w || th > h ? "neighbor" : "area"}`);
   const args = ["-v", "error", "-i", file, "-frames:v", "1", ...(filters.length ? ["-vf", filters.join(",")] : []), "-pix_fmt", "rgb24", "-f", "rawvideo", "pipe:1"];
   const raw = run(tools.ffmpeg || "ffmpeg", args, { binary: true, file });
   if (raw.length !== tw * th * 3) throw new MeasureError(`decoded ${raw.length} bytes from ${path.basename(file)}, expected ${tw * th * 3} (an animated or unsupported image?)`);

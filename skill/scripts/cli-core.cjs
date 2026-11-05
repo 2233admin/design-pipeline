@@ -2370,6 +2370,8 @@ function templateAblation(root, parsed, result, out, tools) {
   if (!picks.length) return { status: "not-run", reason: "no archetype has a nearest template" };
   // The browser is checked before rendering: only a browser that cannot be found or launched is
   // "install a browser"; any other failure is a real error and is raised.
+  // One fix per reason: the resolver's own "Fix: ..." is dropped in favour of the install fix.
+  const withoutFix = (message) => String(message).split("\n")[0].split(/\s*Fix:/)[0].replace(/[.\s]+$/, "");
   const installFix = "Fix: install puppeteer-core and Chrome (npm run browser:install), or pass --chrome <exe> --puppeteer-module <path>";
   try {
     const { resolvePuppeteer } = require("./film-capture-core.cjs");
@@ -2379,7 +2381,7 @@ function templateAblation(root, parsed, result, out, tools) {
     resolvePuppeteer(root, puppeteerModule === null ? undefined : String(puppeteerModule));
     resolveBrowser(option(parsed, "--chrome") === null ? undefined : String(option(parsed, "--chrome")));
   } catch (error) {
-    return { status: "not-run", reason: `no browser to render with: ${String(error.message).split("\n")[0]}. ${installFix}` };
+    return { status: "not-run", reason: `no browser to render with: ${withoutFix(error.message)}. ${installFix}` };
   }
   const dir = path.join(out, "ablation");
   fs.mkdirSync(dir, { recursive: true });
@@ -2408,7 +2410,7 @@ function templateAblation(root, parsed, result, out, tools) {
     }
   } catch (error) {
     if (/Failed to launch|Could not find (?:Chrome|Chromium|browser|expected browser)|executablePath|Browser was not found/i.test(String(error.message))) {
-      return { status: "not-run", reason: `the browser did not launch: ${String(error.message).split("\n")[0]}. ${installFix}` };
+      return { status: "not-run", reason: `the browser did not launch: ${withoutFix(error.message)}. ${installFix}` };
     }
     throw error;
   }
