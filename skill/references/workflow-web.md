@@ -772,6 +772,40 @@ scrim. A CDN or dev-server URL, or a file outside the project, fails the verifie
 it locally. A file outside the project that a motion or journey probe's interaction loads fails
 that probe the same way. The audit fails on any `failed` or `indeterminate` result at any viewport.
 
+Add one scroll probe per scroll-driven scene (a section pinned or animated by scroll progress):
+
+```json
+{ "id": "story-scene", "kind": "scroll", "target": "#story" }
+```
+
+`target` is the element that spans the scroll distance the scene plays over: for CSS `position:
+sticky` the tall section around the sticky stage; for a GSAP ScrollTrigger pin the generated
+spacer, `.pin-spacer:has(> #story)`. The probe scrolls the target's nearest scrolling ancestor
+(an `overflow: auto` or `scroll` container), else the page; a target with nothing to scroll is a
+contract error. Optional fields: `points` (2 to 20, default 6), `settleMs` and `reducedSettleMs`
+(the settle of the motion and reduced passes, default 1200 each), `restWindowMs` (default 300),
+`viewports` (default `[{ "width": 1440, "height": 900 }, { "width": 390, "height": 844,
+"mobile": true }]`) and `ignore` (up to 16 selectors of ambient elements). Per viewport and pass
+the plan is a 2 s load allowance, the initial settle and (points + 3) x (settle + restWindowMs);
+the total may not exceed 120 s, and above 90 s the CLI prints a note before it starts.
+
+Each viewport loads the page twice, with motion allowed and with `prefers-reduced-motion: reduce`,
+and visits before, 0 % ... 100 % and after of the scene's progress. It fails
+`scroll-never-started` when, with motion allowed, no point after 0 % differs from the 0 % frame
+(element boxes within their pinned frame, transform, opacity, filter, clip-path, visibility, text,
+and canvas and video pixels that were still during the rest window). A fixed or sticky element's
+own box does not count, so a sticky header that shrinks does not start a scene. It fails
+`scroll-never-rests` when, at a held position after the settle, an element moved more than 2 px
+(0.5 px in the reduced pass), opacity changed by more than 0.01 or more than 0.5 % of the scene's
+visible pixels changed. A static reduced pass is a valid substitute and passes. List an ambient
+loop that is meant to run (a breathing glow, a moving gradient, a Lottie or video loop) in
+`ignore`: the matched elements' own state and their pixels leave both comparisons, while their
+descendants are still measured (add `".glow *"` to leave a subtree out). A point that scroll
+snapping or a clamp moved is measured where the scroller stopped, listed in the coverage's
+`offPlan` and in the result's `notes`. `verify interaction` writes one labelled contact sheet per
+viewport and pass to `<output>/scroll/`, named in the row's `coverage[].sheet`; whether each frame
+reads well is Visual Acceptance, judged from those sheets.
+
 Then run the `verify interaction` command `next` returns. It exits 2 when a probe fails, and 1 for a
 malformed probe, a page the audit cannot bind or a selector the page rejects; neither records a
 pass. In `evidence/interaction.json` each finding has its `code`, the element `selector` (a request
