@@ -40,6 +40,14 @@
       ]
     },
     {
+      "id": "anthropic-skills",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/anthropics/skills",
+      "revision": "ca45fc496a3436251f191354091d557da31c15b5",
+      "reviewedAt": "2026-11-03",
+      "committedAt": "2026-10-28T12:20:38-07:00"
+    },
+    {
       "id": "astryx",
       "kind": "npm",
       "package": "@astryxdesign/core",
