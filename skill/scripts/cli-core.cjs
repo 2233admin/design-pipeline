@@ -129,7 +129,8 @@ const {
   verifyComponentReceipt,
 } = require("./component-capability-core.cjs");
 const { searchMengToSkills, verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
-const { BUNDLES: FETCHABLE_BUNDLES } = require("./vendor-cache.cjs");
+const { BUNDLES: FETCHABLE_BUNDLES, cacheRoot: vendorCacheRoot } = require("./vendor-cache.cjs");
+const fontCatalog = require("./font-catalog-core.cjs");
 const { findManifest: findDirectionLibraryManifest, verifyDirectionLibrary } = require("./design-direction-library-core.cjs");
 const { findManifest: findBrandDesignSystemsManifest, verifyBrandDesignSystems } = require("./brand-design-systems-core.cjs");
 const { searchShadcnioComponents, verifyShadcnioComponentSnapshot } = require("./shadcnio-react-components-core.cjs");
@@ -153,7 +154,7 @@ const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sh
 const { inspectEnvironment, nodeAtLeast, renderDoctor } = require("./doctor-report.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots", "--commercial-use"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots", "--commercial-use", "--discover"]);
 const REPEATABLE_OPTIONS = new Set(["--mix", "--taste", "--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
@@ -170,6 +171,7 @@ const KNOWN_OPTIONS = new Set([
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
   "--target-id",
   "--use", "--name", "--license", "--finish",
+  "--text", "--text-file", "--weight", "--contrast",
 ]);
 function parseArgs(argv) {
   const positionals = [];
@@ -430,6 +432,9 @@ function publicHelp() {
     "  explain-block --change-root <dir>",
     "  package --change-root <dir> --output <file>",
     "  route --query [--write --output]",
+    "  fonts query --text <copy>|--text-file <file> [--style mincho|gothic|kai|fangsong|round|display|handwriting|mono] [--contrast high|low] [--weight 700] [--path <font file or dir>] [--catalog <file>] [--limit 20]   (fonts whose measured cmap covers every character; near misses list the missing ones)",
+    "  fonts measure --path <font file or dir> [--text <copy>|--text-file <file>]   (cmap coverage per glyph set, weights, stroke contrast, style)",
+    "  fonts refresh [--source <id> --revision <commit>|head] [--output <file>] [--discover]   (re-measure the pinned sources by HTTP range; default output is the user cache)",
     "  change init|resume|advance|migrate|repair",
     "  foundation check [--kind design|motion|all] | direction check | direction draw --medium web|ppt|info|app [--second 0-59] [--pool <numbers>] [--east-pool <numbers>]   (the roulette: S % count + 1 in the medium's section and S % 12 + 1 in east, past styles the ledger's last three deliveries used) | playground check | reference check|resolve | reconstruction check | scene check",
     "  reference analyze-video --path <video> --output <new-dir> [--project-root <dir>] [--start sec --end sec --fps 12 --max-frames 400] [--study] [--shots [--cut-threshold 0.18] [--min-shot 0.25]]   (decoded timed windows; observations pending; --study adds study.json with audio and cut-grid candidates; --shots segments by detected shot with per-shot frames, motion and sound events)",
@@ -1670,6 +1675,109 @@ function sourcesFetchCommand(parsed) {
   return { result: value, exitCode };
 }
 
+// `fonts`: the open-font catalog (change add-open-font-catalog). query and measure read local
+// files and the packaged or cached catalog offline; refresh re-measures the pinned sources.
+function fontError(error) {
+  if (error instanceof fontCatalog.FontError) fail("fonts", `${error.message}. Fix: ${error.fix}`, { code: error.code, fix: error.fix });
+  throw error;
+}
+
+function fontQueryText(parsed) {
+  const text = option(parsed, "--text");
+  const file = option(parsed, "--text-file");
+  if (Boolean(text) === Boolean(file)) fail("fonts", "pass exactly one of --text <copy> or --text-file <file>", { code: "OPTION_REQUIRED" });
+  if (file && !fs.existsSync(file)) fail("fonts", `--text-file ${file} does not exist`, { code: "FILE_NOT_FOUND" });
+  return text || fs.readFileSync(file, "utf8");
+}
+
+function measureFontPath(target) {
+  if (!fs.existsSync(target)) fail("fonts", `--path ${target} does not exist`, { code: "FILE_NOT_FOUND" });
+  const files = fontCatalog.listFontFiles(path.resolve(target));
+  if (!files.length) fail("fonts", `--path ${target} holds no .ttf, .otf, .ttc, .woff or .woff2 file`, { code: "FONT_FILE_MISSING" });
+  const faces = [];
+  const problems = [];
+  for (const file of files) {
+    try {
+      faces.push(...fontCatalog.measureFile(file));
+    } catch (error) {
+      if (!(error instanceof fontCatalog.FontError)) throw error;
+      problems.push({ file, code: error.code, message: error.message, fix: error.fix });
+    }
+  }
+  return { faces, problems };
+}
+
+function fontsCommand(parsed, action) {
+  try {
+    if (action === "query") {
+      const text = fontQueryText(parsed);
+      const limitCheck = option(parsed, "--limit") === null ? null : numberOption(parsed, "--limit", { max: 1000 });
+      const { origin, file, catalog, skippedCache } = fontCatalog.resolveCatalog({ catalog: option(parsed, "--catalog"), cacheRoot: vendorCacheRoot });
+      const local = option(parsed, "--path") ? measureFontPath(option(parsed, "--path")) : { faces: [], problems: [] };
+      const result = fontCatalog.queryCatalog({
+        catalog,
+        text,
+        style: option(parsed, "--style"),
+        contrast: option(parsed, "--contrast"),
+        weight: option(parsed, "--weight"),
+        localFaces: fontCatalog.localEntries(local.faces),
+      });
+      const limit = limitCheck ?? 20;
+      const findings = result.candidates.length ? [] : [{
+        code: "font-coverage-none",
+        message: `no ${option(parsed, "--style") || "listed"} font covers all ${result.characters} characters`,
+        fix: result.missing.length
+          ? `Closest: ${result.missing[0].family} lacks ${result.missing[0].missing}. Set the whole string in a face that covers it (one font per string, no per-glyph fallback), relax --style/--contrast/--weight, or add a font with --path.`
+          : "Relax --style, --contrast or --weight, or add a font with --path.",
+      }];
+      for (const row of [...result.candidates, ...result.missing]) {
+        if (row.origin === "local") row.licenseNote = "unknown: record the licence and its source file before shipping this font";
+      }
+      return {
+        result: {
+          status: result.candidates.length ? "ready" : "blocked",
+          catalog: { origin, file, revisions: catalog.revisions, ...(skippedCache ? { skippedCache } : {}) },
+          ...result,
+          candidates: result.candidates.slice(0, limit),
+          missing: result.missing.slice(0, limit),
+          excluded: result.excluded.length,
+          localProblems: local.problems,
+          findings,
+        },
+        exitCode: result.candidates.length ? 0 : 2,
+      };
+    }
+    if (action === "measure") {
+      const target = requireOption(parsed, "--path");
+      const { faces, problems } = measureFontPath(target);
+      const wanted = option(parsed, "--text") || option(parsed, "--text-file") ? fontCatalog.textCodepoints(fontQueryText(parsed)) : null;
+      const entries = new Map(fontCatalog.localEntries(faces).map((entry) => [entry.family, entry.styles]));
+      const rows = faces.map((face) => {
+        const set = new Set(face.codepoints);
+        const { codepoints, ...rest } = face;
+        const row = { ...rest, codepoints: codepoints.length, styles: entries.get(face.family || path.basename(face.file)) || [], coverage: fontCatalog.coverageOf(set) };
+        if (wanted) row.missing = wanted.filter((cp) => !set.has(cp)).map((cp) => String.fromCodePoint(cp)).join("");
+        return row;
+      });
+      const blocked = problems.length || (wanted && rows.every((row) => row.missing));
+      return { result: { status: blocked ? "blocked" : "ready", faces: rows, problems }, exitCode: blocked ? 2 : 0 };
+    }
+    if (action === "refresh") {
+      const output = option(parsed, "--output") || fontCatalog.userCatalogFile(vendorCacheRoot);
+      const revision = option(parsed, "--revision");
+      const source = option(parsed, "--source");
+      if (revision && !source) fail("fonts", "--revision needs --source: each source pins its own repository", { code: "OPTION_REQUIRED" });
+      if (revision && revision !== "head" && !/^[0-9a-f]{40}$/.test(revision)) fail("fonts", "--revision must be a 40-hex commit or head", { code: "OPTION_VALUE_INVALID" });
+      const args = JSON.stringify({ output, revision, source, discover: option(parsed, "--discover") === true });
+      const { value, exitCode } = runKernel("refresh-font-catalog.cjs", [args], process.cwd(), { timeout: 30 * 60 * 1000 });
+      return { result: value, exitCode };
+    }
+    fail("cli", "fonts needs an action: query, measure or refresh", { code: "ACTION_REQUIRED" });
+  } catch (error) {
+    return fontError(error);
+  }
+}
+
 function iartCommand(parsed, action) {
   if (action === "search") {
     return {
@@ -2529,6 +2637,13 @@ const COMMANDS = {
   designmd: { run: ({ parsed, root, action }) => designMdCommand(parsed, root, action) },
   iart: { run: ({ parsed, action }) => iartCommand(parsed, action) },
   sources: { actions: { fetch: { run: ({ parsed }) => sourcesFetchCommand(parsed) } } },
+  fonts: {
+    actions: {
+      query: { run: ({ parsed }) => fontsCommand(parsed, "query") },
+      measure: { required: ["--path"], run: ({ parsed }) => fontsCommand(parsed, "measure") },
+      refresh: { run: ({ parsed }) => fontsCommand(parsed, "refresh") },
+    },
+  },
   toolchain: { run: ({ parsed, root, action }) => toolchainCommand(parsed, root, action) },
   execution: { run: ({ parsed, root, action }) => executionCommand(parsed, root, action) },
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },

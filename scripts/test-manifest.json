@@ -3,6 +3,7 @@
   "tests": [
     "gepa-source.test.cjs",
     "sources-lock.test.cjs",
+    "font-catalog.test.cjs",
     "gepa-runtime.test.cjs",
     "reference-analysis-entry.test.cjs",
     "reference-video.test.cjs",
