@@ -1,20 +1,25 @@
 {
   "name": "taste-skill",
-  "description": "Taste skill library for Claude Code — frontend design, image-to-code, and aesthetic skills",
+  "description": "tasteskill: art direction for coding agents, for websites, product pages, dashboards and app screens, checked in a real browser.",
   "owner": {
     "name": "leonxlnx",
-    "email": ""
+    "email": "hello@tasteskill.dev"
   },
   "plugins": [
     {
       "name": "taste-skill",
-      "description": "Frontend design taste skills including brutalist, minimalist, soft, redesign, stitch, and more",
-      "version": "1.0.0",
+      "description": "tasteskill v2: art direction for websites, product pages, dashboards and app screens, with a library of researched directions, real pictures from open collections and a real-browser inspector.",
+      "version": "2.1.5",
       "source": "./",
+      "skills": ["./skills/taste-skill"],
       "author": {
         "name": "leonxlnx",
-        "email": ""
-      }
+        "email": "hello@tasteskill.dev"
+      },
+      "homepage": "https://github.com/Leonxlnx/taste-skill",
+      "repository": "https://github.com/Leonxlnx/taste-skill",
+      "license": "MIT",
+      "keywords": ["skills", "frontend", "design", "taste", "ui", "dashboard"]
     }
   ]
 }

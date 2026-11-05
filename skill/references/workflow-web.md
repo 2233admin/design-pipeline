@@ -89,12 +89,13 @@ owner to lengthen feedback; when a short reason is ambiguous, ask about the real
 ("brighter background, or more text contrast?"). Shorter records are refused with
 `CONTRACT_INVALID` and change nothing.
 
-For new-site design, existing-site redesign or visual critique, use [taste-skill.md](taste-skill.md)
-to select and read the complete built-in method. On an existing site, audit brand, routes, content,
-states and stack before changing its design. Preserve supplied references in replicate mode;
-Taste's generate-first preferences do not require replacement images. Image concepts and brand
-boards use the matched image-only method with an available provider, then become selected
-reference/concept inputs through the existing workflow. No external Taste install is required.
+For new-site design, existing-site redesign, app screens or visual critique, use
+[taste-skill.md](taste-skill.md) to select the route and read its complete built-in source. On an
+existing site, audit brand, routes, content, states and stack before changing its design. Preserve
+supplied references in replicate mode. Image concepts and brand boards use an available image
+provider, then become selected reference/concept inputs through the existing workflow. Taste's
+`inspect.mjs` may add screenshots and measurements to review evidence; its findings about taste
+never fail a web gate. No external Taste install is required.
 
 ## intake
 
@@ -162,6 +163,14 @@ Web intake writes no `brief.md`: the brief is written later as the [description]
 A `quick` project started before quick intake existed records its stated line first.
 
 ## reference
+
+For a live page run `reference extract --url <page> --output <dir>` before reading it yourself: it
+measures the palette (CIEDE2000 clusters tiered by share), type scale and spacing from computed
+styles with no model, and writes `extraction.json`, `palette-evidence.json` (pending, DOM source
+ready) and `design-md-draft.md`. Judge that draft; never copy a `(low confidence)` value, and check
+merged dark surfaces it lists. A challenge or block page (`REFERENCE_BLOCKED`), an HTTP error
+(`REFERENCE_HTTP_STATUS`) or a page that renders nothing (`REFERENCE_EMPTY`) exits 1; use a
+screenshot as an image reference instead.
 
 For a local video run `reference analyze-video --path <contained-video> --output <new-dir>`.
 Inspect ordered timed windows, record named target/property/state observations and uncertainties,
@@ -703,7 +712,8 @@ has none, `next` asks for it instead of returning the verify command.
         "stacks": [".features", ".plans"],
         "controlContainers": [".toolbar"],
         "alignGroups": [{ "selector": ".hero", "items": ".hero > *", "edge": "start" }],
-        "contentBoxes": [".card"]
+        "contentBoxes": [".card"],
+        "bodyText": ["main p"]
       }
     }
   ]
@@ -712,7 +722,10 @@ has none, `next` asks for it instead of returning the verify command.
 
 The audit measures the rendered page at each of its `viewports` (default: the file's `viewport`),
 after a fresh load, the fonts and two frames, against the codes in
-`ui-craft-sources.md#measured-audit`. It needs the bindable local page: `url` names the project's
+`ui-craft-sources.md#measured-audit`. Each viewport also loads the page once with
+`prefers-reduced-motion: reduce`; both loads are read a second after load and compared
+(`audit.reduced-motion`). After the resting audit it forces `:hover` and `:focus-visible` on every
+control (`audit.state-contrast`). It needs the bindable local page: `url` names the project's
 local `index.html`, and every asset the page loads (stylesheets, scripts, fonts, images, data) is a
 file inside the project. An `http(s)` page or a page outside the project is a contract error before
 the browser starts.
@@ -720,23 +733,36 @@ the browser starts.
 - `thresholds`: copy them from `DESIGN.md`; a list replaces its default. `fonts` is required: the
   approved families from `DESIGN.md`, so `audit.font-family` always runs. Defaults: `minFontPx` 12,
   `minTargetPx` 24, `minControlGapPx`, `minControlInsetPx` and `minLayoutGapPx` 8,
-  `contrastNormal` 4.5 and `contrastLarge` 3 (text of 24 px, or bold at 18.67 px); the `fontSizes`
-  scale has none.
+  `contrastNormal` 4.5 and `contrastLarge` 3 (text of 24 px, or bold at 18.67 px), `contrastFocus` 3
+  (the focus indicator), `maxLineCh` 80 and `minLineHeight` 1.3 (declared running text); the
+  `fontSizes` scale has none.
 - `declare`: selectors for what the markup means, so the delivered page carries no audit
   attributes: `numbers` (changing or compared values; numeric table cells are found without it),
   `stacks`, `controlContainers`, `alignGroups` (`edge` is `start`, `center` or `end`),
-  `radiusPairs` (`outer`, `inner`) and `contentBoxes`. A declared selector that matches nothing
-  fails, so a typo cannot pass.
+  `radiusPairs` (`outer`, `inner`), `contentBoxes` and `bodyText` (running text: article
+  paragraphs, descriptions, long list items; not labels, captions or table cells). A declared
+  selector that matches nothing fails, so a typo cannot pass.
+- `stress` (optional): `{}` or `{ "textScale": 2.5, "scope": [".orders"] }`. After the normal audit
+  at each viewport, the loaded page's visible text inside `scope` (default `body`) is lengthened
+  `textScale` times (default 2.5, above 1 and at most 10), every fourth table-cell or list text becomes
+  one unbroken word and numbers become 9,999,999; the page is then audited again. Only what this
+  newly breaks in `audit.horizontal-overflow`, `audit.viewport-bounds`, `audit.content-clipping` and
+  `audit.content-overflow` is reported (`"pass": "stress"`); an ellipsis or line clamp passes only
+  with its own `title` holding the full text, an enclosing link with a real `href` or a `details`
+  element, and a page that re-renders over the rewrite fails with `stress-reverted`. Each viewport's `coverage` entry
+  gains `stress` with its status, counts, `reverted`, the `skipped` blind spots and the states it is evidence for (`long-content`,
+  `overflow`); see `worst-case-content.md#measured-evidence-the-stress-pass`. A `scope` selector the
+  page rejects or does not match exits 1.
 
 No probe field can skip a subtree, suppress a finding or waive a result; any other field is
 rejected before the browser starts. Unresolved results are fixed in the page, not in the probe.
 
 Each check reports, per viewport, `passed`, `failed`, `not-declared`, `not-applicable` (nothing
 visible in scope) or `indeterminate`, with a `checked` count; nothing checked is never `passed`.
-Six optional checks measure only what is declared: `audit.tabular-numbers` (`numbers`, or the
+Eight optional checks measure only what is declared: `audit.tabular-numbers` (`numbers`, or the
 page's numeric table cells), `audit.content-overflow` (`contentBoxes`), `audit.control-inset`
-(`controlContainers`), `audit.layout-gap` (`stacks`), `audit.layout-alignment` (`alignGroups`) and
-`audit.nested-radius` (`radiusPairs`). Without their declaration they report `not-declared` in the
+(`controlContainers`), `audit.layout-gap` (`stacks`), `audit.layout-alignment` (`alignGroups`),
+`audit.nested-radius` (`radiusPairs`), and `audit.line-length` and `audit.line-height` (`bodyText`). Without their declaration they report `not-declared` in the
 coverage with a hint naming what to declare: it is never counted as passed and does not fail the
 audit. Once declared, an optional check is judged like the others. `indeterminate` means the page
 could not be measured, for example text over a gradient, image, translucent layer, filter, blend
@@ -745,6 +771,40 @@ scrim. A CDN or dev-server URL, or a file outside the project, fails the verifie
 `external-request` finding once per audit probe; copy the resource into the project and reference
 it locally. A file outside the project that a motion or journey probe's interaction loads fails
 that probe the same way. The audit fails on any `failed` or `indeterminate` result at any viewport.
+
+Add one scroll probe per scroll-driven scene (a section pinned or animated by scroll progress):
+
+```json
+{ "id": "story-scene", "kind": "scroll", "target": "#story" }
+```
+
+`target` is the element that spans the scroll distance the scene plays over: for CSS `position:
+sticky` the tall section around the sticky stage; for a GSAP ScrollTrigger pin the generated
+spacer, `.pin-spacer:has(> #story)`. The probe scrolls the target's nearest scrolling ancestor
+(an `overflow: auto` or `scroll` container), else the page; a target with nothing to scroll is a
+contract error. Optional fields: `points` (2 to 20, default 6), `settleMs` and `reducedSettleMs`
+(the settle of the motion and reduced passes, default 1200 each), `restWindowMs` (default 300),
+`viewports` (default `[{ "width": 1440, "height": 900 }, { "width": 390, "height": 844,
+"mobile": true }]`) and `ignore` (up to 16 selectors of ambient elements). Per viewport and pass
+the plan is a 2 s load allowance, the initial settle and (points + 3) x (settle + restWindowMs);
+the total may not exceed 120 s, and above 90 s the CLI prints a note before it starts.
+
+Each viewport loads the page twice, with motion allowed and with `prefers-reduced-motion: reduce`,
+and visits before, 0 % ... 100 % and after of the scene's progress. It fails
+`scroll-never-started` when, with motion allowed, no point after 0 % differs from the 0 % frame
+(element boxes within their pinned frame, transform, opacity, filter, clip-path, visibility, text,
+and canvas and video pixels that were still during the rest window). A fixed or sticky element's
+own box does not count, so a sticky header that shrinks does not start a scene. It fails
+`scroll-never-rests` when, at a held position after the settle, an element moved more than 2 px
+(0.5 px in the reduced pass), opacity changed by more than 0.01 or more than 0.5 % of the scene's
+visible pixels changed. A static reduced pass is a valid substitute and passes. List an ambient
+loop that is meant to run (a breathing glow, a moving gradient, a Lottie or video loop) in
+`ignore`: the matched elements' own state and their pixels leave both comparisons, while their
+descendants are still measured (add `".glow *"` to leave a subtree out). A point that scroll
+snapping or a clamp moved is measured where the scroller stopped, listed in the coverage's
+`offPlan` and in the result's `notes`. `verify interaction` writes one labelled contact sheet per
+viewport and pass to `<output>/scroll/`, named in the row's `coverage[].sheet`; whether each frame
+reads well is Visual Acceptance, judged from those sheets.
 
 Then run the `verify interaction` command `next` returns. It exits 2 when a probe fails, and 1 for a
 malformed probe, a page the audit cannot bind or a selector the page rejects; neither records a

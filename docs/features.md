@@ -6,11 +6,13 @@ README 只列能做什么；这里是每项能力的说明与命令。所有命�
 
 CSS 写作和审查内置 [Good CSS](../skill/references/good-css.md)：完整保留已审核上游的 47 个实践、8 类指南和全部示例素材，逐项说明项目适配与验证条件。[离线示例工具](../skill/tools/good-css/README.md) 只需 Node.js，不依赖额外安装的 skill。
 
-视觉设计内置 [Taste-Skill 的全部 13 项能力](../skill/references/taste-skill.md)：前端方向、截图还原、旧项目改造、风格设计、完整交付、Stitch、网页/移动端生图和品牌视觉。根据任务选择对应指南，完整原文随工具发布；无需另装 Taste 技能。生图仍使用宿主提供的图像生成工具。
+视觉设计内置 [tasteskill v2.1.5](../skill/references/taste-skill.md)：新网站、旧站改造、应用界面（仪表盘、后台、设置）和成品评审四条路线，完整原文随工具发布，无需另装 Taste 技能。附带的 `draw.mjs`、`inspect.mjs`、`lint.mjs`、`assets.mjs` 可由 Agent 在目标项目中按需运行；其中关于审美的检查结果只作参考，不是本流程的门禁。经典风格与生图技能已移出上游，不再随包发布。
 
 设计方向参考库（[design-direction-library](../skill/references/design-direction-library.md)）收录已审核的 MIT 上游：84 种风格库、84 张 HTML 样张、三方向方法、品牌资产协议、评审指南和内容准则。文本与 HTML 随包发布，样张图片、音频等二进制按需用 `designer-pipeline sources fetch --bundle design-direction-library` 下载并逐文件校验 SHA-256；上游脚本只作只读参考，从不执行。它只是参考资料，不改变任何流程或门禁，后续由 #154 #155 #156 #157 逐项接入。
 
-界面打磨由项目自己的 [UI 工艺规则](../skill/references/ui-craft-sources.md) 负责：`verify interaction` 的页面审计在渲染后的页面上实测字号、对比度、横向溢出、文字裁切、控件尺寸与间距、对齐和嵌套圆角，网页工作流的 `probe` 阶段必须通过；量不出来的规则（动效手感、焦点与键盘、语义与表单、文案、各种状态）由 `UC-` 编号的复查清单检查。两者结果都记为组件一致性证据，不算视觉验收。规则来源是 emil-design-eng、make-interfaces-feel-better、fixing-accessibility、12-principles-of-animation、shadcn 和 playwright-cli 这 6 个锁定版本的只读快照，以及改写自 lintapple 的测量逻辑；需要原文时才读对应来源，项目规则和流水线门禁优先。shadcn、playwright-cli 和 React Doctor（仅引用、不打包）只在项目已在用它们或经你同意时运行，结果只作 QA 参考，不算组件一致性结论或视觉验收。
+品牌设计系统目录（[design-md](../skill/references/design-md.md)）收录 198 个「受真实产品与风格启发」的设计系统：`nexu-io/open-design`（Apache-2.0，152 个）与 `feimacode/open-design-agent-kit`（MIT，46 个，另含对 57 个 open-design 系统的修正）。每个系统有 DESIGN.md、统一 token 结构的 `tokens.css`，多数还有组件样张与 token 报告。包里只带清单和许可证，系统本身用 `designer-pipeline sources fetch --bundle brand-design-systems` 按需下载（9.3 MB，逐文件校验 SHA-256）；之后 `designmd search` 会同时返回这些系统的名称、类别、配色签名和可读路径，`designmd inspect` 给出规整成 Google DESIGN.md front matter 的 token，方便横向比较。它们只作学习参考，绝不当作产品的 DESIGN.md。
+
+界面打磨由项目自己的 [UI 工艺规则](../skill/references/ui-craft-sources.md) 负责：`verify interaction` 的页面审计在渲染后的页面上实测字号、对比度、横向溢出、文字裁切、控件尺寸与间距、对齐和嵌套圆角，网页工作流的 `probe` 阶段必须通过；量不出来的规则（动效手感、焦点与键盘、语义与表单、文案、各种状态）由 `UC-` 编号的复查清单检查。两者结果都记为组件一致性证据，不算视觉验收。规则来源是 emil-design-eng、make-interfaces-feel-better、fixing-accessibility、shadcn 和 playwright-cli 这 5 个锁定版本的只读快照，以及改写自 lintapple 的测量逻辑；需要原文时才读对应来源，项目规则和流水线门禁优先。shadcn、playwright-cli 和 React Doctor（仅引用、不打包）只在项目已在用它们或经你同意时运行，结果只作 QA 参考，不算组件一致性结论或视觉验收。
 
 影片任务内置 [Cinetic 与 Product Film 方法](../skill/references/film-methods.md)：完整锁定来源、真实品牌与组件复用、显式技法选择和可配置帧率的动效实现，沿用既有 HyperFrames 与影片验证。[Prompt Motion 模板库](../skill/references/prompt-motion/README.md)支持离线检索案例与配方，保留替换输入、结构规则、来源及观察限制；[维护指南](prompt-motion-template-maintenance.md)说明候选更新、重复和下架处理。普通 UI/CSS 任务仍按原流程执行。
 

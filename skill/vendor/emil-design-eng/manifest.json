@@ -3,11 +3,11 @@
   "name": "emil-design-eng",
   "source": {
     "repository": "https://github.com/emilkowalski/skills",
-    "revision": "2d228630ba1446365f614a108cb8252f1feda202",
-    "gitTree": "a8f01f03c19a9ec7e737494dff7b8e416e326bd2",
-    "committedAt": "2026-10-11T15:58:32+02:00",
+    "revision": "f1090bec277140d02ed202440185ad9d02ac1490",
+    "gitTree": "7d952685029ffc0702e3faa2291f7424f7cd9632",
+    "committedAt": "2026-11-02T10:21:52+01:00",
     "license": "MIT",
-    "reviewedAt": "2026-10-13",
+    "reviewedAt": "2026-11-04",
     "scope": [
       "skills/emil-design-eng/**",
       "LICENSE"
@@ -24,8 +24,8 @@
   "snapshot": {
     "root": "upstream",
     "fileCount": 2,
-    "byteCount": 28193,
-    "treeSha256": "16edf049c960e6ea6d96ec4fa2d436c420183c7f33f2dc1b2f8491273218c674",
+    "byteCount": 28579,
+    "treeSha256": "6a117e5bda9e135fb4b68b407fc49dbac2705a1fd52cac5445e2004932c5d258",
     "executableFiles": [],
     "objects": [
       {
@@ -38,9 +38,9 @@
       {
         "path": "skills/emil-design-eng/SKILL.md",
         "mode": "100644",
-        "oid": "62ce902af8dd32c590ea7203e9ab2edb1d6ef81a",
-        "size": 27123,
-        "sha256": "ffbe68e6007fb42cb8149f089b400a1ca007d59ba23e8948e2be4476f3175939"
+        "oid": "dc063c2a861922c1c9f2412b824b0862746304f5",
+        "size": 27509,
+        "sha256": "965cc3108047a1f68e504977ae7816c66115b202a32e7509c0b8305314839c54"
       }
     ]
   },

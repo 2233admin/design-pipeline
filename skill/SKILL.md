@@ -21,8 +21,9 @@ Pick one row, open what it names, and open nothing else until the task needs it.
 | The user gave a reference page or screenshot to follow | `designer-pipeline next --project-root <project> --deliverable web\|ui --mode replicate` | [Follow `next`](#follow-next-for-a-complete-deliverable) |
 | One supporting job: drawing, image placement, text fitting, comparison, motion maps | `tools/README.md` | one selected guide → its implementation/example |
 | Workflow stages, UI, references, implementation and review | `references/stages.md` | the stage the task is in |
-| New website, redesign, visual critique, style, image-to-code, brand board | `references/taste-skill.md` | the selected original source |
+| New website, redesign, app screen (dashboard, admin, settings), visual critique | `references/taste-skill.md` | the selected route's original source |
 | No direction yet: style library with rendered specimens, three-direction method, brand-asset protocol, critique guide | `references/design-direction-library.md` | the style entry or handbook it names (reference only) |
+| Learn from real design systems: DESIGN.md examples and 198 brand design systems (tokens, components), compare palettes and type | `references/design-md.md` | `designmd search` / `inspect` results (inspiration only) |
 | The brief names a real brand or product (logo, colours, product facts) | `references/brand-facts.md` | `DESIGN.md` Product Context and `design-system/tokens.json` |
 | CSS authoring or review in any stack | `references/good-css.md` | its matched source entries |
 | UI polish, accessibility, motion principles, shadcn/ui, browser driving | `references/ui-craft-sources.md` | a source only when a rule needs it |
@@ -107,11 +108,10 @@ name a repository. This is triggered by the work's needs, not a required search 
 
 ### Taste, CSS and UI craft
 
-- **Built-in Taste suite:** `references/taste-skill.md` selects from thirteen complete local
-  methods for new websites, existing-project redesign, visual critique, style, Stitch design
-  rules, image-to-code, web/mobile concept images, brand boards and complete output. Read the
-  selected original source; no external Taste installation is required. Project/user design,
-  accessibility and CJK rules govern adaptation; image-only methods need an available provider.
+- **Built-in Taste skill:** `references/taste-skill.md` routes new websites, existing-project
+  redesign, app screens and critique to the one packaged tasteskill v2 source. Read the selected
+  route's original source; no external Taste installation is required. Project/user design,
+  accessibility and CJK rules govern adaptation; its inspector findings about taste are advisory.
 - `references/good-css.md` is the complete built-in CSS practice library, with project adaptations
   and offline specimens.
 - `references/ui-craft-sources.md` is the project rule index: the measured page audit

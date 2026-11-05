@@ -14,11 +14,11 @@ judgment and workflow vocabulary are internalized.
 The complete upstream product-design surface is mapped in
 `references/impeccable-product-design.json` and summarized in
 `references/impeccable-product-design.md`. All 23 core commands are available as pipeline intents:
-`shape`, `init`, `document`, `extract`, `visualize`, `critique`, `audit`, `polish`, `bolder`,
+`shape`, `init`, `document`, `extract`, `critique`, `audit`, `polish`, `bolder`,
 `quieter`, `distill`, `harden`, `onboard`, `animate`, `colorize`, `typeset`, `layout`, `delight`,
-`overdrive`, `clarify`, `adapt`, `optimize`, and `live`. They route into product truth, surface
+`overdrive`, `clarify`, `adapt`, `optimize`, `live`, and `generate`. They route into product truth, surface
 shaping, design authority, experience quality, and implementation evidence. `hooks`, `doctor`,
-`routing`, `pin`, and native-platform references are supporting enforcement and maintenance
+`routing`, `pin`, the new-work comp round (`visualize.md`) and native-platform references are supporting enforcement and maintenance
 capabilities, not visual themes. Do not claim coverage from the command name alone: use the mapped
 artifact and evidence fields as the acceptance contract.
 

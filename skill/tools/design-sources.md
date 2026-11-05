@@ -23,6 +23,7 @@ The examples below were observed on 2026-10-07; availability and destinations ca
 | Motion and editing references | PVref (the directory links to [PVDex](https://pvdex.flux-ion.cn/)), UI Movement | The relevant passage, poses, spacing, transitions and audiovisual phrasing; a thumbnail cannot establish motion |
 | Fonts and lettering | Fontshare, Google Fonts, font identification sites | Continue with [font selection](fonts.md), actual copy, family identity and the publisher's files |
 | Images and mockups | unDraw, Pexels, Unsplash, ls.graphics, MockupWorld | The selected asset's source, dimensions, crop, transparency or editable layers and permitted use |
+| Public-domain prints, plates and object photos for collage | [Material sources](#public-domain-collage-materials) below: Cleveland, Met, Rijksmuseum, Wikimedia Commons | A CC0 / public-domain file with its record in `materials/licenses.json`, cut into stickers, ink layers or plates |
 | Graphic operations and lighting studies | [Space Type Generator](https://spacetypegenerator.com/index.html), Dithering Studio, light-reference, PhotoMosh | An observable type deformation, tonal pattern, light arrangement or compositing operation to study or reproduce |
 | Textures, brushes, patterns and icons | Texturelabs, Brusheezy, Pattern Monster, iconfont | The material's scale, repetition, edges and interaction with the composition |
 
@@ -56,6 +57,48 @@ with their notices; a directory's “free” label alone does not establish inte
 If a link is marked unavailable, redirects, requires access or only shows a loading shell,
 record that limitation and use an accessible equivalent or the supplied reference. Do not
 describe unseen work as inspected, or turn an inaccessible site into a required dependency.
+
+## Public-domain collage materials
+
+Real material lifts collage, poster and card work more than repeated polishing of drawn shapes:
+engravings, botanical and insect plates and museum object photos, cut out with a paper edge,
+read as finished at the first pass where code-drawn substitutes did not (SHAFT-style study,
+2026-11). The registry [`references/material-sources.json`](../references/material-sources.json)
+lists each source's query route, the licence field that decides reuse, and the reachability
+measured from this environment with date and evidence.
+
+| Source | Measured 2026-11-05 | Route |
+| --- | --- | --- |
+| Cleveland Museum of Art Open Access | reachable | API search filtered to CC0; print-size images |
+| The Met Open Access | reachable | v1.1 search (the v1 search answers 410, retired 2026-10-01); `isPublicDomain` decides |
+| Rijksmuseum data services | reachable without a key | Linked Art search; the image's own rights statement (PD mark / CC0) decides; the old keyed API answers 410 |
+| Wikimedia Commons | search rate-limited (429 on about half the requests) | fetch by exact `File:` name only; `LicenseShortName` must be public domain or CC0 |
+| NYPL, Smithsonian, BHL | need a key (BHL and the NYPL site also challenge scripted clients) | owner downloads, then `materials add` |
+| Old Book Illustrations | HTML only, no API | owner browses, reads each page's rights note, then `materials add` |
+| Art Institute of Chicago | blocked (Cloudflare challenge) | owner downloads, then `materials add` |
+
+A blocked, keyed or rate-limited source is reported as such with its fix; do not retry in loops,
+rotate clients or script around a challenge. Re-measure before relying on the table:
+
+```sh
+node "<skill-root>/scripts/designer-pipeline.cjs" materials probe            # exit 2 when a source drifted
+node "<skill-root>/scripts/designer-pipeline.cjs" materials search --query "key,pocket watch,butterfly,engraving" --limit 3
+node "<skill-root>/scripts/designer-pipeline.cjs" materials fetch --project-root . --source met --id 199408 --name pocket-watch --use "collage: watch"
+node "<skill-root>/scripts/designer-pipeline.cjs" materials add --project-root . --file materials/owner/scan-01.png \
+  --license owner-scan --by "<owner>" --kind scan --use "paper texture"
+node "<skill-root>/scripts/designer-pipeline.cjs" materials check --project-root .
+```
+
+Search terms are comma-separated and searched one by one; results are full-text matches, so pick
+by looking, not by rank. `fetch` downloads only CC0 / public-domain records (an attribution or
+non-commercial licence is refused with its evidence), converts to PNG at most `--width` (default
+1200) on the long side, and writes the record into `materials/licenses.json` with source,
+object id, title, author, work date, page and file URL, the licence field it was read from,
+retrieval date, use and hash. Owner-supplied fonts, scans and photos go into the same file with
+`materials add` (licence and author are required; `commercialUse` is only assumed for CC0 /
+public domain, otherwise pass `--commercial-use` when the owner says so). The records use the
+same `licenses.json` shape as film-edit footage. Cut the material with
+[collage cutting](art-motion/assets-audio.md#cut-collage-material).
 
 ## Keep the existing evidence route
 

@@ -371,15 +371,14 @@ creative synthesis; do not disguise a copied template or token dump as generated
 
 ## Built-In Taste Capabilities
 
-For new websites, existing-project redesign, aesthetic direction/critique, image-to-code,
-web/mobile concept images or brand boards, open [taste-skill.md](taste-skill.md). It selects among
-all thirteen complete packaged source entries and maps each output to the existing stages and
-checks. V2 is experimental; v1 is an explicit compatibility choice. Choose only the relevant
-method/style, preserve project/user authority and use the current framework and evidence routes.
-The three image-generation methods produce images through an available provider; they do not
-implement controls or bundle a model. Existing reference images take priority. Stitch's example
-DESIGN.md must be translated through design-synthesis into the project-owned foundation.
-No external Taste installation, new gate or extra catalog search is required.
+For new websites, existing-project redesign, app screens or critique of a render, open
+[taste-skill.md](taste-skill.md). It routes the request to the matching part of the one packaged
+upstream skill (tasteskill v2.1.5) and maps its output to the existing stages and checks. Preserve
+project/user authority and use the current framework and evidence routes. Its `draw.mjs`,
+`inspect.mjs` and `lint.mjs` are optional agent tools whose findings about taste stay advisory.
+Image-to-code, concept images, brand boards and the classic styles are no longer in that bundle;
+the guide names their pipeline routes. No external Taste installation, new gate or extra catalog
+search is required.
 
 ## Companion Skills
 
@@ -425,16 +424,15 @@ and `emil-design-eng` are built in:
 
 1. `impeccable`: command vocabulary, surface modes, refinement semantics, bounded verification, and design-detector workflow.
 2. `frontend-design`: visual direction, composition, strong first impression, avoiding generic AI aesthetics.
-3. [Built-in Taste suite](taste-skill.md): select the matched complete method for direction,
-   redesign, style or visual assets; adapt its rules within project contracts.
+3. [Built-in Taste skill](taste-skill.md): select the route for a new site, redesign, app
+   screens or critique; adapt its house rules within project contracts.
 4. `ui-ux-pro-max`: UX heuristics, design-system selection, color and type pairing, stable repeatability.
 5. `web-design-guidelines`: production UI rules, layout, semantics, accessibility, responsive behavior.
 6. [Built-in `emil-design-eng`](ui-craft-sources.md#emil-design-eng): motion, transitions, input
    feedback, perceived quality, interaction details; no companion installation.
 
 The same [UI craft guide](ui-craft-sources.md) routes the other built-in sources
-(`make-interfaces-feel-better`, `fixing-accessibility`, `12-principles-of-animation`, `shadcn`,
-`playwright-cli`) and the reference-only React Doctor record by stage and precedence.
+(`make-interfaces-feel-better`, `fixing-accessibility`, `shadcn`, `playwright-cli`) and the reference-only React Doctor record by stage and precedence.
 
 For dynamic UI, interaction motion, and animation-specific work, apply these motion skills:
 

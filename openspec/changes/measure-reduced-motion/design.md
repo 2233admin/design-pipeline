@@ -2,12 +2,14 @@
 
 1. Emulate with `page.emulateMediaFeatures([{name: "prefers-reduced-motion", value}])` before navigation, so CSS media
    queries and `matchMedia` both see it.
-2. Animation inventory: `document.getAnimations()` filtered to `playState === "running"`. Identity:
-   `CSSAnimation.animationName` or `CSSTransition.transitionProperty`, else `Animation.id`, else `script`; plus a selector
-   path of `effect.target` (ids, else tag and nth-of-type up to the nearest id). Timing and animated properties come from
-   `effect.getComputedTiming()` and `effect.getKeyframes()`. "Moving" properties are `transform`, `translate`, `rotate`,
-   `scale`, `top`, `left`, `right`, `bottom`, `width`, `height`, `margin*`, `inset*`, `offset*` and `background-position`.
-   The no-preference and reduce inventories are matched by identity.
+2. Animation inventory: the reduce pass of `audit.reduced-motion` (`interaction-audit.cjs`, change
+   `interaction-reading-motion-states`), run with `auditPass("reduced-motion")`, so the definition is
+   `STILL_MOVING`: `document.getAnimations()` still `running` `settleMs` (1000 ms) after load on a visible target,
+   whose keyframe or transition properties include one outside `STILL_MOVING.fades` (opacity and color), not on or
+   inside `STILL_MOVING.essential` (`role="status"`, `progressbar`, `alert`, `aria-busy="true"`). Its finding text
+   (CSS animation name, transitioned property or script animation id, selector, loop or time left) is the
+   identity; the no-preference and reduce inventories are matched by it. No second list of moving properties
+   is kept here.
 3. Pixel change: eleven viewport screenshots at 1000 + k·97 ms (k = 0..10), an interval that does not divide common loop
    periods. Changed share per consecutive pair via `motionMap` from `visual-diagnostics/diagnostics.cjs`; the aggregate is
    the maximum pair share. Threshold 0.5 %.

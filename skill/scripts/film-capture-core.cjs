@@ -17,7 +17,7 @@ const PROBE = path.join(__dirname, "../references/film-choreography/timeline-pro
 const LAYOUT_PROBE = path.join(__dirname, "../references/film-choreography/layout-probe.js");
 // The reviewed HyperFrames release (references/hyperframes.md); `film scaffold` pins the same one.
 const HYPERFRAMES_VERSION = "0.8.137";
-const GSAP_VERSION = "3.15.0";
+const GSAP_VERSION = "3.15.1";
 // npx package spec: the reviewed pin unless a caller names another release explicitly.
 const hyperframesCli = (version) => `hyperframes@${version || HYPERFRAMES_VERSION}`;
 
@@ -31,6 +31,21 @@ function resolvePuppeteer(compositionDir, explicit) {
     }
   }
   fail(SCOPE, "puppeteer-core not found. Fix: run `npm i hyperframes` in the composition project (it installs puppeteer-core), or pass --puppeteer-module <path to puppeteer-core>", { code: "TOOL_MISSING" });
+}
+
+// The HyperFrames runtime script the renderer injects into every frame it captures (it applies
+// clip windows and seeks the timelines). Resolved from the project's own hyperframes install, the
+// same bases as puppeteer-core; null when the project has none.
+function resolveHyperframesRuntime(compositionDir) {
+  for (const base of [compositionDir, process.cwd()]) {
+    try {
+      const file = path.join(path.dirname(require.resolve("hyperframes/package.json", { paths: [base] })), "dist", "hyperframe.runtime.iife.js");
+      if (fs.existsSync(file)) return file;
+    } catch {
+      // try next base
+    }
+  }
+  return null;
 }
 
 // Runs npx without a shell: npm's npx-cli.js through the current node when present (Windows
@@ -135,4 +150,4 @@ function canvasSize(html) {
   return { width: read("width", 1920), height: read("height", 1080) };
 }
 
-module.exports = { GSAP_VERSION, HYPERFRAMES_VERSION, canvasSize, captureLayout, captureTimeline, hyperframesCli, hyperframesPreview, resolvePuppeteer, runNpx };
+module.exports = { GSAP_VERSION, HYPERFRAMES_VERSION, canvasSize, captureLayout, captureTimeline, hyperframesCli, hyperframesPreview, resolveHyperframesRuntime, resolvePuppeteer, runNpx };

@@ -3,11 +3,11 @@
   "name": "fixing-accessibility",
   "source": {
     "repository": "https://github.com/ibelick/ui-skills",
-    "revision": "f2264c30213a8a55bd0a6a7668d0438e4564e090",
-    "gitTree": "477e37b34f19b7f5c7380219c6b54c0b99aed81e",
-    "committedAt": "2026-10-12T18:28:03+02:00",
+    "revision": "73fb128d046d1f0d74c2909cd26eb616e3415567",
+    "gitTree": "ff3567bee66ece2ff60755c9f215b6ee3ea4207f",
+    "committedAt": "2026-11-03T07:54:32+01:00",
     "license": "MIT",
-    "reviewedAt": "2026-10-13",
+    "reviewedAt": "2026-11-04",
     "scope": [
       "skills/fixing-accessibility/**",
       "LICENSE"
