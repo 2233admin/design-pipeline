@@ -11,7 +11,7 @@ const { fileURLToPath, pathToFileURL } = require("node:url");
 const { fail } = require("./contract-utils.cjs");
 const { resolvePuppeteer } = require("./film-capture-core.cjs");
 const { browserIdentity, resolveBrowser } = require("./browser-locate.cjs");
-const { auditOptions, auditPage } = require("./interaction-audit.cjs");
+const { CONTROL_SELECTOR, REDUCED_MOTION_SETTLE_MS, STATE_PSEUDO_CLASSES, auditOptions, auditPage, auditPass, combineStateChecks } = require("./interaction-audit.cjs");
 const { applyStress, checkStressHeld, classifyClipping, clippedItems, stressOptions } = require("./interaction-stress.cjs");
 
 const SCOPE = "interaction capture";
@@ -208,14 +208,14 @@ async function settleForAudit() {
 }
 
 // The long-content stress pass on the loaded page: lengthen its text, let layout and fonts settle,
-// measure it again with the same audit, classify the clipped text as reachable truncation or not,
+// measure it again with the same audit (given the reduce snapshot of this viewport), classify the clipped text as reachable truncation or not,
 // and check that the page did not revert the rewrite.
-async function recordStress(page, options, stressing, assertLocalTarget) {
+async function recordStress(page, options, stressing, reducedMotion, assertLocalTarget) {
   const applied = await page.evaluate(applyStress, stressing);
   assertLocalTarget();
   if (applied.contractErrors.length || applied.changed === 0) return { applied };
   await page.evaluate(settleForAudit);
-  const result = await page.evaluate(auditPage, options);
+  const result = await page.evaluate(auditPage, options, auditPass("audit", { reducedMotion }));
   assertLocalTarget();
   const truncation = result.contractErrors?.length ? [] : await page.evaluate(classifyClipping, clippedItems(result));
   assertLocalTarget();
@@ -224,10 +224,50 @@ async function recordStress(page, options, stressing, assertLocalTarget) {
   return { applied, result, truncation, reverted };
 }
 
-// One fresh navigation per declared viewport at device scale 1, then the in-page audit. Each
-// viewport keeps the requests of its own load, and the probe's whole log also holds what the page
-// requested while the document viewport was restored for the probes that follow; the audit fails
-// any the gate cannot hash with the verifier's external-request finding.
+// Runs in the page between state passes: every finite animation or transition the forced state
+// started jumps to its end, so a state is measured as it rests rather than halfway there.
+async function finishTransitions() {
+  for (const animation of document.getAnimations()) {
+    if (animation.effect?.getComputedTiming().endTime === Infinity) continue;
+    try { animation.finish(); } catch { /* an animation that cannot finish keeps running; the state is still measured */ }
+  }
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+// :hover and :focus-visible forced on every control through the DevTools protocol (a real
+// pointer or Tab reaches one element at a time), after the resting styles were read. Each state is
+// cleared before the next, and the sum of the state checks is the row's audit.state-contrast.
+async function recordStates(page, options, assertLocalTarget) {
+  const session = await page.createCDPSession();
+  try {
+    await session.send("DOM.enable");
+    await session.send("CSS.enable");
+    const { root } = await session.send("DOM.getDocument", { depth: 0 });
+    const { nodeIds } = await session.send("DOM.querySelectorAll", { nodeId: root.nodeId, selector: CONTROL_SELECTOR });
+    const force = (classes) => Promise.all(nodeIds.map((nodeId) => session.send("CSS.forcePseudoState", { nodeId, forcedPseudoClasses: [...classes] })));
+    const rest = await page.evaluate(auditPage, options, auditPass("rest"));
+    assertLocalTarget();
+    const parts = [];
+    for (const [state, classes] of Object.entries(STATE_PSEUDO_CLASSES)) {
+      await force(classes);
+      await page.evaluate(finishTransitions);
+      parts.push(await page.evaluate(auditPage, options, auditPass("state", { state, rest: { controls: rest.controls, texts: rest.texts } })));
+      assertLocalTarget();
+      await force([]);
+      await page.evaluate(finishTransitions);
+    }
+    return combineStateChecks(parts);
+  } finally {
+    await session.detach().catch(() => {});
+  }
+}
+
+// Per declared viewport at device scale 1: a load with prefers-reduced-motion: reduce, then a fresh
+// load without the preference for the full audit (which compares the two) and the state passes.
+// Both loads are read REDUCED_MOTION_SETTLE_MS after the fonts and two frames. Each viewport keeps the requests of both its loads, and
+// the probe's whole log also holds what the page requested while the document viewport was
+// restored for the probes that follow; the audit fails any the gate cannot hash with the
+// verifier's external-request finding.
 async function recordAudit(page, probe, url, recordedRequests, timeoutMs, assertLocalTarget, restore) {
   const mark = recordedRequests.length;
   const options = auditOptions(probe);
@@ -237,18 +277,33 @@ async function recordAudit(page, probe, url, recordedRequests, timeoutMs, assert
     for (const viewport of probe.viewports) {
       const viewportMark = recordedRequests.length;
       await page.setViewport({ width: viewport.width, height: viewport.height, deviceScaleFactor: 1 });
+      await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "reduce" }]);
       await page.goto(url, { waitUntil: "networkidle0", timeout: timeoutMs });
       assertLocalTarget();
       await page.evaluate(settleForAudit);
+      await sleep(REDUCED_MOTION_SETTLE_MS);
       assertLocalTarget();
-      const result = await page.evaluate(auditPage, options);
+      const reduced = await page.evaluate(auditPage, options, auditPass("reduced-motion"));
       assertLocalTarget();
+      await page.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "no-preference" }]);
+      await page.goto(url, { waitUntil: "networkidle0", timeout: timeoutMs });
+      assertLocalTarget();
+      await page.evaluate(settleForAudit);
+      // The same moment as the reduce reading, so script timers (a preloader, a toast, a rotator)
+      // stand at the same point in both and only the preference differs.
+      await sleep(REDUCED_MOTION_SETTLE_MS);
+      assertLocalTarget();
+      const result = await page.evaluate(auditPage, options, auditPass("audit", { reducedMotion: reduced.contractErrors.length ? null : { hidden: reduced.hidden, moving: reduced.moving, animations: reduced.animations } }));
+      assertLocalTarget();
+      if (!result.contractErrors.length) result.checks["audit.state-contrast"] = await recordStates(page, options, assertLocalTarget);
       // The stress pass runs last on this load: it rewrites the page's text in place, and the next
       // viewport starts from a fresh navigation.
-      const stress = stressing && !result.contractErrors?.length ? await recordStress(page, options, stressing, assertLocalTarget) : null;
+      const reducedMotion = reduced.contractErrors.length ? null : { hidden: reduced.hidden, moving: reduced.moving, animations: reduced.animations };
+      const stress = stressing && !result.contractErrors?.length ? await recordStress(page, options, stressing, reducedMotion, assertLocalTarget) : null;
       viewports.push({ viewport: { width: viewport.width, height: viewport.height }, result, ...(stress ? { stress } : {}), requests: recordedRequests.slice(viewportMark) });
     }
   } finally {
+    await page.emulateMediaFeatures();
     await page.setViewport(restore);
   }
   return { id: probe.id, kind: "audit", viewports, requests: recordedRequests.slice(mark) };
