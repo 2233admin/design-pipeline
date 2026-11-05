@@ -421,8 +421,8 @@
       "id": "hyperframes-maintenance",
       "kind": "npm",
       "package": "hyperframes",
-      "version": "0.9.9",
-      "reviewedAt": "2026-11-04",
+      "version": "0.9.15",
+      "reviewedAt": "2026-11-05",
       "note": "The golden-case workspace and browser:install use this copy; the version scaffolded into target projects is the hyperframes entry.",
       "sites": [
         {
