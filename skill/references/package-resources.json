@@ -158,6 +158,7 @@
     "scripts/scaffold-notes.cjs",
     "scripts/interaction-core.cjs",
     "scripts/interaction-audit.cjs",
+    "scripts/interaction-stress.cjs",
     "scripts/interaction-capture-core.cjs",
     "scripts/capture-interaction.cjs",
     "scripts/png-core.cjs",

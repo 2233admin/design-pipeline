@@ -12,6 +12,7 @@ const { fail } = require("./contract-utils.cjs");
 const { resolvePuppeteer } = require("./film-capture-core.cjs");
 const { browserIdentity, resolveBrowser } = require("./browser-locate.cjs");
 const { CONTROL_SELECTOR, REDUCED_MOTION_SETTLE_MS, STATE_PSEUDO_CLASSES, auditOptions, auditPage, auditPass, combineStateChecks } = require("./interaction-audit.cjs");
+const { applyStress, checkStressHeld, classifyClipping, clippedItems, stressOptions } = require("./interaction-stress.cjs");
 
 const SCOPE = "interaction capture";
 const CAPTURE_SCHEMA = "design-pipeline.interaction-capture.v1";
@@ -206,6 +207,23 @@ async function settleForAudit() {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 
+// The long-content stress pass on the loaded page: lengthen its text, let layout and fonts settle,
+// measure it again with the same audit (given the reduce snapshot of this viewport), classify the clipped text as reachable truncation or not,
+// and check that the page did not revert the rewrite.
+async function recordStress(page, options, stressing, reducedMotion, assertLocalTarget) {
+  const applied = await page.evaluate(applyStress, stressing);
+  assertLocalTarget();
+  if (applied.contractErrors.length || applied.changed === 0) return { applied };
+  await page.evaluate(settleForAudit);
+  const result = await page.evaluate(auditPage, options, auditPass("audit", { reducedMotion }));
+  assertLocalTarget();
+  const truncation = result.contractErrors?.length ? [] : await page.evaluate(classifyClipping, clippedItems(result));
+  assertLocalTarget();
+  // Last, so a re-render anywhere between the rewrite and the classification is caught.
+  const { reverted } = await page.evaluate(checkStressHeld);
+  return { applied, result, truncation, reverted };
+}
+
 // Runs in the page between state passes: every finite animation or transition the forced state
 // started jumps to its end, so a state is measured as it rests rather than halfway there.
 async function finishTransitions() {
@@ -253,6 +271,7 @@ async function recordStates(page, options, assertLocalTarget) {
 async function recordAudit(page, probe, url, recordedRequests, timeoutMs, assertLocalTarget, restore) {
   const mark = recordedRequests.length;
   const options = auditOptions(probe);
+  const stressing = stressOptions(probe);
   const viewports = [];
   try {
     for (const viewport of probe.viewports) {
@@ -277,7 +296,11 @@ async function recordAudit(page, probe, url, recordedRequests, timeoutMs, assert
       const result = await page.evaluate(auditPage, options, auditPass("audit", { reducedMotion: reduced.contractErrors.length ? null : { hidden: reduced.hidden, moving: reduced.moving, animations: reduced.animations } }));
       assertLocalTarget();
       if (!result.contractErrors.length) result.checks["audit.state-contrast"] = await recordStates(page, options, assertLocalTarget);
-      viewports.push({ viewport: { width: viewport.width, height: viewport.height }, result, requests: recordedRequests.slice(viewportMark) });
+      // The stress pass runs last on this load: it rewrites the page's text in place, and the next
+      // viewport starts from a fresh navigation.
+      const reducedMotion = reduced.contractErrors.length ? null : { hidden: reduced.hidden, moving: reduced.moving, animations: reduced.animations };
+      const stress = stressing && !result.contractErrors?.length ? await recordStress(page, options, stressing, reducedMotion, assertLocalTarget) : null;
+      viewports.push({ viewport: { width: viewport.width, height: viewport.height }, result, ...(stress ? { stress } : {}), requests: recordedRequests.slice(viewportMark) });
     }
   } finally {
     await page.emulateMediaFeatures();

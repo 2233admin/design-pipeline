@@ -952,8 +952,8 @@ Neither upstream sponsors or has reviewed this project.
 
 ## Concept distillations (2026-11-04)
 
-Project-owned guide text written in this repository's words; no upstream text, code or media is
-copied or shipped.
+Project-owned guide text and code written in this repository's words; no upstream text, code or
+media is copied or shipped.
 
 - The world-branded UI and key art review lens in `skill/references/game-ui-and-narrative.md`:
   from AJ, "藏在「好看」背后的先进性", Tencent Game Institute,
@@ -968,3 +968,7 @@ copied or shipped.
   at `69ccbeaf0b821591a40936572c2f559d8f4cfb68` as a companion. It is not distributed with this
   package: its original collection is shared on free, no-resale terms, and its Lemo-Opuscar,
   mg-styles-15 and code-video series keep their own MIT licences.
+- `skill/scripts/interaction-stress.cjs` (the audit probe's long-content stress pass): the 2.5x text
+  lengthening, the unbroken table-cell string, the huge number and truncation with no way back, from
+  https://github.com/feimacode/open-design-agent-kit (`packages/core/src/export/screenChecks.ts`) at
+  `927d4b6e6a29d8bfebdccadb4bb4a1b2a6438e73`, MIT, Copyright (c) 2026 Iven Xu.

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stress fixture: a page that re-renders over the stress text</title>
+<link rel="icon" href="data:,">
+<style>
+/* The name box clips, but a MutationObserver puts the mock-up text back as soon as it changes,
+   the way a framework re-render would: the stressed audit then measures the original copy. */
+@font-face { font-family: "Inter"; src: url("fonts/Inter-var.woff") format("woff"); font-weight: 100 900; font-display: block; }
+html { background: #fff; color: #18181b; font: 16px/1.5 Inter, sans-serif; }
+body { margin: 0; padding: 24px 16px; }
+.name { width: 160px; margin: 0; white-space: nowrap; overflow: hidden; }
+</style>
+</head>
+<body>
+<main><p class="name" id="name">Alice Johnson</p></main>
+<script>
+const name = document.getElementById("name");
+const text = name.firstChild.nodeValue;
+new MutationObserver(() => { if (name.textContent !== text) name.textContent = text; }).observe(name, { subtree: true, characterData: true, childList: true });
+</script>
+</body>
+</html>
