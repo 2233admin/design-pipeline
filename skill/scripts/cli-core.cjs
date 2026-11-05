@@ -2350,7 +2350,7 @@ function templateDistillCommand(parsed, root, operand) {
   const gaps = Object.entries(result.thresholds).filter(([, t]) => t.support === "gap").map(([k]) => k);
   return {
     result: {
-      status: "drafted", id, files, references: result.board.measured, skipped: result.board.skipped, annotated: result.board.annotated,
+      status: "drafted", id, files: Object.fromEntries(Object.entries(files).map(([k, f]) => [k, templateDistill.relPath(f, root)])), references: result.board.measured, skipped: result.board.skipped, annotated: result.board.annotated,
       supported: Object.entries(result.thresholds).filter(([, t]) => t.support === "measured").map(([k]) => k),
       thin: Object.entries(result.thresholds).filter(([, t]) => t.support === "thin").map(([k]) => k), gaps,
       archetypes: result.archetypes.slice(0, 5).map((a) => ({ key: a.key, n: a.n, nearest: a.nearest[0] || null, skeleton: Boolean(a.skeleton) })),
@@ -2358,7 +2358,7 @@ function templateDistillCommand(parsed, root, operand) {
       ...(result.comparison ? { comparison: { style: result.comparison.style, rows: result.comparison.rows.map(({ label, hand, draft, ratio, same }) => ({ label, hand, draft, ratio, same })), palette: result.comparison.palette } } : {}),
       ...(result.ablation ? { ablation: result.ablation } : {}),
       scope: "A draft from measured distributions: it says what the references are like, not what is good. Review report.md, then copy style.json into styles/<id>/ and write templates for it. No gate or acceptance changes.",
-      next: `Read ${files.report}; the gaps need human judgement.${option(parsed, "--ablate") === true ? "" : " Add --ablate to render the nearest templates with and without each rule."}`,
+      next: `Read ${templateDistill.relPath(files.report, root)}; the gaps need human judgement.${option(parsed, "--ablate") === true ? "" : " Add --ablate to render the nearest templates with and without each rule."}`,
     },
     exitCode: 0,
   };
@@ -2368,6 +2368,19 @@ function templateAblation(root, parsed, result, out, tools) {
   const picks = [];
   for (const a of result.archetypes) for (const n of a.nearest.slice(0, 1)) if (!picks.includes(n.id) && picks.length < 3) picks.push(n.id);
   if (!picks.length) return { status: "not-run", reason: "no archetype has a nearest template" };
+  // The browser is checked before rendering: only a browser that cannot be found or launched is
+  // "install a browser"; any other failure is a real error and is raised.
+  const installFix = "Fix: install puppeteer-core and Chrome (npm run browser:install), or pass --chrome <exe> --puppeteer-module <path>";
+  try {
+    const { resolvePuppeteer } = require("./film-capture-core.cjs");
+    const { resolveBrowser } = require("./browser-locate.cjs");
+    let puppeteerModule = option(parsed, "--puppeteer-module");
+    if (puppeteerModule === null) { try { puppeteerModule = path.dirname(require.resolve("puppeteer-core/package.json", { paths: [root, process.cwd(), __dirname] })); } catch { puppeteerModule = null; } }
+    resolvePuppeteer(root, puppeteerModule === null ? undefined : String(puppeteerModule));
+    resolveBrowser(option(parsed, "--chrome") === null ? undefined : String(option(parsed, "--chrome")));
+  } catch (error) {
+    return { status: "not-run", reason: `no browser to render with: ${String(error.message).split("\n")[0]}. ${installFix}` };
+  }
   const dir = path.join(out, "ablation");
   fs.mkdirSync(dir, { recursive: true });
   const variants = templateDistill.ablationVariants(result.draft);
@@ -2394,13 +2407,18 @@ function templateAblation(root, parsed, result, out, tools) {
       rows.push({ ...v, ...templateDistill.distanceTo(features, result.thresholds) });
     }
   } catch (error) {
-    return { status: "not-run", reason: `rendering failed: ${String(error.message).split("\n")[0]}. Fix: install puppeteer-core and Chrome (npm run browser:install), or pass --chrome <exe> --puppeteer-module <path>` };
+    if (/Failed to launch|Could not find (?:Chrome|Chromium|browser|expected browser)|executablePath|Browser was not found/i.test(String(error.message))) {
+      return { status: "not-run", reason: `the browser did not launch: ${String(error.message).split("\n")[0]}. ${installFix}` };
+    }
+    throw error;
   }
+  const baseline = templateDistill.distanceTo([templateDistill.blankFeatures(result.draft.palette.bg?.value || "#FFFFFF")], result.thresholds);
   const full = rows[0];
   return {
-    status: "measured", templates: picks, seeds, samples: picks.length * seeds.length, features: templateDistill.ABLATION_FEATURES, dir,
+    status: "measured", templates: picks, seeds, samples: picks.length * seeds.length, features: templateDistill.ABLATION_FEATURES, dir: templateDistill.relPath(dir, root),
+    baseline: { variant: "blank-page", ground: result.draft.palette.bg?.value || "#FFFFFF", ...baseline },
     variants: rows.map((r) => ({ variant: r.variant, rule: r.rule, distance: r.distance, delta: r === full ? 0 : Number((r.distance - full.distance).toFixed(3)), per: r.per, ...(r.axis ? { axis: { feature: r.axis, delta: Number(((r.per[r.axis] ?? 0) - (full.per[r.axis] ?? 0)).toFixed(3)) } } : {}) })),
-    note: "Paired change against the full draft on the same templates and seeds; templates render placeholders where art goes, so absolute distances stay high.",
+    note: "Paired change against the full draft on the same templates and seeds; templates render placeholders where art goes, so absolute distances stay high. The blank-page baseline is a flat page of the draft ground: colour axes carry little signal for template renders that do not beat it clearly.",
   };
 }
 

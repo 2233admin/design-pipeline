@@ -9,6 +9,16 @@
 - **WHEN** `template distill` runs on nine generated references with annotations
 - **THEN** it SHALL exit 0 and write `style.json`, `distill.json` and `report.md`, and `style.json` SHALL pass the bank's style validation.
 
+#### Scenario: Paths in the outputs
+
+- **WHEN** the board, images and output sit under `--root`
+- **THEN** `distill.json`, `style.json` and `report.md` SHALL contain no absolute path, and tool errors SHALL name only the file.
+
+#### Scenario: Small references
+
+- **WHEN** a reference is smaller than 480 px on its long side
+- **THEN** it SHALL be scaled up to 480 px as the study did, and a side under 16 px after scaling SHALL leave whitespace unmeasured with a note.
+
 #### Scenario: Board without ids
 
 - **WHEN** the board CSV has no `id` column
@@ -27,6 +37,16 @@ Each threshold in the draft's `checks.measured` SHALL come from the references' 
 
 - **WHEN** a board is distilled
 - **THEN** the accent threshold SHALL equal the p75 of the references' strong-colour shares.
+
+#### Scenario: Thin data is a tendency
+
+- **WHEN** only four references carry a feature
+- **THEN** its threshold SHALL be `thin`, no grammar sentence from it SHALL enter `style.json`, and the report SHALL list it under "Tendencies (thin data)".
+
+#### Scenario: Two references are a gap
+
+- **WHEN** only two references carry a feature
+- **THEN** its threshold SHALL be a `gap` with limit null.
 
 #### Scenario: A feature no reference carries
 
@@ -83,3 +103,13 @@ With `--ablate` the result SHALL render the nearest templates with the draft pal
 
 - **WHEN** the ablation tints the ground
 - **THEN** the ground-chroma distance of that variant SHALL rise against the full draft.
+
+#### Scenario: Blank-page floor
+
+- **WHEN** the ablation runs
+- **THEN** the report SHALL include the distance of a flat page of the draft ground as a baseline row.
+
+#### Scenario: Not a browser problem
+
+- **WHEN** rendering fails for a reason other than a missing or unlaunchable browser
+- **THEN** the error SHALL be raised, not reported as "install a browser".

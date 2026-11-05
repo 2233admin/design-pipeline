@@ -194,7 +194,8 @@ designer-pipeline template distill refs/provenance.csv --images refs/raw -o draf
 - **Output** in `-o`: `style.json` (a style pack with `draft: true`; `checks.measured` holds each
   threshold with its kind, basis and support), `distill.json` (every reference's measures) and
   `report.md`. Thresholds are the reference distribution: a maximum is the p75, a minimum the p25,
-  a band p25-p75; `measured` needs 8 references, `thin` 3, fewer is a `gap`.
+  a band p25-p75; `measured` needs 8 references, `thin` 3, fewer is a `gap` (no limit). Only measured
+  features write grammar into `style.json`; thin ones are listed as tendencies in the report.
 - **Archetypes**: references grouped by aspect, title position, figure side (or symmetry) and
   whitespace; each names the nearest bank template or a skeleton (median boxes) to write.
 - **Font roles**: mincho when stem / bar is 1.8 or more (the catalog's measure on 十), gothic at 1.35

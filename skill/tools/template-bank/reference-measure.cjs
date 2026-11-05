@@ -17,6 +17,7 @@
 // Boxes (fractions of the frame, from the board's annotations): title centre, area and side, text
 // margins, type-size ratio, figure centre and width, title-over-figure overlap, title orientation.
 
+const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 
 const LONG_EDGE = 480;
@@ -29,21 +30,37 @@ class MeasureError extends Error {
   constructor(message, code = "REFERENCE_UNREADABLE") { super(message); this.code = code; }
 }
 
-function run(command, args, binary = false) {
-  const child = spawnSync(command, args, { encoding: binary ? "buffer" : "utf8", maxBuffer: 256 << 20, windowsHide: true });
-  if (child.error) throw new MeasureError(`${command} could not run: ${child.error.message}. Fix: install ffmpeg/ffprobe on PATH or pass --ffmpeg`, "TOOL_MISSING");
-  if (child.status !== 0) throw new MeasureError(`${command} failed: ${String(child.stderr).trim().split("\n").pop()}`);
+const MAX_BUFFER = 256 << 20;
+
+/** A short, path-free message from a tool's stderr (its last line, file paths reduced to names). */
+function shortError(stderr, file) {
+  let line = String(stderr || "").trim().split("\n").pop() || "no message";
+  if (file) line = line.split(file).join(path.basename(file));
+  line = line.replace(/(?:[A-Za-z]:)?[\\/][^\s:'"]*[\\/]([^\s:'"\\/]+)/g, "$1");
+  return line.length > 160 ? `${line.slice(0, 157)}...` : line;
+}
+
+function run(command, args, { binary = false, file = null } = {}) {
+  const child = spawnSync(command, args, { encoding: binary ? "buffer" : "utf8", maxBuffer: MAX_BUFFER, windowsHide: true });
+  if (child.error?.code === "ENOBUFS") throw new MeasureError(`${path.basename(String(file))}: decoded output is larger than ${MAX_BUFFER >> 20} MB. Fix: give a smaller crop or image`, "REFERENCE_UNREADABLE");
+  if (child.error?.code === "ENOENT") throw new MeasureError(`${path.basename(command)} was not found. Fix: install ffmpeg/ffprobe on PATH or pass --ffmpeg / --ffprobe`, "TOOL_MISSING");
+  if (child.error) throw new MeasureError(`${path.basename(command)} could not run on ${path.basename(String(file))}: ${child.error.code || child.error.message}`, "REFERENCE_UNREADABLE");
+  if (child.status !== 0) throw new MeasureError(`${path.basename(command)} could not read ${path.basename(String(file))}: ${shortError(child.stderr, file)}`);
   return child.stdout;
 }
 
 function probeSize(file, tools = {}) {
-  const out = run(tools.ffprobe || "ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0:s=x", file]);
+  const out = run(tools.ffprobe || "ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0:s=x", file], { file });
   const match = /^(\d+)x(\d+)/.exec(String(out).trim());
-  if (!match) throw new MeasureError(`could not read the size of ${file}`);
+  if (!match) throw new MeasureError(`could not read the size of ${path.basename(file)}`);
   return [Number(match[1]), Number(match[2])];
 }
 
-/** First frame of an image as RGB, scaled so the long edge is at most `longEdge` (area filter). */
+/**
+ * First frame of an image as RGB. With `longEdge`, scaled so the long edge is exactly `longEdge`
+ * (down or up, area filter, as the study's cv2.resize); with longEdge 0, native size, except that
+ * a frame too big for the output buffer is scaled down to fit (`scale` reports the factor).
+ */
 function decode(file, { longEdge = LONG_EDGE, crop = null, tools = {} } = {}) {
   const [W, H] = probeSize(file, tools);
   const filters = [];
@@ -53,13 +70,14 @@ function decode(file, { longEdge = LONG_EDGE, crop = null, tools = {} } = {}) {
     filters.push("format=rgb24", `crop=${cw}:${ch}:${x}:${y}`); // rgb first: a 4:2:0 crop rounds odd sizes
     [w, h] = [cw, ch];
   }
-  const k = longEdge ? Math.min(1, longEdge / Math.max(w, h)) : 1;
+  const fit = Math.min(1, Math.sqrt((MAX_BUFFER * 0.9) / (w * h * 3)));
+  const k = longEdge ? longEdge / Math.max(w, h) : fit;
   const [tw, th] = [Math.max(8, Math.round(w * k)), Math.max(8, Math.round(h * k))];
   if (tw !== w || th !== h) filters.push(`scale=${tw}:${th}:flags=area`);
   const args = ["-v", "error", "-i", file, "-frames:v", "1", ...(filters.length ? ["-vf", filters.join(",")] : []), "-pix_fmt", "rgb24", "-f", "rawvideo", "pipe:1"];
-  const raw = run(tools.ffmpeg || "ffmpeg", args, true);
-  if (raw.length !== tw * th * 3) throw new MeasureError(`decoded ${raw.length} bytes from ${file}, expected ${tw * th * 3} (an animated or unsupported image?)`);
-  return { width: tw, height: th, source: [W, H], rgb: new Uint8Array(raw.buffer, raw.byteOffset, raw.length) };
+  const raw = run(tools.ffmpeg || "ffmpeg", args, { binary: true, file });
+  if (raw.length !== tw * th * 3) throw new MeasureError(`decoded ${raw.length} bytes from ${path.basename(file)}, expected ${tw * th * 3} (an animated or unsupported image?)`);
+  return { width: tw, height: th, source: [W, H], scale: tw / w, rgb: new Uint8Array(raw.buffer, raw.byteOffset, raw.length) };
 }
 
 // ---- colour ----------------------------------------------------------------------------------
@@ -362,8 +380,12 @@ function measurePixels(decoded) {
   const L = channel(lab, w, h, 0);
   const G = sobel(L, w, h);
   const pal = paletteFeatures(lab);
-  const features = { ...pal.features, ...balance(lab, w, h, pal.groundL, G), ...symmetry(L, w, h), ...whitespace(G, w, h), ...spectrum(L, w, h) };
-  return { features: Object.fromEntries(Object.entries(features).map(([k, v]) => [k, round(v)])), palette: pal.palette, letterbox: [round(top / decoded.height, 3), round(bottom / decoded.height, 3)], measuredAt: [w, h] };
+  // Whitespace needs a 16 x 16 grid of whole pixels: a side under 16 px (an extreme strip even at
+  // a 480 px long edge) has no cells, so it is left out of the whitespace statistics, not zero.
+  const notes = [];
+  const space = w >= QUIET_GRID && h >= QUIET_GRID ? whitespace(G, w, h) : (notes.push(`whitespace not measured: ${w}x${h} px is under ${QUIET_GRID} px on a side`), {});
+  const features = { ...pal.features, ...balance(lab, w, h, pal.groundL, G), ...symmetry(L, w, h), ...space, ...spectrum(L, w, h) };
+  return { features: Object.fromEntries(Object.entries(features).map(([k, v]) => [k, round(v)])), palette: pal.palette, letterbox: [round(top / decoded.height, 3), round(bottom / decoded.height, 3)], measuredAt: [w, h], notes };
 }
 
 // ---- boxes (annotations) ---------------------------------------------------------------------
@@ -509,6 +531,6 @@ function classifyStroke(s) {
 }
 
 module.exports = {
-  CHROMA_ACCENT, CHROMA_COLOURED, CONTRAST_HIGH, CONTRAST_LOW, LONG_EDGE, MeasureError, WEIGHT_STEPS,
-  classifyStroke, decode, hexToOklab, kmeans, letterbox, measureBoxes, measurePixels, oklabOf, oklabToHex, probeSize, quantile, round, strokeStyle,
+  MAX_BUFFER, CHROMA_ACCENT, CHROMA_COLOURED, CONTRAST_HIGH, CONTRAST_LOW, LONG_EDGE, MeasureError, WEIGHT_STEPS,
+  classifyStroke, decode, hexToOklab, kmeans, letterbox, measureBoxes, measurePixels, oklabOf, oklabToHex, probeSize, quantile, round, shortError, strokeStyle,
 };

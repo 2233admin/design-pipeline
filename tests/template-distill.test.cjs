@@ -249,24 +249,96 @@ test("an archetype no template is close to gets a skeleton", { skip: NO_FFMPEG }
   assert.equal(r.thresholds.accent_share.support, "thin", "4 references: a thin threshold");
 });
 
-test("the font catalog hook: candidates when a catalog is installed, the command when not", { skip: NO_FFMPEG }, (t) => {
+// A stand-in with the open-font catalog's real signatures (font-catalog-core.cjs of #290):
+// resolveCatalog({ catalog, cacheRoot: () => dir }) and queryCatalog({ catalog, text, style, contrast, weight }).
+function fakeCatalogCore(calls, { fail = null } = {}) {
+  return {
+    resolveCatalog({ catalog, cacheRoot }) {
+      calls.push({ resolve: { catalog, cacheRoot: typeof cacheRoot } });
+      if (typeof cacheRoot !== "function") throw new TypeError("cacheRoot is not a function");
+      if (fail) { const error = new Error(fail); error.fix = "Reinstall the skill or run `designer-pipeline fonts refresh`."; throw error; }
+      return { origin: "packaged", file: "catalog.json", catalog: { families: [], cmaps: {} } };
+    },
+    queryCatalog(q) {
+      calls.push(q);
+      return { text: q.text, characters: 3, candidates: [{ family: "Shippori Mincho B1", origin: "catalog", styles: ["mincho"], contrast: 2.9, weights: [800], license: { id: "OFL", name: "SIL Open Font License 1.1" } }], missing: [], excluded: [] };
+    },
+  };
+}
+
+test("the font catalog hook: called as the catalog's CLI calls it; candidates, or the fix when it is unavailable", { skip: NO_FFMPEG }, (t) => {
   const dir = kvBoard(path.join(tempRoot(t), "fc"), { count: 3 });
-  const calls = [];
-  distill.useFontCatalog({
-    resolveCatalog: () => ({ catalog: { families: [] } }),
-    queryCatalog: (q) => { calls.push(q); return { candidates: [{ family: "Shippori Mincho B1", styles: ["mincho"], contrast: 2.9, weights: [800], license: { id: "OFL" } }] }; },
-  });
   t.after(() => distill.useFontCatalog(null));
-  const r = distill.distill({ board: path.join(dir, "provenance.csv"), images: dir, annotations: path.join(dir, "annotations.csv"), id: "gen-fc" });
-  assert.equal(calls[0].style, "mincho");
-  assert.equal(calls[0].contrast, "high");
-  assert.ok(calls[0].text.length > 0);
+  const calls = [];
+  distill.useFontCatalog(fakeCatalogCore(calls));
+  const args = { board: path.join(dir, "provenance.csv"), images: dir, annotations: path.join(dir, "annotations.csv"), id: "gen-fc" };
+  const r = distill.distill(args);
+  assert.deepEqual(calls[0], { resolve: { catalog: null, cacheRoot: "function" } });
+  assert.equal(calls[1].style, "mincho");
+  assert.equal(calls[1].contrast, "high");
+  assert.ok(calls[1].text.length > 0);
   assert.equal(r.fonts.title.catalog.status, "queried");
+  assert.equal(r.fonts.title.catalog.candidates[0].license, "OFL");
   assert.deepEqual(r.draft.fonts.roles.title.stack, ["Shippori Mincho B1"]);
   assert.equal(r.draft.fonts.roles.title.stackSource, "open-font catalog candidates");
+  // A catalog that cannot load: status unavailable, and the report prints the fix.
+  distill.useFontCatalog(fakeCatalogCore([], { fail: "no font catalog is packaged or cached" }));
+  const down = distill.distill(args);
+  assert.equal(down.fonts.title.catalog.status, "unavailable");
+  assert.match(distill.reportMarkdown(down), /Catalog: unavailable \(no font catalog is packaged or cached; fix: Reinstall the skill/);
+  assert.deepEqual(down.draft.fonts.roles.title.stack, ["Noto Serif CJK SC"]);
+});
+
+const REAL_CATALOG = path.join(__dirname, "..", "skill", "scripts", "font-catalog-core.cjs");
+test("contract: the real open-font catalog module answers the hook", { skip: NO_FFMPEG || (fs.existsSync(REAL_CATALOG) ? false : "font-catalog-core.cjs (#290) is not in this package") }, (t) => {
+  const dir = kvBoard(path.join(tempRoot(t), "real"), { count: 3 });
   distill.useFontCatalog(null);
-  const without = distill.distill({ board: path.join(dir, "provenance.csv"), images: dir, annotations: path.join(dir, "annotations.csv"), id: "gen-fc" });
-  assert.ok(["not-installed", "queried", "unavailable"].includes(without.fonts.title.catalog.status));
+  const r = distill.distill({ board: path.join(dir, "provenance.csv"), images: dir, annotations: path.join(dir, "annotations.csv"), id: "gen-real" });
+  assert.equal(r.fonts.title.catalog.status, "queried", JSON.stringify(r.fonts.title.catalog));
+  assert.ok(Array.isArray(r.fonts.title.catalog.candidates));
+});
+
+test("support levels: thin data stays out of the draft's grammar and is listed as tendencies; gaps have no limit", { skip: NO_FFMPEG }, (t) => {
+  const thinDir = kvBoard(path.join(tempRoot(t), "thin"), { count: 4 });
+  const thin = distill.distill({ board: path.join(thinDir, "provenance.csv"), images: thinDir, annotations: path.join(thinDir, "annotations.csv"), id: "gen-thin" });
+  assert.equal(thin.thresholds.accent_share.support, "thin");
+  assert.deepEqual(thin.draft.layout.grammar, [], "no sentence of 4 references is a rule");
+  assert.ok(thin.tendencies.some((line) => /Title on the left in 4\/4 annotated references \(a tendency, not a rule\)\. \[thin: 4 references\]/.test(line)), thin.tendencies.join("\n"));
+  const md = distill.reportMarkdown(thin);
+  assert.match(md, /## Tendencies \(thin data\)/);
+  assert.doesNotMatch(md.split("## Tendencies")[0], /\| accent_share \|/, "thin thresholds are not under Supported by data");
+  const gapDir = kvBoard(path.join(tempRoot(t), "gap"), { count: 2 });
+  const gap = distill.distill({ board: path.join(gapDir, "provenance.csv"), images: gapDir, annotations: path.join(gapDir, "annotations.csv"), id: "gen-gap" });
+  assert.equal(gap.thresholds.accent_share.support, "gap");
+  assert.equal(gap.thresholds.accent_share.limit, null);
+  assert.equal(gap.draft.checks.measured.accent_share.limit, null);
+  assert.match(gap.thresholds.accent_share.basis, /only 2 references carry it/);
+});
+
+test("small and strip images: measured at a 480 px long edge like the study; under 16 px a side, whitespace is left out", { skip: NO_FFMPEG }, (t) => {
+  const dir = tempRoot(t);
+  const small = canvas(40, 20, [242, 238, 228]);
+  rect(small, 16, 6, 24, 14, [209, 14, 31]);
+  const a = measure.measurePixels(measure.decode(save(path.join(dir, "small.png"), small)));
+  assert.deepEqual(a.measuredAt, [480, 240]);
+  assert.ok(Math.abs(a.features.accent_share - 0.08) < 0.01, `area kept when upscaled (${a.features.accent_share})`);
+  assert.ok(Number.isFinite(a.features.quiet_share));
+  const strip = canvas(600, 4, [242, 238, 228]);
+  const b = measure.measurePixels(measure.decode(save(path.join(dir, "strip.png"), strip)));
+  assert.ok(b.measuredAt[1] < 16);
+  assert.equal(b.features.quiet_share, undefined, "not 0, not NaN: absent");
+  assert.match(b.notes[0], /whitespace not measured/);
+});
+
+test("tool errors: missing ffmpeg is TOOL_MISSING; an unreadable file names only the file, never its path", { skip: NO_FFMPEG }, (t) => {
+  const dir = tempRoot(t);
+  const bad = path.join(dir, "deep", "bad.png");
+  fs.mkdirSync(path.dirname(bad));
+  fs.writeFileSync(bad, "not a png");
+  assert.throws(() => measure.decode(bad, { tools: { ffprobe: path.join(dir, "no-such-ffprobe") } }), (e) => e.code === "TOOL_MISSING");
+  assert.throws(() => measure.decode(bad), (e) => e.code === "REFERENCE_UNREADABLE" && e.message.includes("bad.png") && !e.message.includes(dir) && e.message.length < 260);
+  assert.equal(measure.shortError(`[in#0 @ 0x1] Error opening input ${bad}: Invalid data`, bad), "[in#0 @ 0x1] Error opening input bad.png: Invalid data");
+  assert.equal(measure.shortError("x /a/b/c/file.webp: y"), "x file.webp: y");
 });
 
 test("CLI: template distill writes the draft, measures and report, never the images; options are checked", { skip: NO_FFMPEG }, (t) => {
@@ -281,6 +353,8 @@ test("CLI: template distill writes the draft, measures and report, never the ima
   bank.validateStyle(style, "draft-provenance");
   const all = fs.readdirSync(path.join(root, "out")).map((f) => fs.readFileSync(path.join(root, "out", f), "utf8")).join("\n");
   assert.doesNotMatch(all, /base64|\x89PNG/);
+  assert.ok(!all.includes(root) && !all.includes(os.tmpdir()), "no absolute path in distill.json, style.json or report.md");
+  assert.equal(run.payload.files.report, path.join("out", "report.md"));
   for (const id of ["R00", "R04"]) assert.ok(all.includes(id), "ids and source URLs are kept");
   assert.ok(run.payload.comparison.rows.length >= 7);
   assert.ok(run.payload.gaps.includes("type_ratio"));
@@ -312,5 +386,9 @@ test("CLI: --ablate renders the nearest templates with and without each rule and
   assert.ok(by["no-neutral-ground"].axis.delta > 1, `a tinted ground moves ground chroma away (${by["no-neutral-ground"].axis.delta})`);
   assert.ok(by["no-neutral-ground"].delta > 0);
   assert.ok(by["no-single-hue"].axis.delta > 0, `a second hue spreads hue (${by["no-single-hue"].axis.delta})`);
-  assert.ok(fs.readFileSync(path.join(root, "out", "report.md"), "utf8").includes("## Ablation"));
+  assert.equal(ab.baseline.variant, "blank-page");
+  assert.ok(Number.isFinite(ab.baseline.distance));
+  assert.equal(ab.dir, path.join("out", "ablation"));
+  const md = fs.readFileSync(path.join(root, "out", "report.md"), "utf8");
+  assert.ok(md.includes("## Ablation") && md.includes("| blank page (draft ground only) |") && /little signal/.test(md));
 });

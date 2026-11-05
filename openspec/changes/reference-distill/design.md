@@ -63,6 +63,23 @@
   nine colour and space features of |sample median - reference median| / reference IQR. The paired
   change is the reading; absolute distance stays high because templates draw placeholders.
 
+## Review fixes (decisions by the coordinator on the PR review)
+
+- Font hook: `resolveCatalog({ catalog: null, cacheRoot })` with `vendor-cache.cjs`'s `cacheRoot`,
+  exactly as #290's `fonts query`; verified end to end against #290's real module (title role ->
+  Chiron Sung HK, Noto Serif SC). `unavailable` carries a `fix` that the report prints. The test stub
+  has #290's signatures; a contract test loads the real module when the package has it.
+- Support: a grammar sentence enters `style.json` only when its feature is `measured` (8+); thin
+  sentences and thresholds go to the report's "Tendencies (thin data)"; a gap (under 3) has limit null.
+- Small images are scaled up to a 480 px long edge, as the study's `cv2.resize`; a side under 16 px
+  after that leaves whitespace out (absent with a note, never 0).
+- Outputs carry paths relative to `--root`; ffmpeg errors are one short line naming only the file.
+  `ENOBUFS` is a buffer overflow (`REFERENCE_UNREADABLE`), not a missing tool; native-size crops are
+  scaled down to fit the output buffer, and annotated text sizes follow the scale.
+- Ablation: a blank-page row (a flat page of the draft ground) is the floor; the report says colour
+  axes carry little signal for template renders. The browser is resolved before rendering; only a
+  browser that cannot be found or launched becomes "not run"; other errors are raised.
+
 ## Acceptance, measured (images local, not committed)
 
 Port parity, `features.py` (art-study) against `reference-measure.cjs` on 10 study images with no

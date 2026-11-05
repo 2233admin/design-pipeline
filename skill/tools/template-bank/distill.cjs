@@ -82,6 +82,12 @@ function readAnnotations(file) {
 }
 
 /** The provenance list the bank already asks for (id, source URL, size, category, date). */
+/** A path as it may appear in outputs: relative to --root (or the working directory), never absolute. */
+function relPath(file, root = null) {
+  const rel = path.relative(path.resolve(root || process.cwd()), path.resolve(file));
+  return (rel.startsWith("..") || path.isAbsolute(rel) ? path.basename(file) : rel) || ".";
+}
+
 function readBoard(boardFile, { images = null, annotations = null, categories = null, root = null } = {}) {
   if (!fs.existsSync(boardFile)) throw new DistillError(`board ${boardFile} does not exist`, "OPTION_VALUE_INVALID");
   const rows = parseCsv(fs.readFileSync(boardFile, "utf8"));
@@ -98,11 +104,12 @@ function readBoard(boardFile, { images = null, annotations = null, categories = 
     const a = ann.get(r.id) || null;
     const category = r.category || r.category_by_eye || a?.category || null;
     if (wanted && !wanted.has(category)) continue;
-    const source = r.image_url || r.source_url || r.source || r.url || null;
+    let source = r.image_url || r.source_url || r.source || r.url || null;
+    if (source && !/^[a-z][a-z0-9+.-]*:\/\//i.test(source) && path.isAbsolute(source)) source = relPath(source, root);
     let file = null;
     if (r.file) file = path.resolve(imageDir, r.file);
     else for (const ext of IMAGE_EXTENSIONS) { const f = path.join(imageDir, `${r.id}${ext}`); if (fs.existsSync(f)) { file = f; break; } }
-    if (!file || !fs.existsSync(file)) { skipped.push({ id: r.id, reason: "image not found", fix: `put ${r.id}.jpg|png|webp in ${imageDir} or give a file column` }); continue; }
+    if (!file || !fs.existsSync(file)) { skipped.push({ id: r.id, reason: "image not found", fix: `put ${r.id}.jpg|png|webp in ${relPath(imageDir, root)} or give a file column` }); continue; }
     if (root) {
       const rel = path.relative(fs.realpathSync(root), fs.realpathSync(file));
       if (rel.startsWith("..") || path.isAbsolute(rel)) { skipped.push({ id: r.id, reason: `image ${r.file} is outside --root`, fix: "move it under --root or pass a wider --root" }); continue; }
@@ -133,7 +140,7 @@ function measureEntry(entry, tools = {}) {
     if (px[2] - px[0] < 8 || px[3] - px[1] < 8) continue;
     try {
       const img = measure.decode(entry.file, { longEdge: 0, crop: [px[0], px[1], px[2] - px[0], px[3] - px[1]], tools });
-      const sizePx = crop.size ? crop.size * Math.max(W, H) : null;
+      const sizePx = crop.size ? crop.size * Math.max(W, H) * (img.scale || 1) : null; // in the decoded crop's pixels
       const s = measure.strokeStyle(img, { vertical: crop.vertical, sizePx: sizePx && sizePx >= 4 ? sizePx : null });
       const c = measure.classifyStroke(s);
       type.push({ role: crop.role, ...s, style: c.style, contrastClass: c.contrast, weightClass: c.weight, why: c.reason });
@@ -145,7 +152,7 @@ function measureEntry(entry, tools = {}) {
   return {
     id: entry.id, category: entry.category, source: entry.source, sha256: sha256(entry.file), size: [W, H],
     aspect: aspect > 1.15 ? "landscape" : aspect < 0.87 ? "portrait" : "square",
-    letterbox: pixels.letterbox, features: { ...pixels.features, ...boxes }, palette: pixels.palette, type,
+    letterbox: pixels.letterbox, features: { ...pixels.features, ...boxes }, notes: pixels.notes, palette: pixels.palette, type,
   };
 }
 
@@ -188,8 +195,10 @@ function thresholds(measured) {
   const out = {};
   for (const t of THRESHOLDS) {
     const d = distribution(measured.map((m) => m.features[t.feature]));
-    const limit = d.n ? (t.kind === "max" ? d.p75 : t.kind === "min" ? d.p25 : [d.p25, d.p75]) : null;
-    out[t.feature] = { rule: t.rule, kind: t.kind, what: t.what, limit, basis: d.n ? `${t.kind === "max" ? "p75" : t.kind === "min" ? "p25" : "p25-p75"} of ${d.n} references` : "no reference carries it", support: support(d.n), distribution: d };
+    // A gap (fewer than THIN_SUPPORT references) has no limit: two values are not a distribution.
+    const limit = support(d.n) !== "gap" ? (t.kind === "max" ? d.p75 : t.kind === "min" ? d.p25 : [d.p25, d.p75]) : null;
+    const quart = t.kind === "max" ? "p75" : t.kind === "min" ? "p25" : "p25-p75";
+    out[t.feature] = { rule: t.rule, kind: t.kind, what: t.what, limit, basis: !d.n ? "no reference carries it" : limit === null ? `only ${d.n} reference${d.n === 1 ? "" : "s"} carry it (${THIN_SUPPORT} needed)` : `${quart} of ${d.n} references`, support: support(d.n), distribution: d };
   }
   return out;
 }
@@ -333,11 +342,13 @@ function catalogQuery(query, sample) {
   const core = loadFontCatalog();
   if (!core) return { status: "not-installed", note: "the open-font catalog is not in this package yet; once it is, run the command below" };
   try {
-    const { catalog } = core.resolveCatalog({});
+    // As the catalog's own CLI calls it: no explicit file, the vendor cache root for a refreshed copy.
+    const { cacheRoot } = require("../../scripts/vendor-cache.cjs");
+    const { catalog } = core.resolveCatalog({ catalog: null, cacheRoot });
     const result = core.queryCatalog({ catalog, text: sample, style: query.style || undefined, contrast: query.contrast || undefined, weight: query.weight || undefined });
     return { status: "queried", sample, candidates: result.candidates.slice(0, 5).map((c) => ({ family: c.family, styles: c.styles, contrast: c.contrast, weights: c.weights, license: c.license?.id || null })) };
   } catch (error) {
-    return { status: "unavailable", note: error.message };
+    return { status: "unavailable", note: String(error.message).split("\n")[0], fix: error.fix || "Run `designer-pipeline fonts refresh` to rebuild the catalog, or reinstall the skill; until then use the open defaults in the draft" };
   }
 }
 
@@ -369,27 +380,34 @@ function fontRoles(measured, sample) {
 
 const pct = (v) => `${Math.round(v * 1000) / 10}%`;
 
+/**
+ * Grammar sentences written from the data, split by support: `rules` go into style.json and
+ * need a measured feature (MIN_SUPPORT references); `tendencies` (thin data, 3-7 references) are
+ * listed only in the report. Gaps produce no sentence.
+ */
 function grammarLines(measured, th, arch) {
-  const lines = [];
+  const rules = [], tendencies = [];
+  const put = (n, line) => { const level = support(n); if (level === "measured") rules.push(line); else if (level === "thin") tendencies.push(`${line} [thin: ${n} references]`); };
   const n = measured.length;
   const sides = shares(measured, "title_side");
   const titled = Object.values(sides).reduce((a, b) => a + b, 0);
   if (titled) {
     const [side, count] = Object.entries(sides).sort((a, b) => b[1] - a[1])[0];
-    lines.push(`Title ${side === "centre" ? "centred" : `on the ${side}`} in ${count}/${titled} annotated references${count / titled >= 0.8 ? " (a rule)" : " (a tendency, not a rule)"}.`);
+    const rule = count / titled >= 0.8 && support(titled) === "measured";
+    put(titled, `Title ${side === "centre" ? "centred" : `on the ${side}`} in ${count}/${titled} annotated references${rule ? " (a rule)" : " (a tendency, not a rule)"}.`);
   }
   const ov = th.title_fig_overlap;
-  if (ov.distribution.n) lines.push(`Title over the figure: median ${pct(ov.distribution.median)} of the title width, p75 ${pct(ov.distribution.p75)} (${ov.distribution.n} references).`);
-  if (th.margin_x.distribution.n) lines.push(`Text keeps at least ${pct(th.margin_x.limit)} of the width from the side edges (p25 of ${th.margin_x.distribution.n}).`);
+  if (ov.distribution.n) put(ov.distribution.n, `Title over the figure: median ${pct(ov.distribution.median)} of the title width, p75 ${pct(ov.distribution.p75)} (${ov.distribution.n} references).`);
+  if (th.margin_x.limit !== null) put(th.margin_x.distribution.n, `Text keeps at least ${pct(th.margin_x.limit)} of the width from the side edges (p25 of ${th.margin_x.distribution.n}).`);
   const g = th.ground_C.distribution, hs = th.hue_spread.distribution, ac = th.accent_share.distribution;
-  lines.push(`Ground: largest colour cluster chroma median ${g.median} (OKLab; below 0.04 reads neutral), lightness median ${th.ground_L.distribution.median}; ${n} references.`);
-  lines.push(`Colour: hue spread median ${hs.median} deg (p75 ${hs.p75}); strong colour (C > 0.12) median ${pct(ac.median)}, p75 ${pct(ac.p75)}.`);
+  put(g.n, `Ground: largest colour cluster chroma median ${g.median} (OKLab; below 0.04 reads neutral), lightness median ${th.ground_L.distribution.median}; ${n} references.`);
+  put(hs.n, `Colour: hue spread median ${hs.median} deg (p75 ${hs.p75}); strong colour (C > 0.12) median ${pct(ac.median)}, p75 ${pct(ac.p75)}.`);
   const sym = th.lr_symmetry.distribution, q = th.quiet_share.distribution;
-  lines.push(`Composition: mirror similarity median ${sym.median}, whitespace cells median ${pct(q.median)}; most common archetype ${arch[0] ? `"${arch[0].key}" (${arch[0].n}/${n})` : "none"}.`);
-  return lines;
+  if (q.n) put(Math.min(sym.n, q.n), `Composition: mirror similarity median ${sym.median}, whitespace cells median ${pct(q.median)}; most common archetype ${arch[0] ? `"${arch[0].key}" (${arch[0].n}/${n})` : "none"}.`);
+  return { rules, tendencies };
 }
 
-function draftStyle({ id, board, measured, th, palette, arch, fonts, categories, accessed }) {
+function draftStyle({ id, board, measured, th, palette, arch, fonts, categories, accessed, grammar }) {
   const roles = {};
   for (const [role, info] of Object.entries(fonts)) {
     const base = DEFAULT_STACK[info.query.style] || DEFAULT_STACK.gothic;
@@ -417,7 +435,7 @@ function draftStyle({ id, board, measured, th, palette, arch, fonts, categories,
     },
     palette: paletteRoles,
     fonts: { roles, faces: [], licence: "Open defaults (SIL OFL 1.1) until the catalog candidates are reviewed.", bundled: false, note: "Measured type roles; the stacks are open defaults or catalog candidates, not the references' fonts." },
-    layout: { grammar: grammarLines(measured, th, arch), archetypes: arch.slice(0, 6).map((a) => ({ key: a.key, n: a.n, nearest: a.nearest[0] || null, ...(a.skeleton ? { skeleton: a.skeleton } : {}) })) },
+    layout: { grammar: grammar.rules, archetypes: arch.slice(0, 6).map((a) => ({ key: a.key, n: a.n, nearest: a.nearest[0] || null, ...(a.skeleton ? { skeleton: a.skeleton } : {}) })) },
     materials: { procedural: [], collage: [], sources: "Not measured: materials (collage, paper, screentone pieces) are listed by hand.", budget: { textureHfMax: th.spec_hf.limit } },
     motion: null,
     motionNote: "Stills carry no motion: cut rhythm is not measured from a reference board.",
@@ -517,12 +535,18 @@ function reportMarkdown(result) {
   L.push(`Board ${board.file}: ${board.measured} references measured${board.skipped.length ? `, ${board.skipped.length} skipped` : ""}, ${board.annotated} annotated. Images were read locally and are not copied; this report carries ids, hashes and numbers only.`, "");
   L.push("Thresholds are the reference distribution (median and quartiles), not taste. A passing render is technical conformance, not visual acceptance.", "");
   L.push("## Supported by data", "", "| Feature | Rule | Limit | Median | p25-p75 | n | Support |", "| --- | --- | --- | --- | --- | --- | --- |");
-  for (const [k, t] of Object.entries(th)) if (t.support !== "gap") L.push(`| ${k} | ${t.rule} | ${fmt(t.limit)} | ${fmt(t.distribution.median)} | ${fmt(t.distribution.p25)}-${fmt(t.distribution.p75)} | ${t.distribution.n} | ${t.support} |`);
+  for (const [k, t] of Object.entries(th)) if (t.support === "measured") L.push(`| ${k} | ${t.rule} | ${fmt(t.limit)} | ${fmt(t.distribution.median)} | ${fmt(t.distribution.p25)}-${fmt(t.distribution.p75)} | ${t.distribution.n} | ${t.support} |`);
+  const thin = Object.entries(th).filter(([, t]) => t.support === "thin");
+  if (thin.length || (result.tendencies || []).length) {
+    L.push("", "## Tendencies (thin data)", "", `Fewer than ${MIN_SUPPORT} references: a direction to check by eye, not a rule. Kept out of style.json's grammar.`, "");
+    for (const [k, t] of thin) L.push(`- ${k} (${t.rule}): limit ${fmt(t.limit)}, median ${fmt(t.distribution.median)}, ${t.distribution.n} references; ${t.what}.`);
+    for (const line of result.tendencies || []) L.push(`- ${line}`);
+  }
   L.push("", "## Layout archetypes", "", "| Archetype | n | Nearest template (distance) | Skeleton |", "| --- | --- | --- | --- |");
   for (const a of arch.slice(0, 8)) L.push(`| ${a.key} | ${a.n} | ${a.nearest[0] ? `${a.nearest[0].id} (${a.nearest[0].distance})` : "–"} | ${a.skeleton ? "new skeleton" : "–"} |`);
   L.push("", "## Font roles", "");
   if (!Object.keys(fonts).length) L.push("- No annotated text: type roles are a gap (annotate title and text boxes to measure them).");
-  for (const [role, f] of Object.entries(fonts)) L.push(`- ${role}: ${f.query.style || "unclassified"} (votes ${JSON.stringify(f.measured.votes)}), stem/bar median ${fmt(f.measured.contrast.median)}, weight >= ${f.query.weight || "?"}, ${f.measured.measurable}/${f.measured.crops} crops measurable. Catalog: ${f.catalog.status}${f.catalog.candidates ? ` (${f.catalog.candidates.map((c) => c.family).join(", ")})` : ""}. Next: \`${f.command}\`.`);
+  for (const [role, f] of Object.entries(fonts)) L.push(`- ${role}: ${f.query.style || "unclassified"} (votes ${JSON.stringify(f.measured.votes)}), stem/bar median ${fmt(f.measured.contrast.median)}, weight >= ${f.query.weight || "?"}, ${f.measured.measurable}/${f.measured.crops} crops measurable. Catalog: ${f.catalog.status}${f.catalog.candidates ? ` (${f.catalog.candidates.map((c) => c.family).join(", ")})` : ""}${f.catalog.status === "unavailable" ? ` (${f.catalog.note}; fix: ${f.catalog.fix})` : ""}. Next: \`${f.command}\`.`);
   L.push("", "## Gaps: needs human judgement", "");
   const gaps = Object.entries(th).filter(([, t]) => t.support === "gap").map(([k, t]) => `- ${k} (${t.rule}): ${t.basis}; ${t.what}.`);
   gaps.push("- Shared alignment lines, reading order, glyph and lettering quality, illustration quality and subject fit: no feature here measures them.");
@@ -543,7 +567,8 @@ function reportMarkdown(result) {
     else {
       L.push(`Distance = mean |sample median - reference median| / reference IQR over ${ablation.features.join(", ")}; ${ablation.samples} renders per variant.`, "", "| Variant | Rule removed | Distance | Change | On its axis |", "| --- | --- | --- | --- | --- |");
       for (const v of ablation.variants) L.push(`| ${v.variant} | ${v.rule || "–"} | ${fmt(v.distance)} | ${fmt(v.delta)} | ${v.axis ? `${v.axis.feature} ${fmt(v.axis.delta)}` : "–"} |`);
-      L.push("", "Read the change, not the distance: placeholders (hatched figure) keep every render far from real art.");
+      if (ablation.baseline) L.push(`| blank page (draft ground only) | – | ${fmt(ablation.baseline.distance)} | ${fmt(ablation.baseline.distance - ablation.variants[0].distance)} | – |`);
+      L.push("", "Read the change, not the distance: placeholders (hatched figure) keep every render far from real art. The blank-page row is the floor to beat: a template render that is not clearly closer than a flat page of the ground colour carries little signal on these colour axes, because templates paint few pixels besides the ground; only the paired change on a rule's own axis is evidence.");
     }
   }
   return `${L.join("\n")}\n`;
@@ -617,6 +642,14 @@ function ablationVariants(draft) {
   ];
 }
 
+/** Features of a flat page of one colour (the ablation's floor), measured like a reference. */
+function blankFeatures(hex, [w, h] = [480, 270]) {
+  const n = parseInt(hex.slice(1), 16);
+  const rgb = new Uint8Array(w * h * 3);
+  for (let i = 0; i < w * h; i += 1) { rgb[i * 3] = (n >> 16) & 255; rgb[i * 3 + 1] = (n >> 8) & 255; rgb[i * 3 + 2] = n & 255; }
+  return measure.measurePixels({ width: w, height: h, source: [w, h], rgb }).features;
+}
+
 function distanceTo(featuresList, th) {
   const per = {};
   for (const k of ABLATION_FEATURES) {
@@ -651,17 +684,18 @@ function distill({ board, images, annotations, categories, id, compare, root = n
   const arch = archetypes(measured, templates);
   const palette = pooledPalette(measured);
   const fonts = fontRoles(measured, sample);
-  const style = draftStyle({ id, board, measured, th, palette, arch, fonts, categories: Object.keys(shares(measured.map((m) => ({ features: { c: m.category || "uncategorised" } })), "c")), accessed });
+  const grammar = grammarLines(measured, th, arch);
+  const style = draftStyle({ id, board, measured, th, palette, arch, fonts, grammar, categories: Object.keys(shares(measured.map((m) => ({ features: { c: m.category || "uncategorised" } })), "c")), accessed });
   const comparison = compare ? compareWithPack(compare, style, th) : null;
   return {
     schema: DRAFT_SCHEMA, id, accessed,
     board: { file: path.basename(board), measured: measured.length, annotated: measured.filter((m) => m.features.title_cx !== undefined || m.type.length).length, skipped: [...read.skipped, ...failed] },
-    draft: style, thresholds: th, palette, archetypes: arch, fonts, comparison,
-    references: measured.map((m) => ({ id: m.id, category: m.category, source: m.source, sha256: m.sha256, size: m.size, aspect: m.aspect, letterbox: m.letterbox, features: m.features, palette: m.palette, type: m.type.map(({ role, measurable, contrast, weight, style: s, reason, why }) => ({ role, measurable, contrast, weight, style: s ?? null, reason: reason || why })) })),
+    draft: style, thresholds: th, palette, archetypes: arch, fonts, comparison, tendencies: grammar.tendencies,
+    references: measured.map((m) => ({ id: m.id, category: m.category, source: m.source, sha256: m.sha256, size: m.size, aspect: m.aspect, letterbox: m.letterbox, features: m.features, ...(m.notes.length ? { notes: m.notes } : {}), palette: m.palette, type: m.type.map(({ role, measurable, contrast, weight, style: s, reason, why }) => ({ role, measurable, contrast, weight, style: s ?? null, reason: reason || why })) })),
   };
 }
 
 module.exports = {
   ABLATION_FEATURES, DRAFT_SCHEMA, DistillError, MIN_SUPPORT, THRESHOLDS,
-  ablationVariants, archetypes, compareWithPack, distanceTo, distill, distribution, mapPalette, parseCsv, readAnnotations, readBoard, reportMarkdown, templateFacts, thresholds, useFontCatalog,
+  ablationVariants, archetypes, blankFeatures, relPath, compareWithPack, distanceTo, distill, distribution, mapPalette, parseCsv, readAnnotations, readBoard, reportMarkdown, templateFacts, thresholds, useFontCatalog,
 };
