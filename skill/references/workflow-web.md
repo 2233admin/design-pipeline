@@ -89,12 +89,13 @@ owner to lengthen feedback; when a short reason is ambiguous, ask about the real
 ("brighter background, or more text contrast?"). Shorter records are refused with
 `CONTRACT_INVALID` and change nothing.
 
-For new-site design, existing-site redesign or visual critique, use [taste-skill.md](taste-skill.md)
-to select and read the complete built-in method. On an existing site, audit brand, routes, content,
-states and stack before changing its design. Preserve supplied references in replicate mode;
-Taste's generate-first preferences do not require replacement images. Image concepts and brand
-boards use the matched image-only method with an available provider, then become selected
-reference/concept inputs through the existing workflow. No external Taste install is required.
+For new-site design, existing-site redesign, app screens or visual critique, use
+[taste-skill.md](taste-skill.md) to select the route and read its complete built-in source. On an
+existing site, audit brand, routes, content, states and stack before changing its design. Preserve
+supplied references in replicate mode. Image concepts and brand boards use an available image
+provider, then become selected reference/concept inputs through the existing workflow. Taste's
+`inspect.mjs` may add screenshots and measurements to review evidence; its findings about taste
+never fail a web gate. No external Taste install is required.
 
 ## intake
 

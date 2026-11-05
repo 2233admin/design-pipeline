@@ -17,7 +17,6 @@ Source keys used below. `LA` is a lintapple rule id, adapted in `scripts/interac
 | `EM` | `vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md` |
 | `MI/` | `vendor/make-interfaces-feel-better/upstream/skills/make-interfaces-feel-better/*.md` |
 | `FA` | `vendor/fixing-accessibility/upstream/skills/fixing-accessibility/UPSTREAM-SKILL.md` |
-| `12P` | `vendor/12-principles-of-animation/upstream/skills/12-principles-of-animation/UPSTREAM-SKILL.md` |
 | `ID/` | `vendor/interface-discipline/upstream/skills/*/*.md` (domain skill, then file) |
 | `SC/` | `vendor/shadcn/upstream/skills/shadcn/rules/*.md` (only in a shadcn project) |
 
@@ -35,7 +34,7 @@ A token may raise a floor, never lower it below the WCAG values (24px targets, 4
 | `audit.font-size` | Visible and generated text is at least `minFontPx`; with `fontSizes`, on that scale within 0.1px | 12px | `typography` scale → `thresholds.fontSizes`, `thresholds.minFontPx` | LA `font-size`; `ID/better-typography/spacing-and-sizing.md` |
 | `audit.tabular-numbers` | Digits 0-9 of declared numbers and inferred numeric cells render at equal advance within 0.5px | none | `declare.numbers` | LA `tabular-numbers`; `MI/typography.md`, `ID/better-typography/variable-fonts-and-opentype.md` |
 | `audit.numeric-alignment` | Inferred numeric table cells align to the end edge | none | none | LA `numeric-alignment`; `ID/better-layout/grouping-and-alignment.md` |
-| `audit.text-contrast` | WCAG 2 ratio of visible and generated text over a resolved solid background (generated text over its own background, or the one behind its box, placed by its insets and margins); gradient, image, translucent, shadowed or overlapped paint, generated text that is transformed, relatively offset, sticky or unplaceable, even on its own background, and opacity, a filter or blending on the text or any ancestor, are `indeterminate` | 4.5:1; 3:1 at ≥24px or bold ≥18.67px | `colors` roles are what is measured; stricter targets → `thresholds.contrastNormal`, `contrastLarge` | LA `text-contrast`; `FA`, `ID/better-colors/accessibility-contrast.md` |
+| `audit.text-contrast` | WCAG 2 ratio of visible and generated text over a resolved solid background (generated text over its own background, or the one behind its box, placed by its insets and margins); gradient, image, translucent, shadowed or overlapped paint, generated text that is transformed, relatively offset, sticky or unplaceable, even on its own background, and opacity, a filter or blending on the text or any ancestor, are `indeterminate` | 4.5:1; 3:1 at ≥24px or bold ≥18.67px | `colors` roles are what is measured; stricter targets → `thresholds.contrastNormal`, `contrastLarge` | LA `text-contrast`; `FA`, `ID/better-colors/contrast.md` |
 | `audit.root-background` | The root paints an opaque background color | none | `colors` background | LA `root-background` |
 | `audit.horizontal-overflow` | The document is no wider than the viewport | 1px | none | LA `horizontal-overflow`; `ID/better-accessibility/motion-and-zoom.md` (reflow) |
 | `audit.viewport-bounds` | Visible boxes and text stay inside the viewport horizontally, overlays also vertically | 1px | none | LA `viewport-bounds`; `ID/better-interface/UPSTREAM-SKILL.md`, `ID/better-layout/spacing-and-adaptivity.md` |
@@ -80,8 +79,8 @@ finding status, removed signals) in [interface-discipline.md](interface-discipli
 | Id | Check | Sources |
 | --- | --- | --- |
 | UC-01 | Motion earns its place: each animation names one purpose; keyboard-initiated, frequent and data-dense interactions get little or none; motion that adds nothing is removed. | `EM`, `MI/animations.md`, `ID/better-ui/animations.md`, [motion gate](animation-opportunity-and-review.md) |
-| UC-02 | One element moves prominently at a time. | `12P` |
-| UC-03 | Timing uses project motion tokens and stays in budget (see [Precedence](#precedence)); exits are faster than entrances; similar elements share timing; ease-out to enter and exit, ease-in-out to move on screen, linear only for constant-rate fills. | `EM`, `12P`, `MI/animations.md`, [motion gate](animation-opportunity-and-review.md) |
+| UC-02 | A readable pose or composition is established before competing movement begins; overlapping actions are separated when their order matters and overlap only when simultaneity is the point. | [animation thinking](animation-thinking.md#direct-the-change) |
+| UC-03 | Timing uses project motion tokens and stays in budget (see [Precedence](#precedence)); exits are faster than entrances; similar elements share timing; ease-out to enter and exit, ease-in-out to move on screen, linear only for constant-rate fills. | `EM`, `MI/animations.md`, [motion gate](animation-opportunity-and-review.md) |
 | UC-04 | Motion never blocks input: rapid toggles retarget instead of queueing, controls stay operable mid-animation, and controls at their default state do not animate on mount. | `EM`, `MI/animations.md`, `ID/better-ui/animations.md` |
 | UC-05 | Trigger-anchored surfaces grow from their trigger and modals from center; scale entrances start at 0.9 or more, never 0; exits are softer, with a small offset. | `EM`, `MI/animations.md`, `ID/better-ui/animations.md` |
 | UC-06 | Reduced motion reduces, not removes: no non-essential movement, parallax, autoplay, smooth scroll or auto-rotation; spinners and state changes stay; anything moving over 5s can be paused. | `FA`, `ID/better-accessibility/motion-and-zoom.md`, `MI/animations.md` |
@@ -103,6 +102,11 @@ finding status, removed signals) in [interface-discipline.md](interface-discipli
 | UC-22 | A border that only shows depth uses the project elevation token instead. | `MI/surfaces.md`, `ID/better-ui/surfaces.md` |
 | UC-23 | Type fits the surface and density; truncation is a product decision, never cover for an undersized component; CJK fallbacks are verified per platform ([cjk-typography.md](cjk-typography.md)). | `ID/better-typography/UPSTREAM-SKILL.md` |
 | UC-24 | A control added to one surface is added to sibling surfaces carrying its peers; the primary workflow is visible without explanation text. | `ID/interface-review/UPSTREAM-SKILL.md` |
+| UC-25 | Context menus appear at once and animate only their exit. Check: no entrance transition or keyframe on the context-menu surface; an exit fade, if any, stays in the UC-03 budget. | from the former 12-principles bundle (raphaelsalaja/skill, archived upstream) |
+| UC-26 | Values that fade toward zero (volume, glow, momentum, inertial scroll) decay exponentially, not linearly. Check: Web Audio uses `exponentialRampToValueAtTime` (or `setTargetAtTime`) toward a small positive floor, and scripted decay multiplies by a factor per frame instead of subtracting a constant. | from the former 12-principles bundle (raphaelsalaja/skill, archived upstream) |
+| UC-27 | Squash, stretch and press deformation stays subtle: every scale axis stays within 0.95-1.05 (press feedback within the narrower 0.95-0.98 in [Precedence](#precedence)). Check: no `scale`, `scaleX` or `scaleY` keyframe or `whileTap` value outside that range on UI elements. | from the former 12-principles bundle (raphaelsalaja/skill, archived upstream) |
+| UC-28 | Layout, not motion: a modal or dialog dims what is behind it so focus goes to the layer. Check: the backdrop has a visible tint from a project token (not `transparent`), and a non-modal popover does not dim. | from the former 12-principles bundle (raphaelsalaja/skill, archived upstream) |
+| UC-29 | Layout, not motion: animated layers sit on the project's z-index scale, so tooltips, popovers, toasts and modals never render behind content while entering, moving or exiting. Check: each animated overlay takes a named stacking token (no ad hoc numbers), and a transform or `will-change` on an ancestor does not trap it in a lower stacking context. | from the former 12-principles bundle (raphaelsalaja/skill, archived upstream) |
 
 ## Precedence
 
@@ -116,12 +120,11 @@ finding status, removed signals) in [interface-discipline.md](interface-discipli
 3. Bundled craft detail: `emil-design-eng`, `make-interfaces-feel-better`,
    `fixing-accessibility` and, only in a shadcn project or for a selected shadcn-registry route,
    `shadcn`.
-4. Checklists: `12-principles-of-animation`.
 
 Resolved conflicts:
 
 - Contrast: the WCAG 2 ratio decides pass or fail; the APCA levels in
-  `ID/better-colors/accessibility-contrast.md` are advisory. Large bold text uses the exact 14pt
+  `ID/better-colors/contrast.md` are advisory. Large bold text uses the exact 14pt
   value, 18.67px.
 - Targets: 24×24px is the floor (`audit.target-size`). 40px desktop and 44px touch are advice that
   product density may waive; 48dp is not adopted.
@@ -136,11 +139,10 @@ Resolved conflicts:
   state why it needs the extra time ([animation-opportunity-and-review.md](animation-opportunity-and-review.md)).
 - Curves: project motion primitives win; Emil's curves are a fallback only when no primitive fits,
   recorded as an authored extension.
-- Exit easing: the 12-principles rule `easing-exit-ease-in` conflicts with Emil's rule never to
-  use ease-in for UI animation. Use the project's exit token; without one, use ease-out.
-- Stagger: the 12-principles 50 ms per-item cap and Emil's 30-80 ms range both yield to the
-  project's stagger token; without one, the whole cascade stays inside the duration rule above.
-- Any checklist rule that conflicts with a higher level is recorded as not applicable, with the
+- Exit easing: use the project's exit token; without one, use ease-out, never ease-in.
+- Stagger: Emil's 30-80 ms range yields to the project's stagger token; without one, the whole
+  cascade stays inside the duration rule above.
+- Any bundled rule that conflicts with a higher level is recorded as not applicable, with the
   governing source named, not as a finding.
 
 ## Stage integration
@@ -172,7 +174,7 @@ Acceptance are reported. Vendored scripts, evals and agent metadata are never ex
 
 ## Provenance
 
-Six sources are pinned, inert snapshots, each in a vendor directory named after it:
+Five sources are pinned, inert snapshots, each in a vendor directory named after it:
 `manifest.json` records the reviewed repository, revision, scope, license and per-file hashes,
 and `upstream/` holds the byte-preserved files.
 
@@ -193,11 +195,6 @@ then one of `typography.md`, `surfaces.md`, `animations.md`, `icons.md` or `perf
 Julien Thibeaut's prioritized accessibility rules:
 [`SKILL.md`](../vendor/fixing-accessibility/upstream/skills/fixing-accessibility/UPSTREAM-SKILL.md). Report
 through the interface-discipline accessibility domain, not its standalone report shape.
-
-### 12-principles-of-animation
-
-Raphael Salaja's motion checklist, lowest precedence, used only on changed motion code:
-[`SKILL.md`](../vendor/12-principles-of-animation/upstream/skills/12-principles-of-animation/UPSTREAM-SKILL.md).
 
 ### shadcn
 

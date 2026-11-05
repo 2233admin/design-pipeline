@@ -19,9 +19,9 @@
 
 3 到 30 分钟，你能 ship 一段**产品发布动画**、一个能点击的 App 原型、一套能编辑的 PPT、一份印刷级的信息图。
 
-不是「AI 做的还行」那种水平——是看起来像大厂设计团队做的。给 skill 你的品牌资产（logo、色板、UI 截图），它会读懂你的品牌气质；什么都不给，**六张缩略图里挑出的三个真实方向 + 84 种带样张的风格库**也能兜底到不出 AI slop。
+不是「AI 做的还行」那种水平——是看起来像大厂设计团队做的。给 skill 你的品牌资产（logo、色板、UI 截图），它会读懂你的品牌气质；什么都不给，**六张缩略图里挑出的三个真实方向 + 92 种带样张的风格库**也能兜底到不出 AI slop。
 
-**你看到这篇 README 里的每一个动画，都是 huashu-design 自己做的。** 不是 Figma，不是 AE，就是一句话 prompt + skill 跑通。下次产品发布要做宣传片？现在你也能做。
+**你看到这篇 README 里的每一页设计，都是 huashu-design 自己做的。** 不是 Figma，不是 AE，就是一句话 prompt + skill 跑通。下次产品发布要做宣传片？现在你也能做。
 
 ```
 npx skills add alchaincyf/huashu-design
@@ -31,23 +31,85 @@ npx skills add alchaincyf/huashu-design
 
 > 📣 **已改为 MIT 协议。** 自 2026-05-14 起本 skill 完全开源（[MIT License](LICENSE)），个人和**商用都免费**，无需事先授权。原「个人使用免费、企业商用需授权」的条款已作废。([查看变更](#license))
 
-> 🆕 **3.0：三个方向更敢，项目之间也不再长一个样。** 先出六张缩略图再挑三版做成真稿；风格库扩到 84 种（新增 App、中文与东亚两个分区），每种都有样张；参照作品先截图再动手；带一个只量事实的设计体检，和一本记住你做过什么样子的外观账本。[详见核心机制](#核心机制)
+> 🆕 **3.1：新增小红书图文。** 一组 3:4 竖图的八种范式——标本志、贴纸本、索引、长卷、日报、集换卡、留白、信息图，每个样张同时是能直接改的模板；一条命令切成成图，顺手查字号、出界、长卷跨缝和压字。[看样张](#设计方向顾问)
 
-[看效果](#demo-画廊) · [安装](#装上就能用) · [能做什么](#能做什么) · [核心机制](#核心机制) · [和 Claude Design 的关系](#和-claude-design-的关系)
+> **3.0：三个方向更敢，项目之间也不再长一个样。** 先出六张缩略图再挑三版做成真稿；风格库扩到 84 种（新增 App、中文与东亚两个分区），每种都有样张；参照作品先截图再动手；带一个只量事实的设计体检，和一本记住你做过什么样子的外观账本。[详见核心机制](#核心机制)
+
+[看效果](#30-案例) · [安装](#装上就能用) · [能做什么](#能做什么) · [核心机制](#核心机制) · [和 Claude Design 的关系](#和-claude-design-的关系)
 
 </div>
 
 ---
 
 <p align="center">
-  <img src="https://github.com/alchaincyf/huashu-design/releases/download/v2.0/hero-animation-v10-en.gif" alt="huashu-design Hero · 打字 → 选方向 → 画廊展开 → 聚焦 → 品牌显形" width="100%">
+  <img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/launch-3.0.gif" alt="huashu-design 3.0 发布片" width="100%">
 </p>
 
 <p align="center"><sub>
-  ▲ 25 秒 · Terminal → 4 方向 → Gallery ripple → 4 次 Focus → Brand reveal<br>
-  👉 <a href="https://www.huasheng.ai/huashu-design-hero/">访问带音效的 HTML 互动版</a> ·
-  <a href="https://github.com/alchaincyf/huashu-design/releases/download/v2.0/hero-animation-v10-en.mp4">下载 MP4（含 BGM+SFX · 10MB）</a>
+  ▲ 3.0 发布片 · 32 秒 · 片里每一页设计都是 3.0 自己做的，剪辑用的是 <a href="https://github.com/alchaincyf/huashu-motion">huashu-motion</a><br>
+  👉 <a href="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/launch-3.0.mp4">下载 MP4（1080p · 含配乐 · 24MB）</a> ·
+  <a href="https://www.huasheng.ai/huashu-design-hero/">2.0 的带音效 HTML 互动版</a>
 </sub></p>
+
+---
+
+## 3.0 案例
+
+下面这些都是 3.0 跑出来的。前五个是从发布时新跑的 6 道题里挑的，每道只给一句话需求，方向是 agent 自己挑的，作者没插手；后两个一个是第三轮盲选赢下来的那版，一个是发布后作者拿它做的真实项目。
+
+### 网页 · 《富岳三十六景》线上展
+
+> 「给葛饰北斋的《富岳三十六景》做一个线上展览网站」
+
+三版分别是 Rijksmuseum 官网式的暗场展厅、田中一光式的三角窗、民国书衣式的题签框。设计体检报过一次撞车：两版首屏都用了《神奈川冲浪里》，它就把暗场那版换成了《山下白雨》。
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-hokusai-hero.jpg" width="100%" alt="富岳三十六景线上展首屏：暗场满屏《山下白雨》"></p>
+
+往下一章讲普鲁士蓝，依据是大都会博物馆的光谱研究；全 46 幅都来自芝加哥艺术博物馆和大都会的开放馆藏。
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-hokusai-prussian-blue.jpg" width="100%" alt="一种进口的蓝：普鲁士蓝章节"></p>
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-hokusai-all-46.jpg" width="60%" alt="全四十六幅作品墙"></p>
+
+### App · 鸣迹（观鸟记录）
+
+> 「做一个观鸟记录 App 的原型」
+
+现实参照找的是拿了 2025 年苹果设计奖的 CapWords，`ref_board.py` 先把它截成参考板，agent 亲眼看过再动手。借来的是「从照片里撕下一张贴纸」：每只鸟都从 Wikimedia 的真实照片里分割出来，贴进一年的本子里，叫声波形是拿真实录音算的。
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-mingji-birding-app.jpg" width="75%" alt="鸣迹：听到一只鸟，撕下一张贴纸"></p>
+
+### App · 今晚吃啥（家常菜谱）
+
+> 「做一个家常菜谱 App」
+
+秒数轮盘恰好抽到吕敬人书籍设计，最后做成了一本菜谱：一道菜一页方子，切口旁边留一条旁注栏，写「擦干再煎才不溅油」「老抽只要几滴」，朱砂只给「开做」这一方印。外观账本看到最近 6 个交付里 5 个是无衬线标题，这一版挑了宋体。
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-recipe-app.jpg" width="75%" alt="今晚吃啥：一道菜一页方子"></p>
+
+### PPT · 《千里江山图》讲座
+
+走的是最佳设计师 Abbott Miller 式的暗场展柜，暗底取的是绢地最暗处的颜色。封面底下那条细长的位置条就是整卷缩略图，框出这一页在 11.9 米长卷的哪一段。
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-qianli-cover.jpg" width="100%" alt="千里江山图讲座封面"></p>
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-qianli-pages.jpg" width="100%" alt="一张多大的画、希孟年十八岁、小如豆、颜色来自石头"></p>
+
+### PPT · 黑洞的照片是怎么拍出来的
+
+现实参照是 Jonathan Corum 的讲座幻灯片：黑底、照片做主角、标注直接写在图上。每页都标了出处，事实先过核查再上页面。
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-blackhole-pages.jpg" width="100%" alt="黑洞科普 PPT 四页"></p>
+
+### App · 绿拇指（第三轮盲选赢的那版）
+
+把植物当成会呼吸的生命体征来读。App 原型做成一张有构图的展示板，几台手机错落排开。
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-plant-health-app.jpg" width="75%" alt="绿拇指：把植物当成会呼吸的生命体征来读"></p>
+
+### 网页 · 旅居档案（作者自己的项目）
+
+三年里所有旅行照片的地图。选的是葛西薰式的白纸明朝体长卷，开头一张卫星地图串起所有旅程，往下一段旅程一章。选完作者顺口说了句「尽量不要遗漏」，它就记进了经验：个人回忆类档案照片要全，而且注明只适用于照片档案，不外溢到产品界面。
+
+<p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v3.0.0/case-travel-archive.jpg" width="100%" alt="旅居档案"></p>
 
 ---
 
@@ -113,6 +175,7 @@ npx skills add alchaincyf/huashu-design
 | 时间轴动画 | MP4（25fps / 60fps 插帧）+ GIF（palette 优化）+ BGM | 8–12 min |
 | 设计变体 | 3+ 并排对比 · Tweaks 实时调参 · 跨维度探索 | 10 min |
 | 信息图 / 可视化 | 印刷级排版 · 可导 PDF/PNG/SVG | 10 min |
+| 小红书图文 / 封面 | 3:4 一组图（≤18 张）· 8 种范式模板 · 长卷连续滑动 · 一条命令切图并体检 | 10–15 min |
 | 设计方向顾问 | **三套逻辑各出两个候选**（最佳设计师 + 同媒介获奖作品 + 秒数轮盘）· 六张缩略图挑三版真实视觉，另三张作备选 | 10 min |
 | 5 维度专家评审 | 雷达图 + Keep/Fix/Quick Wins · 可操作修复清单 | 3 min |
 
@@ -122,7 +185,7 @@ npx skills add alchaincyf/huashu-design
 
 ### 设计方向顾问
 
-模糊需求时的 fallback：**三套互补逻辑各出两个候选**——最佳设计师（预算无上限时最适合的设计师）+ 现实参照（同媒介的获奖作品，先截图亲眼看）+ 秒数轮盘（从风格库随机抽，打破惯性）。六个候选先画成一页缩略图，挑最强、最不一样的三版做成**真实视觉**让你看着选，另外三张作为备选一起给你。背后是 **84 种 HTML 原生风格库**（网页 20 + PPT 20 + 信息图 20 + App 12 + 中文与东亚 12，纯 CSS 无需生图），每种都有一张样张。
+模糊需求时的 fallback：**三套互补逻辑各出两个候选**——最佳设计师（预算无上限时最适合的设计师）+ 现实参照（同媒介的获奖作品，先截图亲眼看）+ 秒数轮盘（从风格库随机抽，打破惯性）。六个候选先画成一页缩略图，挑最强、最不一样的三版做成**真实视觉**让你看着选，另外三张作为备选一起给你。背后是 **92 种 HTML 原生风格库**（网页 20 + PPT 20 + 信息图 20 + App 12 + 中文与东亚 12 + 小红书 8，纯 CSS 无需生图），每种都有一张样张。
 
 <p align="center"><img src="https://github.com/alchaincyf/huashu-design/releases/download/v2.0/w3-fallback-advisor.gif" width="100%"></p>
 <p align="center"><sub>动图为 2.0 流程（三套逻辑直接各出一版）</sub></p>
@@ -131,6 +194,10 @@ npx skills add alchaincyf/huashu-design
 
 <p align="center"><img src="assets/style-specimens/sheet-east.jpg" width="100%" alt="中文与东亚设计 12 种：吕敬人书籍设计、宋刻本版式、民国书衣、上海摩登、中文实验字体、香港街招、传统色节气、杉浦康平、田中一光、服部一成、佐藤可士和、日式杂志密排"></p>
 <p align="center"><img src="assets/style-specimens/sheet-app.jpg" width="100%" alt="App 风格 12 种：硬件面板、液态玻璃、玩味 3D、友好金融、专业相机、户外地形、内容瀑布流、命令面板、健康数据、原生精修、柔和鼓励、编辑式阅读"></p>
+
+3.1 新增的小红书分区，每格是一个范式的封面＋内页（长卷是三张连成的一幅）。样张来自一次真实发布，八版做的是同一篇笔记：
+
+<p align="center"><img src="assets/style-specimens/sheet-xhs.jpg" width="100%" alt="小红书图文 8 种：标本志、贴纸本、索引、长卷、日报、集换卡、留白、信息图"></p>
 
 ### iOS App 原型
 
@@ -182,7 +249,7 @@ HTML deck 浏览器演讲 · `html2pptx.js` 读 DOM 的 computedStyle 逐元素�
 
 ---
 
-## Showcase · 真实案例
+## Showcase · 2.0 时期的真实案例
 
 ### 鹦鹉进化史网站 · 设计方向顾问三套逻辑实战（2.0）
 
@@ -239,7 +306,7 @@ A/B 测试（v1 vs v2，各跑 6 agent）：**v2 的稳定性方差比 v1 低 5 
 - **三套逻辑各出两个候选，共六个**：① 最佳设计师（两位气质不同的设计师，用他们的思维从头做）② 现实参照（两件**同媒介**的获奖作品——做 App 找 App、做 deck 找出版物；`scripts/ref_board.py` 先截图亲眼看，再拆网格、字号比和色彩比例）③ 秒数轮盘（`date +%S` 取秒，在产出形态对应的分区和中文东亚分区各抽一号，先看样张再动手）
 - **六张缩略图 → 挑三版做完整稿**：单看够好、彼此不一样、不撞你最近的项目；没选上的三张作为备选一起给你，看中哪张再做
 - **绝不让你在没看到视觉时盲选风格**——摆出来就停，看着选
-- 底层是 **84 种 HTML 原生风格库**，每种配一张样张和源码（`assets/style-specimens/`），作弹药，不是教条
+- 底层是 **92 种 HTML 原生风格库**，每种配一张样张和源码（`assets/style-specimens/`），作弹药，不是教条
 
 为什么这样做：我们拿固定题目做了三轮改前改后盲选（内部测试）。第一轮强制每版套一个大隐喻，页面被做成道具，4 题只赢 1 题；第二轮为了躲 AI 默认外观加了一堆禁令，三版一起变得「太规整，太无聊」，2 题全输；第三轮改成加选项、不加禁令——多出候选、给看得见的样张、看真参考——同两道题都赢了。
 
@@ -320,13 +387,13 @@ huashu-design/
 │   ├── deck_index.html      # 多文件 deck 拼接器
 │   ├── design_canvas.jsx    # 并排变体展示
 │   ├── showcases/           # 24 个预制样例（8 场景 × 3 风格）
-│   ├── style-specimens/     # 84 种风格的样张（html 源码 + jpg）与分区总览
+│   ├── style-specimens/     # 92 种风格的样张（html 源码 + jpg）与分区总览；xhs/ 的样张同时是模板
 │   └── bgm-*.mp3            # 6 首场景化背景音乐
 ├── references/              # 按任务深入读的子文档
 │   ├── animation-pitfalls.md
 │   ├── directions.md        # 三方向：六个候选 → 缩略图 → 挑三版
-│   ├── design-styles.md     # 84 种 HTML 原生风格库（网页 20 + PPT 20 + 信息图 20 + App 12 + 中文与东亚 12）
-│   ├── modules/             # 网页 / deck / 信息图 / 动画 四个模块手册
+│   ├── design-styles.md     # 92 种 HTML 原生风格库（网页 20 + PPT 20 + 信息图 20 + App 12 + 中文与东亚 12 + 小红书 8）
+│   ├── modules/             # 网页 / deck / 信息图 / 小红书 / 动画 五个模块手册
 │   ├── slide-decks.md
 │   ├── editable-pptx.md
 │   ├── critique-guide.md
@@ -334,6 +401,7 @@ huashu-design/
 │   └── ...
 ├── scripts/                 # 导出工具链
 │   ├── render-video.js      # HTML → MP4
+│   ├── xhs_render.py        # 小红书图文 → 3:4 成图 + 体检
 │   ├── convert-formats.sh   # MP4 → 60fps + GIF
 │   ├── add-music.sh         # MP4 + BGM
 │   ├── export_deck_pdf.mjs
@@ -387,11 +455,13 @@ Anthropic 发布 Claude Design 那天我玩到凌晨四点。几天之后发现�
 
 按 [MIT License](LICENSE)，你可以**自由使用、修改、分发**本 skill，**包括商业用途**——公司内部用、客户商单交付、做成付费产品对外卖，都没问题。无需事先授权、无需付费、无需打招呼。注明出处不强制，但欢迎。
 
+唯一例外：`assets/style-specimens/xhs/_kit/stickers/` 里的演示贴纸来自 [huashu-bird-sticker](https://github.com/alchaincyf/huashu-bird-sticker)，按 PolyForm Shield 1.0.0 授权（见该文件夹的 LICENSE.md），只用来演示版式，你的作品请换成自己的素材。
+
 ---
 
 ## Connect · 花生（花叔）
 
-花生是 AI Native Coder、独立开发者、AI 自媒体博主。代表作：小猫补光灯（AppStore 付费榜 Top 1）、《一本书玩转 DeepSeek》、女娲 .skill（GitHub 12000+ star）。自媒体全平台 30 万+ 粉丝。
+花生是 AI Native Coder、独立开发者、AI 自媒体博主。代表作：小猫补光灯（AppStore 付费榜 Top 1）、《一本书玩转 DeepSeek》、女娲 .skill（GitHub 3 万+ star）。自媒体全平台 30 万+ 粉丝。
 
 | 平台 | 账号 | 链接 |
 |---|---|---|
@@ -404,3 +474,5 @@ Anthropic 发布 Claude Design 那天我玩到凌晨四点。几天之后发现�
 | 开发者主页 | bookai.top | https://bookai.top |
 
 合作咨询、自媒体约稿 → 以上任一平台私信花生即可。
+
+<p align="center"><img src="https://raw.githubusercontent.com/alchaincyf/alchaincyf/main/assets/follow.svg" width="100%" alt="关注花叔：公众号「花叔」· B站「花叔v」· 小红书「花叔」"></p>
