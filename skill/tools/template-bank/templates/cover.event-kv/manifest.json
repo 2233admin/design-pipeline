@@ -1,0 +1,162 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "cover.event-kv",
+  "family": "cover",
+  "style": "citypop-sleeve",
+  "title": "Event key visual: striped numerals on the pool, a tilted title postcard over their corner, a white wall with a palm shadow",
+  "use": "The landscape key visual of a limited event whose name has a time, date or number in it. Not for character art: the pool and the numerals are the subject.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "lemon"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "time_size": {
+      "default": 0.407,
+      "min": 0.36,
+      "max": 0.42,
+      "class": "rhythm",
+      "note": "numeral height x H (440 px at 1080p: 22:1 against 20 px body)"
+    },
+    "card_tilt": {
+      "default": 3,
+      "min": 1.5,
+      "max": 4.5,
+      "class": "rhythm",
+      "note": "title postcard tilt, degrees"
+    },
+    "sticker_tilt": {
+      "default": -4,
+      "min": -5,
+      "max": -2,
+      "class": "rhythm",
+      "note": "banner sticker tilt, degrees"
+    },
+    "sun": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "striped sun in the sky"
+    },
+    "palm": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "drawn fan-palm shadow on the wall (ignored when the palm slot is filled)"
+    }
+  },
+  "slots": {
+    "brand_cjk": {
+      "kind": "text",
+      "default": "白昼公馆",
+      "maxChars": 6,
+      "font": "head"
+    },
+    "brand_latin": {
+      "kind": "text",
+      "default": "HAKUCHU HOUSE",
+      "maxChars": 16,
+      "font": "num"
+    },
+    "tagline": {
+      "kind": "text",
+      "default": "下午三点，泳池只剩一个人，和一封没写完的信。",
+      "maxChars": 26,
+      "font": "body"
+    },
+    "time": {
+      "kind": "lettering",
+      "default": "15:00",
+      "maxChars": 5,
+      "note": "striped numerals: digits 0-9 and : . - / only"
+    },
+    "kicker": {
+      "kind": "text",
+      "default": "SUMMER EVENT · 3:00 P.M. POOLSIDE",
+      "maxChars": 36,
+      "font": "num"
+    },
+    "title_1": {
+      "kind": "text",
+      "default": "三点钟的",
+      "maxChars": 5,
+      "font": "display",
+      "title": true
+    },
+    "title_2": {
+      "kind": "text",
+      "default": "泳池",
+      "maxChars": 5,
+      "font": "display",
+      "title": true
+    },
+    "subtitle": {
+      "kind": "text",
+      "default": "白昼公馆 · 夏日限定活动",
+      "maxChars": 14,
+      "font": "head"
+    },
+    "dates": {
+      "kind": "text",
+      "default": "07.18 — 08.08",
+      "maxChars": 16,
+      "font": "num"
+    },
+    "sticker_title": {
+      "kind": "text",
+      "default": "限定招募「盛夏来信」",
+      "maxChars": 10,
+      "font": "head"
+    },
+    "sticker_line": {
+      "kind": "text",
+      "default": "6★ 澄夏 · 救生员 同步开启",
+      "maxChars": 16,
+      "font": "body"
+    },
+    "palm": {
+      "kind": "image",
+      "collage": true,
+      "note": "optional cut palm silhouette (PNG with alpha), drawn at 30% deep teal on the wall"
+    }
+  },
+  "relations": [
+    "The numerals sit on the pool at the left, about 1:22 to the body text; the title postcard overlaps their last digit by a corner, never more.",
+    "Pool line at 0.41 H with a paper coping band and its 26% shadow; sky above, pool below.",
+    "Lemon only on the sun and the banner sticker.",
+    "Brand and tagline top left on the sky; the wall with its window grid and palm shadow top right."
+  ],
+  "decoration": [
+    "Striped sun, window grid, diving board, pool tiles, palm shadow: all drawn; the palm can come from a cut photograph through the palm slot."
+  ],
+  "provenance": {
+    "corpus": "gacha-event case v3 (白昼公馆「三点钟的泳池」): our own original fictional gacha event in the citypop-sleeve grammar",
+    "experiment": "styles/citypop-sleeve/style.json provenance; case renders in docs/cases/gacha-event",
+    "accessed": "2026-11-05",
+    "method": "Geometry taken from the case's final KV (1920 x 1080 HTML) in 1920-unit coordinates scaled to the canvas; the numerals, sun, icons and palm are ported from its common.cjs. All copy is the case's own original fiction.",
+    "sampleIds": [
+      "gacha-event/01-kv"
+    ],
+    "measured": [
+      "Final KV: tool 0, eye 0 (first pass: tagline over the numerals 1:1; palm tinted grey looked dirty; sun bands ran outside the disc; diving board over the sun)."
+    ],
+    "summary": "gacha-event v3 KV"
+  }
+}

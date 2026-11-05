@@ -11,7 +11,8 @@ const { pathToFileURL } = require("node:url");
 const lettering = require("./lettering.cjs");
 const measure = require("./measure.cjs");
 const coverage = require("./coverage.cjs");
-const LAYOUTS = { ...require("./layouts.cjs").LAYOUTS, ...require("./layouts-shinbo.cjs").LAYOUTS };
+const LAYOUTS = Object.assign({}, ...["layouts.cjs", "layouts-shinbo.cjs", "layouts-citypop.cjs", "layouts-xerox.cjs", "layouts-litho.cjs", "layouts-pixel.cjs", "layouts-hud.cjs", "layouts-cyanotype.cjs"]
+  .filter((file) => fs.existsSync(path.join(__dirname, file))).map((file) => require(`./${file}`).LAYOUTS));
 
 const TEMPLATES_ROOT = path.join(__dirname, "templates");
 const STYLES_ROOT = path.join(__dirname, "styles");
@@ -305,9 +306,16 @@ class Doc {
     const label = `${name.toUpperCase()}${note ? ` · ${note}` : ""}`;
     const pattern = `hatch-${ground.slice(1).toLowerCase()}`;
     this.hatches.add(ground);
-    const dark = measure.luminance(measure.parseColor(ground)) < 0.25;
+    const groundRgb = measure.parseColor(ground);
+    const dark = measure.luminance(groundRgb) < 0.25;
+    // The label is text on the page, so it must read on its hatch (the browser check measures it):
+    // the grey by default, black or white when the grey falls under 4.5:1 on this ground.
+    let labelColor = dark ? "#B0B0B0" : "#6A6A6A";
+    const hatch = measure.mix(groundRgb, dark ? [255, 255, 255] : [0, 0, 0], 0.08);
+    const worst = (c) => Math.min(measure.contrastRatio(measure.parseColor(c), groundRgb), measure.contrastRatio(measure.parseColor(c), hatch));
+    if (worst(labelColor) < RULES.contrastNormal) labelColor = worst("#FFFFFF") >= worst("#000000") ? "#FFFFFF" : "#000000";
     this.body.push(`${open}<rect x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="${f1(h)}" fill="url(#${pattern})" stroke="${dark ? "#9A9A9A" : "#8A8A8A"}" stroke-dasharray="8 6"/>`
-      + `<text x="${f1(x + w / 2)}" y="${f1(y + h / 2)}" text-anchor="middle" font-family="monospace" font-size="${Math.max(8, Math.min(Math.min(w, h) * 0.035, (w * 0.6) / (label.length * 0.62))).toFixed(0)}" fill="${dark ? "#B0B0B0" : "#6A6A6A"}">${esc(label)}</text></g>`);
+      + `<text x="${f1(x + w * (o.labelAt?.[0] ?? 0.5))}" y="${f1(y + h * (o.labelAt?.[1] ?? 0.5))}" text-anchor="middle" font-family="monospace" font-size="${Math.max(8, Math.min(Math.min(w, h) * 0.035, (w * 0.6) / (label.length * 0.62))).toFixed(0)}" fill="${labelColor}">${esc(label)}</text></g>`);
   }
 
   // Default box: the declared character budget at this size, placed by anchor, clipped to the canvas.
@@ -344,6 +352,8 @@ class Doc {
     if (chosen.switched) attrs.push(`data-font-switch="${esc(chosen.switched)}"`);
     if (chosen.missing) attrs.push(`data-font-missing="${esc(chosen.missing)}"`);
     if (o.vertical) attrs.push("writing-mode=\"vertical-rl\"", "text-orientation=\"upright\"");
+    if (o.italic) attrs.push("font-style=\"italic\"");
+    if (o.filter) attrs.push(`filter="url(#${esc(o.filter)})"`); // e.g. an offset shadow plate defined with d.def()
     if (spacing) attrs.push(`letter-spacing="${f1(spacing)}"`);
     const font = { serif: roleName === "serif", weight };
     const lines = spec.lines > 1 ? measure.wrapText(text, size, box[2], spacing, font) : [String(text)];
@@ -377,7 +387,12 @@ class Doc {
       return { width: measure.textWidth(text, size, 0, { serif: spec.fallbackFont === "serif", weight: 900 }), fallback: true };
     }
     const set = lettering.setText(text, x, y, h, { fill: this.pal[role], anchor, trimStart: o.trim !== false, ...P });
-    this.body.push(`<g ${this.slotAttrs(name, spec, { box })} data-role="${role}" data-cap="${f1(h)}"${wrap}>${set.svg}</g>`);
+    // An offset shadow plate (o.shadow: { dx, dy, role }) belongs to the lettering: it is hidden with
+    // it when its contrast is measured, and it is never taken as the ground under it.
+    const shadow = o.shadow
+      ? lettering.setText(text, x + o.shadow.dx, y + o.shadow.dy, h, { fill: this.pal[o.shadow.role], anchor, trimStart: o.trim !== false, ...P }).svg.replace("class=\"lettering\"", "class=\"lettering-shadow\"")
+      : "";
+    this.body.push(`<g ${this.slotAttrs(name, spec, { box })} data-role="${role}" data-cap="${f1(h)}"${wrap}>${shadow}${set.svg}</g>`);
     return { width: set.visibleWidth, left: set.left };
   }
 
@@ -891,7 +906,7 @@ function check(svgText, options = {}) {
     add({
       rule: "unsupported-geometry", slot: item.element.startsWith("slot ") ? item.element.slice(5) : undefined, measured: { element: item.element, found: item.what }, limit: { supported: "rect, polygon, path, circle, line, text with dy-only tspans; transform attributes with matrix, translate, scale, rotate" },
       message: `${item.element} contains ${item.what}, which the check cannot measure`,
-      fix: "Flatten it: no <use>, nested <svg>, <foreignObject> or CSS transforms; put moves in the transform attribute (translate, rotate, scale, matrix) and give tspans only dy; or render again with template render and change the layout through --set and --param.",
+      fix: item.fix || "Flatten it: no <use>, nested <svg>, <foreignObject> or CSS transforms; put moves in the transform attribute (translate, rotate, scale, matrix) and give tspans only dy; or render again with template render and change the layout through --set and --param.",
     });
   }
   // 10. cutting rhythm (motion templates): segment lengths, flash groups, duration and flash rate.

@@ -1,0 +1,329 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "poster.tour-flyer",
+  "family": "poster",
+  "style": "xerox-flyer",
+  "title": "Schedule poster as a band's tour flyer: ransom title on a black band, the final's date sprayed huge and tilted, a match-up band and one line per date",
+  "use": "A tournament or season schedule poster with one headline date; social feed size 4:5.",
+  "canvas": {
+    "width": 1080,
+    "height": 1350
+  },
+  "sizes": [
+    "1080x1350",
+    "2160x2700"
+  ],
+  "aspect": "4:5",
+  "accent": {
+    "roles": [],
+    "maxShare": 0
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "title_scraps": {
+      "type": "integer",
+      "default": 7,
+      "min": 3,
+      "max": 8,
+      "class": "decoration",
+      "note": "number of ransom scraps in the headline"
+    },
+    "rows": {
+      "type": "integer",
+      "default": 7,
+      "min": 3,
+      "max": 7,
+      "class": "decoration",
+      "note": "schedule lines"
+    },
+    "win_0": {
+      "type": "enum",
+      "values": [
+        "a",
+        "b",
+        "none"
+      ],
+      "default": "a",
+      "class": "decoration",
+      "note": "underline the winner of line 0"
+    },
+    "win_1": {
+      "type": "enum",
+      "values": [
+        "a",
+        "b",
+        "none"
+      ],
+      "default": "b",
+      "class": "decoration",
+      "note": "underline the winner of line 1"
+    },
+    "win_2": {
+      "type": "enum",
+      "values": [
+        "a",
+        "b",
+        "none"
+      ],
+      "default": "a",
+      "class": "decoration",
+      "note": "underline the winner of line 2"
+    },
+    "win_3": {
+      "type": "enum",
+      "values": [
+        "a",
+        "b",
+        "none"
+      ],
+      "default": "a",
+      "class": "decoration",
+      "note": "underline the winner of line 3"
+    },
+    "win_4": {
+      "type": "enum",
+      "values": [
+        "a",
+        "b",
+        "none"
+      ],
+      "default": "a",
+      "class": "decoration",
+      "note": "underline the winner of line 4"
+    },
+    "win_5": {
+      "type": "enum",
+      "values": [
+        "a",
+        "b",
+        "none"
+      ],
+      "default": "a",
+      "class": "decoration",
+      "note": "underline the winner of line 5"
+    },
+    "win_6": {
+      "type": "enum",
+      "values": [
+        "a",
+        "b",
+        "none"
+      ],
+      "default": "none",
+      "class": "decoration",
+      "note": "underline the winner of line 6"
+    },
+    "toner": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "drawn copier toner specks in the middle band (ignored when the xerox slot is filled)"
+    },
+    "toner_density": {
+      "default": 1,
+      "min": 0.6,
+      "max": 1.4,
+      "class": "rhythm",
+      "note": "toner speck density"
+    }
+  },
+  "slots": {
+    "xerox": {
+      "kind": "image",
+      "collage": true,
+      "note": "a photograph processed to copier grain (materials process --effect photocopy), placed only where there is no copy"
+    },
+    "title_{i}": {
+      "kind": "text",
+      "default": [
+        "北",
+        "线",
+        "联",
+        "赛",
+        "季",
+        "后",
+        "赛",
+        ""
+      ],
+      "maxChars": 1,
+      "font": "sans",
+      "note": "one ransom scrap per character"
+    },
+    "subtitle": {
+      "kind": "text",
+      "default": "NORTHLINE LEAGUE · PLAYOFF TOUR 2026",
+      "maxChars": 40,
+      "font": "num"
+    },
+    "date": {
+      "kind": "lettering",
+      "default": "12.13",
+      "maxChars": 5,
+      "note": "spray-stencil lettering: A-Z, 0-9 and : . - / # ! ? (code-drawn, no font)"
+    },
+    "date_label": {
+      "kind": "text",
+      "default": "总决赛 · SAT 19:00",
+      "maxChars": 16,
+      "font": "sans"
+    },
+    "team_a": {
+      "kind": "lettering",
+      "default": "ANV",
+      "maxChars": 4,
+      "note": "spray-stencil lettering: A-Z, 0-9 and : . - / # ! ? (code-drawn, no font)"
+    },
+    "versus": {
+      "kind": "text",
+      "default": "对",
+      "maxChars": 2,
+      "font": "sans"
+    },
+    "team_b": {
+      "kind": "lettering",
+      "default": "NFR",
+      "maxChars": 4,
+      "note": "spray-stencil lettering: A-Z, 0-9 and : . - / # ! ? (code-drawn, no font)"
+    },
+    "matchup": {
+      "kind": "text",
+      "default": "铁砧 vs 夜航",
+      "maxChars": 10,
+      "font": "sans"
+    },
+    "venue": {
+      "kind": "text",
+      "default": "穹顶体育馆",
+      "maxChars": 10,
+      "font": "sans"
+    },
+    "schedule_head": {
+      "kind": "text",
+      "default": "巡回日程 · 全部 BO5 · 北京时间",
+      "maxChars": 20,
+      "font": "sans"
+    },
+    "schedule_count": {
+      "kind": "text",
+      "default": "6 场已赛 · 1 场待赛",
+      "maxChars": 14,
+      "font": "sans"
+    },
+    "row_{i}_date": {
+      "kind": "text",
+      "default": [
+        "11.21",
+        "11.21",
+        "11.22",
+        "11.22",
+        "12.05",
+        "12.06",
+        "12.12"
+      ],
+      "maxChars": 5,
+      "font": "num"
+    },
+    "row_{i}_day": {
+      "kind": "text",
+      "default": [
+        "SAT",
+        "SAT",
+        "SUN",
+        "SUN",
+        "SAT",
+        "SUN",
+        "SAT"
+      ],
+      "maxChars": 3,
+      "font": "num"
+    },
+    "row_{i}_stage": {
+      "kind": "text",
+      "default": [
+        "四分之一决赛",
+        "四分之一决赛",
+        "四分之一决赛",
+        "四分之一决赛",
+        "半决赛",
+        "半决赛",
+        "季军赛 19:00"
+      ],
+      "maxChars": 10,
+      "font": "sans"
+    },
+    "row_{i}_a": {
+      "kind": "text",
+      "default": [
+        "ANV",
+        "TDL",
+        "NFR",
+        "DK9",
+        "ANV",
+        "NFR",
+        "AMW"
+      ],
+      "maxChars": 4,
+      "font": "num"
+    },
+    "row_{i}_score": {
+      "kind": "text",
+      "default": [
+        "3:1",
+        "2:3",
+        "3:0",
+        "3:2",
+        "3:2",
+        "3:1",
+        "vs"
+      ],
+      "maxChars": 3,
+      "font": "num"
+    },
+    "row_{i}_b": {
+      "kind": "text",
+      "default": [
+        "PPC",
+        "AMW",
+        "WNZ",
+        "MGR",
+        "AMW",
+        "DK9",
+        "DK9"
+      ],
+      "maxChars": 4,
+      "font": "num"
+    },
+    "footnote": {
+      "kind": "text",
+      "default": "下划线 = 晋级 · 现场票 11.28 12:00 开售 · 全程直播：北线联赛官方频道",
+      "maxChars": 46,
+      "font": "sans"
+    }
+  },
+  "relations": [
+    "Copy never sits on the copier grain: every line is on a solid paper or black plate (collage-cover).",
+    "One giant stencil date (250 px against 18 px, 14:1) tilted -6 degrees, its label pasted on its corner.",
+    "Schedule paper tilted +1 degree, one line per date, winners underlined."
+  ],
+  "decoration": [
+    "Toner specks (or the processed photograph), stencil bridges, rules."
+  ],
+  "provenance": {
+    "corpus": "esports-broadcast case v2 (北线联赛总决赛): our own original fictional league in the xerox-flyer grammar",
+    "experiment": "styles/xerox-flyer/style.json provenance; case renders in docs/cases/esports-broadcast",
+    "accessed": "2026-11-05",
+    "method": "Positions from the case's poster.cjs (1080 x 1350). The case's copier ground is George Bellows' Stag at Sharkey's (1909, Cleveland Museum of Art, CC0) through materials cut and a photocopy process; this template takes any processed photograph in the xerox slot and draws toner specks until then.",
+    "sampleIds": [
+      "esports-broadcast/04-schedule-poster"
+    ],
+    "measured": [
+      "Case v2: first pass 0 tool findings, 1 by eye (a meaningless header); final 0."
+    ],
+    "summary": "esports-broadcast v2 poster"
+  }
+}

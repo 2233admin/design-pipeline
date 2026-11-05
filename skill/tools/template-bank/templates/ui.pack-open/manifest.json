@@ -1,0 +1,313 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.pack-open",
+  "family": "ui",
+  "style": "cyanotype-specimen",
+  "title": "Pack opening on a blue table: the torn pack at left, five cards fanned, revealed ones as cyanotype miniatures and the rest face-down with a gold edge for a legend",
+  "use": "The pack-opening screen of a card game: a pack of five, revealed and face-down cards, a hover tip, a new-card badge and the open-all / again / store buttons.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "gold_light"
+    ],
+    "maxShare": 0.06
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "revealed": {
+      "type": "integer",
+      "default": 3,
+      "min": 0,
+      "max": 5,
+      "class": "decoration",
+      "note": "cards turned (order: 1st, 2nd, 4th, 3rd, 5th; the 3rd is the hovered one)"
+    },
+    "new_card": {
+      "type": "integer",
+      "default": 1,
+      "min": -1,
+      "max": 4,
+      "class": "decoration",
+      "note": "card that carries the new badge (-1: none)"
+    },
+    "rarity_0": {
+      "type": "enum",
+      "values": [
+        "common",
+        "rare",
+        "epic",
+        "legend"
+      ],
+      "default": "common",
+      "class": "decoration",
+      "note": "rarity of card 0; a face-down legend shows the gold edge"
+    },
+    "rarity_1": {
+      "type": "enum",
+      "values": [
+        "common",
+        "rare",
+        "epic",
+        "legend"
+      ],
+      "default": "rare",
+      "class": "decoration",
+      "note": "rarity of card 1; a face-down legend shows the gold edge"
+    },
+    "rarity_2": {
+      "type": "enum",
+      "values": [
+        "common",
+        "rare",
+        "epic",
+        "legend"
+      ],
+      "default": "common",
+      "class": "decoration",
+      "note": "rarity of card 2; a face-down legend shows the gold edge"
+    },
+    "rarity_3": {
+      "type": "enum",
+      "values": [
+        "common",
+        "rare",
+        "epic",
+        "legend"
+      ],
+      "default": "epic",
+      "class": "decoration",
+      "note": "rarity of card 3; a face-down legend shows the gold edge"
+    },
+    "rarity_4": {
+      "type": "enum",
+      "values": [
+        "common",
+        "rare",
+        "epic",
+        "legend"
+      ],
+      "default": "legend",
+      "class": "decoration",
+      "note": "rarity of card 4; a face-down legend shows the gold edge"
+    }
+  },
+  "slots": {
+    "title": {
+      "kind": "text",
+      "default": "开启卡包",
+      "maxChars": 6,
+      "font": "serif",
+      "title": true
+    },
+    "subtitle": {
+      "kind": "text",
+      "default": "第一辑「初开之匣」 · 每包 5 张 · 至少 1 张珍稀",
+      "maxChars": 30,
+      "font": "sans"
+    },
+    "wallet_{i}": {
+      "kind": "text",
+      "default": [
+        "墨锭 1,240",
+        "卡包 × 3"
+      ],
+      "maxChars": 9,
+      "font": "sans"
+    },
+    "pack_name": {
+      "kind": "text",
+      "default": "初开之匣",
+      "maxChars": 5,
+      "font": "serif"
+    },
+    "pack_meta": {
+      "kind": "text",
+      "default": "RARIUM · 第一辑 · 5 张",
+      "maxChars": 20,
+      "font": "sans"
+    },
+    "pack_seal": {
+      "kind": "text",
+      "default": "藏",
+      "maxChars": 1,
+      "font": "serif"
+    },
+    "card_{i}_cost": {
+      "kind": "text",
+      "default": [
+        "1",
+        "3",
+        "1",
+        "6",
+        "7"
+      ],
+      "maxChars": 2,
+      "font": "serif"
+    },
+    "card_{i}_name": {
+      "kind": "text",
+      "default": [
+        "毒蝇伞",
+        "角鸮",
+        "灰翅蛾",
+        "铁甲犀",
+        "狮鹫"
+      ],
+      "maxChars": 4,
+      "font": "serif"
+    },
+    "card_{i}_atk": {
+      "kind": "text",
+      "default": [
+        "1",
+        "2",
+        "2",
+        "6",
+        "7"
+      ],
+      "maxChars": 2,
+      "font": "serif"
+    },
+    "card_{i}_hp": {
+      "kind": "text",
+      "default": [
+        "2",
+        "3",
+        "1",
+        "7",
+        "6"
+      ],
+      "maxChars": 2,
+      "font": "serif"
+    },
+    "card_{i}_rarity_name": {
+      "kind": "text",
+      "default": [
+        "寻常",
+        "珍稀",
+        "寻常",
+        "奇异",
+        "孤品"
+      ],
+      "maxChars": 2,
+      "font": "sans",
+      "derived": true,
+      "decor": true,
+      "note": "from the card's rarity; under 12 px on a miniature, so decoration"
+    },
+    "new_badge": {
+      "kind": "text",
+      "default": "新",
+      "maxChars": 1,
+      "font": "serif"
+    },
+    "new_badge_sub": {
+      "kind": "text",
+      "default": "收录",
+      "maxChars": 2,
+      "font": "sans"
+    },
+    "back_word": {
+      "kind": "text",
+      "default": "RARIUM",
+      "maxChars": 8,
+      "font": "latin",
+      "decor": true
+    },
+    "tip": {
+      "kind": "text",
+      "default": "点击翻开",
+      "maxChars": 6,
+      "font": "sans"
+    },
+    "progress": {
+      "kind": "text",
+      "default": "已翻开 3 / 5",
+      "maxChars": 10,
+      "font": "sans"
+    },
+    "progress_hint": {
+      "kind": "text",
+      "default": "悬停预览 · 点击翻开",
+      "maxChars": 12,
+      "font": "sans"
+    },
+    "pity": {
+      "kind": "text",
+      "default": "距保底孤品 23 包",
+      "maxChars": 10,
+      "font": "sans"
+    },
+    "pity_hint": {
+      "kind": "text",
+      "default": "金边背面 = 本包含孤品",
+      "maxChars": 13,
+      "font": "sans"
+    },
+    "button_open_all": {
+      "kind": "text",
+      "default": "全部翻开",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "button_again": {
+      "kind": "text",
+      "default": "再开一包",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "button_again_count": {
+      "kind": "text",
+      "default": "× 2",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "button_store": {
+      "kind": "text",
+      "default": "收入匣中",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "button_store_note": {
+      "kind": "text",
+      "default": "翻开全部后可用",
+      "maxChars": 8,
+      "font": "sans"
+    }
+  },
+  "relations": [
+    "Five cards in a fan (-8 to +8 degrees), the middle one raised; a face-down legend tells itself by a gold edge.",
+    "Only the primary button is gold; the disabled one is hatched with its reason beside the label.",
+    "Miniatures keep cost, name, rarity and stats only; their rules would be under 12 px."
+  ],
+  "decoration": [
+    "Table grain, brushed fields, fronds, card backs with the ring, the torn flap, the seal, the hover frame."
+  ],
+  "provenance": {
+    "corpus": "card-game case (藏珍匣 RARIUM): our own original fictional trading card game in the cyanotype-specimen grammar",
+    "experiment": "styles/cyanotype-specimen/style.json provenance; case renders in docs/cases/card-game",
+    "accessed": "2026-11-05",
+    "method": "Positions from the case's pack.html static state (fan offsets, scale 0.36, pack at 196, 600 rotated -6 degrees, buttons centred at the bottom).",
+    "sampleIds": [
+      "card-game/pack-opening-screen"
+    ],
+    "measured": [
+      "First pass 76 findings (mostly textures counted as collage under text); final 0; the motion keyframe at 3.5 s keeps 1 explained finding (a card mid-flip)."
+    ],
+    "summary": "card-game pack opening"
+  }
+}

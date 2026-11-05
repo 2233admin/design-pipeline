@@ -1,0 +1,285 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "cyanotype-specimen",
+  "title": "Cyanotype specimen sheet: one Prussian blue, hand-brushed fields, white-line specimens, rarity by process (trading card game)",
+  "summary": "Every card is a cyanotype contact print: a hand-brushed Prussian-blue field with ragged, bristle-streaked edges, the specimen a white shadow on it, early trading-card information positions on cream paper. Rarity changes the process, not the colour: paper edge, silver frame, tannin toning with copper foil, full deep field on gold foil.",
+  "provenance": {
+    "case": "card-game (藏珍匣 RARIUM): card frames in four rarities, a set of nine cards, a pack-opening screen and a 6 s pack-opening motion, for an original fictional trading card game of antique natural-history specimens.",
+    "lineage": "Anna Atkins' cyanotype photograms (Photographs of British Algae, 1843): brushed sensitiser, one Prussian blue, the specimen as a white shadow. Information positions after early trading cards. Borrowed: the process and the grammar. Never borrowed: any of her plates.",
+    "borrow": "Borrow grammar, never assets. The case's specimens are public-domain prints (Dürer, Hollar, Schongauer, de Boodt; The Met, Cleveland, Rijksmuseum, CC0 / PDM) reprinted as cyanotype white lines through the materials tools; the template ships none of them: a drawn algae frond stands in.",
+    "rounds": "Six thumbnails, three directions, the riskiest chosen. First pass: 10-21 findings per card, 170 on the set sheet, 76 on the pack screen (textures as collage, text on the brushed edge); final 0 (one explained mid-flip motion frame).",
+    "measured": [
+      "Cost, name and type on the brushed edge measured 1.9:1 at the 10th percentile: the edge margin went from 26 to 14 px and the text moved onto the solid field.",
+      "Paper grain and the field are multiply layers, not normal-blended images; otherwise the browser check counts them as collage under every line.",
+      "The red fly agaric prints blue like everything else: the cost of one-colour unity, accepted."
+    ],
+    "accessed": "2026-11-05"
+  },
+  "palette": {
+    "paper": {
+      "value": "#F1EEE4",
+      "use": "card paper, rules plate, text on the fields"
+    },
+    "ink": {
+      "value": "#1B1A18",
+      "use": "rules and stats on paper"
+    },
+    "field_blue": {
+      "value": "#1E4282",
+      "use": "the untoned cyanotype field (common, rare)"
+    },
+    "field_tea": {
+      "value": "#5C3B33",
+      "use": "the tannin-toned field (epic)"
+    },
+    "field_deep": {
+      "value": "#12295A",
+      "use": "the full deep field (legend) and card backs"
+    },
+    "deep_band": {
+      "value": "#122C5C",
+      "use": "the legend's type band, cost disc and label grounds"
+    },
+    "silver": {
+      "value": "#B4C3D1",
+      "use": "rare foil"
+    },
+    "silver_light": {
+      "value": "#DBE6EF",
+      "use": "rare frame and sigil"
+    },
+    "copper": {
+      "value": "#B0704A",
+      "use": "epic foil"
+    },
+    "copper_light": {
+      "value": "#E7B48E",
+      "use": "epic sigil"
+    },
+    "gold": {
+      "value": "#C9A24A",
+      "use": "legend foil and name label"
+    },
+    "gold_light": {
+      "value": "#E9C870",
+      "use": "legend details, the primary button, card-back ring"
+    },
+    "gold_pale": {
+      "value": "#E9D9AC",
+      "use": "legend collector line"
+    },
+    "latin_light": {
+      "value": "#D3DFEB",
+      "use": "Latin names on the field"
+    },
+    "specimen": {
+      "value": "#F4F1E8",
+      "use": "the white-line specimen"
+    },
+    "blue_ink": {
+      "value": "#1C3F78",
+      "use": "keyword icons on paper"
+    },
+    "flavor": {
+      "value": "#5E4D3D",
+      "use": "flavour text on paper"
+    },
+    "slash": {
+      "value": "#6C6253",
+      "use": "the stat slash"
+    },
+    "stat_ink": {
+      "value": "#45413A",
+      "use": "the stat label"
+    },
+    "credit_ink": {
+      "value": "#57534B",
+      "use": "collector and credit lines"
+    },
+    "table": {
+      "value": "#0D2148",
+      "use": "the table under the pack screen"
+    },
+    "chip": {
+      "value": "#0A1A3A",
+      "use": "wallet chips and the secondary button"
+    },
+    "pale": {
+      "value": "#D9E2EC",
+      "use": "secondary text on the table"
+    },
+    "pack": {
+      "value": "#E9E3D3",
+      "use": "the pack paper"
+    },
+    "seal": {
+      "value": "#9E2B25",
+      "use": "the pack seal and the new badge"
+    },
+    "seal_ink": {
+      "value": "#F4E6D6",
+      "use": "text on the seal"
+    },
+    "back": {
+      "value": "#0F2550",
+      "use": "card backs"
+    },
+    "disabled": {
+      "value": "#1D2E52",
+      "use": "the disabled button"
+    },
+    "disabled_line": {
+      "value": "#4B5D80",
+      "use": "its outline"
+    },
+    "disabled_ink": {
+      "value": "#B9C4D4",
+      "use": "its text"
+    }
+  },
+  "fonts": {
+    "roles": {
+      "serif": {
+        "stack": [
+          "Noto Serif SC",
+          "Noto Serif CJK SC"
+        ],
+        "generic": "serif",
+        "weight": 900,
+        "use": "names, cost and stats (900), flavour (400)"
+      },
+      "sans": {
+        "stack": [
+          "Noto Sans SC",
+          "Noto Sans CJK SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 500,
+        "use": "rules (500), keywords (800), type line and UI"
+      },
+      "latin": {
+        "stack": [
+          "Cormorant Garamond",
+          "Noto Serif SC",
+          "Noto Serif CJK SC"
+        ],
+        "generic": "serif",
+        "weight": 500,
+        "use": "Latin binomials (italic) and the card-back word"
+      }
+    },
+    "faces": [
+      {
+        "family": "Noto Serif SC",
+        "weight": 900,
+        "file": "NotoSerifSC[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/notoserifsc",
+        "licence": "SIL OFL 1.1",
+        "author": "Google"
+      },
+      {
+        "family": "Noto Sans SC",
+        "weight": 500,
+        "file": "NotoSansSC[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/notosanssc",
+        "licence": "SIL OFL 1.1",
+        "author": "Google"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "weight": 500,
+        "file": "CormorantGaramond[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/cormorantgaramond",
+        "licence": "SIL OFL 1.1",
+        "author": "Christian Thalmann"
+      }
+    ],
+    "resolve": "fonts query --text-file <card copy> --style mincho --weight 700 resolves Noto Serif SC and --style gothic Noto Sans SC (the case's queries); Cormorant Garamond is Latin only (fonts measure --path).",
+    "licence": "All roles use SIL OFL 1.1 fonts.",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. --font-dir <dir> reads coverage and embeds the faces."
+  },
+  "layout": {
+    "grammar": [
+      "One Prussian blue for every card; rarity is the process (paper edge, silver frame, tannin toning with copper foil, full field on gold foil), never a new hue.",
+      "The specimen is a white shadow on the field, never a full-colour picture.",
+      "The field is brushed by hand: ragged edges, bristle streaks, dry-brush gaps; text stays on its solid part, at least 14 px in from the edge.",
+      "Information positions of early trading cards: cost top left, name beside it, Latin name under it, type line and rarity sigil at the bottom of the field, rules on paper, stats bottom left, collector line bottom right.",
+      "Foil is flat guilloche line work; light is only a sweep in motion, never a gloss.",
+      "Textures (paper grain, field mottling) are multiply layers, so copy never sits on an image."
+    ]
+  },
+  "materials": {
+    "procedural": [
+      "hand-brushed field (layouts-cyanotype.cjs brushedField()): jittered edges and bristle streaks; the case's raster version is fields.py (blue, tea and deep tonings)",
+      "flat guilloche foil in silver, copper and gold",
+      "a drawn algae frond as the stand-in specimen",
+      "rarity sigils, keyword icons on a 24 grid with one hatched area each"
+    ],
+    "recipes": [
+      "Specimen from a public-domain print: materials search --query <animal> --source met|cleveland|rijksmuseum; materials fetch --project-root . --source <id> --id <object> --name <stem> --width 1400; materials cut --file materials/raw/<stem>.png --mode paper --finish ink (alpha = ink density); invert to white lines and pass it to the art slot.",
+      "Cyanotype field as a raster: materials process --file <field.png> --effect duotone --params '{\"inks\":[\"#0E2654\",\"#28528C\"],\"periodPx\":9}' --seed 1, or the case's fields.py; multiply it, never normal-blend it.",
+      "Paper tooth: materials generate --generator paper --params '{\"profile\":\"laid-cream\",\"pxPerMm\":4}' --seed 1, multiplied over the card at 90%."
+    ],
+    "collage": [
+      "The specimen (art slot) is the only image; it stays inside the field and never under copy (collage-cover)."
+    ],
+    "sources": "The Met, Cleveland Museum of Art and Rijksmuseum open access (CC0 / public domain mark), recorded with materials check.",
+    "budget": {
+      "inks": 1,
+      "tonings": 3,
+      "effectsMax": 3
+    }
+  },
+  "motion": {
+    "fps": 30,
+    "grammar": [
+      "Pack opening in 6 s: the flap tears up, cards fan out, each flips on its vertical axis (cosine scale), a light sweep crosses a revealed foil card, the legend flips last.",
+      "Face-down cards show their rarity only by the edge (gold for a legend) before they flip.",
+      "A card mid-flip is the one frame where text is foreshortened; check the frames before and after it."
+    ]
+  },
+  "checks": {
+    "static": [
+      "text-overflow",
+      "text-length",
+      "type-size",
+      "contrast",
+      "accent-budget"
+    ],
+    "browser": [
+      "text-overlap",
+      "off-canvas",
+      "collage-cover",
+      "contrast",
+      "text-occluded",
+      "glyph-coverage"
+    ],
+    "browserOnRender": true,
+    "guidance": [
+      "64 px distinctiveness (guidance): a set of cards at 64 px should read as blue specimen sheets with one gold card; if the rarities read as different colour schemes, the one-ink grammar was lost.",
+      "Never place copy on the brushed edge or the dry-brush gaps: measure at the 10th percentile, as the browser check does."
+    ],
+    "note": "The browser check runs on every render (brushed edges, the specimen and foil are measured in pixels)."
+  },
+  "examples": {
+    "note": "Renders of the case that stay examples: see docs/cases/card-game/ (README showcase).",
+    "renders": [
+      {
+        "screen": "set of nine cards with their public-domain specimens",
+        "file": "docs/cases/card-game/card-game-set.jpg",
+        "why": "the specimens are processed museum prints; the template takes yours through the art slot"
+      },
+      {
+        "screen": "legendary card with the griffin breaking the frame",
+        "file": "docs/cases/card-game/card-game-legendary.jpg",
+        "why": "the frame break needs a hand-cut head (a second collage piece); not parametrised"
+      },
+      {
+        "screen": "6 s pack-opening motion",
+        "file": "docs/cases/card-game/card-game-pack-opening.gif",
+        "why": "motion"
+      }
+    ]
+  }
+}

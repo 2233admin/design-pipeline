@@ -1,0 +1,102 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "cassandre-litho",
+  "title": "Cassandre-style lithograph poster: vermilion field, a monument from below, the title in a beam of unprinted paper (Steam capsule set)",
+  "summary": "A dominant vermilion field, a monumental object seen from below that bleeds off the frame, light as a flat shape of unprinted paper with halftone dots eating its far end, the ink plate printed a few pixels out of register over a rust plate, and a title that sits in the light, tilted with it. The steam.* templates re-compose this one design for every Steam store and library size.",
+  "provenance": {
+    "case": "steam-capsules round 2 (远灯 FARLAMP): 13 Steam store and library assets in 12 sizes plus a store-page first screen, for an original fictional indie puzzle game.",
+    "lineage": "A. M. Cassandre's 1920s-30s lithograph posters (Normandie, Étoile du Nord): monumental objects from extreme angles, flat colour fields, light as unprinted paper, airbrush and halftone gradations. Borrowed: the grammar. Never borrowed: any poster, ship, train or lettering of his.",
+    "borrow": "Borrow grammar, never assets. Every shape is drawn in code; the title lettering is the bank's code-drawn lettering; the round-1 chart engraving (U.S. Coast Survey, 1854-57, The Met, CC0) only survives in the gameplay mock-ups.",
+    "rounds": "Round 1 navy night sky with an amber beam passed every check and was judged 'too ordinary'; round 2 this pack. Round 2 first pass: 3 findings (two icon pages computed a negative sea height, one transparent logo); final: 1 explained (the transparent library logo, 3.88:1 where it is used, on the hero).",
+    "measured": [
+      "Title ink #15151C on paper light #F2E4C4: 14.42:1; event copy paper on the sea 12.59:1.",
+      "Small capsule at the store's 120x45: re-composed title box 23.8 px (both names read by OCR) against 14.9 px for a cropped header (Latin name lost).",
+      "64 px: three assets with the title hidden still read as one game and as a printed poster, not a UI template (round 1 read as 'any lighthouse')."
+    ],
+    "accessed": "2026-11-05"
+  },
+  "palette": {
+    "field": { "value": "#D9441F", "use": "the dominant vermilion field; also the dots eating the beam" },
+    "field_hi": { "value": "#EE7A33", "use": "secondary rays and the halftone glow (decoration)" },
+    "paper": { "value": "#F2E4C4", "use": "the light (unprinted paper), tower bands, text on the sea" },
+    "ink": { "value": "#15151C", "use": "the title and the monument's ink plate" },
+    "rust": { "value": "#8E2A17", "use": "the out-of-register under-plate and the title's shadow plate" },
+    "sea": { "value": "#1C2232", "use": "the sea band; event copy sits on it in paper" }
+  },
+  "fonts": {
+    "roles": {
+      "display": { "stack": ["Noto Serif SC", "Noto Serif CJK SC"], "generic": "serif", "weight": 900, "use": "the CJK title (letter-spacing -0.02 em, cut by three beam slits) and event titles" },
+      "label": { "stack": ["Noto Sans SC", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 800, "use": "event kickers and one-line event copy" },
+      "body": { "stack": ["Noto Sans SC", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 500, "use": "event detail lines" }
+    },
+    "faces": [
+      { "family": "Noto Serif SC", "weight": 900, "file": "NotoSerifSC[wght].ttf", "source": "https://github.com/google/fonts/tree/main/ofl/notoserifsc", "licence": "SIL OFL 1.1", "author": "Google" },
+      { "family": "Noto Sans SC", "weight": 800, "file": "NotoSansSC[wght].ttf", "source": "https://github.com/google/fonts/tree/main/ofl/notosanssc", "licence": "SIL OFL 1.1", "author": "Google" }
+    ],
+    "resolve": "fonts query --text \"<title and copy>\" --style mincho --weight 900 resolves Noto Serif SC from the catalog (the case's query: 远灯守夜人雾岛群光路解谜); --style gothic for the label roles.",
+    "licence": "All roles use SIL OFL 1.1 fonts.",
+    "bundled": false,
+    "lettering": "The Latin name is the bank's code-drawn lettering, wide and square: width 0.78, stroke 0.2, chamfer 0, stencil 0.08, tracking 180, with a rust shadow plate.",
+    "note": "Fonts are named, not bundled. --font-dir <dir> reads coverage and embeds the faces."
+  },
+  "layout": {
+    "grammar": [
+      "One monument from a worm's-eye view, large enough to leave the frame at the bottom; one beam of light as a flat paper wedge.",
+      "The title lives inside the light, on the beam's axis, tilted with it; the light widens where the title needs room (small capsule: nearly the whole frame).",
+      "Vermilion dominates (over half the frame); paper is the only light; ink only on the monument and the title.",
+      "Halftone eats the end of the light; no gradient, no glow blur.",
+      "The ink plate is a few pixels out of register over a rust plate: the misregistration is the texture.",
+      "One design, many sizes: re-compose every asset (monument foot and lantern, beam angle and spread, title distance and size) instead of cropping."
+    ],
+    "steam": {
+      "sizes": { "header capsule": "920x430", "small capsule": "462x174 (shown at 184x69 and 120x45)", "main capsule": "1232x706", "vertical capsule": "748x896", "library capsule": "600x900", "library hero": "3840x1240 (art only, key content in the centred 860x380)", "library logo": "1280x720 transparent", "page background": "1438x810 (dark, not distracting)", "event cover": "800x450", "event header": "1920x622", "shortcut icon": "256x256", "app icon": "184x184" },
+      "rules": "Capsules carry art, the game name and an official subtitle only (Steam graphical asset rules, since 2022-09-01); the library hero has no text; screenshots must be real gameplay (at least 5).",
+      "source": "https://partner.steamgames.com/doc/store/assets (accessed 2026-11-05)",
+      "templates": "steam.header-capsule, steam.small-capsule, steam.main-capsule, steam.vertical-capsule, steam.library-capsule, steam.event-cover, steam.event-header. The text-free assets (library hero, page background, icons, logo) stay example renders."
+    }
+  },
+  "materials": {
+    "procedural": [
+      "monument (layouts-litho.cjs tower()): a tapering shaft with paper bands, gallery, lantern and dome, ink plate shifted over a rust plate",
+      "beam: a paper wedge from the lantern; its last 15-45% eaten by vermilion dots in three sizes",
+      "halftone glow: three rings of dot pattern around the lantern",
+      "sea band with paper dashes, small boats"
+    ],
+    "recipes": [
+      "Halftone screens for print or a raster pass: materials generate --generator halftone --params '{\"periodPx\":18,\"angleDeg\":45,\"coverage\":0.35,\"ink\":\"#D9441F\"}' --seed 1.",
+      "Paper tooth over the whole asset, kept out of the title box: materials generate --generator paper --params '{\"profile\":\"laid-cream\",\"pxPerMm\":4}' --seed 1, multiplied at 55% with a mask cut around the title.",
+      "A monument from a photograph: materials process --file <cut.png> --effect duotone --params '{\"inks\":[\"#15151C\",\"#8E2A17\"],\"misregisterMm\":[0.6,-0.4]}' --seed 1, then the monument slot."
+    ],
+    "collage": [
+      "The only collage is your own monument (monument slot); it never sits under the title."
+    ],
+    "sources": "Everything is drawn; public-domain engravings (The Met, CC0) only for in-game mock-ups.",
+    "budget": { "effectsMax": 3, "inks": 3, "titleTiltDeg": [-12, 8] }
+  },
+  "motion": {
+    "fps": 30,
+    "grammar": [
+      "A size-adaptation reel cuts between assets on the beat; each asset holds 0.5-1 s; the beam sweeps once per cut.",
+      "The beam can rotate a few degrees between holds; the title stays inside it on every frame."
+    ]
+  },
+  "checks": {
+    "static": ["text-overflow", "text-length", "type-size", "contrast", "safe-zone", "lettering-fallback"],
+    "browser": ["text-overlap", "off-canvas", "contrast", "text-occluded", "glyph-coverage"],
+    "browserOnRender": true,
+    "guidance": [
+      "64 px distinctiveness (guidance): hide the title, shrink to 64 px and set the header, vertical and small capsules side by side; they should read as one game and as a printed poster. A navy sky with an amber beam reads as 'any lighthouse game'.",
+      "Small capsule: downscale to 184x69 and 120x45 with Lanczos and read the title by eye (or OCR); keep the title box near 24 px at 120x45. OCR misses the tilted, slit title at large sizes: judge by eye, do not flatten the title for OCR.",
+      "Beam slits hide part of the title: they stay under the occlusion limit (three slits of 2.2-3.5% of the size)."
+    ],
+    "note": "The browser check runs on every render (the title on the beam, its slits and the halftone are measured in pixels)."
+  },
+  "examples": {
+    "note": "Assets of the case that stay example renders (no text, or not a Steam capsule): see docs/cases/steam-capsules/ (README showcase).",
+    "renders": [
+      { "screen": "library hero 3840x1240, page background 1438x810, shortcut and app icons, transparent library logo", "file": "docs/cases/steam-capsules/steam-adaptation-overview.jpg", "why": "art-only or logo-only assets have no text to check; render them from the same parts (layouts-litho.cjs) when needed" },
+      { "screen": "store page first screen", "file": "docs/cases/steam-capsules/steam-store-first-screen.jpg", "why": "a mock of the store page structure, not a deliverable asset" },
+      { "screen": "size-adaptation reel", "file": "docs/cases/steam-capsules/steam-adaptation-reel.gif", "why": "motion" }
+    ]
+  }
+}

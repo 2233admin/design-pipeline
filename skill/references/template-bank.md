@@ -8,7 +8,7 @@ and shared alignment lines. It works like a sound-effects bank: sounds as code, 
 knobs, measured on playback.
 
 Code: `tools/template-bank/` (`bank.cjs` render and static check, `page-check.cjs` the browser
-check, `coverage.cjs` glyph coverage, `distill.cjs` / `reference-measure.cjs` reference distillation, `layouts.cjs` / `layouts-shinbo.cjs` geometry, `lettering.cjs`
+check, `coverage.cjs` glyph coverage, `distill.cjs` / `reference-measure.cjs` reference distillation, `layouts.cjs` / `layouts-shinbo.cjs` / `layouts-<pack>.cjs` geometry (`layout-kit.cjs` shared helpers), `lettering.cjs`
 code-drawn display lettering, `styles/<id>/style.json`, `templates/<id>/manifest.json` +
 `template.svg` + `spec.md`).
 
@@ -19,6 +19,16 @@ grammar + check rules; its templates are the parameterised layouts of that gramm
 | --- | --- | --- |
 | `arknights-endfield` | 9 (kv, cover, card, banner, ui) | Measured from official promotional art: code-drawn condensed Latin over CJK sans/serif, one figure, a shared left line |
 | `shinbo` | 11 (7 title cards, a corridor poster, a chapter grid, an item codex, a title-card cut) | Flat red/black/paper grounds, Mincho against small gothic, architecture and void, cut-paper collage that never touches copy, flash-hold-black rhythm |
+| `citypop-sleeve` | 3 (event KV, recruit screen, ten-pull wall) | City-pop record sleeve: one pool cyan, white walls, hard cast shadows, striped numerals, postcards at small tilts; lemon only for the top rarity and the main button |
+| `xerox-flyer` | 3 (scorebug with a half-size reflow, ban/pick board, tour-flyer poster) | Punk photocopy flyer: one fluorescent pink, black and paper as if copied, ransom-note scraps, spray-stencil numerals |
+| `cassandre-litho` | 7 (the `steam.*` capsule set) | Lithograph poster: vermilion field, a monument from below, the title inside a beam of unprinted paper; one design re-composed for every Steam size |
+| `woodblock-pixel` | 2 (title screen, inventory) | Road-station woodblock on a 480 x 270 grid: bokashi dither bands, ink one pixel out of register, paper panels on dark-red plates, a vertical vermilion cartouche |
+| `acid-print-hud` | 1 (combat HUD) | One acid ink on black slabs, giant chamfered numerals with a misregistered plate, the scene as a cold halftone |
+| `cyanotype-specimen` | 2 (card frame in four rarities, pack opening) | Cyanotype specimen sheets: one Prussian blue, hand-brushed fields, white-line specimens, rarity by process not colour |
+
+The six game packs come from owner-approved cases (each pack's `provenance` names the case, its lineage and
+the rule *borrow grammar, never assets*); `examples` in each pack lists the case screens that stayed example
+renders because their structure was a one-off.
 
 ## When to use it
 
@@ -39,7 +49,7 @@ the deliverable is a full page or product flow (use `next`).
 ## Commands
 
 ```sh
-designer-pipeline template list [--family kv|cover|card|banner|ui|motion] [--style <id>]
+designer-pipeline template list [--family kv|cover|card|banner|ui|motion|broadcast|poster|steam|pixel|hud] [--style <id>]
 designer-pipeline template render <id> --set slot=value ... --param name=value ... \
   [--seed <n>] [--size WxH] -o out.svg [--png out.png] [--font-dir <dir>] [--browser]
 designer-pipeline template check <out.svg | page.html | hand-made.svg> [--browser] [--size WxH]
@@ -99,6 +109,10 @@ Measured on the rendered SVG, from its geometry and the rules embedded at render
 | `glyph-coverage` | A string no font of its role covers (known from `--font-dir` or a coverage provider) | Every character covered |
 | `rhythm` | Motion templates: frames per cut by kind (a 2-6 frame black between flashes is a black flash), flash groups (size, one ground tone), repeats, duration, and a cut-list approximation of the flash rate from each card's mean luminance (or ground tone) | The style's motion grammar; 3 flashes a second, confirmed only on the encoded film |
 
+Filled paths are read as polygons: lines (`M L H V`, absolute and relative) exactly, curves by their
+control polygon, arcs by their end points; an unparsed arc no longer adds a phantom triangle reaching the
+origin that darkens the ground of text far away.
+
 Decoration slots (watermark words, micro-markers, barcodes) are exempt from size and contrast; slots
 marked `bleed` are exempt from the box.
 
@@ -128,10 +142,20 @@ sees layers injected after rendering, hand-written SVG and HTML pages:
 | `no-text-measured` | No visible text on the page; a text-free page declares `data-no-text` on its root | At least one text |
 | `glyph-coverage` | Characters missing from the first font of a run's stack (the page's `@font-face` files, or a registered provider) | Every character |
 
+A drawn numeral or word (paths, no text) is measured as lettering when it is a lettering slot or
+carries `data-chk` (give `data-cap` for its cap height): overlap, off-canvas and contrast, the colour
+taken from its `.lettering` paths (the stroke when a glyph is stroked), so a page made only of drawn
+numerals no longer needs `data-no-text`. An offset shadow plate of a lettering slot (`shadow` below)
+is hidden with it and never taken as its ground.
+
 Mark your own layers so they group and exempt correctly: `data-chk="<id>"` names a text unit (an
 element holding marked children is a container), `data-grp="<group>/<n>"` makes a lock-up whose
 parts may touch, `data-deco` exempts decoration from overlap and contrast, `data-bleed` from the
-canvas edge, `data-collage` marks a cut-out drawn in SVG. When both halves run, the browser's pixel
+canvas edge, `data-collage` marks a cut-out drawn in SVG.
+Do not put `data-chk` on decorative paths: a marked element is measured as text (overlap, off-canvas and
+contrast), even when it holds only paths; use `data-deco` for decoration. Path data is read in full
+(arc flags may be glued to the next number, as svgo writes them); a `d` that cannot be read is
+reported as `unsupported-geometry` (unmeasured) with a fix, never measured in part. When both halves run, the browser's pixel
 contrast replaces the static estimate.
 Without it, the static check samples the rendered pixels under text on a real image slot (or
 takes a declared `--tone`).
@@ -186,6 +210,39 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
   built from the shots `ground:label`; `groups=0` picks the count that lands in 10-15 s. Encode it
   with your card renders, then check the film with `verify film-render`.
 - Acceptance fixtures: `tests/fixtures/style-pack-shinbo/` (the experiment's first pass and final).
+
+## Game packs: what they encode
+
+- **citypop-sleeve**: `time` in `cover.event-kv` is a striped-numeral lettering slot (digits and `: . - /`);
+  its contrast is the deep-teal cast shadow (the white tube alone is about 2.2:1 on pool). Ten-pull
+  rarity is the number of stars in `card_<i>_stars` (3-6): the plate follows it (6 lemon, 5 paper, 4 deep
+  teal, 3 sand). The palm shadow is drawn until a cut silhouette fills the `palm` slot.
+- **xerox-flyer**: ransom notes are one slot per scrap (`sticker_<i>`, `title_<i>`, `hover_note_<i>`), each
+  with a seeded look; codes, scores, timers and dates are stencil lettering with two spray bridges.
+  `broadcast.scorebug --param scale=half` reflows the bug (nothing under 12 px, bridges off), it does not
+  shrink it; the pause is `centre_frame=dashed` plus the pause copy.
+- **cassandre-litho / steam.\***: one template per Steam size (header 920x430, small 462x174, main
+  1232x706, vertical 748x896, library 600x900, event cover 800x450, event header 1920x622), each a row
+  of the same composition (monument foot and lantern, beam angle and spread, title distance and tilt).
+  Render every size from the same `--set title=… --set title_latin=…`; put your own monument in the
+  `monument` slot. The small capsule keeps the title near half its height, so it still reads at the
+  store's 120 x 45. Text-free assets (library hero, background, icons, logo) are not templates.
+- **woodblock-pixel**: sizes are 480 x 270 times a whole number; anything else exits 1. Pixel writes are
+  run-length paths, large dithers are 4 x 4 Bayer patterns over a flat rect of their mean colour (the static
+  check sees a ground; the browser sees the pixels). Render with `--font-dir` holding the pixel font, or the
+  text falls back to an outline font; `tests/template-game-packs.test.cjs` checks that every 4 x 4 block
+  outside text is one palette colour at x4.
+- **acid-print-hud**: HP, ammo and scores are chamfered lettering; HP and ammo also fill their bars and
+  ticks, and turn red at 25 HP / 8 rounds (the ammo's misregistered plate swaps colour). The scene is an
+  image slot: print it as a halftone first (pack recipes).
+- **cyanotype-specimen**: `card.tcg-frame --param rarity=common|rare|epic|legend` changes the process, not
+  the hue; the specimen goes in the `art` slot as white lines with alpha, and a drawn algae frond stands in.
+
+Layout helpers for new packs: `layout-kit.cjs` (`rbox` for a tilted slot's box, `tilt`, `ngon`,
+`discStripes`, a seeded `rng`); `d.text(..., { italic, filter })`, `d.lettering(..., { shadow: { dx, dy,
+role } })` for an offset plate, and `d.image(..., { labelAt: [fx, fy] })` to move a placeholder label off
+the layout's copy. Placeholder labels switch to black or white when their grey would fall under 4.5:1 on
+the slot's hatch.
 
 ## Add a style pack
 

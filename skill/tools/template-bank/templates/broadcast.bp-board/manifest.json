@@ -1,0 +1,599 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "broadcast.bp-board",
+  "family": "broadcast",
+  "style": "xerox-flyer",
+  "title": "Ban/pick board on a full pink page: stencil timer, sprayed crosses over bans, picks as tilted paper strips, a 5 x 4 hero pool and the order track",
+  "use": "The draft (ban/pick) screen of a two-team game: three bans and five picks a side, a twenty-hero pool with per-tile state and the ban/pick order.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [],
+    "maxShare": 0
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "bans_a": {
+      "type": "integer",
+      "default": 2,
+      "min": 0,
+      "max": 3,
+      "class": "decoration",
+      "note": "bans done by team A"
+    },
+    "bans_b": {
+      "type": "integer",
+      "default": 2,
+      "min": 0,
+      "max": 3,
+      "class": "decoration",
+      "note": "bans done by team B"
+    },
+    "picks_a": {
+      "type": "integer",
+      "default": 3,
+      "min": 0,
+      "max": 5,
+      "class": "decoration",
+      "note": "picks done by team A"
+    },
+    "picks_b": {
+      "type": "integer",
+      "default": 3,
+      "min": 0,
+      "max": 5,
+      "class": "decoration",
+      "note": "picks done by team B"
+    },
+    "step": {
+      "type": "integer",
+      "default": 10,
+      "min": 0,
+      "max": 15,
+      "class": "decoration",
+      "note": "current step of the 16-step order (A B A B ban, then picks, a second ban round, picks)"
+    },
+    "tile_0": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "free",
+      "class": "decoration",
+      "note": "state of hero tile 0 (one tile at most should hover)"
+    },
+    "tile_1": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "free",
+      "class": "decoration",
+      "note": "state of hero tile 1 (one tile at most should hover)"
+    },
+    "tile_2": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "banned",
+      "class": "decoration",
+      "note": "state of hero tile 2 (one tile at most should hover)"
+    },
+    "tile_3": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "banned",
+      "class": "decoration",
+      "note": "state of hero tile 3 (one tile at most should hover)"
+    },
+    "tile_4": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "hover",
+      "class": "decoration",
+      "note": "state of hero tile 4 (one tile at most should hover)"
+    },
+    "tile_5": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "picked_a",
+      "class": "decoration",
+      "note": "state of hero tile 5 (one tile at most should hover)"
+    },
+    "tile_6": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "free",
+      "class": "decoration",
+      "note": "state of hero tile 6 (one tile at most should hover)"
+    },
+    "tile_7": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "free",
+      "class": "decoration",
+      "note": "state of hero tile 7 (one tile at most should hover)"
+    },
+    "tile_8": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "picked_a",
+      "class": "decoration",
+      "note": "state of hero tile 8 (one tile at most should hover)"
+    },
+    "tile_9": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "banned",
+      "class": "decoration",
+      "note": "state of hero tile 9 (one tile at most should hover)"
+    },
+    "tile_10": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "banned",
+      "class": "decoration",
+      "note": "state of hero tile 10 (one tile at most should hover)"
+    },
+    "tile_11": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "picked_b",
+      "class": "decoration",
+      "note": "state of hero tile 11 (one tile at most should hover)"
+    },
+    "tile_12": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "picked_a",
+      "class": "decoration",
+      "note": "state of hero tile 12 (one tile at most should hover)"
+    },
+    "tile_13": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "free",
+      "class": "decoration",
+      "note": "state of hero tile 13 (one tile at most should hover)"
+    },
+    "tile_14": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "picked_b",
+      "class": "decoration",
+      "note": "state of hero tile 14 (one tile at most should hover)"
+    },
+    "tile_15": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "picked_b",
+      "class": "decoration",
+      "note": "state of hero tile 15 (one tile at most should hover)"
+    },
+    "tile_16": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "free",
+      "class": "decoration",
+      "note": "state of hero tile 16 (one tile at most should hover)"
+    },
+    "tile_17": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "free",
+      "class": "decoration",
+      "note": "state of hero tile 17 (one tile at most should hover)"
+    },
+    "tile_18": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "free",
+      "class": "decoration",
+      "note": "state of hero tile 18 (one tile at most should hover)"
+    },
+    "tile_19": {
+      "type": "enum",
+      "values": [
+        "free",
+        "banned",
+        "picked_a",
+        "picked_b",
+        "hover"
+      ],
+      "default": "free",
+      "class": "decoration",
+      "note": "state of hero tile 19 (one tile at most should hover)"
+    }
+  },
+  "slots": {
+    "team_a_code": {
+      "kind": "lettering",
+      "default": "ANV",
+      "maxChars": 4,
+      "note": "spray-stencil lettering: A-Z, 0-9 and : . - / # ! ? (code-drawn, no font)"
+    },
+    "team_a_name": {
+      "kind": "text",
+      "default": "铁砧",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "team_a_side": {
+      "kind": "text",
+      "default": "先手",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "team_b_code": {
+      "kind": "lettering",
+      "default": "NFR",
+      "maxChars": 4,
+      "note": "spray-stencil lettering: A-Z, 0-9 and : . - / # ! ? (code-drawn, no font)"
+    },
+    "team_b_name": {
+      "kind": "text",
+      "default": "夜航",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "team_b_side": {
+      "kind": "text",
+      "default": "后手",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "timer": {
+      "kind": "lettering",
+      "default": "0:23",
+      "maxChars": 5,
+      "note": "spray-stencil lettering: A-Z, 0-9 and : . - / # ! ? (code-drawn, no font)"
+    },
+    "round_line": {
+      "kind": "text",
+      "default": "第 4 图 熔炉站 · 系列赛 2:1 · 第二轮禁用",
+      "maxChars": 28,
+      "font": "sans"
+    },
+    "ban_a_{i}": {
+      "kind": "text",
+      "default": [
+        "守夜",
+        "回声",
+        ""
+      ],
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "ban_b_{i}": {
+      "kind": "text",
+      "default": [
+        "磐石",
+        "游隼",
+        ""
+      ],
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "ban_waiting": {
+      "kind": "text",
+      "default": "待禁",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "ban_a_{i}_icon": {
+      "kind": "image",
+      "collage": true,
+      "note": "optional icon image (PNG/SVG with alpha); the stencil glyph is drawn until it is filled"
+    },
+    "ban_b_{i}_icon": {
+      "kind": "image",
+      "collage": true,
+      "note": "optional icon image (PNG/SVG with alpha); the stencil glyph is drawn until it is filled"
+    },
+    "pick_a_{i}_hero": {
+      "kind": "text",
+      "default": [
+        "铁锚",
+        "霜刃",
+        "棱镜",
+        "",
+        ""
+      ],
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "pick_a_{i}_player": {
+      "kind": "text",
+      "default": [
+        "Halbert",
+        "Ozu",
+        "kestrel_",
+        "Mallow",
+        "Tin"
+      ],
+      "maxChars": 10,
+      "font": "num"
+    },
+    "pick_a_{i}_role": {
+      "kind": "text",
+      "default": [
+        "先锋",
+        "突击",
+        "狙击",
+        "控场",
+        "支援"
+      ],
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "pick_b_{i}_hero": {
+      "kind": "text",
+      "default": [
+        "蜂巢",
+        "余烬",
+        "雷管",
+        "",
+        ""
+      ],
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "pick_b_{i}_player": {
+      "kind": "text",
+      "default": [
+        "Quill",
+        "moth",
+        "Ferrite",
+        "Lune",
+        "Pebble"
+      ],
+      "maxChars": 10,
+      "font": "num"
+    },
+    "pick_b_{i}_role": {
+      "kind": "text",
+      "default": [
+        "先锋",
+        "突击",
+        "狙击",
+        "控场",
+        "支援"
+      ],
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "pick_a_{i}_icon": {
+      "kind": "image",
+      "collage": true,
+      "note": "optional icon image (PNG/SVG with alpha); the stencil glyph is drawn until it is filled"
+    },
+    "pick_b_{i}_icon": {
+      "kind": "image",
+      "collage": true,
+      "note": "optional icon image (PNG/SVG with alpha); the stencil glyph is drawn until it is filled"
+    },
+    "next_label": {
+      "kind": "text",
+      "default": "下一手",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "wait_label": {
+      "kind": "text",
+      "default": "待选",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "hero_{i}": {
+      "kind": "text",
+      "default": [
+        "灯匠",
+        "渡鸦",
+        "磐石",
+        "回声",
+        "织网",
+        "霜刃",
+        "潮汐",
+        "引信",
+        "棱镜",
+        "守夜",
+        "游隼",
+        "余烬",
+        "铁锚",
+        "信鸽",
+        "雷管",
+        "蜂巢",
+        "罗盘",
+        "苔藓",
+        "烽火",
+        "镜湖"
+      ],
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "hero_{i}_icon": {
+      "kind": "image",
+      "collage": true,
+      "note": "optional icon image (PNG/SVG with alpha); the stencil glyph is drawn until it is filled"
+    },
+    "banned_tag": {
+      "kind": "text",
+      "default": "已禁",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "hover_note_{i}": {
+      "kind": "text",
+      "default": [
+        "夜",
+        "航",
+        "要",
+        "禁"
+      ],
+      "maxChars": 1,
+      "font": "sans",
+      "note": "ransom scraps over the hovered tile"
+    },
+    "ban_word": {
+      "kind": "text",
+      "default": "禁",
+      "maxChars": 2,
+      "font": "sans"
+    },
+    "pick_word": {
+      "kind": "text",
+      "default": "选",
+      "maxChars": 2,
+      "font": "sans"
+    },
+    "order_note": {
+      "kind": "text",
+      "default": "禁选顺序 11 / 16 · 粉 = 铁砧，黑 = 夜航",
+      "maxChars": 30,
+      "font": "sans"
+    }
+  },
+  "relations": [
+    "The page is the ink: full pink ground, black and paper plates; team A pink, team B paper, so the order track and pick bars read without a legend once the note is read.",
+    "The hovered hero is the only tilted pool tile, framed black, with a ransom note.",
+    "Bans get a sprayed cross in the banning team's ink; nothing fades."
+  ],
+  "decoration": [
+    "Stencil hero glyphs (twenty geometric marks with two bridges), crosses, dashed frames, order squares."
+  ],
+  "provenance": {
+    "corpus": "esports-broadcast case v2 (北线联赛总决赛): our own original fictional league in the xerox-flyer grammar",
+    "experiment": "styles/xerox-flyer/style.json provenance; case renders in docs/cases/esports-broadcast",
+    "accessed": "2026-11-05",
+    "method": "Positions from the case's bp.cjs (1920 x 1080); per-tile states and counts became parameters, the hero icons optional image slots with the case's stencil glyphs as stand-ins.",
+    "sampleIds": [
+      "esports-broadcast/03-bp"
+    ],
+    "measured": [
+      "Case v2: first pass 0 tool findings, 2 by eye (order labels touching the pool; in the 64 px test pink was only 10% of the screen, so the page became pink); final 0; 64 px difference to a generic kit 106 (v1 20)."
+    ],
+    "summary": "esports-broadcast v2 ban/pick"
+  }
+}

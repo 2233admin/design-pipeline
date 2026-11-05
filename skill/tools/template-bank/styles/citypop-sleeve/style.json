@@ -1,0 +1,107 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "citypop-sleeve",
+  "title": "City-pop record sleeve: flat empty pool, white wall, hard cast shadow, striped numerals (gacha event)",
+  "summary": "One dominant pool cyan with pale sky, paper-white walls and plates casting hard deep-teal shadows, lemon reserved for the top rarity and the main button, hand-drawn striped numerals as the signature, everything tilted a few degrees like postcards pinned to a wall.",
+  "provenance": {
+    "case": "gacha-event v3 (白昼公馆「三点钟的泳池」): KV, event screen, recruit screen, ten-pull results and a 10 s recruit motion; an original fictional gacha game made to test whether a strong borrowed grammar beats a safe one.",
+    "lineage": "1980s Japanese city-pop record sleeves (Hiroshi Nagai, Eizin Suzuki): flat empty pools, white modernist walls, hard cast shadows, an afternoon with nobody in it. Borrowed: the grammar (flat planes, one dominant hue, hard shadows, emptiness). Never borrowed: their paintings, compositions, palms or any sleeve art.",
+    "borrow": "Borrow grammar, never assets. Every shape is drawn in code; the one photograph used (a CC0 fan-palm photo) only became a cast-shadow silhouette.",
+    "rounds": "v1 navy-and-brass nautical chart (owner: 'too ordinary'), v2 vermilion lighthouse (collided with the Steam case), v3 this pack. First pass of v3: 17 tool findings and 10 by eye; final: 0.",
+    "measured": [
+      "Contrast: deep teal #083B40 on pool #22B8C2 is 4.9:1; on the 4-star deep pool #1AA3AD only 4.03:1 (12 findings in the first ten-pull pass), so 4-star cards are deep-teal plates with paper text instead.",
+      "64 px thumbnail against a generic dark UI kit: mean difference 118-141 (v1: 18-20), dominant hue share 0.35-0.69; part of that difference is light-on-dark, so the thumbnails were also read by eye: KV = striped numerals + pool grid, event = the lemon lane, ten-pull = one lemon card in the middle.",
+      "Signature sizes: KV numerals about 440 px high against 18-20 px body (22:1); banner name 140 px against 16 px."
+    ],
+    "accessed": "2026-11-05"
+  },
+  "palette": {
+    "pool": { "value": "#22B8C2", "use": "the dominant ground: pool water and screen grounds; deep-teal text on it (4.9:1)" },
+    "pool_deep": { "value": "#1AA3AD", "use": "windows and decoration only; never a text ground (deep teal is 4.03:1 on it)" },
+    "sky": { "value": "#A8E6E8", "use": "pale sky above the pool line, the sleeve's sky" },
+    "paper": { "value": "#F7F4EC", "use": "walls, postcards, plates, the white tube of the numerals" },
+    "lemon": { "value": "#FFE04A", "use": "reserved: the top rarity, the main pull button, the active tab, the sun" },
+    "ink": { "value": "#083B40", "use": "all text, hard shadows (at 26% opacity), the numerals' cast shadow, 4-star plates" },
+    "sand": { "value": "#EADBB8", "use": "3-star plates" },
+    "wall_shade": { "value": "#DCD7CB", "use": "the shaded side of the white wall" }
+  },
+  "fonts": {
+    "roles": {
+      "display": { "stack": ["Noto Sans SC", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 900, "use": "event titles, banner names, featured names (set italic: the sleeve's slanted lettering)" },
+      "head": { "stack": ["Noto Sans SC", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 900, "use": "screen titles, tab names, buttons, card names" },
+      "label": { "stack": ["Noto Sans SC", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 700, "use": "small labels, costs, rarity stars" },
+      "body": { "stack": ["Noto Sans SC", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 500, "use": "rules, rates, notes" },
+      "num": { "stack": ["Barlow Condensed", "Noto Sans SC", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 700, "use": "Latin kickers (tracked .3em), dates, counts and currency values" }
+    },
+    "faces": [
+      { "family": "Noto Sans SC", "weight": 900, "file": "NotoSansSC[wght].ttf", "source": "https://github.com/google/fonts/tree/main/ofl/notosanssc", "licence": "SIL OFL 1.1", "author": "Google" },
+      { "family": "Barlow Condensed", "weight": 700, "file": "BarlowCondensed-Bold.ttf", "source": "https://github.com/google/fonts/tree/main/ofl/barlowcondensed", "licence": "SIL OFL 1.1", "author": "Jeremy Tribby" }
+    ],
+    "resolve": "fonts query --text \"<your copy>\" --style gothic --weight 900 resolves Noto Sans SC from the catalog (covers the CJK roles); Barlow Condensed is Latin-only and not in the CJK catalog: check it with fonts measure --path <BarlowCondensed-Bold.ttf> --text \"<Latin copy>\"; a string it cannot cover switches whole to Noto Sans SC.",
+    "licence": "All roles use SIL OFL 1.1 fonts.",
+    "bundled": false,
+    "lettering": "The striped numerals are drawn as paths (digits 0-9 and : . - /), not a font; they are measured as a lettering slot.",
+    "note": "Fonts are named, not bundled. --font-dir <dir> reads coverage and embeds the faces for --png and the browser check."
+  },
+  "layout": {
+    "grammar": [
+      "One dominant hue: pool cyan fills the screen; lemon is reserved for the top rarity, the main button and the active state.",
+      "Every plate casts a hard deep-teal shadow down-right (10-20 px at 1080p, 26% opacity); no blur, no gradient.",
+      "Plates, tabs, cards and buttons sit at small tilts (-5 to +5 degrees) like postcards pinned to a wall; text stays upright on its plate.",
+      "The signature is a code-drawn striped numeral (a time, a stage number, a date) at 1:10 or more against body text; let one plate overlap a corner of it.",
+      "Worlds become objects: stages are pool lanes, the limited banner is a record sleeve with the record sliding out, ten-pull results are a wall of postcards with the top pull at twice the size.",
+      "No characters are needed: identity comes from the pool-gear icon family (lifebuoy, cocktail glass, diving board, palm, record, tray, camera), each one flat layer plus a hard shadow."
+    ],
+    "groundTones": {
+      "pool": { "bg": "pool", "ink": "ink", "plate": "paper" },
+      "sky": { "bg": "sky", "ink": "ink", "plate": "paper" }
+    }
+  },
+  "materials": {
+    "procedural": [
+      "striped numerals (layouts-citypop.cjs stripes()): three strokes 20/11/4 units, paper/pool/paper, over a deep-teal cast shadow, sheared -10 degrees",
+      "striped sun: a disc with four horizon bands cut out in the ground colour",
+      "pool tiles: a 64 px grid of paper lines at 22% (40 px inside the sleeve)",
+      "fan-palm cast shadow: fifteen blades from one crown, deep teal at 30%, only on walls and never under copy",
+      "pool-gear icon family: flat shape plus a 6-unit offset deep-teal shadow"
+    ],
+    "recipes": [
+      "Palm silhouette from a photograph: materials fetch --source met --id 264601 --name met-fanpalm; materials cut --file materials/raw/met-fanpalm.png --mode none --finish ink; then threshold the ink layer to 1-bit and pass it to the palm collage slot (deep teal, 30%).",
+      "Paper tooth for print: materials generate --generator paper --params '{\"profile\":\"laid-cream\",\"pxPerMm\":4}' --seed 1, multiplied at 30-50% over walls only."
+    ],
+    "collage": [
+      "The only collage is the palm shadow: a silhouette at 30% on the wall, never under copy (collage-cover).",
+      "No photographs of people; the empty pool is the subject."
+    ],
+    "sources": "Met Open Access CC0 (fan palm photograph, 1860s-70s, object 264601) for the optional silhouette; everything else is drawn.",
+    "budget": { "effectsMax": 3, "hues": 1, "accentShareMax": 0.18, "shadowKinds": 1 }
+  },
+  "motion": {
+    "fps": 30,
+    "grammar": [
+      "Camera moves are hard pushes of 0.15 s in two steps (tilt down from sun to pool), never eased pans.",
+      "Elements enter with a 0.12-0.16 s overshoot and settle; nothing fades in.",
+      "Recruit sequence (10 s): sun bounces, two hard pushes down to the pool, a lifebuoy drops and ripples (flat rings), the numerals pop, a lemon full-screen hit, postcards slap onto the wall, the top rarity last.",
+      "Ripples and drops never land on copy or inside the numerals (a lifebuoy in 15:00 reads as an extra dot)."
+    ],
+    "flashLimit": "At most one full-screen colour change per second (the lemon hit); under the WCAG 2.3.1 three-flashes limit."
+  },
+  "checks": {
+    "static": ["text-overflow", "text-length", "type-size", "contrast", "accent-budget"],
+    "browser": ["text-overlap", "off-canvas", "collage-cover", "contrast", "text-occluded", "glyph-coverage"],
+    "browserOnRender": true,
+    "guidance": [
+      "64 px distinctiveness (guidance, not a gate): shrink each screen to 64 px wide with the logo painted out and set it beside a generic dark UI kit. It should still read as pool cyan + one lemon object + a striped numeral; if it reads as 'another dark game UI', the grammar was lost. The pixel difference alone overstates it (light against dark): look as well.",
+      "Deep teal on the decoration-only deep pool is 4.03:1: never set text there.",
+      "A drawn object near the numerals must not read as a glyph (a lifebuoy inside 15:00 reads as a stop)."
+    ],
+    "note": "The browser check runs on every render: plates overlap the numerals on purpose, so ink overlap and occlusion are measured, not em boxes."
+  },
+  "examples": {
+    "note": "Screens of the case that stay example renders (their structure is the case's own, not a reusable layout): see docs/cases/gacha-event/ (README showcase).",
+    "renders": [
+      { "screen": "event stage list as eight pool lanes with a striped 05", "file": "docs/cases/gacha-event/gacha-screens.jpg", "why": "the lane list is a one-off structure tied to eight stages; its parts (lane ropes, striped numerals, plates) are in the pack" },
+      { "screen": "10 s recruit motion", "file": "docs/cases/gacha-event/gacha-recruit-motion.gif", "why": "motion is described by the motion grammar; the bank has no keyframe template for it" }
+    ]
+  }
+}

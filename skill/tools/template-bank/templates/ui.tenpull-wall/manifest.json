@@ -1,0 +1,367 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.tenpull-wall",
+  "family": "ui",
+  "style": "citypop-sleeve",
+  "title": "Ten-pull results as a wall of postcards: nine cards pinned at ±5 degrees, the top pull twice their size in the middle",
+  "use": "The result screen of a ten-pull: ten results of mixed rarity, a summary card and confirm / pull-again buttons.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "lemon"
+    ],
+    "maxShare": 0.2
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "wobble": {
+      "default": 1,
+      "min": 0.6,
+      "max": 1.2,
+      "class": "rhythm",
+      "note": "scale of every card's tilt (1 = the case's -5 to +5 degrees)"
+    },
+    "icon_0": {
+      "type": "enum",
+      "values": [
+        "lifebuoy",
+        "cocktail",
+        "board",
+        "palm",
+        "record",
+        "tray",
+        "camera"
+      ],
+      "default": "lifebuoy",
+      "class": "decoration",
+      "note": "icon of the top pull (card 0)"
+    },
+    "icon_1": {
+      "type": "enum",
+      "values": [
+        "lifebuoy",
+        "cocktail",
+        "board",
+        "palm",
+        "record",
+        "tray",
+        "camera"
+      ],
+      "default": "palm",
+      "class": "decoration",
+      "note": "icon of card 1"
+    },
+    "icon_2": {
+      "type": "enum",
+      "values": [
+        "lifebuoy",
+        "cocktail",
+        "board",
+        "palm",
+        "record",
+        "tray",
+        "camera"
+      ],
+      "default": "record",
+      "class": "decoration",
+      "note": "icon of card 2"
+    },
+    "icon_3": {
+      "type": "enum",
+      "values": [
+        "lifebuoy",
+        "cocktail",
+        "board",
+        "palm",
+        "record",
+        "tray",
+        "camera"
+      ],
+      "default": "tray",
+      "class": "decoration",
+      "note": "icon of card 3"
+    },
+    "icon_4": {
+      "type": "enum",
+      "values": [
+        "lifebuoy",
+        "cocktail",
+        "board",
+        "palm",
+        "record",
+        "tray",
+        "camera"
+      ],
+      "default": "cocktail",
+      "class": "decoration",
+      "note": "icon of card 4"
+    },
+    "icon_5": {
+      "type": "enum",
+      "values": [
+        "lifebuoy",
+        "cocktail",
+        "board",
+        "palm",
+        "record",
+        "tray",
+        "camera"
+      ],
+      "default": "board",
+      "class": "decoration",
+      "note": "icon of card 5"
+    },
+    "icon_6": {
+      "type": "enum",
+      "values": [
+        "lifebuoy",
+        "cocktail",
+        "board",
+        "palm",
+        "record",
+        "tray",
+        "camera"
+      ],
+      "default": "palm",
+      "class": "decoration",
+      "note": "icon of card 6"
+    },
+    "icon_7": {
+      "type": "enum",
+      "values": [
+        "lifebuoy",
+        "cocktail",
+        "board",
+        "palm",
+        "record",
+        "tray",
+        "camera"
+      ],
+      "default": "record",
+      "class": "decoration",
+      "note": "icon of card 7"
+    },
+    "icon_8": {
+      "type": "enum",
+      "values": [
+        "lifebuoy",
+        "cocktail",
+        "board",
+        "palm",
+        "record",
+        "tray",
+        "camera"
+      ],
+      "default": "tray",
+      "class": "decoration",
+      "note": "icon of card 8"
+    },
+    "icon_9": {
+      "type": "enum",
+      "values": [
+        "lifebuoy",
+        "cocktail",
+        "board",
+        "palm",
+        "record",
+        "tray",
+        "camera"
+      ],
+      "default": "camera",
+      "class": "decoration",
+      "note": "icon of card 9"
+    }
+  },
+  "slots": {
+    "screen_title": {
+      "kind": "text",
+      "default": "招募结果 · 盛夏来信",
+      "maxChars": 12,
+      "font": "head",
+      "title": true
+    },
+    "cur_{i}_label": {
+      "kind": "text",
+      "default": [
+        "日光券",
+        "蓝晶",
+        "汽水瓶盖"
+      ],
+      "maxChars": 4,
+      "font": "label"
+    },
+    "cur_{i}_value": {
+      "kind": "text",
+      "default": [
+        "2",
+        "3,580",
+        "60"
+      ],
+      "maxChars": 6,
+      "font": "num"
+    },
+    "card_{i}_stars": {
+      "kind": "text",
+      "default": [
+        "★★★★★★",
+        "★★★★",
+        "★★★",
+        "★★★★",
+        "★★★",
+        "★★★★★",
+        "★★★",
+        "★★★★",
+        "★★★",
+        "★★★★"
+      ],
+      "maxChars": 6,
+      "font": "label",
+      "note": "the rarity: 3 to 6 stars set the card's plate (6 lemon, 5 paper, 4 deep teal, 3 sand)"
+    },
+    "card_{i}_name": {
+      "kind": "text",
+      "default": [
+        "澄夏",
+        "小满",
+        "七月",
+        "阿蓝",
+        "冰冰",
+        "白露",
+        "栗子",
+        "米洛",
+        "阿布",
+        "塔尼"
+      ],
+      "maxChars": 3,
+      "font": "head"
+    },
+    "card_{i}_latin": {
+      "kind": "text",
+      "default": [
+        "SUMIKA",
+        "MAN",
+        "JULY",
+        "LAN",
+        "BING",
+        "HAKURO",
+        "KURI",
+        "MILO",
+        "ABU",
+        "TANI"
+      ],
+      "maxChars": 10,
+      "font": "num"
+    },
+    "card_{i}_note": {
+      "kind": "text",
+      "default": [
+        "救生员",
+        "园丁 · NEW",
+        "DJ",
+        "侍应",
+        "重复 · 汽水瓶盖 +10",
+        "跳水员 · NEW",
+        "园丁",
+        "重复 · 汽水瓶盖 +10",
+        "侍应",
+        "摄影师 · NEW"
+      ],
+      "maxChars": 14,
+      "font": "label"
+    },
+    "top_stamp": {
+      "kind": "text",
+      "default": "NEW",
+      "maxChars": 3,
+      "font": "num"
+    },
+    "summary_title": {
+      "kind": "text",
+      "default": "十连结果",
+      "maxChars": 5,
+      "font": "head"
+    },
+    "summary_range": {
+      "kind": "text",
+      "default": "第 38–47 次",
+      "maxChars": 10,
+      "font": "label"
+    },
+    "summary_row_{i}": {
+      "kind": "text",
+      "default": [
+        "6★ ×1",
+        "5★ ×1",
+        "4★ ×4",
+        "3★ ×4"
+      ],
+      "maxChars": 8,
+      "font": "label"
+    },
+    "summary_pity": {
+      "kind": "text",
+      "default": "保底重新计数 7/80",
+      "maxChars": 13,
+      "font": "body"
+    },
+    "note": {
+      "kind": "text",
+      "default": "重复角色已转化：汽水瓶盖 +20 · 获得角色已入住「公馆名册」",
+      "maxChars": 34,
+      "font": "body"
+    },
+    "confirm": {
+      "kind": "text",
+      "default": "确认",
+      "maxChars": 3,
+      "font": "head"
+    },
+    "again": {
+      "kind": "text",
+      "default": "再招募十次",
+      "maxChars": 5,
+      "font": "head"
+    },
+    "again_note": {
+      "kind": "text",
+      "default": "日光券不足（剩余 2）",
+      "maxChars": 12,
+      "font": "label"
+    }
+  },
+  "relations": [
+    "The top pull (card 0) is twice the other cards and the only lemon plate when it is 6 stars; it overlaps nothing.",
+    "Rarity is the plate, not a glow: 6 lemon, 5 paper, 4 deep teal with paper text, 3 sand.",
+    "Cards tilt -5 to +5 degrees, each with the same hard shadow; the summary card sits at the right edge."
+  ],
+  "decoration": [
+    "Dashed star frames, sun on the top pull, icons, pool tiles: drawn."
+  ],
+  "provenance": {
+    "corpus": "gacha-event case v3 (白昼公馆「三点钟的泳池」): our own original fictional gacha event in the citypop-sleeve grammar",
+    "experiment": "styles/citypop-sleeve/style.json provenance; case renders in docs/cases/gacha-event",
+    "accessed": "2026-11-05",
+    "method": "Card positions and tilts taken from the case's final ten-pull screen (ui-result.cjs) in 1920-unit coordinates; names are the case's original roster.",
+    "sampleIds": [
+      "gacha-event/04-ten-pull"
+    ],
+    "measured": [
+      "First pass: 12 contrast findings (4-star cards on deep pool #1AA3AD: deep-teal text 4.03:1) and 1 by eye (white lifebuoy on the white sun); final 0 after 4-star plates became deep teal with paper text."
+    ],
+    "summary": "gacha-event v3 ten-pull"
+  }
+}

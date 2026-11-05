@@ -1,0 +1,204 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "pixel.inventory",
+  "family": "pixel",
+  "style": "woodblock-pixel",
+  "title": "Pixel inventory: tabbed paper panels on a dithered Prussian-blue ground, a 6 x 5 slot grid with rarity by frame colour and gem count, a detail panel and actions",
+  "use": "An RPG inventory screen on the 480 x 270 grid: tabs, a slot grid (filled, empty and locked slots), the selected item's detail, three actions and a load / gold footer.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "960x540",
+    "480x270"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "vermilion"
+    ],
+    "maxShare": 0.08
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "tab": {
+      "type": "integer",
+      "default": 0,
+      "min": 0,
+      "max": 4,
+      "class": "decoration",
+      "note": "active tab"
+    },
+    "selected": {
+      "type": "integer",
+      "default": 2,
+      "min": 0,
+      "max": 16,
+      "class": "decoration",
+      "note": "selected slot (shown in the detail panel)"
+    },
+    "filled": {
+      "type": "integer",
+      "default": 17,
+      "min": 0,
+      "max": 17,
+      "class": "decoration",
+      "note": "slots holding the placeholder items"
+    },
+    "capacity": {
+      "type": "integer",
+      "default": 24,
+      "min": 18,
+      "max": 30,
+      "class": "decoration",
+      "note": "usable slots; the rest are locked"
+    },
+    "load": {
+      "type": "integer",
+      "default": 18,
+      "min": 0,
+      "max": 30,
+      "class": "decoration",
+      "note": "carried weight on the load bar (of 30)"
+    }
+  },
+  "slots": {
+    "tab_{i}": {
+      "kind": "text",
+      "default": [
+        "全部",
+        "消耗",
+        "信件",
+        "材料",
+        "贵重"
+      ],
+      "maxChars": 2,
+      "font": "pixel"
+    },
+    "tab_hint": {
+      "kind": "text",
+      "default": "Q / E 切换",
+      "maxChars": 10,
+      "font": "pixel"
+    },
+    "item_name": {
+      "kind": "text",
+      "default": "潮汐罗盘",
+      "maxChars": 8,
+      "font": "title",
+      "title": true,
+      "note": "24 px native"
+    },
+    "item_rarity": {
+      "kind": "text",
+      "default": "史诗",
+      "maxChars": 2,
+      "font": "pixel"
+    },
+    "item_type": {
+      "kind": "text",
+      "default": "贵重品 · 不可出售",
+      "maxChars": 10,
+      "font": "pixel"
+    },
+    "desc_{i}": {
+      "kind": "text",
+      "default": [
+        "旧船上拆下来的罗盘，指针不指北，",
+        "总是指向离你最近的一盏灯。"
+      ],
+      "maxChars": 22,
+      "font": "pixel"
+    },
+    "effect_{i}": {
+      "kind": "text",
+      "default": [
+        "夜间视野 ＋2",
+        "雾中不会迷路"
+      ],
+      "maxChars": 9,
+      "font": "pixel"
+    },
+    "flavor": {
+      "kind": "text",
+      "default": "「灯在哪，路就在哪。」",
+      "maxChars": 22,
+      "font": "pixel"
+    },
+    "button_{i}": {
+      "kind": "text",
+      "default": [
+        "装备",
+        "查看",
+        "丢弃"
+      ],
+      "maxChars": 4,
+      "font": "pixel"
+    },
+    "button_note": {
+      "kind": "text",
+      "default": "贵重品不能丢",
+      "maxChars": 10,
+      "font": "pixel"
+    },
+    "capacity": {
+      "kind": "text",
+      "default": "背包 17 / 24 格",
+      "maxChars": 13,
+      "font": "pixel"
+    },
+    "load_label": {
+      "kind": "text",
+      "default": "负重",
+      "maxChars": 2,
+      "font": "pixel"
+    },
+    "load_value": {
+      "kind": "text",
+      "default": "18/30",
+      "maxChars": 6,
+      "font": "pixel"
+    },
+    "gold": {
+      "kind": "text",
+      "default": "1,284",
+      "maxChars": 7,
+      "font": "pixel"
+    },
+    "key_hint": {
+      "kind": "text",
+      "default": "Z 装备  X 返回",
+      "maxChars": 12,
+      "font": "pixel"
+    }
+  },
+  "relations": [
+    "Rarity never by colour alone: frame colour plus 0-4 gem pips (common, fine, rare, epic, legendary).",
+    "Every panel is paper with its dark-red plate 2 px down-right; the selected tab and action are pale with vermilion lines.",
+    "Counts are 3 x 5 bitmap digits outlined in ink inside the slot; gold only on graphics, never as text on paper (1.6:1)."
+  ],
+  "decoration": [
+    "Dithered ground, slot frames and gems, item icons (the case's sixteen drawn 16 x 16 icons as placeholders), locks, the load bar, coin."
+  ],
+  "provenance": {
+    "corpus": "pixel-rpg-ui case round 2 (白垩驿路 CHALKROAD): our own original fictional pixel RPG in the woodblock-pixel grammar",
+    "experiment": "styles/woodblock-pixel/style.json provenance; case renders in docs/cases/pixel-rpg-ui",
+    "accessed": "2026-11-05",
+    "method": "Ported from the case's screens.cjs inventory: grid origin 18,50, pitch 26, the case's seventeen items as placeholders; counts, tabs and selection became parameters.",
+    "sampleIds": [
+      "pixel-rpg-ui/4-inventory"
+    ],
+    "measured": [
+      "Round 2 first pass: two green effect lines on paper 2.2:1; final 0 (pine green on paper).",
+      "Text all 12 px or 24 px native, checked at the native 480 x 270 (12 px counts as body text: 4.5:1)."
+    ],
+    "summary": "pixel-rpg-ui round 2 inventory"
+  }
+}
