@@ -1,0 +1,314 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "kv.outfit-title-left",
+  "family": "kv",
+  "title": "Outfit / series key visual, title column left, figure centre-right",
+  "use": "One figure or product on a light neutral ground, one title column, a little Latin micro-type. Not for groups, heavy narrative or large accent areas.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "fonts": {
+    "sans": [
+      "Source Han Sans SC",
+      "Noto Sans CJK SC",
+      "Noto Sans SC"
+    ],
+    "serif": [
+      "Source Han Serif SC",
+      "Noto Serif CJK SC",
+      "Noto Serif SC"
+    ],
+    "latinDisplay": "lettering.cjs: code-drawn glyphs (A-Z, 0-9, space and / \\ - _ + . , : ; [ ] < > | # % ! ? ' \" & €), rendered as paths; other characters make the slot fall back to the CJK font and are reported",
+    "licence": "Source Han Sans/Serif and Noto Sans/Serif CJK: SIL Open Font License 1.1",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. Install them where the SVG or PNG is rendered. check measures <text> with an advance model calibrated in headless Chrome against Noto Sans / Serif CJK SC at the weights the layouts use; other fonts can be wider."
+  },
+  "palette": {
+    "bg": {
+      "value": "#ECEBE7",
+      "use": "light neutral ground (largest colour cluster L* ~90, C* ~1.5)"
+    },
+    "ink": {
+      "value": "#1D1D1F",
+      "use": "near-black titles"
+    },
+    "ink2": {
+      "value": "#5E5E61",
+      "use": "secondary text (darkened from #6E6E70 to pass 4.5:1)"
+    },
+    "accent": {
+      "value": "#D8B23A",
+      "use": "the single theme hue: short rule and small marks only"
+    },
+    "rule": {
+      "value": "#B9B8B3",
+      "use": "hairlines"
+    },
+    "water": {
+      "value": "#DCDBD6",
+      "use": "watermark word, 4-6 L* below the ground"
+    }
+  },
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.03
+  },
+  "params": {
+    "margin_x": {
+      "default": 0.045,
+      "min": 0.03,
+      "max": 0.06,
+      "class": "proportion",
+      "note": "left/right margin; also the shared left line (measured median 0.04-0.05W)"
+    },
+    "margin_y": {
+      "default": 0.065,
+      "min": 0.045,
+      "max": 0.08,
+      "class": "proportion"
+    },
+    "title_x0": {
+      "default": 0.045,
+      "min": 0.03,
+      "max": 0.06,
+      "class": "proportion",
+      "note": "title column left edge; keep equal to margin_x"
+    },
+    "title_cy": {
+      "default": 0.5,
+      "min": 0.435,
+      "max": 0.525,
+      "class": "proportion",
+      "note": "title centre y (median 0.50H, p25-p75 0.435-0.525)"
+    },
+    "title_w_max": {
+      "default": 0.3,
+      "min": 0.26,
+      "max": 0.32,
+      "class": "proportion",
+      "note": "title column width"
+    },
+    "latin_h": {
+      "default": 0.072,
+      "min": 0.06,
+      "max": 0.075,
+      "class": "rhythm",
+      "note": "Latin title cap height / H"
+    },
+    "line_gap": {
+      "default": 1.18,
+      "min": 1.1,
+      "max": 1.3,
+      "class": "rhythm",
+      "note": "Latin title line advance / cap height"
+    },
+    "cjk_h": {
+      "default": 0.05,
+      "min": 0.042,
+      "max": 0.056,
+      "class": "rhythm",
+      "note": "CJK title size / H"
+    },
+    "fig_cx": {
+      "default": 0.56,
+      "min": 0.45,
+      "max": 0.65,
+      "class": "proportion",
+      "note": "figure centre x (median 0.55); below about 0.52 the figure reaches the title column"
+    },
+    "fig_w": {
+      "default": 0.42,
+      "min": 0.3,
+      "max": 0.46,
+      "class": "proportion",
+      "note": "figure width (median 0.40W)"
+    },
+    "watermark": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration"
+    },
+    "letter_width": {
+      "default": 0.56,
+      "min": 0.5,
+      "max": 0.6,
+      "class": "rhythm",
+      "note": "code-drawn display lettering: glyph width / cap height"
+    },
+    "letter_stroke": {
+      "default": 0.15,
+      "min": 0.11,
+      "max": 0.19,
+      "class": "rhythm",
+      "note": "display lettering stroke / cap height"
+    },
+    "letter_chamfer": {
+      "default": 0.1,
+      "min": 0,
+      "max": 0.14,
+      "class": "rhythm",
+      "note": "display lettering corner cut / cap height"
+    },
+    "letter_stencil": {
+      "default": 0,
+      "min": 0,
+      "max": 0.07,
+      "class": "rhythm",
+      "note": "display lettering stencil gap / cap height (0 = off)"
+    },
+    "accent_max_share": {
+      "default": 0.03,
+      "min": 0.005,
+      "max": 0.2,
+      "class": "proportion",
+      "note": "accent-colour area budget as a share of the canvas; measured on the render"
+    },
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "show safe zones, figure zones and alignment lines in the output"
+    }
+  },
+  "slots": {
+    "watermark_word": {
+      "kind": "lettering",
+      "default": "SERIES",
+      "maxChars": 8,
+      "fallbackFont": "sans",
+      "decor": true,
+      "bleed": true,
+      "note": "background word; may bleed"
+    },
+    "figure": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "transparent cut-out, may bleed bottom"
+    },
+    "logo": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "logo or wordmark",
+      "fit": "contain"
+    },
+    "series_label": {
+      "kind": "lettering",
+      "default": "2026 NEW SERIES",
+      "maxChars": 18,
+      "fallbackFont": "sans"
+    },
+    "series_sub": {
+      "kind": "text",
+      "default": "FEAT. <designer>",
+      "maxChars": 28
+    },
+    "title_latin_1": {
+      "kind": "lettering",
+      "default": "COLLECTION",
+      "maxChars": 10,
+      "fallbackFont": "sans",
+      "title": true,
+      "sizeParam": "latin_h"
+    },
+    "title_latin_2": {
+      "kind": "lettering",
+      "default": "NAME HERE",
+      "maxChars": 10,
+      "fallbackFont": "sans",
+      "title": true,
+      "sizeParam": "latin_h"
+    },
+    "title_cjk": {
+      "kind": "text",
+      "default": "时装名称",
+      "maxChars": 8,
+      "title": true,
+      "font": "serif",
+      "sizeParam": "cjk_h"
+    },
+    "item_line": {
+      "kind": "text",
+      "default": "<角色名> // <系列名>",
+      "maxChars": 20
+    },
+    "meta_label_{i}": {
+      "kind": "lettering",
+      "default": [
+        "THEME",
+        "KEYWORDS"
+      ],
+      "maxChars": 10,
+      "fallbackFont": "sans"
+    },
+    "meta_value_{i}": {
+      "kind": "text",
+      "default": [
+        "<theme, ≤24>",
+        "<kw / kw / kw, ≤32>"
+      ],
+      "maxChars": 32
+    },
+    "copyright": {
+      "kind": "text",
+      "default": "© <owner>",
+      "maxChars": 40
+    }
+  },
+  "relations": [
+    "Title column never covers the figure (0/13 samples overlap > 30%).",
+    "Logo, title and meta lines share one left line.",
+    "One theme hue; accent area <= 3% of the canvas."
+  ],
+  "decoration": [
+    "Background watermark word (watermark).",
+    "Bottom hairline and the short accent rule."
+  ],
+  "changesFromStudy": [
+    "ink2 #6E6E70 -> #5E5E61: the study colour measured 4.27:1 on the ground, below 4.5:1 for small text.",
+    "Latin title glyph width 0.62 -> 0.56: COLLECTION at 0.62 overflowed the 0.30W title column the study specifies.",
+    "Lettering is placed by its ink edge so titles sit on the shared left line."
+  ],
+  "provenance": {
+    "corpus": "ignoredone's space gallery of official Arknights / Arknights: Endfield promotional art (© HYPERGRYPH), reference only, never redistributed",
+    "gallery": "https://www.ignoredone.space/index.php/arknights_design/",
+    "accessed": "2026-11-04",
+    "study": "docs/research/arknights-endfield-template-study.md",
+    "provenanceCsv": "docs/research/arknights-endfield-provenance.csv",
+    "method": "Our own structural skeleton from measured proportions (median of eye-annotated layout boxes, Lab colour measurements). No traced artwork, logos or official text; image and logo areas are hatched placeholder slots.",
+    "samples": "Arknights KV_OUTFIT, 13 images, all eye-annotated",
+    "sampleIds": [
+      "AK000",
+      "AK001",
+      "AK004",
+      "AK005",
+      "AK006",
+      "AK007",
+      "AK008",
+      "AK009",
+      "AK010",
+      "AK011",
+      "AK013",
+      "XAK16",
+      "XAK18"
+    ],
+    "measured": [
+      "title on the left 13/13; title left edge median 0.04W (p25-p75 0.03-0.05)",
+      "title centre y median 0.50H (0.435-0.525); title area median 8.1%",
+      "title/figure horizontal overlap > 30%: 0/13",
+      "figure centre x median 0.55, width 0.40W (0.30-0.50)",
+      "largest cluster L* 89.7, C* 1.5; vivid pixels (C*>50) median 2.3%; hue circular std median 14°"
+    ],
+    "summary": "Arknights KV_OUTFIT, 13 images, all eye-annotated; docs/research/arknights-endfield-template-study.md"
+  }
+}

@@ -1,0 +1,298 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "kv.ef-narrative-lowerleft",
+  "family": "kv",
+  "title": "Dark narrative key visual: // kicker, [bracketed title], accent tagline bar; figure right",
+  "use": "Dark, story-led single-figure cover (character story, chapter, dev log). Information stacked lower-left, bust on the right.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "fonts": {
+    "sans": [
+      "Source Han Sans SC",
+      "Noto Sans CJK SC",
+      "Noto Sans SC"
+    ],
+    "serif": [
+      "Source Han Serif SC",
+      "Noto Serif CJK SC",
+      "Noto Serif SC"
+    ],
+    "latinDisplay": "lettering.cjs: code-drawn glyphs (A-Z, 0-9, space and / \\ - _ + . , : ; [ ] < > | # % ! ? ' \" & €), rendered as paths; other characters make the slot fall back to the CJK font and are reported",
+    "licence": "Source Han Sans/Serif and Noto Sans/Serif CJK: SIL Open Font License 1.1",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. Install them where the SVG or PNG is rendered. check measures <text> with an advance model calibrated in headless Chrome against Noto Sans / Serif CJK SC at the weights the layouts use; other fonts can be wider."
+  },
+  "palette": {
+    "bg": {
+      "value": "#141416",
+      "use": "dark ground"
+    },
+    "ink": {
+      "value": "#FFFFFF",
+      "use": "titles"
+    },
+    "ink2": {
+      "value": "#9A9AA0",
+      "use": "secondary"
+    },
+    "accent": {
+      "value": "#F2F21C",
+      "use": "fluorescent yellow: kicker block and tagline bar only"
+    },
+    "accent_ink": {
+      "value": "#141416",
+      "use": "text on accent"
+    },
+    "glow": {
+      "value": "#7A1420",
+      "use": "glow polygon"
+    },
+    "tick1": {
+      "value": "#E040A0",
+      "use": "tick"
+    },
+    "tick2": {
+      "value": "#F2F21C",
+      "use": "tick (same as accent; counts towards the budget)"
+    },
+    "tick3": {
+      "value": "#35E0B0",
+      "use": "tick"
+    },
+    "rule": {
+      "value": "#5A5A60",
+      "use": "leader lines"
+    }
+  },
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.03
+  },
+  "params": {
+    "margin_x": {
+      "default": 0.047,
+      "min": 0.035,
+      "max": 0.06,
+      "class": "proportion",
+      "note": "margin and shared left line (EF060 0.047W)"
+    },
+    "margin_y": {
+      "default": 0.075,
+      "min": 0.06,
+      "max": 0.09,
+      "class": "proportion"
+    },
+    "kicker_y": {
+      "default": 0.57,
+      "min": 0.54,
+      "max": 0.6,
+      "class": "proportion"
+    },
+    "title_y0": {
+      "default": 0.655,
+      "min": 0.63,
+      "max": 0.68,
+      "class": "proportion"
+    },
+    "title_h": {
+      "default": 0.135,
+      "min": 0.11,
+      "max": 0.135,
+      "class": "rhythm",
+      "note": "bracket height; title size is 0.95 of it"
+    },
+    "tag_y": {
+      "default": 0.828,
+      "min": 0.81,
+      "max": 0.85,
+      "class": "proportion"
+    },
+    "tag_h": {
+      "default": 0.024,
+      "min": 0.02,
+      "max": 0.028,
+      "class": "rhythm"
+    },
+    "tag_w": {
+      "default": 0.49,
+      "min": 0.42,
+      "max": 0.53,
+      "class": "rhythm"
+    },
+    "tag_tracking": {
+      "default": 900,
+      "min": 500,
+      "max": 1000,
+      "class": "rhythm",
+      "note": "tagline tracking, 1/1000 em (EF060 about +900)"
+    },
+    "stack_w": {
+      "default": 0.53,
+      "min": 0.48,
+      "max": 0.56,
+      "class": "proportion",
+      "note": "text stack width (EF060 0.047-0.57W)"
+    },
+    "fig_x0": {
+      "default": 0.45,
+      "min": 0.42,
+      "max": 0.55,
+      "class": "proportion"
+    },
+    "glow": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration"
+    },
+    "micro_markers": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration"
+    },
+    "tick_colors": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration"
+    },
+    "accent_max_share": {
+      "default": 0.03,
+      "min": 0.005,
+      "max": 0.2,
+      "class": "proportion",
+      "note": "accent-colour area budget as a share of the canvas; measured on the render"
+    },
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "show safe zones, figure zones and alignment lines in the output"
+    }
+  },
+  "slots": {
+    "figure": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "bust / half body, face in the upper-right third"
+    },
+    "logo": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "square wordmark block",
+      "fit": "contain"
+    },
+    "micro_marker_{i}": {
+      "kind": "lettering",
+      "default": "SECTOR 00",
+      "maxChars": 12,
+      "fallbackFont": "sans",
+      "decor": true
+    },
+    "kicker_slashes": {
+      "kind": "lettering",
+      "default": "//",
+      "maxChars": 3,
+      "fallbackFont": "sans"
+    },
+    "kicker_cjk": {
+      "kind": "text",
+      "default": "栏目名",
+      "maxChars": 6
+    },
+    "bracket_open": {
+      "kind": "lettering",
+      "default": "[",
+      "maxChars": 1,
+      "fallbackFont": "sans"
+    },
+    "title_cjk": {
+      "kind": "text",
+      "default": "标题文字:副题",
+      "maxChars": 8,
+      "title": true,
+      "sizeParam": "title_h"
+    },
+    "bracket_close": {
+      "kind": "lettering",
+      "default": "]",
+      "maxChars": 1,
+      "fallbackFont": "sans"
+    },
+    "tagline": {
+      "kind": "lettering",
+      "default": "OVER THE LINE / INTO THE FIELD",
+      "maxChars": 36,
+      "fallbackFont": "sans",
+      "sizeParam": "tag_h"
+    },
+    "barcode_ticks": {
+      "kind": "lettering",
+      "default": "II I II I",
+      "maxChars": 12,
+      "fallbackFont": "sans",
+      "decor": true
+    },
+    "copyright": {
+      "kind": "text",
+      "default": "© <owner>",
+      "maxChars": 30
+    }
+  },
+  "relations": [
+    "Logo, kicker, title bracket and tagline bar share one left line (EF060: 0.047W).",
+    "Size jump kicker : title : tagline about 1 : 2.6 : 0.2.",
+    "Accent only on the kicker block and the tagline bar."
+  ],
+  "decoration": [
+    "Red glow, crosshair micro-markers, three colour ticks, barcode."
+  ],
+  "changesFromStudy": [
+    "The closing bracket follows the measured title width (the study used a fixed 6.5-character advance).",
+    "kicker_cjk follows the measured // width."
+  ],
+  "provenance": {
+    "corpus": "ignoredone's space gallery of official Arknights / Arknights: Endfield promotional art (© HYPERGRYPH), reference only, never redistributed",
+    "gallery": "https://www.ignoredone.space/index.php/arknights_design/",
+    "accessed": "2026-11-04",
+    "study": "docs/research/arknights-endfield-template-study.md",
+    "provenanceCsv": "docs/research/arknights-endfield-provenance.csv",
+    "method": "Our own structural skeleton from measured proportions (median of eye-annotated layout boxes, Lab colour measurements). No traced artwork, logos or official text; image and logo areas are hatched placeholder slots.",
+    "samples": "Endfield EF060 measured at full size; Endfield KV statistics, 16 images",
+    "sampleIds": [
+      "EF060",
+      "EF051",
+      "EF053",
+      "EF054",
+      "EF055",
+      "EF057",
+      "EF058",
+      "EF062",
+      "EF082",
+      "XEF00",
+      "XEF01",
+      "XEF03",
+      "XEF13",
+      "EF052",
+      "EF059",
+      "XEF10"
+    ],
+    "measured": [
+      "shared left line x = 0.047W for logo, kicker, bracket and tagline bar",
+      "kicker row 0.57-0.63H; title 0.655-0.80H (cap about 0.135H); tagline bar 0.828-0.852H, 0.047-0.53W",
+      "text stack 0.047-0.57W x 0.56-0.86H",
+      "Endfield KV_OPERATOR: fluorescent yellow in 3/4; vivid pixels median 11.6%"
+    ],
+    "summary": "Endfield EF060 measured at full size; Endfield KV statistics, 16 images; docs/research/arknights-endfield-template-study.md"
+  }
+}

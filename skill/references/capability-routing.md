@@ -13,6 +13,7 @@ actual brand/component discovery. `film methods` is supporting preparation insid
 ordinary UI/CSS stays on its component/runtime route and acquires no storyboard or soundtrack.
 For reusable case structures, search the [Prompt Motion library](prompt-motion/README.md) with
 `film templates`; adopt selected inputs and rules through the existing reference flow.
+For a static cover, key visual, card, banner or UI panel, start from the [template bank](template-bank.md): `template render <id>` fills a measured layout and checks it on render.
 
 1. Classify the brief with `designer-pipeline route --query "<brief>" --json`. The job registry
    `references/job-registry.json` is the Stage 0 extension point. A new capability is a job, not

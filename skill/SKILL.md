@@ -20,6 +20,7 @@ Pick one row, open what it names, and open nothing else until the task needs it.
 | A complete deliverable (UI, web page, film, edit) | `designer-pipeline next --project-root <project>` | [Follow `next`](#follow-next-for-a-complete-deliverable) |
 | The user gave a reference page or screenshot to follow | `designer-pipeline next --project-root <project> --deliverable web\|ui --mode replicate` | [Follow `next`](#follow-next-for-a-complete-deliverable) |
 | One supporting job: drawing, image placement, text fitting, comparison, motion maps | `tools/README.md` | one selected guide → its implementation/example |
+| Cover, key visual, card, banner or UI panel from a measured layout template | `references/template-bank.md` | `template list` → `template render <id>` (checked on render) |
 | Workflow stages, UI, references, implementation and review | `references/stages.md` | the stage the task is in |
 | New website, redesign, app screen (dashboard, admin, settings), visual critique | `references/taste-skill.md` | the selected route's original source |
 | No direction yet: style library with rendered specimens, three-direction method, brand-asset protocol, critique guide | `references/design-direction-library.md` | the style entry or handbook it names (reference only) |

@@ -1,0 +1,250 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "kv.ef-operator-plate",
+  "family": "kv",
+  "title": "White-field key visual, large figure left, name plate lower-right",
+  "use": "Bright release image where the character is the visual; text is a single plate on the side opposite the figure mass.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "fonts": {
+    "sans": [
+      "Source Han Sans SC",
+      "Noto Sans CJK SC",
+      "Noto Sans SC"
+    ],
+    "serif": [
+      "Source Han Serif SC",
+      "Noto Serif CJK SC",
+      "Noto Serif SC"
+    ],
+    "latinDisplay": "lettering.cjs: code-drawn glyphs (A-Z, 0-9, space and / \\ - _ + . , : ; [ ] < > | # % ! ? ' \" & €), rendered as paths; other characters make the slot fall back to the CJK font and are reported",
+    "licence": "Source Han Sans/Serif and Noto Sans/Serif CJK: SIL Open Font License 1.1",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. Install them where the SVG or PNG is rendered. check measures <text> with an advance model calibrated in headless Chrome against Noto Sans / Serif CJK SC at the weights the layouts use; other fonts can be wider."
+  },
+  "palette": {
+    "bg": {
+      "value": "#FAFAF8",
+      "use": "white field (Endfield KV largest cluster L* median 94.8)"
+    },
+    "ink": {
+      "value": "#1A1A1C",
+      "use": "text"
+    },
+    "ink2": {
+      "value": "#6B6B70",
+      "use": "secondary"
+    },
+    "accent": {
+      "value": "#F2F21C",
+      "use": "fluorescent accent"
+    },
+    "accent2": {
+      "value": "#9BCB3C",
+      "use": "secondary accent (element icon)"
+    },
+    "plate": {
+      "value": "#FFFFFF",
+      "use": "name plate"
+    },
+    "plate_edge": {
+      "value": "#D6D6D2",
+      "use": "plate edge"
+    },
+    "dark": {
+      "value": "#232326",
+      "use": "icons, rank marks"
+    },
+    "fade": {
+      "value": "#FFFFFF",
+      "use": "bottom fade"
+    }
+  },
+  "accent": {
+    "roles": [
+      "accent",
+      "accent2"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "plate_x0": {
+      "default": 0.635,
+      "min": 0.62,
+      "max": 0.66,
+      "class": "proportion",
+      "note": "plate left (EF059 0.63-0.98W)"
+    },
+    "plate_y0": {
+      "default": 0.55,
+      "min": 0.53,
+      "max": 0.6,
+      "class": "proportion"
+    },
+    "plate_w": {
+      "default": 0.345,
+      "min": 0.32,
+      "max": 0.35,
+      "class": "proportion"
+    },
+    "label_h": {
+      "default": 0.034,
+      "min": 0.028,
+      "max": 0.035,
+      "class": "rhythm"
+    },
+    "name_h": {
+      "default": 0.075,
+      "min": 0.062,
+      "max": 0.08,
+      "class": "rhythm"
+    },
+    "rarity": {
+      "type": "integer",
+      "default": 6,
+      "min": 1,
+      "max": 6,
+      "class": "decoration"
+    },
+    "shards": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration"
+    },
+    "shard_scale": {
+      "default": 1,
+      "min": 0.6,
+      "max": 1.1,
+      "class": "rhythm",
+      "note": "accent shard area scale"
+    },
+    "logo_x0": {
+      "default": 0.88,
+      "min": 0.86,
+      "max": 0.9,
+      "class": "proportion"
+    },
+    "logo_y0": {
+      "default": 0.045,
+      "min": 0.035,
+      "max": 0.06,
+      "class": "proportion"
+    },
+    "letter_width": {
+      "default": 0.62,
+      "min": 0.54,
+      "max": 0.62,
+      "class": "rhythm",
+      "note": "code-drawn display lettering: glyph width / cap height"
+    },
+    "letter_stroke": {
+      "default": 0.17,
+      "min": 0.12,
+      "max": 0.19,
+      "class": "rhythm",
+      "note": "display lettering stroke / cap height"
+    },
+    "letter_chamfer": {
+      "default": 0.1,
+      "min": 0,
+      "max": 0.14,
+      "class": "rhythm",
+      "note": "display lettering corner cut / cap height"
+    },
+    "letter_stencil": {
+      "default": 0,
+      "min": 0,
+      "max": 0.06,
+      "class": "rhythm",
+      "note": "display lettering stencil gap / cap height (0 = off)"
+    },
+    "accent_max_share": {
+      "default": 0.12,
+      "min": 0.01,
+      "max": 0.2,
+      "class": "proportion",
+      "note": "accent-colour area budget as a share of the canvas; measured on the render"
+    },
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "show safe zones, figure zones and alignment lines in the output"
+    }
+  },
+  "slots": {
+    "figure": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "figure + weapon, may cross under the plate edge"
+    },
+    "logo": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "square wordmark",
+      "fit": "contain"
+    },
+    "plate_label": {
+      "kind": "lettering",
+      "default": "// OPERATOR +",
+      "maxChars": 16,
+      "fallbackFont": "sans",
+      "title": true,
+      "sizeParam": "label_h"
+    },
+    "name_cjk": {
+      "kind": "text",
+      "default": "角色名称",
+      "maxChars": 6,
+      "title": true,
+      "sizeParam": "name_h"
+    },
+    "copyright": {
+      "kind": "text",
+      "default": "© <owner>",
+      "maxChars": 30
+    }
+  },
+  "relations": [
+    "The name plate is a solid white ground (readable) and sits opposite the figure's mass.",
+    "One fluorescent accent plus one secondary accent."
+  ],
+  "decoration": [
+    "Accent shards (our own shapes, not traced), white fade at the bottom."
+  ],
+  "changesFromStudy": [
+    "Label plate 0.17W -> 0.19W: // OPERATOR + overflowed it.",
+    "Label and name share one inset (0.015W; the study had 0.012W and 0.015W).",
+    "Figure keep-out zone is the figure mass (0.03-0.63W), not the whole slot, which may run under the plate edge."
+  ],
+  "provenance": {
+    "corpus": "ignoredone's space gallery of official Arknights / Arknights: Endfield promotional art (© HYPERGRYPH), reference only, never redistributed",
+    "gallery": "https://www.ignoredone.space/index.php/arknights_design/",
+    "accessed": "2026-11-04",
+    "study": "docs/research/arknights-endfield-template-study.md",
+    "provenanceCsv": "docs/research/arknights-endfield-provenance.csv",
+    "method": "Our own structural skeleton from measured proportions (median of eye-annotated layout boxes, Lab colour measurements). No traced artwork, logos or official text; image and logo areas are hatched placeholder slots.",
+    "samples": "Endfield EF059 measured at full size; EF052 and XEF10 of the same type",
+    "sampleIds": [
+      "EF059",
+      "EF052",
+      "XEF10"
+    ],
+    "measured": [
+      "plate 0.63-0.98W x 0.55-0.73H; rank row 0.76-0.82H (EF059)",
+      "logo 0.88-0.94W x 0.045-0.17H; copyright right edge 0.96W",
+      "Endfield KV_OPERATOR: vivid pixels median 11.6%, fluorescent yellow median 2.4%; title over figure > 30% in 1/4"
+    ],
+    "summary": "Endfield EF059 measured at full size; EF052 and XEF10 of the same type; docs/research/arknights-endfield-template-study.md"
+  }
+}
