@@ -81,6 +81,7 @@
     "product-source-admission.test.cjs",
     "composition-gate.test.cjs",
     "film-layout.test.cjs",
+    "composition-capture-seek.test.cjs",
     "visual-diagnostics.test.cjs",
     "visual-craft.test.cjs",
     "audio-gate.test.cjs",

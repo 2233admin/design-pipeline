@@ -516,8 +516,8 @@ function publicHelp() {
 // mismatch. `runKernel` propagates that status faithfully; it never normalises an unrecognised
 // status to success, because a status this wrapper does not understand is not evidence of success.
 const KERNEL_EXIT_CODES = [0, 2, 3];
-// Kernel error codes a caller keeps instead of KERNEL_FAILED.
-const PROPAGATED_KERNEL_CODES = new Set(["REFERENCE_BLOCKED", "REFERENCE_UNREACHABLE", "REFERENCE_HTTP_STATUS", "REFERENCE_EMPTY"]);
+// Kernel error codes a caller keeps instead of KERNEL_FAILED (the kernel prints its JSON error on stdout).
+const PROPAGATED_KERNEL_CODES = new Set(["TOOL_MISSING", "SEEK_OUT_OF_RANGE", "REFERENCE_BLOCKED", "REFERENCE_UNREACHABLE", "REFERENCE_HTTP_STATUS", "REFERENCE_EMPTY"]);
 const KERNEL_STATUS_LABELS = { 2: "blocked", 3: "fidelity-limited" };
 
 function kernelStatusLabel(exitCode, successLabel) {
@@ -539,7 +539,8 @@ function runKernel(script, args, cwd, { timeout = 60000, maxBuffer = 4 * 1024 * 
   if (child.signal) fail("cli", `kernel ${script} was terminated by signal ${child.signal}`, { code: "KERNEL_SIGNALED" });
   if (typeof child.status !== "number") fail("cli", `kernel ${script} produced no exit status`, { code: "KERNEL_STATUS_MISSING" });
   if (child.status === 1) {
-    // A refused reference page keeps its own code, so a caller can tell it from a broken capture.
+    // A missing tool, an out-of-range request or a refused reference page keeps its own code, so a
+    // caller can tell it from a broken run.
     let reported = null;
     try { reported = JSON.parse((child.stdout || "").trim().split("\n").at(-1))?.error; } catch { reported = null; }
     if (reported && PROPAGATED_KERNEL_CODES.has(reported.code)) fail("cli", reported.message, { ...(reported.details || {}), code: reported.code });
