@@ -218,7 +218,11 @@ test("distill: thresholds are the reference quartiles, archetype finds the left-
   // Type: the generated strokes are mincho-like.
   assert.equal(r.fonts.title.query.style, "mincho");
   assert.equal(r.fonts.title.query.contrast, "high");
-  assert.deepEqual(r.draft.fonts.roles.title.stack, ["Noto Serif CJK SC"]);
+  // The open-font catalog (#290) ships with the package, so the stack is its candidates for the
+  // measured query, not the open default.
+  assert.equal(r.fonts.title.catalog.status, "queried", JSON.stringify(r.fonts.title.catalog));
+  assert.ok(r.fonts.title.catalog.candidates.length > 0);
+  assert.deepEqual(r.draft.fonts.roles.title.stack, r.fonts.title.catalog.candidates.map((c) => c.family));
   assert.match(r.fonts.title.command, /fonts query --text <your copy> --style mincho --contrast high/);
   // The draft is a style pack in the bank's shape.
   assert.equal(r.draft.schema, bank.STYLE_SCHEMA);
