@@ -1,0 +1,104 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "shinbo",
+  "title": "Shinbo / SHAFT-style flat graphics: title cards, Mincho x gothic, red-black-white flats, architecture, paper collage",
+  "summary": "Full-screen title cards on one flat ground (black, paper white or signal red), high-contrast Mincho display against small gothic numbers, symmetric corridors or extreme offsets, cut-paper collage that never covers copy, and a flash-hold-black cutting rhythm.",
+  "provenance": {
+    "experiment": "Nocturne Corridor (夜想回廊), an original fictional anime set made to test style grammar + materials + templates in one round: 14 title cards, a poster, two web screens, a game UI screen and a 13.9 s cut film, saved as a first pass and a reviewed final.",
+    "method": "Grammar written before the first pass (the style's established answer: title cards, Mincho x gothic collision, flat red/black/white, architecture and void, Inukare-style collage, flash/hold rhythm); measurements from the browser check and colour statistics of both rounds.",
+    "measured": [
+      "First pass: 13 contrast failures, 1 vertical line off the canvas, 2 texts under a collage key; 3 of 4 changes between rounds were these mechanical problems, 3 places needed taste.",
+      "Final: 0 contrast, 0 off-canvas, 0 collage over copy; main colours about 74% of pixels; hue spread of coloured pixels under 5 degrees (almost only red).",
+      "Japanese OFL Mincho fonts (Shippori Mincho B1, Zen Old Mincho) lack simplified-only hanzi (钥 证 记 间); Noto Serif CJK SC covers them."
+    ],
+    "fixtures": "tests/fixtures/style-pack-shinbo (first-pass and final pages with subset fonts and downscaled CC0 collage)",
+    "accessed": "2026-11-05"
+  },
+  "palette": {
+    "black": { "value": "#0D0B0B", "use": "ink black: black cards, architecture lines, text on paper (16:1)" },
+    "paper": { "value": "#F2EEE4", "use": "paper white: white cards, text on black or red (4.8:1 on red, any size)" },
+    "red": { "value": "#D10E1F", "use": "signal red: third main colour and focus; text in red on black only at 24px or more (3.5:1)" },
+    "red_deep": { "value": "#8E0A16", "use": "shadow side of red flats only; no text" },
+    "grey": { "value": "#8A847B", "use": "decoration and small numbers on black (5.2:1)" },
+    "accent": { "value": "#00A6A2", "use": "one jarring accent per piece (teal; magenta #E4007F or yellow #FFE100 as alternatives); only black text on it (white is 2.6:1)" }
+  },
+  "fonts": {
+    "roles": {
+      "display": { "stack": ["Shippori Mincho B1", "Noto Serif CJK SC"], "generic": "serif", "weight": 800, "use": "giant single characters, shared-glyph display words (夜, 蝶, 回廊, 第〇夜); switches whole strings to Noto Serif CJK SC when a simplified-only character is missing" },
+      "title": { "stack": ["Noto Serif CJK SC"], "generic": "serif", "weight": 900, "use": "Chinese titles and quotes" },
+      "head": { "stack": ["Noto Serif CJK SC"], "generic": "serif", "weight": 700, "use": "Chinese heads and short lines" },
+      "body": { "stack": ["Noto Serif CJK SC"], "generic": "serif", "weight": 500, "use": "Chinese body" },
+      "ja": { "stack": ["Shippori Mincho", "Noto Serif CJK JP", "Noto Serif CJK SC"], "generic": "serif", "weight": 500, "use": "Japanese lines" },
+      "ruby": { "stack": ["Hina Mincho", "Noto Serif CJK JP"], "generic": "serif", "weight": 400, "use": "ruby-style readings, only on flat grounds" },
+      "num": { "stack": ["Zen Kaku Gothic New", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 900, "use": "numbers, codes, Latin capitals, colliding against Mincho" },
+      "label": { "stack": ["Zen Kaku Gothic New", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 700, "use": "UI labels and episode numbers" },
+      "sans": { "stack": ["Noto Sans CJK SC"], "generic": "sans-serif", "weight": 900, "use": "Chinese gothic collision blocks" },
+      "sans_body": { "stack": ["Noto Sans CJK SC"], "generic": "sans-serif", "weight": 500, "use": "credits and notes" }
+    },
+    "faces": [
+      { "family": "Shippori Mincho B1", "weight": 800, "file": "ShipporiMinchoB1-ExtraBold.ttf", "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/shipporiminchob1/ShipporiMinchoB1-ExtraBold.ttf", "licence": "SIL OFL 1.1", "author": "FONTDASU" },
+      { "family": "Shippori Mincho", "weight": 500, "file": "ShipporiMincho-Medium.ttf", "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/shipporimincho/ShipporiMincho-Medium.ttf", "licence": "SIL OFL 1.1", "author": "FONTDASU" },
+      { "family": "Hina Mincho", "weight": 400, "file": "HinaMincho-Regular.ttf", "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/hinamincho/HinaMincho-Regular.ttf", "licence": "SIL OFL 1.1", "author": "Satsuyako" },
+      { "family": "Zen Kaku Gothic New", "weight": 900, "file": "ZenKakuGothicNew-Black.ttf", "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/zenkakugothicnew/ZenKakuGothicNew-Black.ttf", "licence": "SIL OFL 1.1", "author": "Yoshimichi Ohira" },
+      { "family": "Zen Kaku Gothic New", "weight": 700, "file": "ZenKakuGothicNew-Bold.ttf", "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/zenkakugothicnew/ZenKakuGothicNew-Bold.ttf", "licence": "SIL OFL 1.1", "author": "Yoshimichi Ohira" },
+      { "family": "Noto Serif CJK SC", "weight": 900, "file": "NotoSerifCJK-Black.ttc", "index": 2, "source": "https://github.com/notofonts/noto-cjk (fonts-noto-cjk package)", "licence": "SIL OFL 1.1", "author": "Google / Adobe" },
+      { "family": "Noto Serif CJK SC", "weight": 700, "file": "NotoSerifCJK-Bold.ttc", "index": 2, "source": "https://github.com/notofonts/noto-cjk (fonts-noto-cjk package)", "licence": "SIL OFL 1.1", "author": "Google / Adobe" },
+      { "family": "Noto Serif CJK SC", "weight": 500, "file": "NotoSerifCJK-Medium.ttc", "index": 2, "source": "https://github.com/notofonts/noto-cjk (fonts-noto-cjk package)", "licence": "SIL OFL 1.1", "author": "Google / Adobe" },
+      { "family": "Noto Sans CJK SC", "weight": 900, "file": "NotoSansCJK-Black.ttc", "index": 2, "source": "https://github.com/notofonts/noto-cjk (fonts-noto-cjk package)", "licence": "SIL OFL 1.1", "author": "Google / Adobe" },
+      { "family": "Noto Sans CJK SC", "weight": 500, "file": "NotoSansCJK-Medium.ttc", "index": 2, "source": "https://github.com/notofonts/noto-cjk (fonts-noto-cjk package)", "licence": "SIL OFL 1.1", "author": "Google / Adobe" }
+    ],
+    "licence": "All roles use SIL OFL 1.1 fonts.",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. Give --font-dir <dir> to render to read their coverage (whole-string switching) and embed them for --png and the browser check; without it the stacks are written as named and coverage is reported as unknown."
+  },
+  "layout": {
+    "grammar": [
+      "Title card: one flat ground for the whole frame, one or two text groups; a single character may fill or exceed the frame height (data-bleed).",
+      "Small text sits in the corner farthest from the big text, tracked .3-.5em.",
+      "Vertical for sentences, horizontal for numbers and titles; brackets 「」『』 up to twice the text size, in red.",
+      "Composition is either centred and symmetric (corridor) or extremely offset (one column of text and 60% void).",
+      "Tilt only objects and text blocks (-4 to -38 degrees), never figures.",
+      "Web and UI: a red vertical or horizontal bar carries navigation; hover is an inverted block with a hard shadow shift, never a fade or gradient."
+    ],
+    "groundTones": {
+      "black": { "bg": "black", "ink": "paper", "mark": "red", "small": "paper" },
+      "paper": { "bg": "paper", "ink": "black", "mark": "red", "small": "black" },
+      "red": { "bg": "red", "ink": "black", "mark": "paper", "small": "paper" }
+    }
+  },
+  "materials": {
+    "procedural": [
+      "one-point corridor, stairs, window grid, checker floor (drawn by the layouts: corridor() in layouts-shinbo.cjs)",
+      "cut-paper objects: butterfly, key, gear, flower, eye, scissors, door (SVG with a paper edge and one soft shadow, filter cut)",
+      "screentone dots (pattern), paper multiply overlay, ink grain, print misregistration"
+    ],
+    "collage": [
+      "Objects as cut stickers (paper edge about 1.4% plus a soft shadow); plates as hand-cut polygons with a white edge; ink as pure-alpha ink when tinted.",
+      "Per image: 1 main object (largest, may tilt), 2-3 secondary objects, at least 1 procedural cut-paper shape.",
+      "Collage never covers copy (browser rule collage-cover); the focus (the red door at the end of the corridor) is never covered.",
+      "Engravings (grey) next to flats stay mid-tone and never sit under text."
+    ],
+    "sources": "Public-domain and CC0 engravings and botanical plates (Cleveland Museum of Art Open Access, The Met Open Access); the material source catalog of issue #287 lists and cuts them. Image slots take your files; nothing is bundled except the test fixtures' downscaled pieces.",
+    "budget": { "paperMultiply": 0.55, "grainOnBlack": 0.55, "screentoneBlocksMax": 1, "screentoneAreaMax": 0.2, "misregistrationMax": 1, "collagePiecesMax": 5, "shadowKinds": 1 }
+  },
+  "motion": {
+    "fps": 30,
+    "flashFrames": [2, 6],
+    "holdFrames": [12, 32],
+    "blackFrames": [4, 14],
+    "blackFlash": "a black of 2-6 frames between two flashes is a black flash inside the group, not a separator",
+    "flashGroup": [3, 6],
+    "repeats": [2, 3],
+    "durationSec": [10, 15],
+    "variants": ["z105", "z110", "z106"],
+    "groundsInFlashGroup": "one ground tone per flash group: cards in a group share the ground and vary by text, crop or push-in, so the cut does not strobe",
+    "flashLimit": { "perSecond": 3, "minLuminanceChange": 0.1, "darkerBelow": 0.8, "note": "a cut-list approximation after the WCAG 2.3.1 general-flash definition, on each card's mean luminance (or its ground tone); not a photosensitivity verdict: the encoded-film check (verify film-render) is authoritative" },
+    "sound": "a 12 ms noise click on each flash cut, a 52 Hz thud on holds"
+  },
+  "checks": {
+    "static": ["text-overflow", "text-length", "type-size", "contrast", "figure-zone", "safe-zone", "accent-budget", "align-line", "rhythm"],
+    "browser": ["text-overlap", "off-canvas", "collage-cover", "contrast", "glyph-coverage"],
+    "browserOnRender": true,
+    "note": "The browser check runs on every render of this style (contrast against the ground with the text hidden, 10th percentile; overlap by ink; collage by alpha pixels; whole-string glyph coverage)."
+  }
+}

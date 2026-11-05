@@ -336,6 +336,8 @@ function paints(tree) {
     order += 1;
     node.order = order;
     if (hidden(node)) continue;
+    // Collage layers (cut-outs with alpha) are measured by their pixels in the browser check, not here.
+    if (attr(node, "data-collage") !== undefined) continue;
     const slot = slotAncestor(node);
     if (node.name === "g" && node.attrs["data-kind"] === "image") {
       const box = numberList(node.attrs["data-box"]);
@@ -438,7 +440,8 @@ function unsupportedGeometry(tree) {
   for (const node of walk(tree)) {
     if (node.name === "svg" && node.parent && node.parent.name !== "#root") found.push({ element: where(node), what: "a nested <svg>" });
     if (["use", "foreignObject", "textPath", "switch", "symbol"].includes(node.name)) found.push({ element: where(node), what: `<${node.name}>` });
-    if (node.name === "style" && /transform|translate|rotate|scale|matrix|writing-mode|letter-spacing|font/i.test(node.text)) found.push({ element: "<style>", what: "CSS rules that move or restyle elements" });
+    // @font-face rules only load faces (template render --font-dir embeds them); they move nothing.
+    if (node.name === "style" && /transform|translate|rotate|scale|matrix|writing-mode|letter-spacing|font/i.test(String(node.text || "").replace(/@font-face\s*\{[^}]*\}/gi, ""))) found.push({ element: "<style>", what: "CSS rules that move or restyle elements" });
     const style = node.attrs.style;
     if (style && /transform|translate|rotate|scale|font-size|letter-spacing|writing-mode/i.test(style)) found.push({ element: where(node), what: `a style attribute (${style.slice(0, 40)})` });
     if (node.attrs.transform) {

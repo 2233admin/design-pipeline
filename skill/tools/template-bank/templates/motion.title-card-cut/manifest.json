@@ -1,0 +1,135 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "motion.title-card-cut",
+  "family": "motion",
+  "style": "shinbo",
+  "title": "Title-card cut: a rhythm table of flashes, holds and blacks, drawn as a storyboard strip",
+  "use": "Plan the edit of a title-card film: which card, how many frames, which variation; the rhythm and flash rate are checked before rendering frames.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "1280x720"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "shots": {
+      "type": "integer",
+      "default": 8,
+      "min": 3,
+      "max": 8,
+      "class": "proportion",
+      "note": "number of shot slots used"
+    },
+    "groups": {
+      "type": "integer",
+      "default": 0,
+      "min": 0,
+      "max": 8,
+      "class": "proportion",
+      "note": "flash groups; 0 picks the count that lands nearest the middle of the duration range"
+    },
+    "flash_frames": {
+      "type": "integer",
+      "default": 3,
+      "min": 2,
+      "max": 6,
+      "class": "rhythm"
+    },
+    "hold_frames": {
+      "type": "integer",
+      "default": 24,
+      "min": 16,
+      "max": 32,
+      "class": "rhythm"
+    },
+    "black_frames": {
+      "type": "integer",
+      "default": 8,
+      "min": 4,
+      "max": 14,
+      "class": "rhythm"
+    },
+    "group_size": {
+      "type": "integer",
+      "default": 4,
+      "min": 3,
+      "max": 6,
+      "class": "rhythm"
+    },
+    "repeat": {
+      "type": "integer",
+      "default": 2,
+      "min": 2,
+      "max": 3,
+      "class": "rhythm",
+      "note": "consecutive repeats of a card inside a group (with push-in variants)"
+    }
+  },
+  "slots": {
+    "title": {
+      "kind": "text",
+      "default": "title-card cut",
+      "maxChars": 30,
+      "font": "head"
+    },
+    "summary": {
+      "kind": "text",
+      "default": "",
+      "maxChars": 80,
+      "font": "num",
+      "derived": true
+    },
+    "shot{i}": {
+      "kind": "text",
+      "default": [
+        "black:第〇夜",
+        "black:夜",
+        "black:回廊",
+        "red:门",
+        "red:眼睛",
+        "paper:第二夜",
+        "paper:钥匙",
+        "black:夜想回廊"
+      ],
+      "maxChars": 16,
+      "font": "body",
+      "note": "<ground>:<label>, ground black|paper|red"
+    }
+  },
+  "relations": [
+    "Flash groups of 3-6 cuts of 2-6 frames, each group one ground tone, bounded by holds or blacks.",
+    "Holds 12-32 frames, blacks 4-14, the whole cut 10-15 s at 30 fps."
+  ],
+  "decoration": [
+    "Push-in variants z105/z110 on repeats; one click per flash cut, a low thud on holds."
+  ],
+  "provenance": {
+    "corpus": "Nocturne Corridor (夜想回廊) experiment: our own original fictional anime set in the shinbo style pack's grammar, first pass and reviewed final",
+    "experiment": "styles/shinbo/style.json provenance; fixtures in tests/fixtures/style-pack-shinbo",
+    "accessed": "2026-11-05",
+    "method": "Geometry taken from the final round's HTML/CSS as fractions of W and H; text sizes and colours chosen so the final passed the browser check (contrast with text hidden, ink overlap, collage alpha, off-canvas). All copy is original.",
+    "sampleIds": [
+      "film edl"
+    ],
+    "measured": [
+      "final film: 13.9 s, 41 segments; flashes 2-5 frames, holds 12-32, blacks 2-10",
+      "a black of 2 frames and inverted / red flash variants inside groups alternate ground tones; the grammar keeps one ground per group so the cut stays under 3 flashes per second"
+    ],
+    "summary": "Nocturne Corridor film EDL"
+  }
+}

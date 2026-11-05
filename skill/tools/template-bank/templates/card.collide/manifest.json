@@ -1,0 +1,108 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.collide",
+  "family": "card",
+  "style": "shinbo",
+  "title": "Collision card: a Mincho word against a tilted red plate with a heavy gothic word",
+  "use": "Two ideas set against each other; the gothic block is the second voice.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "1280x720",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "ground": {
+      "type": "enum",
+      "values": [
+        "black",
+        "paper"
+      ],
+      "default": "black",
+      "class": "decoration",
+      "note": "ground tone of the card: black, paper white or signal red (style groundTones)"
+    },
+    "big_size": {
+      "default": 0.46,
+      "min": 0.42,
+      "max": 0.46,
+      "class": "rhythm"
+    },
+    "plate_x": {
+      "default": 0.6,
+      "min": 0.6,
+      "max": 0.64,
+      "class": "proportion",
+      "note": "plate left x W, right of the big word"
+    },
+    "tilt": {
+      "default": -4,
+      "min": -8,
+      "max": -2,
+      "class": "rhythm",
+      "note": "plate tilt in degrees"
+    }
+  },
+  "slots": {
+    "big": {
+      "kind": "text",
+      "default": "眼睛",
+      "maxChars": 2,
+      "font": "title",
+      "title": true
+    },
+    "block": {
+      "kind": "text",
+      "default": "记忆装置",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "sub": {
+      "kind": "text",
+      "default": "No.07 — 眼睛记得的事",
+      "maxChars": 14,
+      "font": "sans_body"
+    },
+    "ruby": {
+      "kind": "text",
+      "default": "めだけがおぼえている",
+      "maxChars": 12,
+      "font": "ruby"
+    }
+  },
+  "relations": [
+    "The big word and the plate do not touch; the plate is tilted, never the Mincho word."
+  ],
+  "decoration": [
+    "One reading line in red under the big word."
+  ],
+  "provenance": {
+    "corpus": "Nocturne Corridor (夜想回廊) experiment: our own original fictional anime set in the shinbo style pack's grammar, first pass and reviewed final",
+    "experiment": "styles/shinbo/style.json provenance; fixtures in tests/fixtures/style-pack-shinbo",
+    "accessed": "2026-11-05",
+    "method": "Geometry taken from the final round's HTML/CSS as fractions of W and H; text sizes and colours chosen so the final passed the browser check (contrast with text hidden, ink overlap, collage alpha, off-canvas). All copy is original.",
+    "sampleIds": [
+      "c12-black-collide"
+    ],
+    "measured": [
+      "眼睛 560px; plate 720x300 at 1060,520 tilted -4; 记忆装置 120px; sub 34px; reading 30px red"
+    ],
+    "summary": "Nocturne Corridor c12 final"
+  }
+}

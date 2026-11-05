@@ -40,14 +40,14 @@ const rules = (report) => report.findings.map((finding) => `${finding.rule}:${fi
 
 test("every template renders at each listed size with its default slots and passes check", () => {
   const ids = bank.templateIds();
-  assert.equal(ids.length, 9);
+  assert.equal(ids.length, 20);
   for (const id of ids) {
     const manifest = bank.loadManifest(id);
     assert.ok(manifest.sizes.includes(`${manifest.canvas.width}x${manifest.canvas.height}`), `${id} lists its canvas size`);
     for (const size of manifest.sizes) {
       const report = bank.check(bank.render(id, { size }).svg);
       assert.equal(report.status, "passed", `${id} at ${size}: ${JSON.stringify(report.findings, null, 1)}`);
-      assert.ok(report.measured.length >= 3, `${id} measures its text slots`);
+      assert.ok(report.measured.length >= 2, `${id} measures its text slots`);
     }
   }
 });
@@ -65,13 +65,13 @@ test("manifests are complete and the committed template.svg is the default rende
       if (slot.kind !== "image") assert.ok(slot.maxChars > 0, `${id} ${name} has a budget`);
     }
     for (const role of manifest.accent.roles) assert.ok(manifest.palette[role], `${id} accent role ${role} is a palette role`);
-    assert.ok(manifest.provenance.url || manifest.provenance.gallery, `${id} names its source`);
+    assert.ok(manifest.provenance.url || manifest.provenance.gallery || manifest.provenance.experiment, `${id} names its source`);
     assert.ok(manifest.provenance.sampleIds.length > 0 && manifest.provenance.measured.length > 0, `${id} lists samples and measurements`);
     assert.ok(manifest.relations.length && manifest.decoration.length, `${id} separates relations from decoration`);
     const svg = bank.render(id).svg;
     const drawn = new Set([...svg.matchAll(/data-slot="([^"]+)" data-kind="(text|lettering|image)"/g)].map((m) => m[1]));
     for (const name of drawn) assert.ok(bank.slotSpec(manifest, name), `${id} draws declared slot ${name}`);
-    for (const key of Object.keys(manifest.slots)) {
+    for (const key of Object.keys(manifest.slots).filter((name) => !manifest.slots[name].collage)) {
       assert.ok([...drawn].some((name) => bank.slotSpec(manifest, name)?.key === key), `${id} declares ${key}, which the default render draws`);
     }
     const committed = path.join(bank.TEMPLATES_ROOT, id, "template.svg");
@@ -284,7 +284,7 @@ test("template list filters by family and image slots embed files", (t) => {
   const root = tempRoot(t);
   const listed = cli(root, "template", "list", "--family", "kv");
   assert.equal(listed.status, 0);
-  assert.deepEqual(listed.payload.templates.map((item) => item.family), Array(5).fill("kv"));
+  assert.deepEqual(listed.payload.templates.map((item) => item.family), Array(6).fill("kv"));
   assert.ok(listed.payload.templates.every((item) => item.slots.length && item.sizes.length));
   const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
   fs.writeFileSync(path.join(root, "figure.png"), png);
@@ -297,7 +297,7 @@ test("template list filters by family and image slots embed files", (t) => {
 
 test("CLI usage errors exit 1", (t) => {
   const root = tempRoot(t);
-  fs.writeFileSync(path.join(root, "plain.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\" height=\"10\"/>");
+  fs.writeFileSync(path.join(root, "broken.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\" height=\"10\"><metadata id=\"template-check\">{not json</metadata></svg>");
   fs.writeFileSync(path.join(root, "notes.txt"), "x");
   const cases = [
     [["template", "render", "no.such-template", "-o", "a.svg"], "TEMPLATE_NOT_FOUND"],
@@ -313,7 +313,11 @@ test("CLI usage errors exit 1", (t) => {
     [["template", "render", "kv.outfit-title-left", "--seed", "x", "-o", "a.svg"], "OPTION_VALUE_INVALID"],
     [["template", "render", "kv.outfit-title-left", "--frobnicate", "-o", "a.svg"], "UNKNOWN_OPTION"],
     [["template", "check"], "OPTION_REQUIRED"],
-    [["template", "check", "plain.svg"], "CONTRACT_INVALID"],
+    [["template", "check", "broken.svg"], "CONTRACT_INVALID"],
+    [["template", "check", "notes.txt"], "OPTION_VALUE_INVALID"],
+    [["template", "check", "missing.svg"], "CONTRACT_INVALID"],
+    [["template", "list", "--style", "nope"], "OPTION_VALUE_INVALID"],
+    [["template", "render", "motion.title-card-cut", "--set", "summary=x", "-o", "a.svg"], "OPTION_VALUE_INVALID"],
     [["template", "list", "extra"], "UNKNOWN_ARGUMENT"],
     [["template", "list", "--family", "poster"], "OPTION_VALUE_INVALID"],
     [["template", "inventory", "a", "b"], "UNKNOWN_ARGUMENT"],

@@ -1,0 +1,105 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.bracket-quote",
+  "family": "card",
+  "style": "shinbo",
+  "title": "Quote card: 『 』 brackets in red at twice the text size, one centred sentence",
+  "use": "One quoted sentence as a full-screen beat.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "1280x720",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "ground": {
+      "type": "enum",
+      "values": [
+        "black",
+        "paper",
+        "red"
+      ],
+      "default": "paper",
+      "class": "decoration",
+      "note": "ground tone of the card: black, paper white or signal red (style groundTones)"
+    },
+    "bracket_size": {
+      "default": 0.278,
+      "min": 0.24,
+      "max": 0.3,
+      "class": "rhythm"
+    },
+    "quote_size": {
+      "default": 0.126,
+      "min": 0.11,
+      "max": 0.13,
+      "class": "rhythm"
+    }
+  },
+  "slots": {
+    "open": {
+      "kind": "text",
+      "default": "『",
+      "maxChars": 1,
+      "font": "display",
+      "decor": true,
+      "bleed": true
+    },
+    "close": {
+      "kind": "text",
+      "default": "』",
+      "maxChars": 1,
+      "font": "display",
+      "decor": true,
+      "bleed": true
+    },
+    "quote": {
+      "kind": "text",
+      "default": "钥匙不是用来开门的。",
+      "maxChars": 10,
+      "font": "title",
+      "title": true
+    },
+    "label": {
+      "kind": "text",
+      "default": "第二夜",
+      "maxChars": 4,
+      "font": "label"
+    }
+  },
+  "relations": [
+    "Brackets sit diagonally outside the measured ends of the sentence (open above-left, close below-right), about twice its size; they move with the copy."
+  ],
+  "decoration": [
+    "Brackets are decoration (exempt from overlap and contrast)."
+  ],
+  "provenance": {
+    "corpus": "Nocturne Corridor (夜想回廊) experiment: our own original fictional anime set in the shinbo style pack's grammar, first pass and reviewed final",
+    "experiment": "styles/shinbo/style.json provenance; fixtures in tests/fixtures/style-pack-shinbo",
+    "accessed": "2026-11-05",
+    "method": "Geometry taken from the final round's HTML/CSS as fractions of W and H; text sizes and colours chosen so the final passed the browser check (contrast with text hidden, ink overlap, collage alpha, off-canvas). All copy is original.",
+    "sampleIds": [
+      "c05-white-bracket"
+    ],
+    "measured": [
+      "brackets 300px red; sentence 136px centred at 0.435H; final moved the brackets out to 70px from the edges"
+    ],
+    "summary": "Nocturne Corridor c05 final"
+  }
+}

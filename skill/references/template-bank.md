@@ -7,8 +7,18 @@ render is checked on the spot: text fit, minimum size, contrast, figure and crop
 and shared alignment lines. It works like a sound-effects bank: sounds as code, played by id with
 knobs, measured on playback.
 
-Code: `tools/template-bank/` (`bank.cjs` render and check, `layouts.cjs` geometry, `lettering.cjs`
-code-drawn display lettering, `templates/<id>/manifest.json` + `template.svg` + `spec.md`).
+Code: `tools/template-bank/` (`bank.cjs` render and static check, `page-check.cjs` the browser
+check, `coverage.cjs` glyph coverage, `layouts.cjs` / `layouts-shinbo.cjs` geometry, `lettering.cjs`
+code-drawn display lettering, `styles/<id>/style.json`, `templates/<id>/manifest.json` +
+`template.svg` + `spec.md`).
+
+Templates belong to **style packs**. A style is font roles + layout grammar + materials + motion
+grammar + check rules; its templates are the parameterised layouts of that grammar:
+
+| Style | Templates | Character |
+| --- | --- | --- |
+| `arknights-endfield` | 9 (kv, cover, card, banner, ui) | Measured from official promotional art: code-drawn condensed Latin over CJK sans/serif, one figure, a shared left line |
+| `shinbo` | 11 (7 title cards, a corridor poster, a chapter grid, an item codex, a title-card cut) | Flat red/black/paper grounds, Mincho against small gothic, architecture and void, cut-paper collage that never touches copy, flash-hold-black rhythm |
 
 ## When to use it
 
@@ -29,10 +39,10 @@ the deliverable is a full page or product flow (use `next`).
 ## Commands
 
 ```sh
-designer-pipeline template list [--family kv|cover|card|banner|ui]
+designer-pipeline template list [--family kv|cover|card|banner|ui|motion] [--style <id>]
 designer-pipeline template render <id> --set slot=value ... --param name=value ... \
-  [--seed <n>] [--size WxH] -o out.svg [--png out.png]
-designer-pipeline template check out.svg
+  [--seed <n>] [--size WxH] -o out.svg [--png out.png] [--font-dir <dir>] [--browser]
+designer-pipeline template check <out.svg | page.html | hand-made.svg> [--browser] [--size WxH]
 ```
 
 - `list` gives each template's id, family, sizes, slots with their character budgets, and its
@@ -50,10 +60,19 @@ designer-pipeline template check out.svg
   - `--png` rasterises through the headless browser used by `composition capture`
     (`--chrome`, `--puppeteer-module` as there). The check runs first; if the capture fails, the
     result still carries the check, plus a warning.
-- `check` re-measures any render, including one whose geometry was edited by hand after rendering.
-  The rules it applies (figure zones, which slots are titles, alignment lines, accent budget) are
-  written into the file at render time, so an edit cannot add or move them; and the check does not
-  track an image swapped into the file by hand: re-render with `--set` instead.
+- `check` re-measures any render, including one whose geometry was edited by hand after rendering,
+  and any HTML page or hand-written SVG (those get the browser half only). The rules it applies to
+  a render (figure zones, which slots are titles, alignment lines, accent budget) are written into
+  the file at render time, so an edit cannot add or move them; and the check does not track an image
+  swapped into the file by hand: re-render with `--set` instead.
+- `--style <id>` on `list` prints the pack: font roles, grammar, materials, motion grammar, checks.
+- `--font-dir <dir>`: the style's font files (TTF, OTF, TTC or WOFF, matched by file name). Each
+  string is then set in the first font of its role that covers every character, never glyph by
+  glyph; the result lists `fontSwitches`, and the faces are embedded for `--png` and the browser.
+- `--browser` adds the browser half (below); a style whose checks ask for it (shinbo) runs it on
+  every render; without Chrome or puppeteer-core such a render is `unverified` (exit 1
+  `TOOL_MISSING`), never a pass, and a broken check (including a page that navigates away) exits 1
+  `KERNEL_FAILED`.
 
 Every finding carries a `fix`: how many characters fit, which parameter to set and to what value
 (inside its measured range, or a statement that only shorter copy helps), how far to move an element.
@@ -70,11 +89,14 @@ Measured on the rendered SVG, from its geometry and the rules embedded at render
 | `contrast` | Text colour against the ground under 27 points of its extent: shapes, opacity and gradients composited from the file; an empty image slot counts as its declared ground tone; a real image is sampled as rendered pixels in a browser, or taken as its `--tone` | 4.5:1, 3:1 for large text |
 | `contrast-unverified` | Text on a real image whose pixels could not be sampled and has no `--tone` | Fails; the fix names both options |
 | `lettering-fallback` | Characters a lettering slot cannot draw; the slot falls back to the CJK font, so its style changed | None allowed (lowercase is drawn as capitals and only noted) |
-| `unsupported-geometry` | Nested `<svg>`, `<use>`, `<foreignObject>`, CSS transforms or font styles, tspans with `dx`/`x`/`y`/`rotate`, transform functions other than translate, rotate, scale and matrix | None allowed: a file the check cannot measure fails |
+| `unsupported-geometry` | Nested `<svg>`, `<use>`, `<foreignObject>`, CSS transforms or font styles (`@font-face` rules that only load faces are allowed), tspans with `dx`/`x`/`y`/`rotate`, transform functions other than translate, rotate, scale and matrix | None allowed: a file the check cannot measure fails |
 | `figure-zone` | Horizontal overlap of title slots with the figure zone while they share rows | 30% of the title width |
 | `safe-zone` | Listed slots inside a crop zone (the 16:9 centre crop of a 16:10 cover) | Inside |
 | `accent-budget` | Area of accent-role or accent-coloured paint, clipped to the canvas; text at 45% of its extent | The template's `accent_max_share` |
 | `align-line` | Ink edge of each listed element against the template's shared left (or right) line | 0.5% of the width |
+
+| `glyph-coverage` | A string no font of its role covers (known from `--font-dir` or a coverage provider) | Every character covered |
+| `rhythm` | Motion templates: frames per cut by kind (a 2-6 frame black between flashes is a black flash), flash groups (size, one ground tone), repeats, duration, and a cut-list approximation of the flash rate from each card's mean luminance (or ground tone) | The style's motion grammar; 3 flashes a second, confirmed only on the encoded film |
 
 Decoration slots (watermark words, micro-markers, barcodes) are exempt from size and contrast; slots
 marked `bleed` are exempt from the box.
@@ -86,6 +108,32 @@ every string in the calibration set (`tests/template-bank-browser.test.cjs`) and
 weight the layouts use, the model is at least Chrome's width; that test skips where Chrome or the
 fonts are missing. Nothing more is promised: another font, or a fallback font the browser picks for a
 glyph the named fonts lack, can be wider. Render `--png` and look when the copy is unusual.
+
+### The browser half
+
+`page-check.cjs` loads the file in headless Chrome at its own size and measures pixels, so it also
+sees layers injected after rendering, hand-written SVG and HTML pages:
+
+| Rule | Measured | Limit |
+| --- | --- | --- |
+| `text-overlap` | Ink of each text unit (painted alone in black, then white; their difference is its coverage, so plates above it count and the em box does not) against the ink of other groups | Touching within 0.06 em |
+| `off-canvas` | Line boxes (cross axis cut to the font size) past the canvas | 1 px; `data-bleed` exempts |
+| `collage-cover` | Pixels a collage layer (`img`, `image`, `[data-collage]`, an element with a `url()` background) actually paints inside a text's ink zone (glyphs + 0.1 em), above it or as its ground; the rotated frame does not count | 1% of the zone |
+| `contrast` | Each text run's own colour (a `<text>` fill inside a marked `<g>`, every span; the worst wins; translucent colours composited) against the page with only that text hidden, so other text under it counts, 10th percentile inside the ink box | 4.5:1, 3:1 at 24 px (18.66 px bold) |
+| `text-occluded` | Glyph pixels of the text painted alone that are missing on the page (a plate or panel above it) | 15% |
+| `asset-missing` | Requests that failed (images, fonts) | None |
+| `font-collection` | `@font-face` pointing at a `.ttc` (the browser takes face 0) | None |
+| `page-error` | Uncaught exceptions and console errors (other than failed loads, which are `asset-missing`) | None |
+| `no-text-measured` | No visible text on the page; a text-free page declares `data-no-text` on its root | At least one text |
+| `glyph-coverage` | Characters missing from the first font of a run's stack (the page's `@font-face` files, or a registered provider) | Every character |
+
+Mark your own layers so they group and exempt correctly: `data-chk="<id>"` names a text unit (an
+element holding marked children is a container), `data-grp="<group>/<n>"` makes a lock-up whose
+parts may touch, `data-deco` exempts decoration from overlap and contrast, `data-bleed` from the
+canvas edge, `data-collage` marks a cut-out drawn in SVG. When both halves run, the browser's pixel
+contrast replaces the static estimate.
+Without it, the static check samples the rendered pixels under text on a real image slot (or
+takes a declared `--tone`).
 
 ## Variation knobs: so outputs do not all look the same
 
@@ -108,14 +156,45 @@ subject, set the layout parameters, then use seeds for the finer rhythm, and tur
 where the subject is busy. Keep the relations the manifest lists in `relations`. The same template
 with the same knobs on every cover is a house style at best and a cliché at worst.
 
+## Glyph coverage and the font catalog
+
+A string is set in one font. `coverage.cjs` reads cmaps from font files and asks registered
+providers first: the font catalog plugs in with
+`require("tools/template-bank/coverage.cjs").registerProvider((family, { weight }) => Set<codepoint> | null)`.
+Without either, coverage is reported as unknown, never as covered.
+
 ## Fonts
 
-Latin display slots use the code-drawn lettering (`lettering.cjs`: A-Z, 0-9, space and
+Font roles live in the style (`fonts.roles`: stack, weight, use). In the Arknights / Endfield
+pack, Latin display slots use the code-drawn lettering (`lettering.cjs`: A-Z, 0-9, space and
 `/ \ - _ + . , : ; [ ] < > | # % ! ? ' " & €`; condensed, chamfered, optional stencil); it renders
 as paths and needs no font. Lowercase is drawn as capitals. Any other character (CJK, accented
-letters, emoji) makes the whole slot fall back to the manifest's open fonts, and `check` reports it
+letters, emoji) makes the whole slot fall back to the style's open fonts, and `check` reports it
 as `lettering-fallback`, because the style changed: Source Han Sans / Serif or Noto Sans / Serif CJK
 (SIL OFL 1.1). They are named, not bundled: install them where you render the SVG or PNG.
+
+## Shinbo pack: what it encodes
+
+- Title cards on one flat ground (`ground=black|paper|red`); a single character may fill and bleed
+  the frame; small text goes to the far corner; brackets move with the measured sentence.
+- Red text on black only at 24 px or more (3.5:1); white on red at any size (4.8:1); one jarring
+  accent per piece, black text on it.
+- Collage slots take cut-outs with alpha (PNG / WebP) and draw only when filled; the corridor,
+  doors and butterfly are drawn in code. Collage never covers copy (`collage-cover`).
+- `motion.title-card-cut` returns an EDL (`edl` in the result) of flash, hold and black segments
+  built from the shots `ground:label`; `groups=0` picks the count that lands in 10-15 s. Encode it
+  with your card renders, then check the film with `verify film-render`.
+- Acceptance fixtures: `tests/fixtures/style-pack-shinbo/` (the experiment's first pass and final).
+
+## Add a style pack
+
+1. Write `styles/<id>/style.json` (schema `design-pipeline.template-bank-style.v1`): `fonts.roles`
+   (stack, generic, weight, use) and `fonts.faces` (family, weight, file, source, licence),
+   `layout.grammar`, `materials` (procedural, collage rules, sources, budget), `motion` (or
+   `motionNote`), `checks` (`static`, `browser`, `browserOnRender`).
+2. Write the layouts with font roles (`family: "<role>"`) and give each template `"style": "<id>"`.
+3. Render every template, check with `--browser`, and keep fixtures of real outputs that the check
+   must catch and pass.
 
 ## Add a template distilled from a reference
 
@@ -127,7 +206,7 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
 3. Write the layout in `layouts.cjs` as fractions of W and H: placeholder slots for art and logos, a
    box for every text slot, `zone()` for figure keep-out or crop zones, `align()` for shared lines. No
    traced shapes, logos or official text.
-4. Write `manifest.json` (schema `design-pipeline.template-bank-template.v1`): sizes and aspect,
+4. Write `manifest.json` (schema `design-pipeline.template-bank-template.v1`): its `style`, sizes and aspect,
    slots with kind, default, budget and size parameter, parameters with default, range and class,
    palette roles with their use, the accent roles and budget, `relations`, `decoration`, and
    `provenance` (corpus, URL, access date, sample ids, measured facts, method).
@@ -138,6 +217,6 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
    `references/package-resources.json`, and name the reference owner and licence in
    `THIRD_PARTY_NOTICES.md` (reference only, not redistributed).
 
-The current nine templates come from a measured study of official Arknights / Endfield promotional
+The nine `arknights-endfield` templates come from a measured study of official Arknights / Endfield promotional
 art (reference only, © HYPERGRYPH):
 `docs/research/arknights-endfield-template-study.md` in the repository.

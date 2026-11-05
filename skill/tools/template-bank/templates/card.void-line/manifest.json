@@ -1,0 +1,88 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.void-line",
+  "family": "card",
+  "style": "shinbo",
+  "title": "Void card: one small line in a black frame, a red dot, a corner number",
+  "use": "A pause beat: one short sentence in a large void.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "1280x720",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "ground": {
+      "type": "enum",
+      "values": [
+        "black",
+        "paper",
+        "red"
+      ],
+      "default": "black",
+      "class": "decoration",
+      "note": "ground tone of the card: black, paper white or signal red (style groundTones)"
+    },
+    "line_size": {
+      "default": 0.031,
+      "min": 0.028,
+      "max": 0.036,
+      "class": "rhythm"
+    },
+    "line_top": {
+      "default": 0.48,
+      "min": 0.42,
+      "max": 0.52,
+      "class": "rhythm"
+    }
+  },
+  "slots": {
+    "line": {
+      "kind": "text",
+      "default": "——第七级台阶，不存在。",
+      "maxChars": 14,
+      "font": "head"
+    },
+    "number": {
+      "kind": "text",
+      "default": "07",
+      "maxChars": 4,
+      "font": "num"
+    }
+  },
+  "relations": [
+    "Everything but the line is void; the number goes to the far corner in grey."
+  ],
+  "decoration": [
+    "Red dot below the line."
+  ],
+  "provenance": {
+    "corpus": "Nocturne Corridor (夜想回廊) experiment: our own original fictional anime set in the shinbo style pack's grammar, first pass and reviewed final",
+    "experiment": "styles/shinbo/style.json provenance; fixtures in tests/fixtures/style-pack-shinbo",
+    "accessed": "2026-11-05",
+    "method": "Geometry taken from the final round's HTML/CSS as fractions of W and H; text sizes and colours chosen so the final passed the browser check (contrast with text hidden, ink overlap, collage alpha, off-canvas). All copy is original.",
+    "sampleIds": [
+      "c09-black-void"
+    ],
+    "measured": [
+      "line 34px tracked .42em centred at 520px; grey number 22px (5.2:1 on black)"
+    ],
+    "summary": "Nocturne Corridor c09 final"
+  }
+}
