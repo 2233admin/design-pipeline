@@ -1,0 +1,104 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.tape-section-title",
+  "family": "card",
+  "style": "street-tape",
+  "title": "Section title block on its acid slab: ultra-black CJK, condensed caps and a giant two-digit number, with a stripe band and a rounded content slab cut at 49 degrees",
+  "use": "The opening of a numbered page section, or a section card in a deck. side=right mirrors it (sections alternate). The media slot is the section's picture.",
+  "canvas": {
+    "width": 960,
+    "height": 540
+  },
+  "sizes": [
+    "960x540",
+    "1920x1080"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "acid"
+    ],
+    "maxShare": 0.42
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "side": {
+      "type": "enum",
+      "values": [
+        "left",
+        "right"
+      ],
+      "default": "left",
+      "class": "decoration",
+      "note": "title edge; right mirrors every cut"
+    },
+    "cut_x": {
+      "default": 0.44,
+      "min": 0.41,
+      "max": 0.47,
+      "class": "rhythm",
+      "note": "acid slab corner x / W (the cut runs down-left from it at 49 degrees)"
+    },
+    "film": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "a film strip crossing the top band"
+    }
+  },
+  "slots": {
+    "title_cjk": {
+      "kind": "text",
+      "default": "新闻资讯",
+      "maxChars": 5,
+      "font": "head",
+      "title": true
+    },
+    "title_latin": {
+      "kind": "text",
+      "default": "NEWS & INFO",
+      "maxChars": 14,
+      "font": "label",
+      "note": "Latin caps and digits only"
+    },
+    "number": {
+      "kind": "text",
+      "default": "04",
+      "maxChars": 2,
+      "font": "num",
+      "note": "digits only: the section number"
+    },
+    "media": {
+      "kind": "image",
+      "ground": "white",
+      "note": "the section's picture (2:1)"
+    }
+  },
+  "relations": [
+    "Ink heights CJK : Latin : number = 1 : 0.42 : 2.7; gaps 9 and 18 units; one left (or right) edge.",
+    "The acid slab's cut and the content slab's cut are parallel at 49 degrees with a stripe band between.",
+    "The title sits on acid; the picture sits on white; nothing small on the stripes."
+  ],
+  "decoration": [
+    "Stripe band, film strip: drawn."
+  ],
+  "provenance": {
+    "corpus": "replay-ward case (回放街区 REPLAY WARD): our own original one-page game site and two in-game screens in the street-tape grammar",
+    "experiment": "styles/street-tape/style.json provenance (reference board measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "The case's news section scaled to a 960 x 540 card; title sizes from the board's measured ink heights (45 / 19 / 115-130 px at 1920).",
+    "sampleIds": [
+      "replay-ward/section-04"
+    ],
+    "measured": [
+      "Board: CJK ink 45 px (48-50 px type), Latin ink 19 px, number ink 115-130 px; left titles at x 290, right titles end at 1790.",
+      "Case first pass: the number ran off the acid onto the stripes (black on #222122); the slab corner moved right (cut_x 0.41-0.47)."
+    ],
+    "summary": "replay-ward section title"
+  }
+}

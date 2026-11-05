@@ -11,7 +11,7 @@ const { pathToFileURL } = require("node:url");
 const lettering = require("./lettering.cjs");
 const measure = require("./measure.cjs");
 const coverage = require("./coverage.cjs");
-const LAYOUTS = Object.assign({}, ...["layouts.cjs", "layouts-shinbo.cjs", "layouts-citypop.cjs", "layouts-xerox.cjs", "layouts-litho.cjs", "layouts-pixel.cjs", "layouts-hud.cjs", "layouts-cyanotype.cjs"]
+const LAYOUTS = Object.assign({}, ...["layouts.cjs", "layouts-shinbo.cjs", "layouts-citypop.cjs", "layouts-xerox.cjs", "layouts-litho.cjs", "layouts-pixel.cjs", "layouts-hud.cjs", "layouts-cyanotype.cjs", "layouts-street.cjs"]
   .filter((file) => fs.existsSync(path.join(__dirname, file))).map((file) => require(`./${file}`).LAYOUTS));
 
 const TEMPLATES_ROOT = path.join(__dirname, "templates");
@@ -241,6 +241,17 @@ class Doc {
     return { css: this.stackCss(spec.stack.slice(spec.stack.indexOf(choice.family)), spec.generic), switched: `${from}>${choice.family}` };
   }
 
+  // A layout that sizes text from one family's metrics pins the role to that family: the stack starts
+  // there, so the browser cannot pick a different (preferred but absent) face of another size.
+  pinFamily(roleName, family) {
+    const spec = this.roles[roleName];
+    const at = spec.stack.indexOf(family);
+    if (at < 0) throw new BankError(`layout ${this.m.id} pins font role ${roleName} to ${family}, which its stack (${spec.stack.join(" > ")}) does not name`);
+    if (at === 0) return { css: this.families[roleName] };
+    this.fontSwitches.push({ role: roleName, text: "", missing: "", from: spec.stack[0], to: family, reason: `${spec.stack[0]} is not in --font-dir; sized from ${family}` });
+    return { css: this.stackCss(spec.stack.slice(at), spec.generic), switched: `${spec.stack[0]}>${family}` };
+  }
+
   value(name) {
     const found = slotSpec(this.m, name);
     if (!found) throw new BankError(`layout ${this.m.id} draws slot ${name}, which the manifest does not declare`);
@@ -339,7 +350,7 @@ class Doc {
     const roleName = o.family || spec.font || "sans";
     if (!this.families[roleName]) throw new BankError(`layout ${this.m.id} uses font role ${roleName}, which style ${this.m.style} does not declare`);
     const weight = o.weight || this.roles[roleName].weight || 700;
-    const chosen = this.familyFor(roleName, String(text), weight);
+    const chosen = o.resolved ? this.pinFamily(roleName, o.resolved) : this.familyFor(roleName, String(text), weight);
     const family = chosen.css;
     const tracking = o.tracking || 0;
     const spacing = (tracking / 1000) * size;

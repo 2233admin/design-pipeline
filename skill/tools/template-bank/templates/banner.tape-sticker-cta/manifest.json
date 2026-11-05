@@ -1,0 +1,85 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "banner.tape-sticker-cta",
+  "family": "banner",
+  "style": "street-tape",
+  "title": "Sticker CTA: one tilted white sticker word with a heavy black outline and an offset black plate, invented pseudo-glyphs under it, an acid flash, on grey with a stripe corner",
+  "use": "The loudest call to action of a first screen or a download banner. One per screen.",
+  "canvas": {
+    "width": 800,
+    "height": 400
+  },
+  "sizes": [
+    "800x400",
+    "1600x800"
+  ],
+  "aspect": "2:1",
+  "accent": {
+    "roles": [
+      "acid"
+    ],
+    "maxShare": 0.08
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "tilt": {
+      "default": 7,
+      "min": 5,
+      "max": 9,
+      "class": "rhythm",
+      "note": "sticker tilt, degrees clockwise (the board's is about 8)"
+    },
+    "film": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "film strip in the stripe corner"
+    }
+  },
+  "slots": {
+    "cta": {
+      "kind": "text",
+      "default": "立即下载",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "flash": {
+      "kind": "text",
+      "default": "公测中",
+      "maxChars": 3,
+      "font": "head"
+    },
+    "platforms": {
+      "kind": "text",
+      "default": "PC · iOS · Android · 云游戏",
+      "maxChars": 26,
+      "font": "body"
+    }
+  },
+  "relations": [
+    "Sticker tilted 5-9 degrees clockwise; outline 12 units; offset plate 9 x 11 units down-right.",
+    "The pseudo-glyph line is decoration, never readable copy; the real platforms line sits level on the grey."
+  ],
+  "decoration": [
+    "Pseudo-glyphs, stripe corner, film strip: drawn."
+  ],
+  "provenance": {
+    "corpus": "replay-ward case (回放街区 REPLAY WARD): our own original one-page game site and two in-game screens in the street-tape grammar",
+    "experiment": "styles/street-tape/style.json provenance (reference board measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "The case's first-screen download sticker (372 x 190 at 1920) set on its own banner.",
+    "sampleIds": [
+      "replay-ward/hero-sticker"
+    ],
+    "measured": [
+      "Board: the download sticker tilts about +8 degrees with a black outline and an unreadable subtitle.",
+      "Case: 0 findings; the subtitle is drawn bars, so no glyph or contrast rule reads it as text."
+    ],
+    "summary": "replay-ward sticker CTA"
+  }
+}

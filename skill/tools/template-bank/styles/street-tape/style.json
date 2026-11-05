@@ -1,0 +1,111 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "street-tape",
+  "title": "Street tape: a Japanese street-fashion city game's official-site grammar - light grey, one acid yellow-green, black fine stripes, rounded slabs with one 49-degree cut, a film strip",
+  "summary": "Light grey ground, one acid yellow-green as the only strong colour (15-22% of a section), black fine-stripe bands and big rounded slabs that all share one 49-degree cut, a three-line section title (ultra-black CJK, condensed Latin caps, a giant condensed two-digit number), a right-edge vertical pager, black capsule controls with a grey ring, and a film strip crossing between sections.",
+  "provenance": {
+    "case": "replay-ward (回放街区 REPLAY WARD): an original one-page official site (home, agents, media, news, archive, features; 1920 and 390 wide) and two in-game screens (agent detail, limited banner) built on the grammar, every character and picture a sized placeholder frame with a drawn silhouette.",
+    "lineage": "The official-site grammar of Japanese street-fashion urban action games (2020s): a light-grey page, one acid ink, stripe bands and rounded slabs cut at one angle, numbered sections, a side pager. Read and measured on an owner-supplied reference board of six screenshots that stays private and is not shipped. Borrowed: the grammar and the measured proportions. Never borrowed: any name, logo, wordmark, character, mascot, city, slogan, picture or the board's own logo shape.",
+    "borrow": "Borrow grammar, never assets. Every name, logo, character, headline and picture in the case and the templates is our own (回放街区, 唐小满, 沈蔓, 夜频电台); characters are sized placeholder frames with a drawn silhouette, waiting for original art from an image-generation task sheet.",
+    "rounds": "One round, iterated by eye before the first check. template check --browser first pass: 54 findings over 9 pages (6 sections at 1920 x 1080, the mobile page at 390, two in-game screens): 32 glyph-coverage (mixed CJK and Latin set in the Latin face), 8 text-overlap (the logo lockup), 10 mixed-colour units (a capsule icon measured against its capsule), 3 on the ghost letters, 1 small label contrast; final 0. fonts query --style gothic --weight 900 covers all 524 characters of the copy.",
+    "measured": [
+      "One cut angle: 49 degrees, not 45 (the white container's edge, the acid slab's edge and the stripe direction each measure dx/dy 0.86-0.87 on the board).",
+      "Acid #D8FA00 on the board (mode of 180 k pixels); the case and the pack use #D4FF00. Page grey #EFEFEF, stripes #0A0A0A lines on #222122 at a 13.2 px horizontal pitch (10 px across the stripe), top bar #000 66 px high.",
+      "Area per section (2 px sampling): acid 15-22%, dark (black and stripes) 24-39%; one section is grey-led with acid 4%.",
+      "Section title ink heights CJK : Latin : number = 45 : 19 : 115-130 px (1 : 0.42 : 2.6-2.9); 10 px and 20 px gaps; left edge at 15% of the width, right-aligned titles end 130 px from the right edge; sections alternate left and right.",
+      "Slab corner radius about 48 px; current-page capsule 103 x 35; acid CTA capsule 93 x 33; 'more' capsule 173 x 44 inside a 6 px grey ring; news card 705 x 354 with about 28 px corners; pager bar 46 px wide.",
+      "64 px: with the logos masked the six sections read as the grammar beside the board and apart from the six earlier game cases (acid-print-hud is the nearest: dark, not grey-led)."
+    ],
+    "accessed": "2026-11-06"
+  },
+  "palette": {
+    "acid": { "value": "#D4FF00", "use": "the one strong colour: slabs, the CTA capsule, pager numerals, the current thumb frame and dot" },
+    "black": { "value": "#000000", "use": "the top bar and the pager bar" },
+    "ink": { "value": "#0B0B0B", "use": "titles and text on acid, grey and white; sticker outlines" },
+    "white": { "value": "#FFFFFF", "use": "content slabs, the current-page capsule, text on black" },
+    "grey": { "value": "#EFEFEF", "use": "the page ground and film-strip holes" },
+    "stripe": { "value": "#222122", "use": "ground of the fine-stripe bands" },
+    "stripe_line": { "value": "#0A0A0A", "use": "stripe lines, 3.9 units on a 13.2-unit pitch at 49 degrees" },
+    "film": { "value": "#0E0E0E", "use": "film-strip band" },
+    "mute": { "value": "#C9C9C9", "use": "nav labels on the black bar" },
+    "ring": { "value": "#7C7C7C", "use": "the 6-unit ring around dark capsules" },
+    "ring_dark": { "value": "#4A4A4A", "use": "the ring around the thumbnail track" },
+    "capsule": { "value": "#1A1A1A", "use": "dark capsules and the track" },
+    "dim": { "value": "#BDBDBD", "use": "the inactive circle arrow and thumbs" },
+    "dim_dark": { "value": "#3A3A3A", "use": "the music toggle when off" },
+    "ghost": { "value": "#E0E0E0", "use": "ghost letters on grey (1.12:1, decoration only)" },
+    "ghost_dark": { "value": "#2C2C2C", "use": "ghost letters on the stripe band (decoration only)" }
+  },
+  "fonts": {
+    "roles": {
+      "head": { "stack": ["Noto Sans SC", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 900, "use": "section titles, names, capsule labels: ultra-black CJK" },
+      "num": { "stack": ["Anton", "Oswald", "Noto Sans SC"], "generic": "sans-serif", "weight": 400, "use": "the giant section number, pager numerals, ghost letters, brand Latin; Latin and digits only" },
+      "label": { "stack": ["Oswald", "Noto Sans SC"], "generic": "sans-serif", "weight": 700, "use": "condensed Latin caps under titles, dates; Latin and digits only" },
+      "body": { "stack": ["Noto Sans SC", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 700, "use": "headlines, platform lines and any mixed CJK and Latin copy" }
+    },
+    "faces": [
+      { "family": "Noto Sans SC", "weight": 900, "file": "NotoSansSC[wght].ttf", "source": "https://github.com/google/fonts/tree/main/ofl/notosanssc", "licence": "SIL OFL 1.1", "author": "Google" },
+      { "family": "Anton", "weight": 400, "file": "Anton-Regular.ttf", "source": "https://github.com/google/fonts/tree/main/ofl/anton", "licence": "SIL OFL 1.1", "author": "The Anton Project Authors" },
+      { "family": "Oswald", "weight": 700, "file": "Oswald[wght].ttf", "source": "https://github.com/google/fonts/tree/main/ofl/oswald", "licence": "SIL OFL 1.1", "author": "The Oswald Project Authors" }
+    ],
+    "resolve": "fonts query --text-file <all copy> --style gothic --weight 900 resolves Noto Sans SC (the case's query: 524 characters, none missing); Anton and Oswald are Latin only (fonts measure --path), so mixed CJK and Latin strings go to head or body, never num or label (32 of the case's first-pass findings were exactly that).",
+    "licence": "All roles use SIL OFL 1.1 fonts.",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. --font-dir <dir> reads coverage and embeds the faces."
+  },
+  "layout": {
+    "grammar": [
+      "One diagonal: every cut, slab edge and stripe runs at 49 degrees from horizontal; slabs keep one big rounded corner (about 48 units at 1920) beside the cut.",
+      "Light grey #EFEFEF ground; one acid yellow-green is the only strong colour (15-22% of a section); black is the top bar, the pager, the stripe bands and the capsules.",
+      "Sections are numbered 01-06; each has a three-line title on one edge: ultra-black CJK, condensed Latin caps, a giant condensed two-digit number (ink heights 1 : 0.42 : 2.6-2.9), sitting on acid or grey, alternating left and right; the first screen has none.",
+      "Content sits in a white or picture slab with a big rounded corner and one 49-degree cut that faces the title, parallel to the acid slab's cut with a stripe band (about 196 units) between them.",
+      "A right-edge vertical pager: a black bar with round inner corners, acid to-previous and to-next marks around the current number set sideways, the next number half visible below.",
+      "Controls are capsules: white for the current page, acid for the one CTA, dark with a 6-unit grey ring for 'more'; carousels are a dark capsule track with round arrows, the current thumb framed in acid; dots are black, the current acid with a black ring.",
+      "Motifs: a film strip crosses between sections at 49 degrees; huge ghost letters (a name) sit behind slabs; one tilted sticker word with an offset black plate and invented pseudo-glyphs under it is the loudest CTA."
+    ]
+  },
+  "materials": {
+    "procedural": [
+      "49-degree fine stripes (3.9 on 13.2 units) clipped to a band, film strips with rounded sprocket holes, rounded slabs with one cut (rp in layouts-street.cjs)",
+      "the placeholder brand sticker: a cassette mark with two reels and rewind triangles (no letter shapes)",
+      "invented pseudo-glyphs under a sticker word; round arrow buttons; capsule controls"
+    ],
+    "recipes": [
+      "A slab picture with print grain: materials generate --generator halftone --params '{\"periodPx\":15,\"angleDeg\":45,\"coverage\":0.35}' --seed 1, laid at 35-55% over a placeholder or a picture (the case's video and gacha frames).",
+      "Characters and key art come from an image-generation task sheet (#311): one sheet per frame with its size, safe box, the boxes left for UI, light from the upper left with an acid rim light, the palette and 'original characters only'; until then the frame shows its size and a drawn silhouette, and a cut-out goes in with materials cut --mode none --finish cut."
+    ],
+    "collage": [
+      "Pictures sit only inside slabs or rounded cards; nothing small is written on a picture without a dark caption bar under it."
+    ],
+    "sources": "Everything is drawn; pictures are your own art in the image slots.",
+    "budget": { "inks": 1, "effectsMax": 2, "tiltedElements": 1 }
+  },
+  "motion": {
+    "fps": 60,
+    "grammar": [
+      "Scroll drives the pager: the current number swaps by a hard cut when a section crosses 45% of the viewport; nav capsules follow.",
+      "Carousel changes slide 24 units and fade in 0.18-0.25 s; thumbs lift 3 units on hover; the CTA capsule lifts 1 unit and gains a dark ring.",
+      "The sticker CTA rotates 3 degrees toward level and scales 1.04 on hover; nothing else tilts."
+    ],
+    "flashLimit": "No flashing; the news carousel advances every 6.5 s and pauses on hover."
+  },
+  "checks": {
+    "static": ["text-overflow", "text-length", "type-size", "contrast", "accent-budget"],
+    "browser": ["text-overlap", "off-canvas", "collage-cover", "contrast", "text-occluded", "glyph-coverage"],
+    "browserOnRender": true,
+    "guidance": [
+      "64 px distinctiveness (guidance): shrink each screen to 64 px tall beside a generic landing page with the logo masked; the grey ground, the acid slab with its 49-degree cut and the stripe band should still read. A dark-led page reads as the acid-print HUD instead.",
+      "Never set a mixed CJK and Latin string in Anton or Oswald: the browser fills the CJK glyphs from another face (glyph-coverage); use head or body.",
+      "A logo lockup (CJK name over Latin name) is one block: give both lines one data-grp prefix (logo/zh, logo/en) or keep a 3-unit gap.",
+      "A capsule that holds an icon, a value and a plus is three units, each with its own data-chk, or the check measures the icon colour against the capsule."
+    ],
+    "note": "The browser check runs on every render (stripes, film strips and the tilted sticker are measured in pixels)."
+  },
+  "examples": {
+    "note": "Renders of the case that stay examples (outside the repository, with the owner): the six sections at 1920 x 1080, the full page, the 390-wide page and the two in-game screens.",
+    "renders": [
+      { "screen": "official site, six sections and the 390-wide page", "file": "replay-ward case, shots/ (owner's copy, not in the repository)", "why": "a one-page site with scripts and interaction, not a parametric layout; its parts are the five templates" },
+      { "screen": "in-game agent detail and limited banner", "file": "replay-ward case, shots/game/ (owner's copy, not in the repository)", "why": "screens built from the same parts; their stat grid and skill row are game-specific" }
+    ]
+  }
+}

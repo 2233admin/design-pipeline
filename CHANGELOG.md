@@ -4,6 +4,10 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Style pack `street-tape` (change `street-tape-style-pack`, #312): the official-site grammar of Japanese street-fashion urban action games, measured on an owner-supplied reference board that stays private (nothing from it is shipped, no game is named) and proven on an original site, 回放街区 REPLAY WARD (six sections, a 390-wide page, two in-game screens; `template check --browser` 54 findings on the first pass, 0 final). Light grey ground, one acid yellow-green, black fine stripes and rounded slabs that share one 49-degree cut (measured; not 45), a three-line numbered section title sized to the measured ink ratio, a right-edge vertical pager, capsule controls and a film-strip motif. Five templates: `ui.tape-topbar`, `card.tape-section-title` (`side=right` mirrors), `ui.tape-pager`, `kv.tape-cut-carousel` (`control=track|dots`, `side=right`) and `banner.tape-sticker-cta`; section and pager numbers take digits only and the date digits and `/ . -` (exit 1 with a fix otherwise). Every default render passes the static check at each size and for 50 seeds, and the browser check. The pack's guidance carries the case's traps: mixed CJK and Latin copy in a Latin-only face (glyph coverage), a logo lockup measured as two touching texts, a capsule measured as one unit across three colours. Anton is named, not bundled; without it the number falls back to Oswald 400 (thinner).
+
 ## [0.13.0] - 2026-11-06
 
 ### Added
