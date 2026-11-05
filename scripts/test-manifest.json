@@ -172,6 +172,7 @@
     "reference-name-scope.test.cjs",
     "template-bank.test.cjs",
     "template-style-pack.test.cjs",
+    "template-game-packs.test.cjs",
     "ablation-eval.test.cjs",
     "template-bank-browser.test.cjs",
     "template-distill.test.cjs"

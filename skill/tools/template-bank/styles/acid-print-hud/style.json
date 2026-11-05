@@ -1,0 +1,95 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "acid-print-hud",
+  "title": "Acid-print HUD: one acid ink on black slabs, giant chamfered numerals with a misregistered plate, the scene as a cold halftone (tactical shooter)",
+  "summary": "The scene is printed as a cold grey two-ink halftone so it recedes; the HUD uses one acid green on black slabs, red only for damage and danger, giant code-drawn chamfered numerals (the ammo with a second red plate printed out of register), micro labels against them at a poster scale jump, and a kill sticker slapped on at an angle.",
+  "provenance": {
+    "case": "tactical-hud round 2 (零点潮汐 NULLTIDE): a 1080p combat HUD, a component state sheet and a 6 s hit-to-kill motion, for an original fictional sci-fi tactical shooter.",
+    "lineage": "Bungie's Marathon (2025) graphic-realism UI grammar (one loud ink on black slabs, oversized industrial numerals, tiny technical labels) and Swiss / International-style poster type scale. Borrowed: the grammar. Never borrowed: any Marathon asset, icon, typeface or layout.",
+    "borrow": "Borrow grammar, never assets. The scene is the case's own drawn harbour printed through a halftone pass; the numerals are the bank's lettering; every icon is drawn.",
+    "rounds": "Round 1 'mil-spec mono' was the safest and could not be told from any HUD kit at 64 px; round 2 took the boldest of six thumbnails. Round 2 first pass: 3 + 5 + 1 findings (still, state sheet, motion) and 4 by eye; final 0.",
+    "measured": [
+      "Round 1 first pass: 14 findings, six of them readouts written straight on the scene with only a text shadow (collage-cover); every readout now has a slab.",
+      "Kill notice that faded in was half-transparent over the scene for several frames (3 findings): it now pops in at full opacity.",
+      "64 px: the acid numerals and the tilted sticker keep the HUD recognisable; the mono round-1 HUD did not."
+    ],
+    "accessed": "2026-11-05"
+  },
+  "palette": {
+    "acid": { "value": "#D7FF2E", "use": "the one ink: numerals, ready states, the player's kill row, the sticker" },
+    "black": { "value": "#0A0B0A", "use": "slabs (at 88%) and text on acid" },
+    "red": { "value": "#FF4A1C", "use": "damage, enemies, low ammo or HP, the misregistered plate" },
+    "white": { "value": "#F4F4EE", "use": "names and values on slabs" },
+    "mute": { "value": "#A9AD9C", "use": "micro labels on slabs" },
+    "scene": { "value": "#8E918A", "use": "the scene placeholder's ground tone (a cold grey halftone)" }
+  },
+  "fonts": {
+    "roles": {
+      "sans": { "stack": ["Noto Sans SC", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 700, "use": "names, labels and the kill word (900), micro labels (600, tracked .08em)" },
+      "num": { "stack": ["Barlow Condensed", "Noto Sans SC", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 700, "use": "small numbers, codes, Latin labels; never CJK (a Barlow 爆头 lost its glyphs in round 1)" }
+    },
+    "faces": [
+      { "family": "Noto Sans SC", "weight": 700, "file": "NotoSansSC[wght].ttf", "source": "https://github.com/google/fonts/tree/main/ofl/notosanssc", "licence": "SIL OFL 1.1", "author": "Google" },
+      { "family": "Barlow Condensed", "weight": 700, "file": "BarlowCondensed-Bold.ttf", "source": "https://github.com/google/fonts/tree/main/ofl/barlowcondensed", "licence": "SIL OFL 1.1", "author": "Jeremy Tribby" }
+    ],
+    "resolve": "fonts query --text-file <all HUD copy> --style gothic --weight 700 resolves Noto Sans SC (the case's query); Barlow Condensed is Latin only (fonts measure --path).",
+    "licence": "All roles use SIL OFL 1.1 fonts.",
+    "bundled": false,
+    "lettering": "HP, ammo and scores are the bank's lettering: width 0.55, stroke 0.19, chamfer 0.12 diagonal, slant 0.1, sidebearing 0.05, tracking 20.",
+    "note": "Fonts are named, not bundled. --font-dir <dir> reads coverage and embeds the faces."
+  },
+  "layout": {
+    "grammar": [
+      "One dominant ink (acid) on black slabs; red only for damage, enemies and low states.",
+      "Two giant code-drawn numerals (HP, ammo) against 15 px micro labels: a scale jump of 1:7 to 1:11.",
+      "The ammo numeral is printed over a second red plate 6-7 px off; the plates swap when ammo is low.",
+      "Nothing small sits on the scene: every readout has its own 88% black slab.",
+      "One broken-grid move: the vitals slab tilts from its bottom-left corner; the kill notice is a sticker slapped on at an angle with a red offset plate.",
+      "The scene is printed as a cold two-ink halftone so the HUD is always the loudest thing."
+    ]
+  },
+  "materials": {
+    "procedural": [
+      "chamfered numerals with a misregistered plate (Doc.lettering shadow plate)",
+      "icon family on a 48 grid, each with one 45-degree 'tide cut' notch: smoke, dash, pulse, overdrive, grenade, rifle and pistol silhouettes",
+      "minimap blocks, compass ticks, magazine ticks, barcode, shield cells (skewed -24 degrees)"
+    ],
+    "recipes": [
+      "Scene as a cold halftone: materials process --file <scene.png> --effect halftone --params '{\"periodPx\":8,\"angleDeg\":45,\"ink\":\"#2E302C\",\"paper\":\"none\",\"contrast\":1.1}' --seed 1 over a #8E918A ground (the case used its own two-ink AM screen: 45 degrees, 8 px grid, paper noise), then the scene slot.",
+      "A second plate for print texture: materials process --effect duotone --params '{\"inks\":[\"#2E302C\",\"#5A5E57\"],\"angles\":[45,15],\"periodPx\":8}'."
+    ],
+    "collage": [
+      "The scene is the only image and nothing small is written on it."
+    ],
+    "sources": "Everything is drawn; the scene is your game's frame.",
+    "budget": { "inks": 1, "effectsMax": 3, "tiltedElements": 2 }
+  },
+  "motion": {
+    "fps": 30,
+    "grammar": [
+      "Hit to kill in 6 s: two hits, shield shatters, the HP lag segment drains 0.4 s after the hit, return fire, kill, double kill, shield regenerates.",
+      "The kill sticker pops in scaled 1.15 to 1 at full opacity: never fade text in over the scene.",
+      "Damage arcs and the red edge fade over 0.6 s; numerals change by hard cuts, no rolling counters."
+    ],
+    "flashLimit": "Red edge flashes stay under three per second."
+  },
+  "checks": {
+    "static": ["text-overflow", "text-length", "type-size", "contrast", "accent-budget", "lettering-fallback"],
+    "browser": ["text-overlap", "off-canvas", "collage-cover", "contrast", "text-occluded", "glyph-coverage"],
+    "browserOnRender": true,
+    "guidance": [
+      "64 px distinctiveness (guidance): shrink to 64 px beside a generic HUD kit; the acid numerals and the tilted sticker should still read. A mono, evenly-weighted HUD does not.",
+      "Check the HUD on real 3D frames before shipping: the case only verified it over a drawn, halftoned harbour.",
+      "At 50% (a 960x540 capture) micro labels drop under 12 px: give a separate small-screen layout rather than scaling (the case's 50% readability table)."
+    ],
+    "note": "The browser check runs on every render (slabs, sticker and misregistered plate are measured in pixels)."
+  },
+  "examples": {
+    "note": "Renders of the case that stay examples: see docs/cases/tactical-hud/ (README showcase).",
+    "renders": [
+      { "screen": "component state sheet (shield broken, critical HP, low ammo, reload, abilities)", "file": "docs/cases/tactical-hud/tactical-hud-states.jpg", "why": "a review sheet, not a screen; the states are parameters of hud.combat (ability states, HP and ammo thresholds)" },
+      { "screen": "three directions compared", "file": "docs/cases/tactical-hud/tactical-hud-directions.jpg", "why": "process record" },
+      { "screen": "6 s hit-to-kill motion", "file": "docs/cases/tactical-hud/tactical-hud-motion.gif", "why": "motion" }
+    ]
+  }
+}

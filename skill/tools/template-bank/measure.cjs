@@ -168,19 +168,37 @@ function ctm(node) {
 }
 const apply = (m, [x, y]) => [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]];
 
+// Subpaths of a path as polygons. Lines (M L H V, absolute and relative) are exact; curves (C S Q T)
+// keep their control points and end point, arcs (A) their end point, so a filled curve is measured
+// by its control polygon and never by stray numbers (an unparsed arc used to add a phantom
+// triangle reaching the origin).
 function pathSubpaths(d) {
   const subpaths = [];
   let current = null;
-  for (const [, command, rest] of d.matchAll(/([MLZmlz])([^MLZmlz]*)/g)) {
-    if (command === "Z" || command === "z") { current = null; continue; }
-    const numbers = rest.split(/[\s,]+/).filter(Boolean).map(Number);
-    for (let i = 0; i + 1 < numbers.length; i += 2) {
-      let point = [numbers[i], numbers[i + 1]];
-      if (command === "m" || command === "l") {
-        const last = current?.at(-1) || subpaths.at(-1)?.at(-1) || [0, 0];
-        point = [last[0] + point[0], last[1] + point[1]];
+  let pen = [0, 0];
+  let start = [0, 0];
+  const ARGS = { M: 2, L: 2, H: 1, V: 1, C: 6, S: 4, Q: 4, T: 2, A: 7 };
+  for (const [, command, rest] of String(d).matchAll(/([MLHVCSQTAZmlhvcsqtaz])([^MLHVCSQTAZmlhvcsqtaz]*)/g)) {
+    const upper = command.toUpperCase();
+    const relative = command !== upper;
+    if (upper === "Z") { if (current) pen = start; current = null; continue; }
+    const numbers = (rest.match(/-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/gi) || []).map(Number);
+    const n = ARGS[upper];
+    for (let i = 0; i + n <= numbers.length; i += n) {
+      const a = numbers.slice(i, i + n);
+      const abs = (x, y) => (relative ? [pen[0] + x, pen[1] + y] : [x, y]);
+      let points;
+      if (upper === "H") points = [[relative ? pen[0] + a[0] : a[0], pen[1]]];
+      else if (upper === "V") points = [[pen[0], relative ? pen[1] + a[0] : a[0]]];
+      else if (upper === "A") points = [abs(a[5], a[6])];
+      else { points = []; for (let j = 0; j < n; j += 2) points.push(abs(a[j], a[j + 1])); }
+      const end = points.at(-1);
+      if (upper === "M" && i === 0) { current = [end]; subpaths.push(current); start = end; }
+      else {
+        if (!current) { current = [pen]; subpaths.push(current); start = pen; }
+        current.push(...points);
       }
-      if ((command === "M" || command === "m") && i === 0) { current = [point]; subpaths.push(current); } else if (current) current.push(point);
+      pen = end;
     }
   }
   return subpaths;

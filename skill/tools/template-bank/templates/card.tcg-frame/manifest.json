@@ -1,0 +1,170 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.tcg-frame",
+  "family": "card",
+  "style": "cyanotype-specimen",
+  "title": "Trading card printed as a cyanotype specimen sheet, four rarities by process: paper edge, silver frame, tannin field with copper foil, full deep field on gold foil",
+  "use": "A trading card face (2.5 x 3.5 in at 300 dpi) in four rarities with --param rarity=common|rare|epic|legend; the specimen goes in the art slot as white lines with alpha, as a cyanotype prints it.",
+  "canvas": {
+    "width": 750,
+    "height": 1050
+  },
+  "sizes": [
+    "750x1050",
+    "1500x2100"
+  ],
+  "aspect": "5:7",
+  "accent": {
+    "roles": [],
+    "maxShare": 0
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "rarity": {
+      "type": "enum",
+      "values": [
+        "common",
+        "rare",
+        "epic",
+        "legend"
+      ],
+      "default": "legend",
+      "class": "proportion",
+      "note": "the rarity sets the process: common paper edge, rare silver frame, epic tannin-toned field and copper foil, legend full deep field, gold foil, name on a gold label and the rules on a tilted paper label"
+    },
+    "field_seed": {
+      "type": "integer",
+      "default": 7,
+      "min": 1,
+      "max": 99,
+      "class": "rhythm",
+      "note": "seed of the hand-brushed field's edge and streaks"
+    }
+  },
+  "slots": {
+    "art": {
+      "kind": "image",
+      "collage": true,
+      "note": "the specimen as white lines on transparency (materials cut --finish ink, then the style's cyanotype recipe); a drawn algae frond stands in until it is filled"
+    },
+    "cost": {
+      "kind": "text",
+      "default": "7",
+      "maxChars": 2,
+      "font": "serif"
+    },
+    "cost_label": {
+      "kind": "text",
+      "default": "墨",
+      "maxChars": 2,
+      "font": "serif",
+      "note": "legend only"
+    },
+    "name": {
+      "kind": "text",
+      "default": "狮鹫",
+      "maxChars": 5,
+      "font": "serif",
+      "title": true
+    },
+    "latin": {
+      "kind": "text",
+      "default": "Gryphus unicus",
+      "maxChars": 22,
+      "font": "latin"
+    },
+    "type": {
+      "kind": "text",
+      "default": "标本 · 异兽",
+      "maxChars": 8,
+      "font": "sans"
+    },
+    "rarity_name": {
+      "kind": "text",
+      "default": "孤品",
+      "maxChars": 2,
+      "font": "sans",
+      "note": "follows --param rarity unless set"
+    },
+    "keyword": {
+      "kind": "text",
+      "default": "飞行",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "rules": {
+      "kind": "text",
+      "default": "入匣时：双方场上所有寻常标本洗回牌库。",
+      "maxChars": 46,
+      "font": "sans",
+      "lines": 2
+    },
+    "flavor": {
+      "kind": "text",
+      "default": "匣中唯一一件，没有人见过第二只。",
+      "maxChars": 26,
+      "font": "serif"
+    },
+    "atk": {
+      "kind": "text",
+      "default": "7",
+      "maxChars": 2,
+      "font": "serif"
+    },
+    "hp": {
+      "kind": "text",
+      "default": "6",
+      "maxChars": 2,
+      "font": "serif"
+    },
+    "stat_label": {
+      "kind": "text",
+      "default": "攻 · 韧",
+      "maxChars": 5,
+      "font": "sans"
+    },
+    "collector": {
+      "kind": "text",
+      "default": "RAR·180/180 · LEGENDARY",
+      "maxChars": 26,
+      "font": "sans"
+    },
+    "credit": {
+      "kind": "text",
+      "default": "原图 作者 · 年代 · 公有领域",
+      "maxChars": 26,
+      "font": "sans",
+      "note": "credit the public-domain print you used"
+    }
+  },
+  "relations": [
+    "One Prussian blue for every card; rarity is a different process, never a different hue (only epic is toned, with tannin).",
+    "The specimen is a white shadow on the blue field, centred in the field; text stays on the solid part of the field, away from the brushed edge (the edge is where contrast drops).",
+    "Rules on paper below the field; stats bottom left, collector and credit bottom right, 14 px."
+  ],
+  "decoration": [
+    "Brushed field edge and streaks, flat guilloche foil, silver corner brackets, rarity sigils (circle, lozenge, hexagram, rayed sun), the keyword icon."
+  ],
+  "provenance": {
+    "corpus": "card-game case (藏珍匣 RARIUM): our own original fictional trading card game in the cyanotype-specimen grammar",
+    "experiment": "styles/cyanotype-specimen/style.json provenance; case renders in docs/cases/card-game",
+    "accessed": "2026-11-05",
+    "method": "Positions from the case's card.css (750 x 1050) for all four rarities; the brushed field (case fields.py, a raster) is redrawn as a jittered polygon with bristle streaks; the foil guilloche as in cards.js.",
+    "sampleIds": [
+      "card-game/cards/agaric (common)",
+      "card-game/cards/owl (rare)",
+      "card-game/cards/rhino (epic)",
+      "card-game/cards/griffin (legend)"
+    ],
+    "measured": [
+      "First pass 10 / 20 / 21 / 15 findings on four cards: the paper and field textures were normal-blended images and counted as collage under text (fixed by multiplying them), and cost, name and type sat on the brushed edge at 1.9:1 (margins 26 to 14 px, text moved onto the solid field); final 0 on all nine cards.",
+      "The legend's griffin head breaking the top edge needs a separate cut-out (the case's griffin-pop.png); this template keeps the art inside the field."
+    ],
+    "summary": "card-game final cards"
+  }
+}

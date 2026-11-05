@@ -1,0 +1,413 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "hud.combat",
+  "family": "hud",
+  "style": "acid-print-hud",
+  "title": "Combat HUD in one acid ink on black slabs: giant chamfered HP and ammo numerals (ammo over a misregistered red plate), a tilted vitals slab, a kill sticker",
+  "use": "The in-combat HUD of a first-person tactical shooter: minimap, score and clock, compass and objective, kill feed, crosshair, kill sticker, vitals, abilities and weapon, over a scene image.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "acid"
+    ],
+    "maxShare": 0.08
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "bearing": {
+      "default": 12,
+      "min": 0,
+      "max": 359,
+      "class": "decoration",
+      "note": "compass bearing in degrees"
+    },
+    "capture": {
+      "default": 62,
+      "min": 0,
+      "max": 100,
+      "class": "decoration",
+      "note": "objective capture progress, %"
+    },
+    "hp_lag": {
+      "default": 68,
+      "min": 0,
+      "max": 100,
+      "class": "decoration",
+      "note": "the red damage-lag segment of the HP bar (shows 0.4 s after a hit)"
+    },
+    "vitals_tilt": {
+      "default": -3,
+      "min": -5,
+      "max": -1,
+      "class": "rhythm",
+      "note": "vitals slab tilt, degrees (the broken-grid move)"
+    },
+    "kill_tilt": {
+      "default": -5,
+      "min": -8,
+      "max": -3,
+      "class": "rhythm",
+      "note": "kill sticker tilt, degrees"
+    },
+    "kill_sticker": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "the kill sticker and the crosshair's kill marks"
+    },
+    "medal": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "the multi-kill medal under the sticker"
+    },
+    "damage": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "the red damage-direction arc"
+    },
+    "ability_q": {
+      "type": "enum",
+      "values": [
+        "ready",
+        "cooldown",
+        "off"
+      ],
+      "default": "ready",
+      "class": "decoration",
+      "note": "Q ability state"
+    },
+    "ability_e": {
+      "type": "enum",
+      "values": [
+        "ready",
+        "cooldown",
+        "off"
+      ],
+      "default": "cooldown",
+      "class": "decoration",
+      "note": "E ability state"
+    },
+    "ability_c": {
+      "type": "enum",
+      "values": [
+        "ready",
+        "cooldown",
+        "off"
+      ],
+      "default": "off",
+      "class": "decoration",
+      "note": "C ability state"
+    },
+    "ult_ready": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "ultimate ready (acid diamond)"
+    }
+  },
+  "slots": {
+    "scene": {
+      "kind": "image",
+      "ground": "scene",
+      "note": "the game scene; print it as a cold two-ink halftone (style recipes) so the HUD's acid stays the loudest thing"
+    },
+    "location": {
+      "kind": "text",
+      "default": "灰烬港 · 七号码头",
+      "maxChars": 12,
+      "font": "sans"
+    },
+    "location_sub": {
+      "kind": "text",
+      "default": "B 区东侧 · 集装箱巷",
+      "maxChars": 14,
+      "font": "sans"
+    },
+    "score_us": {
+      "kind": "lettering",
+      "default": "3",
+      "maxChars": 2,
+      "note": "code-drawn chamfered numerals (0-9 / % + - :)"
+    },
+    "score_them": {
+      "kind": "lettering",
+      "default": "2",
+      "maxChars": 2,
+      "note": "code-drawn chamfered numerals (0-9 / % + - :)"
+    },
+    "clock": {
+      "kind": "text",
+      "default": "1:24",
+      "maxChars": 5,
+      "font": "num"
+    },
+    "round": {
+      "kind": "text",
+      "default": "第 6 回合 · 先胜 7",
+      "maxChars": 14,
+      "font": "sans"
+    },
+    "compass_mark": {
+      "kind": "text",
+      "default": "N",
+      "maxChars": 2,
+      "font": "num",
+      "derived": true,
+      "note": "compass labels, from the bearing"
+    },
+    "bearing": {
+      "kind": "text",
+      "default": "012",
+      "maxChars": 3,
+      "font": "num",
+      "derived": true,
+      "note": "from the bearing parameter"
+    },
+    "objective_letter": {
+      "kind": "text",
+      "default": "B",
+      "maxChars": 1,
+      "font": "num"
+    },
+    "objective": {
+      "kind": "text",
+      "default": "占领中",
+      "maxChars": 3,
+      "font": "sans"
+    },
+    "objective_pct": {
+      "kind": "text",
+      "default": "62%",
+      "maxChars": 4,
+      "font": "num"
+    },
+    "marker_letter": {
+      "kind": "text",
+      "default": "B",
+      "maxChars": 1,
+      "font": "num"
+    },
+    "marker_distance": {
+      "kind": "text",
+      "default": "64 m",
+      "maxChars": 5,
+      "font": "num"
+    },
+    "feed_{i}_killer": {
+      "kind": "text",
+      "default": [
+        "灰隼",
+        "白鹭",
+        "石像"
+      ],
+      "maxChars": 3,
+      "font": "sans"
+    },
+    "feed_{i}_victim": {
+      "kind": "text",
+      "default": [
+        "夜枭",
+        "赤狐",
+        "苇"
+      ],
+      "maxChars": 2,
+      "font": "sans"
+    },
+    "feed_tag": {
+      "kind": "text",
+      "default": "爆头",
+      "maxChars": 2,
+      "font": "sans"
+    },
+    "kill_word": {
+      "kind": "text",
+      "default": "击杀",
+      "maxChars": 2,
+      "font": "sans"
+    },
+    "kill_name": {
+      "kind": "text",
+      "default": "夜枭",
+      "maxChars": 3,
+      "font": "sans"
+    },
+    "kill_points": {
+      "kind": "text",
+      "default": "+100",
+      "maxChars": 5,
+      "font": "num"
+    },
+    "medal": {
+      "kind": "text",
+      "default": "双杀",
+      "maxChars": 2,
+      "font": "sans"
+    },
+    "shield_label": {
+      "kind": "text",
+      "default": "护盾",
+      "maxChars": 2,
+      "font": "sans"
+    },
+    "shield_value": {
+      "kind": "text",
+      "default": "50",
+      "maxChars": 3,
+      "font": "num",
+      "note": "also fills the four shield cells (25 each)"
+    },
+    "hp": {
+      "kind": "lettering",
+      "default": "74",
+      "maxChars": 3,
+      "note": "HP, code-drawn; also fills the HP bar; at 25 or less it turns red"
+    },
+    "hp_label": {
+      "kind": "text",
+      "default": "HP / 生命",
+      "maxChars": 8,
+      "font": "sans"
+    },
+    "operator": {
+      "kind": "text",
+      "default": "灰隼",
+      "maxChars": 3,
+      "font": "sans"
+    },
+    "operator_sub": {
+      "kind": "text",
+      "default": "突击 · 03",
+      "maxChars": 8,
+      "font": "sans"
+    },
+    "status": {
+      "kind": "text",
+      "default": "灼烧 3s",
+      "maxChars": 5,
+      "font": "sans"
+    },
+    "ability_key_{i}": {
+      "kind": "text",
+      "default": [
+        "Q",
+        "E",
+        "C"
+      ],
+      "maxChars": 1,
+      "font": "num"
+    },
+    "ability_cooldown": {
+      "kind": "text",
+      "default": "6",
+      "maxChars": 2,
+      "font": "num"
+    },
+    "ult_charge": {
+      "kind": "text",
+      "default": "78%",
+      "maxChars": 4,
+      "font": "num"
+    },
+    "ult_key": {
+      "kind": "text",
+      "default": "X",
+      "maxChars": 1,
+      "font": "num"
+    },
+    "grenades": {
+      "kind": "text",
+      "default": "×2",
+      "maxChars": 3,
+      "font": "num"
+    },
+    "weapon_code": {
+      "kind": "text",
+      "default": "KR-7",
+      "maxChars": 5,
+      "font": "num"
+    },
+    "weapon_name": {
+      "kind": "text",
+      "default": "渡鸦",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "weapon_mode": {
+      "kind": "text",
+      "default": "7.62 · 全自动 · 720 RPM",
+      "maxChars": 22,
+      "font": "sans"
+    },
+    "secondary_key": {
+      "kind": "text",
+      "default": "2",
+      "maxChars": 1,
+      "font": "num"
+    },
+    "secondary": {
+      "kind": "text",
+      "default": "P-9 短吻 · 12/12",
+      "maxChars": 14,
+      "font": "sans"
+    },
+    "ammo": {
+      "kind": "lettering",
+      "default": "24",
+      "maxChars": 3,
+      "note": "ammo, code-drawn over a misregistered red plate (the plates swap at 8 or less); also fills the magazine ticks"
+    },
+    "reserve_label": {
+      "kind": "text",
+      "default": "RESERVE",
+      "maxChars": 8,
+      "font": "num"
+    },
+    "reserve": {
+      "kind": "text",
+      "default": "/120",
+      "maxChars": 4,
+      "font": "num"
+    }
+  },
+  "relations": [
+    "One ink: acid for everything that matters, red only for damage, enemies and low states, white for names and values, mute for micro labels.",
+    "Two giant numerals (HP 112 px, ammo 168 px cap) against 15 px micro labels: the Swiss-poster scale jump.",
+    "Every readout sits on a black slab at 88%: nothing small floats on the scene.",
+    "Vitals slab tilted -3 degrees from its bottom-left corner; kill sticker -5 degrees with a red offset plate; all else square."
+  ],
+  "decoration": [
+    "Minimap blocks and cone, compass ticks, magazine ticks, barcode, shield cells, ability icons, crosshair, damage arc."
+  ],
+  "provenance": {
+    "corpus": "tactical-hud case round 2 (零点潮汐 NULLTIDE): our own original fictional tactical shooter in the acid-print grammar",
+    "experiment": "styles/acid-print-hud/style.json provenance; case renders in docs/cases/tactical-hud",
+    "accessed": "2026-11-05",
+    "method": "Positions from the case's final HUD (hud2.css, render(state) in hud2.js) in 1920-unit coordinates; numerals with the case's lettering parameters (width 0.55, stroke 0.19, chamfer 0.12 diagonal, slant 0.1).",
+    "sampleIds": [
+      "tactical-hud/hud-1080p"
+    ],
+    "measured": [
+      "Default HP is 74, not the case's 68: the bank's chamfered 8 reads as B at HUD size (follow-up).",
+      "Round 2: first pass 3 findings on the still, 5 on the state sheet, 1 on the motion; 4 more seen only by eye; final 0.",
+      "Round 1 (mono direction) first pass had 14 findings, six of them text written straight on the scene (collage-cover): every readout now has a slab.",
+      "The bank's chamfered 8 reads as B or H at HUD sizes; the case rebuilt it from two O loops (a lettering follow-up)."
+    ],
+    "summary": "tactical-hud round 2 combat HUD"
+  }
+}

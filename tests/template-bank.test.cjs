@@ -40,7 +40,7 @@ const rules = (report) => report.findings.map((finding) => `${finding.rule}:${fi
 
 test("every template renders at each listed size with its default slots and passes check", () => {
   const ids = bank.templateIds();
-  assert.equal(ids.length, 20);
+  assert.equal(ids.length, 38);
   for (const id of ids) {
     const manifest = bank.loadManifest(id);
     assert.ok(manifest.sizes.includes(`${manifest.canvas.width}x${manifest.canvas.height}`), `${id} lists its canvas size`);
@@ -319,7 +319,7 @@ test("CLI usage errors exit 1", (t) => {
     [["template", "list", "--style", "nope"], "OPTION_VALUE_INVALID"],
     [["template", "render", "motion.title-card-cut", "--set", "summary=x", "-o", "a.svg"], "OPTION_VALUE_INVALID"],
     [["template", "list", "extra"], "UNKNOWN_ARGUMENT"],
-    [["template", "list", "--family", "poster"], "OPTION_VALUE_INVALID"],
+    [["template", "list", "--family", "zine"], "OPTION_VALUE_INVALID"],
     [["template", "inventory", "a", "b"], "UNKNOWN_ARGUMENT"],
   ];
   for (const [args, code] of cases) {

@@ -239,6 +239,10 @@ function contained(root, raw, label, mustExist = true) {
     if (typeof raw === "string" && !path.isAbsolute(raw) && path.resolve(root) !== path.resolve(process.cwd())) {
       fail("cli", `${error.message.replace(/^cli: /, "")}; a relative ${label} is resolved against --root (${root}). Fix: pass it relative to --root, or absolute`, { code: error.code || "CONTRACT_INVALID" });
     }
+    // Paths are contained in --root (default: the current directory); say how to widen it.
+    if (/must stay inside|resolves outside|no contained existing parent/.test(error.message)) {
+      fail("cli", `${error.message.replace(/^cli: /, "")}. Fix: pass --root <a directory that contains ${label} and the other paths> (it defaults to the current directory), or move the files under ${path.resolve(root)}`, { code: error.code || "CONTRACT_INVALID" });
+    }
     throw error;
   }
   if (mustExist) {
@@ -431,7 +435,7 @@ function publicHelp() {
     "  template adapt --receipt <file> --context <file> --json",
     "  template review --plan <file> --review <file> --json",
     "  template approve --plan <file> --approval <file> --json",
-    "  template list [--family kv|cover|card|banner|ui|motion] [--style <id>]   (template bank: parameterised SVG layouts with slots, knobs and provenance; --style shows a style pack: font roles, layout grammar, materials, motion grammar, checks)",
+    "  template list [--family kv|cover|card|banner|ui|motion|broadcast|poster|steam|pixel|hud] [--style <id>]   (template bank: parameterised SVG layouts with slots, knobs and provenance; --style shows a style pack: font roles, layout grammar, materials, motion grammar, checks)",
     "  template render <id> [--set slot=value ...] [--param name=value ...] [--seed <n>] [--size WxH] [--tone <image-slot>=#RRGGBB ...] -o <out.svg> [--png <out.png>] [--font-dir <dir>] [--browser] [--chrome <exe>] [--puppeteer-module <path>]   (renders and audits the output; image slots take a file path; --seed varies the rhythm knobs; --font-dir reads the style's fonts for whole-string glyph coverage; --browser, or a style that asks for it, adds the browser check; exit 2 when a check fails)",
     "  template distill <provenance.csv> --images <dir> -o <out-dir> [--annotations <annotations.csv|labels.jsonl>] [--category A,B] [--id <style-id>] [--compare <style-id>] [--ablate] [--ffmpeg <exe>] [--chrome <exe>] [--puppeteer-module <path>]   (reference board -> style pack draft: thresholds from the reference distribution, layout archetypes with the nearest template or a skeleton, font roles from stroke contrast, report of supported rules and gaps; --compare diffs a hand-made pack; --ablate renders with and without each rule; images are never copied)",
     "  template check <file.svg|file.html> [--tone <image-slot>=#RRGGBB ...] [--browser] [--size WxH] [--chrome <exe>] [--puppeteer-module <path>]   (measured: text fit, minimum size, contrast, figure and crop zones, accent budget, alignment, rhythm; in the browser also ink overlap, off-canvas, collage over text, contrast with the text hidden and glyph coverage, for injected layers and hand-written SVG or HTML too; every finding has a fix; 0 pass, 2 fail)",

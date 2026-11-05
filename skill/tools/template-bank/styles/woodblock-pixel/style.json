@@ -1,0 +1,203 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "woodblock-pixel",
+  "title": "Edo road-station woodblock print on a pixel grid: bokashi dither, out-of-register ink, vermilion cartouche and seal (pixel RPG UI)",
+  "summary": "Screens drawn on a 480 x 270 grid with 16 colours and scaled by a whole number: a Prussian-blue bokashi sky built from ordered-dither bands, ink lines printed one pixel out of register, paper panels each backed by a dark-red plate two pixels off, a vertical vermilion title cartouche, a 7 x 7 seal as the cursor, and a pixel font on whole pixels.",
+  "provenance": {
+    "case": "pixel-rpg-ui round 2 (白垩驿路 CHALKROAD): title, main menu, dialogue, inventory, save and a UI kit sheet, plus a 6 s title loop, for an original fictional pixel RPG about a road of post stations.",
+    "lineage": "Edo-period road-station woodblock prints (the Tōkaidō and Kisokaidō series genre): bokashi gradation, monumental landscape, small travellers, title cartouches, out-of-register plates. Borrowed: the grammar. Never borrowed: any print, composition or cartouche text.",
+    "borrow": "Borrow grammar, never assets. Every pixel is drawn in code; no external image is used.",
+    "rounds": "Round 1 deep purple with chalk-white frames passed every check and at 64 px could not be told from any pixel UI pack; round 2 this pack. Round 2 first pass: 11 contrast findings; final 0 (minimum 4.76:1).",
+    "measured": [
+      "Pixel discipline: 0 pixels outside the 16-colour palette before snapping; at x4, 0 of the 4 x 4 blocks hold two colours (case snap.py).",
+      "12 px pixel text on whole pixels renders without anti-aliasing in Chrome, so no snapping is needed to hide grey edges.",
+      "64 px: the title screen and the inventory read as a print; the main menu, dialogue and save screens only reskinned plain boxes and still read as generic UI (why they stay examples)."
+    ],
+    "accessed": "2026-11-05"
+  },
+  "palette": {
+    "ink": {
+      "value": "#1B1A26",
+      "use": "sumi ink: outlines and primary text"
+    },
+    "paper": {
+      "value": "#EFE6D0",
+      "use": "panels, the road, the moon, text on ink"
+    },
+    "pale": {
+      "value": "#C9D6E3",
+      "use": "pale bokashi blue: selected fills, empty slot lines"
+    },
+    "shade": {
+      "value": "#8C8475",
+      "use": "paper shade line, mist"
+    },
+    "muted": {
+      "value": "#6B6358",
+      "use": "disabled text on paper (4.76:1, the lowest pair)"
+    },
+    "frame": {
+      "value": "#3F3A4E",
+      "use": "secondary text and frame lines"
+    },
+    "vermilion": {
+      "value": "#B03A2E",
+      "use": "the seal, selection, the title cartouche (the accent)"
+    },
+    "persimmon": {
+      "value": "#D98C3A",
+      "use": "graphics only"
+    },
+    "plate": {
+      "value": "#7A2A22",
+      "use": "the out-of-register dark-red plate under every panel; text on paper"
+    },
+    "pine": {
+      "value": "#3D6247",
+      "use": "pines, hills, positive effects on paper"
+    },
+    "young": {
+      "value": "#8AA65A",
+      "use": "the field and the load bar (graphics only)"
+    },
+    "prussian": {
+      "value": "#1F3F78",
+      "use": "the dominant Prussian blue: skies and screen grounds"
+    },
+    "blue": {
+      "value": "#4C7DB8",
+      "use": "the peak, mid sky"
+    },
+    "plum": {
+      "value": "#6E3D7E",
+      "use": "epic rarity"
+    },
+    "gold": {
+      "value": "#E2B04A",
+      "use": "lamp light, the Latin logo on ink; never text on paper (1.6:1)"
+    },
+    "night": {
+      "value": "#142448",
+      "use": "the top of the bokashi"
+    }
+  },
+  "fonts": {
+    "roles": {
+      "pixel": {
+        "stack": [
+          "Fusion Pixel",
+          "DotGothic16",
+          "Noto Sans CJK SC"
+        ],
+        "generic": "monospace",
+        "weight": 400,
+        "use": "all text at 12 px native, on whole pixels, no smoothing"
+      },
+      "title": {
+        "stack": [
+          "Fusion Pixel",
+          "DotGothic16",
+          "Noto Sans CJK SC"
+        ],
+        "generic": "monospace",
+        "weight": 400,
+        "use": "names and titles at 24 px native (the font's 12 px grid doubled)"
+      }
+    },
+    "faces": [
+      {
+        "family": "Fusion Pixel",
+        "weight": 400,
+        "file": "fusion-pixel.ttf",
+        "source": "https://github.com/TakWolf/fusion-pixel-font (npm @fontpkg/fusion-pixel@20220405.0.0)",
+        "licence": "SIL OFL 1.1",
+        "author": "TakWolf"
+      },
+      {
+        "family": "DotGothic16",
+        "weight": 400,
+        "file": "DotGothic16-Regular.ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/dotgothic16",
+        "licence": "SIL OFL 1.1",
+        "author": "Fontworks"
+      }
+    ],
+    "resolve": "The catalog holds no 12 px pixel font: fonts query --text \"<copy>\" --style gothic lists DotGothic16 (a 16 px dot gothic, the fallback). Check Fusion Pixel with fonts measure --path fusion-pixel.ttf --text \"<copy>\" (the case measured 18482 code points, the first 3500 common hanzi all covered).",
+    "licence": "SIL OFL 1.1 (Fusion Pixel's name table carries no licence field; the licence is the upstream project's).",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. Without the pixel font the text falls back to an outline font and the grid discipline is lost: render with --font-dir pointing at fusion-pixel.ttf."
+  },
+  "layout": {
+    "grammar": [
+      "Draw on the native 480 x 270 grid and scale by a whole number; never resample, never place anything on a half pixel.",
+      "16 colours, Prussian blue dominant; gradients only as ordered-dither bands (4 x 4 Bayer), the woodblock bokashi.",
+      "Ink lines one pixel out of register with their colour plate; every paper panel has a dark-red plate two pixels down-right.",
+      "Titles are vertical cartouches (vermilion for the game, paper for the chapter); the cursor is a 7 x 7 seal.",
+      "Text is the pixel font at 12 px (or 24 px) on whole pixels; nothing small on a dithered area (put an ink bar or a panel under it).",
+      "Rarity and state by shape as well as colour: gem pips, padlocks, dashed lines."
+    ]
+  },
+  "materials": {
+    "procedural": [
+      "pixel canvas (layouts-pixel.cjs PixelCanvas): rect, dither, vgrad (bokashi), checker, bitmap icons, paper frames with plates, seal cursor, selection bar, 3 x 5 digits, item slots with gems",
+      "the road-station scene: sky, stars, moon, peak with snow dither and its out-of-register ink line, mist, hills, field, road, pines, station, traveller",
+      "sixteen 16 x 16 item icons drawn for the case"
+    ],
+    "recipes": [
+      "Verify the grid on a PNG: render --png at x4, then every 4 x 4 block must hold one colour and every colour must be in the palette (the case's snap.py; tests/template-game-packs.test.cjs does the same)."
+    ],
+    "collage": [],
+    "sources": "Everything is drawn; no external image.",
+    "budget": {
+      "colours": 16,
+      "scale": "integer",
+      "fontPx": [
+        12,
+        24
+      ]
+    }
+  },
+  "motion": {
+    "fps": 12,
+    "grammar": [
+      "Animate on the grid at 12 fps: mist bands drift one pixel per frame step, stars blink by swapping two colours, the press-start line blinks at 2 Hz.",
+      "Every frame passes the same palette and block check as a still."
+    ]
+  },
+  "checks": {
+    "static": [
+      "text-overflow",
+      "text-length",
+      "type-size",
+      "contrast",
+      "accent-budget"
+    ],
+    "browser": [
+      "text-overlap",
+      "off-canvas",
+      "contrast",
+      "glyph-coverage"
+    ],
+    "browserOnRender": true,
+    "guidance": [
+      "64 px distinctiveness (guidance): the title screen should read as a print (sky bands, the peak, the cartouche) and the inventory as paper panels on Prussian blue. Screens that only reskin boxes (the case's menu, dialogue, save) did not pass this by eye.",
+      "Pixel discipline is measured on the PNG, not by template check: one colour per scaled block, palette only."
+    ],
+    "note": "Contrast is measured at the delivered scale; the dithers are measured in pixels by the browser and as their mean colour by the static check."
+  },
+  "examples": {
+    "note": "Screens of the case that stay example renders: see docs/cases/pixel-rpg-ui/ (README showcase).",
+    "renders": [
+      {
+        "screen": "main menu, dialogue, save screen, UI kit sheet",
+        "file": "docs/cases/pixel-rpg-ui/pixel-rpg-screens.jpg",
+        "why": "the case itself found them reskinned plain boxes (generic at 64 px); their parts are in PixelCanvas"
+      },
+      {
+        "screen": "6 s title loop",
+        "file": "docs/cases/pixel-rpg-ui/pixel-title-loop.gif",
+        "why": "motion"
+      }
+    ]
+  }
+}

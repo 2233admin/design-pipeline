@@ -1,0 +1,292 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.gacha-recruit",
+  "family": "ui",
+  "style": "citypop-sleeve",
+  "title": "Recruit screen: the limited banner as a record sleeve with the record sliding out, tabs as pinned cards, a lemon ten-pull button",
+  "use": "A gacha recruit (summon) screen with one featured limited banner, its rates, pity progress and single / ten pulls.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "lemon"
+    ],
+    "maxShare": 0.16
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "tabs": {
+      "type": "integer",
+      "default": 4,
+      "min": 2,
+      "max": 4,
+      "class": "decoration",
+      "note": "banner tabs on the left (the first is active; from the third on they are dashed: finished or locked)"
+    },
+    "sleeve_tilt": {
+      "default": -4,
+      "min": -5,
+      "max": -2,
+      "class": "rhythm",
+      "note": "sleeve tilt, degrees"
+    },
+    "pity": {
+      "default": 0.4625,
+      "min": 0,
+      "max": 1,
+      "class": "decoration",
+      "note": "pity progress bar fill (data)"
+    },
+    "up_icon_0": {
+      "type": "enum",
+      "values": [
+        "lifebuoy",
+        "cocktail",
+        "board",
+        "palm",
+        "record",
+        "tray",
+        "camera"
+      ],
+      "default": "cocktail",
+      "class": "decoration",
+      "note": "icon of the first rate-up card"
+    },
+    "up_icon_1": {
+      "type": "enum",
+      "values": [
+        "lifebuoy",
+        "cocktail",
+        "board",
+        "palm",
+        "record",
+        "tray",
+        "camera"
+      ],
+      "default": "board",
+      "class": "decoration",
+      "note": "icon of the second rate-up card"
+    }
+  },
+  "slots": {
+    "screen_title": {
+      "kind": "text",
+      "default": "招募 · 公馆前台",
+      "maxChars": 12,
+      "font": "head",
+      "title": true
+    },
+    "cur_{i}_label": {
+      "kind": "text",
+      "default": [
+        "日光券",
+        "蓝晶",
+        "汽水瓶盖"
+      ],
+      "maxChars": 4,
+      "font": "label"
+    },
+    "cur_{i}_value": {
+      "kind": "text",
+      "default": [
+        "12",
+        "3,580",
+        "40"
+      ],
+      "maxChars": 6,
+      "font": "num"
+    },
+    "tab_{i}_kicker": {
+      "kind": "text",
+      "default": [
+        "限定 · 6★ UP",
+        "常驻",
+        "新手",
+        "复刻"
+      ],
+      "maxChars": 10,
+      "font": "label"
+    },
+    "tab_{i}_name": {
+      "kind": "text",
+      "default": [
+        "盛夏来信",
+        "公馆名册",
+        "入住指南",
+        "冬日暖炉"
+      ],
+      "maxChars": 6,
+      "font": "head"
+    },
+    "tab_{i}_note": {
+      "kind": "text",
+      "default": [
+        "剩余 21 天",
+        "常驻开放",
+        "已完成 20/20",
+        "08.12 开启"
+      ],
+      "maxChars": 12,
+      "font": "label"
+    },
+    "side_label": {
+      "kind": "text",
+      "default": "SIDE A · SUMMER LETTER",
+      "maxChars": 24,
+      "font": "num"
+    },
+    "stars": {
+      "kind": "text",
+      "default": "★★★★★★",
+      "maxChars": 6,
+      "font": "label"
+    },
+    "featured_name": {
+      "kind": "text",
+      "default": "澄夏",
+      "maxChars": 3,
+      "font": "display",
+      "title": true
+    },
+    "featured_latin": {
+      "kind": "text",
+      "default": "SUMIKA",
+      "maxChars": 10,
+      "font": "num"
+    },
+    "sleeve_tag": {
+      "kind": "text",
+      "default": "限定",
+      "maxChars": 2,
+      "font": "label"
+    },
+    "banner_name": {
+      "kind": "text",
+      "default": "盛夏来信",
+      "maxChars": 5,
+      "font": "display",
+      "title": true
+    },
+    "quote": {
+      "kind": "text",
+      "default": "「信写到一半，泳池就关门了。」",
+      "maxChars": 24,
+      "font": "head"
+    },
+    "up_{i}_name": {
+      "kind": "text",
+      "default": [
+        "柚子",
+        "白露"
+      ],
+      "maxChars": 4,
+      "font": "head"
+    },
+    "up_{i}_note": {
+      "kind": "text",
+      "default": [
+        "5★ 调酒师 · 概率提升",
+        "5★ 跳水员 · 概率提升"
+      ],
+      "maxChars": 13,
+      "font": "label"
+    },
+    "talent_title": {
+      "kind": "text",
+      "default": "天赋 · 午后三点",
+      "maxChars": 14,
+      "font": "head"
+    },
+    "talent_body": {
+      "kind": "text",
+      "default": "部署后每回合为全体友方叠加 1 层「树荫」（最多 3 层），每层使受到的灼烧伤害降低 8%。",
+      "maxChars": 72,
+      "font": "body",
+      "lines": 2
+    },
+    "rates": {
+      "kind": "text",
+      "default": "6★ 2%（澄夏占 6★ 的 50%）· 5★ 8% · 4★ 50% · 3★ 40% · 每 80 次招募内必得 6★",
+      "maxChars": 70,
+      "font": "body",
+      "lines": 2
+    },
+    "pity_label": {
+      "kind": "text",
+      "default": "6★ 保底",
+      "maxChars": 5,
+      "font": "label"
+    },
+    "pity_count": {
+      "kind": "text",
+      "default": "37 / 80",
+      "maxChars": 8,
+      "font": "num"
+    },
+    "pull_one": {
+      "kind": "text",
+      "default": "招募一次",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "pull_one_cost": {
+      "kind": "text",
+      "default": "日光券 ×1",
+      "maxChars": 12,
+      "font": "label"
+    },
+    "pull_ten": {
+      "kind": "text",
+      "default": "招募十次",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "pull_ten_cost": {
+      "kind": "text",
+      "default": "日光券 ×10 · 第 10 次必出 5★ 以上",
+      "maxChars": 24,
+      "font": "label"
+    },
+    "note": {
+      "kind": "text",
+      "default": "重复角色转化为「汽水瓶盖」，可兑换潜能信物。",
+      "maxChars": 36,
+      "font": "body",
+      "lines": 2
+    }
+  },
+  "relations": [
+    "Sleeve (square, tilted) is the largest object, its record peeking out right; the banner name sits right of it at 1:9 to body text.",
+    "Tabs pinned on the left, each a few degrees off; the active one lemon.",
+    "The ten-pull button is the only lemon button and the largest; the single pull is paper with a hard ink shadow."
+  ],
+  "decoration": [
+    "Record behind the sleeve, sun and pool inside the sleeve, pool tiles, icons: drawn."
+  ],
+  "provenance": {
+    "corpus": "gacha-event case v3 (白昼公馆「三点钟的泳池」): our own original fictional gacha event in the citypop-sleeve grammar",
+    "experiment": "styles/citypop-sleeve/style.json provenance; case renders in docs/cases/gacha-event",
+    "accessed": "2026-11-05",
+    "method": "Geometry taken from the case's final recruit screen (ui-gacha.cjs) in 1920-unit coordinates; the talent card, rates and pity copy are the case's original fiction.",
+    "sampleIds": [
+      "gacha-event/03-recruit"
+    ],
+    "measured": [
+      "First pass: 4 tool findings (quote, rates and pity text over the record 1:1, a CJK glyph in the Latin name) and 1 by eye (the record ran into the right column); final 0."
+    ],
+    "summary": "gacha-event v3 recruit"
+  }
+}

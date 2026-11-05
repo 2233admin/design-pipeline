@@ -1,0 +1,175 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "broadcast.scorebug",
+  "family": "broadcast",
+  "style": "xerox-flyer",
+  "title": "Scorebug as a strip of tape: stencil codes and scores on black and ink plates, a paper centre with map and clock; reflows at half size",
+  "use": "A live scorebug for a two-team best-of series over gameplay; --param scale=half reflows it for a picture-in-picture or mobile window (not a uniform shrink). Match point: --param sticker=true; technical pause: --param centre_frame=dashed with the pause copy in centre_label / centre_title / clock.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "pink"
+    ],
+    "maxShare": 0.05
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "scale": {
+      "type": "enum",
+      "values": [
+        "full",
+        "half"
+      ],
+      "default": "full",
+      "class": "proportion",
+      "note": "half = the 50% reflow: every text max(12 px, size x 0.5), codes and scores drop their spray bridges"
+    },
+    "maps_a": {
+      "type": "integer",
+      "default": 2,
+      "min": 0,
+      "max": 3,
+      "class": "decoration",
+      "note": "maps won by team A (pips)"
+    },
+    "maps_b": {
+      "type": "integer",
+      "default": 1,
+      "min": 0,
+      "max": 3,
+      "class": "decoration",
+      "note": "maps won by team B (pips)"
+    },
+    "centre_frame": {
+      "type": "enum",
+      "values": [
+        "solid",
+        "dashed"
+      ],
+      "default": "solid",
+      "class": "decoration",
+      "note": "dashed = paused"
+    },
+    "sticker": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "the ransom-note match-point sticker above team A"
+    },
+    "backdrop": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "draw the gameplay feed slot under the bug (false: a transparent overlay)"
+    }
+  },
+  "slots": {
+    "feed": {
+      "kind": "image",
+      "ground": "slate",
+      "note": "a gameplay frame; muted slate placeholder so the overlay inks stay the loudest thing"
+    },
+    "team_a_code": {
+      "kind": "lettering",
+      "default": "ANV",
+      "maxChars": 4,
+      "note": "spray-stencil lettering: A-Z, 0-9 and : . - / # ! ? (code-drawn, no font)"
+    },
+    "team_a_name": {
+      "kind": "text",
+      "default": "铁砧",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "score_a": {
+      "kind": "lettering",
+      "default": "12",
+      "maxChars": 2,
+      "note": "spray-stencil lettering: A-Z, 0-9 and : . - / # ! ? (code-drawn, no font)"
+    },
+    "team_b_code": {
+      "kind": "lettering",
+      "default": "NFR",
+      "maxChars": 4,
+      "note": "spray-stencil lettering: A-Z, 0-9 and : . - / # ! ? (code-drawn, no font)"
+    },
+    "team_b_name": {
+      "kind": "text",
+      "default": "夜航",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "score_b": {
+      "kind": "lettering",
+      "default": "9",
+      "maxChars": 2,
+      "note": "spray-stencil lettering: A-Z, 0-9 and : . - / # ! ? (code-drawn, no font)"
+    },
+    "centre_label": {
+      "kind": "text",
+      "default": "MAP 4 · BO5",
+      "maxChars": 12,
+      "font": "num"
+    },
+    "centre_title": {
+      "kind": "text",
+      "default": "熔炉站",
+      "maxChars": 4,
+      "font": "sans"
+    },
+    "clock": {
+      "kind": "text",
+      "default": "1:42",
+      "maxChars": 5,
+      "font": "num"
+    },
+    "sticker_{i}": {
+      "kind": "text",
+      "default": [
+        "赛",
+        "点",
+        "!"
+      ],
+      "maxChars": 1,
+      "font": "sans",
+      "note": "one ransom scrap per character"
+    }
+  },
+  "relations": [
+    "Team A prints pink, team B prints paper white, everyone else black and white: teams differ by code, not only colour.",
+    "The whole bug tilts -1.2 degrees with one hard 6 px black shadow; the sticker -4 degrees over its top-left corner.",
+    "At half scale nothing goes under 12 px and the stencil bridges go (they close up at 20 px)."
+  ],
+  "decoration": [
+    "Map pips, spray bridges, the dashed pause frame, the feed placeholder."
+  ],
+  "provenance": {
+    "corpus": "esports-broadcast case v2 (北线联赛总决赛): our own original fictional league in the xerox-flyer grammar",
+    "experiment": "styles/xerox-flyer/style.json provenance; case renders in docs/cases/esports-broadcast",
+    "accessed": "2026-11-05",
+    "method": "Rebuilt from the case's scorebug(state, {f}) flex layout as explicit geometry: widths come from the lettering and the text model, so the plates fit their copy; the half-scale reflow follows the case's rule (max(min size, size x f), bridges off below 0.75).",
+    "sampleIds": [
+      "esports-broadcast/01-scorebug",
+      "esports-broadcast/01b-scorebug-onair"
+    ],
+    "measured": [
+      "Case v2: scorebug first pass 1 tool finding (a ransom scrap fell back to Barlow and lost a CJK glyph) and 3 by eye; on-air composite 5 (sticker off-canvas 3, a missing ▸ glyph 2); final 0.",
+      "50% reflow: smallest text 11 px in the case (MAP 4 · BO5); this template keeps the bank's 12 px minimum."
+    ],
+    "summary": "esports-broadcast v2 scorebug"
+  }
+}

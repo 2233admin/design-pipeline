@@ -1,0 +1,103 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "xerox-flyer",
+  "title": "Punk photocopy flyer: one fluorescent ink, copier grain, ransom-note cut letters, spray-stencil numerals (esports broadcast)",
+  "summary": "A single fluorescent pink is the only colour; everything else is black and paper white as if photocopied. Headlines are ransom notes (one scrap per character), codes and numbers are code-drawn stencil caps with two spray bridges, plates are torn strips of tape at small tilts, and photographs only appear as copier grain where there is no copy.",
+  "provenance": {
+    "case": "esports-broadcast v2 (北线联赛总决赛直播包装): scorebug (with an on-air composite and a 50% reflow), player card, ban/pick board, schedule poster and an 8 s opening; an original fictional league.",
+    "lineage": "1970s-80s punk and photocopy flyers (Jamie Reid's ransom-note lettering, Black Flag-style copier flyers): one fluoro ink, copier grain, cut letters, stencils. Borrowed: the grammar. Never borrowed: any flyer, sleeve, logo or lettering of theirs.",
+    "borrow": "Borrow grammar, never assets. The copier ground is a public-domain painting (George Bellows, Stag at Sharkey's, 1909, Cleveland Museum of Art, CC0) processed into toner; the stencil letters are the bank's own code-drawn lettering.",
+    "rounds": "v1 metro-map bracket (owner: 'too ordinary', the metro map is an esports cliché); v2 this pack. First pass: 13 tool findings, 10 by eye; final 0.",
+    "measured": [
+      "Contrast: black on pink #FF2E88 6.6:1; paper white on pink about 2.5:1, so white text only ever sits on black plates.",
+      "64 px thumbnail against a generic dark UI kit: ban/pick 106 (v1 20) after the page became pink; the scorebug on air only 36 (a strip on gameplay stays small at 64 px: expected).",
+      "Ransom scraps must keep CJK fonts: a scrap that drew Barlow lost a glyph (北)."
+    ],
+    "accessed": "2026-11-05"
+  },
+  "palette": {
+    "pink": { "value": "#FF2E88", "use": "the one ink: team A, the page ground of the board and poster; black text on it (6.6:1), never white text" },
+    "black": { "value": "#0E0E0E", "use": "plates, text on paper and pink, toner" },
+    "paper": { "value": "#F2F0EA", "use": "plates, team B's ink, text on black" },
+    "grey": { "value": "#8A8780", "use": "empty pips and banned glyphs (decoration only)" },
+    "plate_dark": { "value": "#1E1E1E", "use": "banned and picked hero tiles (paper text on it)" },
+    "slate": { "value": "#4A5560", "use": "the muted gameplay placeholder under the scorebug" }
+  },
+  "fonts": {
+    "roles": {
+      "sans": { "stack": ["Noto Sans SC", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 900, "use": "names, heads, scraps (900), labels (700), notes (500)" },
+      "serif": { "stack": ["Noto Serif SC", "Noto Serif CJK SC"], "generic": "serif", "weight": 900, "use": "ransom scraps cut from a 'newspaper'" },
+      "num": { "stack": ["Barlow Condensed", "Noto Sans SC", "Noto Sans CJK SC"], "generic": "sans-serif", "weight": 700, "use": "Latin handles, dates, scores in tables, tracked subtitles; never a CJK scrap" }
+    },
+    "faces": [
+      { "family": "Noto Sans SC", "weight": 900, "file": "NotoSansSC[wght].ttf", "source": "https://github.com/google/fonts/tree/main/ofl/notosanssc", "licence": "SIL OFL 1.1", "author": "Google" },
+      { "family": "Noto Serif SC", "weight": 900, "file": "NotoSerifSC[wght].ttf", "source": "https://github.com/google/fonts/tree/main/ofl/notoserifsc", "licence": "SIL OFL 1.1", "author": "Google" },
+      { "family": "Barlow Condensed", "weight": 700, "file": "BarlowCondensed-Bold.ttf", "source": "https://github.com/google/fonts/tree/main/ofl/barlowcondensed", "licence": "SIL OFL 1.1", "author": "Jeremy Tribby" }
+    ],
+    "resolve": "fonts query --text \"<copy>\" --style gothic --weight 900 and --style mincho --weight 900 resolve Noto Sans SC and Noto Serif SC from the catalog; Barlow Condensed is Latin only (fonts measure --path <file>), and the layouts never give it a CJK scrap.",
+    "licence": "All roles use SIL OFL 1.1 fonts.",
+    "bundled": false,
+    "lettering": "Team codes, scores, timers and dates are the bank's code-drawn lettering (stencil 0, width 0.52, stroke 0.21, chamfer 0.05 all, slant -0.1) plus two spray bridges in the ground colour at 30% and 68% of the cap height, rotated -4 degrees.",
+    "note": "Fonts are named, not bundled. --font-dir <dir> reads coverage and embeds the faces."
+  },
+  "layout": {
+    "grammar": [
+      "One ink only: fluorescent pink for one team, the page and the accents; everything else is black and paper as if photocopied.",
+      "Plates are strips of tape or torn paper, each at its own small tilt (-7 to +2 degrees) with one hard 5-6 px black shadow.",
+      "Headlines are ransom notes: one scrap per character, a seeded mix of black/paper/pink grounds and sans/serif faces, each tilted up to 6 degrees.",
+      "Numbers and codes are spray stencils at 1:10 or more against body text (a 236 px handle against 17 px).",
+      "Teams are told apart by code and position, never by colour alone (colour-blind viewers).",
+      "Photographs only as copier grain, and only where there is no copy: every line of text sits on a solid plate."
+    ],
+    "groundTones": {
+      "pink": { "bg": "pink", "ink": "black", "plate": "paper" },
+      "black": { "bg": "black", "ink": "paper", "plate": "pink" }
+    }
+  },
+  "materials": {
+    "procedural": [
+      "spray-stencil lettering (layouts-xerox.cjs stencil()): lettering.cjs caps with two bridges",
+      "ransom scraps (ransom()): seeded looks, one slot per character",
+      "stencil hero glyphs: twenty geometric marks cut by two bridges at -12 degrees",
+      "toner specks and copier streaks: the stand-in for a processed photograph"
+    ],
+    "recipes": [
+      "Copier ground: materials fetch --source cleveland --id 92937 --name bellows-stag; materials cut --file materials/raw/bellows-stag.png --mode none --finish ink; materials process --file materials/cut/bellows-stag/ink.png --effect photocopy --params '{\"contrast\":2.2,\"threshold\":0.5,\"toner\":0.0025,\"streaks\":0.5}' --seed 1, then tint it pink or keep it black and pass it to the xerox collage slot.",
+      "Paper for print: materials generate --generator paper --params '{\"profile\":\"laid-cream\"}' --seed 1, multiplied under paper plates only."
+    ],
+    "collage": [
+      "The copier crowd is the only photograph: never under copy (collage-cover), cropped to bleed off the page edges."
+    ],
+    "sources": "Cleveland Museum of Art Open Access (CC0) for the case's copier ground; any public-domain or owned photograph through the materials tools.",
+    "budget": { "effectsMax": 3, "inks": 1, "tiltMaxDeg": 7, "shadowKinds": 1 }
+  },
+  "motion": {
+    "fps": 30,
+    "grammar": [
+      "Cuts, not dissolves: at most five full-screen hard cuts in 8 s, never more than one a second (under the three-flash limit).",
+      "Ransom scraps slap on one by one (2-3 frames each) with a small overshoot; the copier ground pans slowly underneath.",
+      "The date drops in with a 2-frame shake; nothing fades, nothing glows.",
+      "Frames that only hold stencil paths are measured as lettering (data-kind=lettering or data-chk on the drawn group), not declared text-free."
+    ],
+    "flashLimit": "At most one full-screen ink change per second (pink/black hard cuts)."
+  },
+  "checks": {
+    "static": ["text-overflow", "text-length", "type-size", "contrast", "lettering-fallback"],
+    "browser": ["text-overlap", "off-canvas", "collage-cover", "contrast", "text-occluded", "glyph-coverage"],
+    "browserOnRender": true,
+    "guidance": [
+      "64 px distinctiveness (guidance): the board and poster should read as 'pink copier flyer' at 64 px with the logo painted out; if pink falls under about half the screen (the v2 ban/pick was 10% before it became a pink page) the grammar is lost.",
+      "Measure fluorescent pink on the real stream chain before air: it shifts across screens and compression.",
+      "Spray bridges hide part of each glyph; they stay under the occlusion limit (15%) at two bars of 4.5% height."
+    ],
+    "note": "The browser check runs on every render: tilted scraps and plates overlap by design, so ink overlap and occlusion are measured."
+  },
+  "examples": {
+    "note": "Screens of the case that stay example renders: see docs/cases/esports-broadcast/ (README showcase).",
+    "renders": [
+      { "screen": "player card with a giant tilted handle over copier grain", "file": "docs/cases/esports-broadcast/esports-set.jpg", "why": "one-off composition around a single giant word and a stat table; its parts (stencil handle, scraps, plates) are in the pack" },
+      { "screen": "scorebug on air over a drawn gameplay plate", "file": "docs/cases/esports-broadcast/esports-set.jpg", "why": "the gameplay plate is a stand-in; broadcast.scorebug draws the bug over any feed" },
+      { "screen": "8 s opening", "file": "docs/cases/esports-broadcast/esports-opening.gif", "why": "motion is described by the motion grammar" }
+    ]
+  }
+}

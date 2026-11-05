@@ -59,6 +59,8 @@ const STYLE = `
 [data-tc-off],[data-tc-off] *{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;fill:transparent!important;stroke:transparent!important;text-decoration-color:transparent!important}
 [data-tc-key="0"],[data-tc-key="0"] *{color:#000!important;-webkit-text-fill-color:#000!important;fill:#000!important;stroke:transparent!important;text-shadow:none!important;opacity:1!important}
 [data-tc-key="1"],[data-tc-key="1"] *{color:#fff!important;-webkit-text-fill-color:#fff!important;fill:#fff!important;stroke:transparent!important;text-shadow:none!important;opacity:1!important}
+[data-tc-key="0"] [fill="none"],[data-tc-key="0"] [fill="none"] *{fill:transparent!important;stroke:#000!important}
+[data-tc-key="1"] [fill="none"],[data-tc-key="1"] [fill="none"] *{fill:transparent!important;stroke:#fff!important}
 [data-tc-hide]:not([data-tc-bg]){visibility:hidden!important}
 [data-tc-hide][data-tc-bg]{background-image:none!important}
 :root[data-tc-iso] *{visibility:hidden!important}
@@ -109,7 +111,10 @@ function discover() {
     const opacity = effectiveOpacity(element);
     if (style.visibility === "hidden" || opacity < 0.05 || rect.width < 1 || rect.height < 1) continue;
     const svgText = element instanceof SVGElement;
-    const lettering = element.getAttribute("data-kind") === "lettering" && !element.querySelector("text");
+    // Drawn lettering: a lettering slot, or any element marked data-chk whose glyphs are paths (an
+    // SVG numeral, a stencil word) and that holds no text; data-cap gives its cap height.
+    const drawn = !(element.textContent || "").trim() && !!element.querySelector("path");
+    const lettering = (element.getAttribute("data-kind") === "lettering" || (element.hasAttribute("data-chk") && drawn)) && !element.querySelector("text");
     const vertical = (style.writingMode || "").startsWith("vertical");
     const fontSize = lettering ? Number(element.getAttribute("data-cap") || rect.height) / 0.72 : parseFloat(style.fontSize);
     // layout box: per-line rects with the cross axis cut to about the font size (line boxes overstate ink).
@@ -129,9 +134,10 @@ function discover() {
         box = { x0, y0, x1, y1 };
       }
     }
-    const colourSource = lettering ? (element.querySelector("path") || element) : element;
+    const colourSource = lettering ? (element.querySelector(".lettering path") || element.querySelector("path") || element) : element;
     const colourStyle = getComputedStyle(colourSource);
-    const color = svgText ? colourStyle.fill : colourStyle.color;
+    // a stroked glyph (fill none) paints with its stroke
+    const color = svgText || lettering ? (lettering && colourStyle.fill === "none" ? colourStyle.stroke : colourStyle.fill) : colourStyle.color;
     // text runs with the font stack that sets them (a ruby or span may use another family)
     const runs = [];
     const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);

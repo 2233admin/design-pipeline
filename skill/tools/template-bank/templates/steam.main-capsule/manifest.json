@@ -1,0 +1,111 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "steam.main-capsule",
+  "family": "steam",
+  "style": "cassandre-litho",
+  "title": "Steam main capsule (1232x706) from the one lithograph key design: the title rides the paper beam",
+  "use": "The front-page carousel. One of the steam.* family: render every size from the same copy and palette; each size is re-composed, not cropped. Steam's graphical-asset rules allow only art, the game name and an official subtitle on capsules.",
+  "canvas": {
+    "width": 1232,
+    "height": 706
+  },
+  "sizes": [
+    "1232x706"
+  ],
+  "aspect": "616:353",
+  "accent": {
+    "roles": [],
+    "maxShare": 0
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "title_at": {
+      "default": 0.42,
+      "min": 0.36,
+      "max": 0.48,
+      "class": "proportion",
+      "note": "title centre along the beam, as a fraction of its length from the lantern (keeps the whole title in the paper light)"
+    },
+    "title_scale": {
+      "default": 1,
+      "min": 0.92,
+      "max": 1.06,
+      "class": "rhythm",
+      "note": "title size against the measured size for this asset"
+    },
+    "misregister": {
+      "default": 4,
+      "min": 2,
+      "max": 6,
+      "class": "rhythm",
+      "note": "ink plate offset over the rust under-plate, px at this size"
+    },
+    "dots_at": {
+      "default": 0.7,
+      "min": 0.62,
+      "max": 0.7799999999999999,
+      "class": "proportion",
+      "note": "where the halftone starts eating the beam (fraction of its length)"
+    },
+    "rays": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "secondary rays in the light orange"
+    },
+    "boats": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "boats on the sea"
+    }
+  },
+  "slots": {
+    "title": {
+      "kind": "text",
+      "default": "远灯",
+      "maxChars": 4,
+      "font": "display",
+      "title": true
+    },
+    "title_latin": {
+      "kind": "lettering",
+      "default": "FARLAMP",
+      "maxChars": 10,
+      "note": "code-drawn wide stencil lettering (A-Z, 0-9, space and simple punctuation)"
+    },
+    "monument": {
+      "kind": "image",
+      "collage": true,
+      "note": "your own monument or key object (PNG/SVG with alpha), placed at the lantern; the drawn lighthouse is used until it is filled"
+    }
+  },
+  "relations": [
+    "The title sits inside the paper beam, on its axis, tilted with it (-12 to +8 degrees): it is the thing the light finds.",
+    "The monument is seen from below, bleeds off the bottom edge and is printed out of register over a rust plate.",
+    "Vermilion field dominates; the light is unprinted paper; the beam's far end dissolves into halftone; no gradients.",
+    "Every size is its own composition from the same parts: never crop one asset into another."
+  ],
+  "decoration": [
+    "Halftone glow around the lantern, secondary rays, sea dashes, boats, beam slits through the title."
+  ],
+  "provenance": {
+    "corpus": "steam-capsules case round 2 (远灯 FARLAMP): our own original fictional indie game, one key design re-composed for 13 Steam assets",
+    "experiment": "styles/cassandre-litho/style.json provenance; case renders in docs/cases/steam-capsules",
+    "accessed": "2026-11-05",
+    "method": "Composition row for 1232x706 from the case's final2.cjs (tower foot and lantern, beam angle, spread and length, title distance, size and tilt), scaled to the canvas; halftone and glow drawn as dot patterns instead of the case's PNG screens. Sizes checked against the Steamworks graphical-asset documentation (accessed 2026-11-05).",
+    "sampleIds": [
+      "steam-capsules/final/main-capsule_1232x706"
+    ],
+    "measured": [
+      "Round 2 final: 0 findings; title ink on paper light 14.42:1.",
+      "OCR reads the tilted, slit title poorly at large sizes (2 of 11 sizes): a real cost of the bold title, judged by eye instead."
+    ],
+    "summary": "steam-capsules round 2 1232x706"
+  }
+}
