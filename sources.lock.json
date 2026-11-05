@@ -790,6 +790,46 @@
       "committedAt": "2026-10-21T11:56:36-06:00"
     },
     {
+      "id": "open-design",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/nexu-io/open-design",
+      "revision": "5a0c47777975ddb91d09c1c16b423a3ef74bf572",
+      "committedAt": "2026-11-02T03:25:06+00:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "brand-design-systems",
+      "importer": [
+        "scripts/import-brand-design-systems.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "treeSha256": "412308b35f4031512f95ef0db854ef4847a2be4d316dea80954a957937f3b1cf",
+      "fetchedTreeSha256": "d4dbe0cf105a8fc82e4b1c978c063db46bcaa4a2005413044c8735118912f682",
+      "held": {
+        "reason": "The importer still pins the reviewed revision, tree and hashes from before track-latest-upstream; it must drop them before sources:update can move this bundle.",
+        "issue": "https://github.com/2233admin/design-pipeline/issues/300"
+      }
+    },
+    {
+      "id": "open-design-agent-kit",
+      "kind": "fetched-on-demand",
+      "repo": "https://github.com/feimacode/open-design-agent-kit",
+      "revision": "927d4b6e6a29d8bfebdccadb4bb4a1b2a6438e73",
+      "committedAt": "2026-11-03T15:02:21+11:00",
+      "reviewedAt": "2026-11-04",
+      "bundle": "brand-design-systems",
+      "importer": [
+        "scripts/import-brand-design-systems.cjs",
+        "--source-root",
+        "{sourceRoot}"
+      ],
+      "treeSha256": "412308b35f4031512f95ef0db854ef4847a2be4d316dea80954a957937f3b1cf",
+      "fetchedTreeSha256": "d4dbe0cf105a8fc82e4b1c978c063db46bcaa4a2005413044c8735118912f682",
+      "held": {
+        "reason": "The importer still pins the reviewed revision, tree and hashes from before track-latest-upstream; it must drop them before sources:update can move this bundle.",
+        "issue": "https://github.com/2233admin/design-pipeline/issues/300"
+      }
+    },
+    {
       "id": "openspec",
       "kind": "npm",
       "package": "@fission-ai/openspec",

@@ -54,10 +54,16 @@ function parseArgs(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
     if (token === "--help" || token === "-h") return { help: true };
-    if (!["--open-design", "--agent-kit", "--reviewed-at"].includes(token)) fail(`unknown option: ${token}`);
+    if (!["--open-design", "--agent-kit", "--source-root", "--reviewed-at"].includes(token)) fail(`unknown option: ${token}`);
     const value = argv[++index];
     if (!value || value.startsWith("--")) fail(`${token} requires a value`);
     options[token.slice(2)] = value;
+  }
+  // sources:update passes one root holding each checkout under its repository name.
+  if (options["source-root"]) {
+    if (options["open-design"] || options["agent-kit"]) fail("--source-root replaces --open-design and --agent-kit");
+    options["open-design"] = path.join(options["source-root"], "open-design");
+    options["agent-kit"] = path.join(options["source-root"], "open-design-agent-kit");
   }
   if (!options["open-design"] || !options["agent-kit"]) fail("--open-design and --agent-kit are required");
   const date = options["reviewed-at"];
@@ -305,7 +311,7 @@ function importSnapshot(options) {
 if (require.main !== module) module.exports = { build, reviewed, serialize };
 else try {
   const options = parseArgs(process.argv.slice(2));
-  if (options.help) process.stdout.write("Usage: node scripts/import-brand-design-systems.cjs --open-design <clean-reviewed-checkout> --agent-kit <clean-reviewed-checkout> --reviewed-at YYYY-MM-DD\n");
+  if (options.help) process.stdout.write("Usage: node scripts/import-brand-design-systems.cjs (--open-design <checkout> --agent-kit <checkout> | --source-root <dir holding open-design/ and open-design-agent-kit/>) --reviewed-at YYYY-MM-DD\n");
   else {
     const manifest = importSnapshot(options);
     process.stdout.write(`${JSON.stringify({ status: "imported", systems: manifest.systems.length, shipped: manifest.snapshot.fileCount, fetched: manifest.fetched.fileCount, fetchedBytes: manifest.fetched.byteCount })}\n`);

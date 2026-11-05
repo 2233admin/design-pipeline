@@ -431,5 +431,6 @@ test("doctor lists the catalog download without blocking; guides route to it thr
   }
   const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, "package.json"), "utf8"));
   assert.equal(packageJson.scripts["sources:import:brand-design-systems"], "node scripts/import-brand-design-systems.cjs");
-  assert.match(packageJson.scripts["sources:check"], /tests\/brand-design-systems\.test\.cjs/);
+  assert.equal(packageJson.scripts["sources:check"], "node scripts/sources-check.cjs");
+  assert.match(fs.readFileSync(path.join(repoRoot, "scripts/sources-check.cjs"), "utf8"), /"brand-design-systems\.test\.cjs"/);
 });
