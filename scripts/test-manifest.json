@@ -16,6 +16,7 @@
     "answer-me-with-html-sources.test.cjs",
     "answer-me-with-html.test.cjs",
     "astryx-bundled-snapshot.test.cjs",
+    "astryx-snapshot-generator.test.cjs",
     "benchmark.test.cjs",
     "capability-audit.test.cjs",
     "carried-forward-defects.test.cjs",

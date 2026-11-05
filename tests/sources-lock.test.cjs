@@ -216,6 +216,137 @@ test("an uncited root license file that changes, appears or disappears stops the
   assert.doesNotMatch(site.read("skill/references/widgets.md"), /NOTICE/, "the notice is not cited anywhere");
 });
 
+// An npm source whose bundled data is derived from the release: the importer reads the release
+// tarball named by {pack:<package>} (SOURCES_NPM_PACKS stands in for `npm pack --ignore-scripts`).
+const NPM_IMPORTER = `"use strict";
+const crypto = require("node:crypto");
+const fs = require("node:fs");
+const path = require("node:path");
+const args = Object.fromEntries(process.argv.slice(2).reduce((pairs, item, index, all) => (index % 2 ? pairs : [...pairs, [item.slice(2), all[index + 1]]]), []));
+const bytes = fs.readFileSync(args.pack);
+if (bytes.toString("utf8").startsWith("broken")) { process.stderr.write("tarball has no docs\\n"); process.exit(1); }
+const text = bytes.toString("utf8").trim();
+// "stale:<sha>" writes another revision; "noversion" drops the version site.
+const [version, revision] = text.startsWith("stale:") ? ["1.1.0", text.slice(6)] : [text, args.revision];
+const out = { url: "https://github.com/acme/gadgets", revision, ...(text === "noversion" ? {} : { version }), sha256: crypto.createHash("sha256").update(bytes).digest("hex") };
+fs.writeFileSync(path.resolve(__dirname, "../skill/references/gadgets.json"), JSON.stringify(out, null, 2) + "\\n");
+process.stdout.write("gadgets " + version + "\\n");
+`;
+
+function npmFixture(t) {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-sources-npm-"));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  const upstream = path.join(base, "remote/acme/gadgets");
+  fs.mkdirSync(upstream, { recursive: true });
+  git(upstream, ["init", "--quiet", "--initial-branch=main"]);
+  git(upstream, ["config", "uploadpack.allowAnySHA1InWant", "true"]);
+  git(upstream, ["config", "uploadpack.allowFilter", "true"]);
+  const release = (version, date) => {
+    fs.writeFileSync(path.join(upstream, "LICENSE"), "MIT License\n\nCopyright (c) 2026 Acme\n");
+    fs.writeFileSync(path.join(upstream, "VERSION"), `${version}\n`);
+    git(upstream, ["add", "--all"]);
+    const result = run("git", ["-c", "user.name=Acme", "-c", "user.email=acme@example.invalid", "commit", "--quiet", "-m", version], upstream, { GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date });
+    assert.equal(result.status, 0, result.stderr);
+    git(upstream, ["tag", `v${version}`]);
+    const tarball = path.join(base, `gadgets-${version}.tgz`);
+    fs.writeFileSync(tarball, `${version}\n`);
+    return { revision: git(upstream, ["rev-parse", "HEAD"]), tarball };
+  };
+  const first = release("1.0.0", "2026-10-01T00:00:00Z");
+  const root = path.join(base, "checkout");
+  for (const file of ["scripts/sources-lock.cjs", "scripts/sources-update.cjs", "scripts/git-tree-snapshot.cjs", "skill/scripts/upstream-path.cjs"]) {
+    fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+    fs.copyFileSync(path.join(repoRoot, file), path.join(root, file));
+  }
+  fs.writeFileSync(path.join(root, "scripts/generate-gadgets.cjs"), NPM_IMPORTER);
+  fs.writeFileSync(path.join(root, "THIRD_PARTY_NOTICES.md"), "## gadgets\n\nRelease data from @acme/gadgets.\n");
+  fs.mkdirSync(path.join(root, "skill/references"), { recursive: true });
+  const imported = run(process.execPath, [path.join(root, "scripts/generate-gadgets.cjs"), "--pack", first.tarball, "--revision", first.revision], root);
+  assert.equal(imported.status, 0, imported.stderr);
+  fs.writeFileSync(path.join(root, "sources.lock.json"), `${JSON.stringify({
+    schema: "design-pipeline.sources-lock.v1",
+    policy: "track-upstream-head",
+    sources: [{ id: "gadgets", kind: "npm", package: "@acme/gadgets", version: "1.0.0", reviewedAt: "2026-10-02", repo: "https://github.com/acme/gadgets", revision: first.revision, committedAt: "2026-10-01T00:00:00+00:00", tag: "v{version}", sites: [{ file: "skill/references/gadgets.json", json: "version" }], importer: ["scripts/generate-gadgets.cjs", "--pack", "{pack:@acme/gadgets}", "--revision", "{revision}"] }],
+  }, null, 2)}\n`);
+  git(root, ["init", "--quiet"]);
+  git(root, ["add", "--all"]);
+  git(root, ["commit", "--quiet", "-m", "fixture"]);
+  assert.deepEqual(checkAgreement(root), []);
+  const update = (packs) => run(process.execPath, [path.join(root, "scripts/sources-update.cjs"), "--root", root, "--today", "2026-11-04", "--no-npm-install"], root, {
+    SOURCES_REMOTE_BASE: `file://${path.join(base, "remote")}`,
+    SOURCES_NPM_VERSIONS: JSON.stringify({ "@acme/gadgets": "1.1.0" }),
+    SOURCES_NPM_PACKS: JSON.stringify(packs),
+  });
+  return { root, first, release, update, read: (file) => fs.readFileSync(path.join(root, file), "utf8") };
+}
+
+test("sources:update regenerates an npm source's derived data from the release tarball", (t) => {
+  const site = npmFixture(t);
+  const next = site.release("1.1.0", "2026-11-01T00:00:00Z");
+  const result = site.update({ "@acme/gadgets@1.1.0": next.tarball });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout).bumped.map(({ id, source, importer, to }) => [id || source, importer || to]), [["gadgets", "gadgets 1.1.0"], ["gadgets", "1.1.0"]]);
+  assert.deepEqual(JSON.parse(result.stdout).bumped.filter((item) => item.id).map(({ from, to }) => [from, to]), [["1.0.0", "1.1.0"]], "one from/to row per source in the pull request table");
+  const data = JSON.parse(site.read("skill/references/gadgets.json"));
+  assert.equal(data.version, "1.1.0");
+  assert.equal(data.revision, next.revision);
+  const lock = JSON.parse(site.read("sources.lock.json")).sources[0];
+  assert.deepEqual([lock.version, lock.revision, lock.committedAt, lock.reviewedAt], ["1.1.0", next.revision, "2026-11-01T00:00:00+00:00", "2026-11-04"]);
+  assert.deepEqual(checkAgreement(site.root), []);
+});
+
+test("an npm importer that fails leaves its data and the lock as they were", (t) => {
+  const site = npmFixture(t);
+  const before = { lock: site.read("sources.lock.json"), data: site.read("skill/references/gadgets.json") };
+  const next = site.release("1.1.0", "2026-11-01T00:00:00Z");
+  fs.writeFileSync(next.tarball, "broken\n");
+  const broken = site.update({ "@acme/gadgets@1.1.0": next.tarball });
+  assert.equal(broken.status, 1);
+  assert.match(broken.stderr, /FAIL gadgets: scripts\/generate-gadgets\.cjs failed: tarball has no docs/);
+  assert.deepEqual({ lock: site.read("sources.lock.json"), data: site.read("skill/references/gadgets.json") }, before);
+  // Failures found after the importer succeeded restore its output too.
+  fs.writeFileSync(next.tarball, `stale:${site.first.revision}\n`);
+  const stale = site.update({ "@acme/gadgets@1.1.0": next.tarball });
+  assert.equal(stale.status, 1);
+  assert.match(stale.stderr, /FAIL gadgets: scripts\/generate-gadgets\.cjs output disagrees with the lock: skill\/references\/gadgets\.json: json \S+ pins [0-9a-f]{12}, not the release commit/);
+  assert.deepEqual({ lock: site.read("sources.lock.json"), data: site.read("skill/references/gadgets.json") }, before);
+  fs.writeFileSync(next.tarball, "noversion\n");
+  const unversioned = site.update({ "@acme/gadgets@1.1.0": next.tarball });
+  assert.equal(unversioned.status, 1);
+  assert.match(unversioned.stderr, /output disagrees with the lock: skill\/references\/gadgets\.json version is undefined, not 1\.1\.0/);
+  assert.deepEqual({ lock: site.read("sources.lock.json"), data: site.read("skill/references/gadgets.json") }, before);
+  const missing = site.update({});
+  assert.equal(missing.status, 1);
+  assert.match(missing.stderr, /FAIL gadgets: SOURCES_NPM_PACKS has no @acme\/gadgets@1\.1\.0/);
+  assert.deepEqual({ lock: site.read("sources.lock.json"), data: site.read("skill/references/gadgets.json") }, before);
+});
+
+test("a latest version that is not a plain semver is refused before any npm command or write", (t) => {
+  const site = npmFixture(t);
+  const before = { lock: site.read("sources.lock.json"), data: site.read("skill/references/gadgets.json") };
+  site.release("1.1.0", "2026-11-01T00:00:00Z");
+  for (const version of ["1.1.0 && touch pwned", "1.1.0;id", "latest", "1.1", "v1.1.0", "1.1.0\n"]) {
+    const result = run(process.execPath, [path.join(site.root, "scripts/sources-update.cjs"), "--root", site.root, "--today", "2026-11-04", "--no-npm-install"], site.root, {
+      SOURCES_REMOTE_BASE: `file://${path.join(path.dirname(site.root), "remote")}`,
+      SOURCES_NPM_VERSIONS: JSON.stringify({ "@acme/gadgets": version }),
+      SOURCES_NPM_PACKS: JSON.stringify({}),
+    });
+    assert.equal(result.status, 1, version);
+    assert.match(result.stderr, /FAIL gadgets: @acme\/gadgets: latest version .* is not a semver/, version);
+  }
+  assert.deepEqual({ lock: site.read("sources.lock.json"), data: site.read("skill/references/gadgets.json") }, before);
+  assert.equal(fs.existsSync(path.join(site.root, "pwned")), false);
+});
+
+test("an npm importer reads a {pack:} tarball and only an entry with a repo may ask for {revision}", () => {
+  const base = { id: "tool", kind: "npm", package: "tool", version: "1.0.0", reviewedAt: "2026-11-04", sites: [{ file: "x.json", json: "version" }] };
+  const lock = (entry) => ({ schema: "design-pipeline.sources-lock.v1", policy: "track-upstream-head", sources: [{ ...base, ...entry }] });
+  assert.deepEqual(validateLock(lock({ importer: ["scripts/generate-tool.cjs", "--pack", "{pack:tool}"] })), []);
+  assert.match(validateLock(lock({ importer: ["scripts/generate-tool.cjs", "--pack", "./tool.tgz"] })).join(), /reads at least one \{pack:<package>\} tarball/);
+  assert.match(validateLock(lock({ importer: ["node_modules/x.cjs", "{pack:tool}"] })).join(), /must start with scripts\/import-\*\.cjs or scripts\/generate-\*\.cjs/);
+  assert.match(validateLock(lock({ importer: ["scripts/generate-tool.cjs", "{pack:tool}", "{revision}"] })).join(), /\{revision\} needs the entry's repo and tag/);
+});
+
 test("sources:check --upstream reports what is behind and what is held, without failing", () => {
   const sha = (character) => character.repeat(40);
   const lock = {
