@@ -6,6 +6,7 @@
 - [安装与升级](../skill/references/installation.md)、[工具索引](../skill/tools/README.md)：安装 skill 后按需阅读。
 - [Prompt Motion 模板库维护](prompt-motion-template-maintenance.md)：案例索引、配方整理、候选更新和重复/下架处理。
 - [术语表](GLOSSARY.md)：项目术语及其含义。
+- `cases/`：项目 README 案例用的图片（JPG 不超过 350 KB，GIF 不超过 4 MB）。
 - [Matt 技能适配](agents/matt-skills.md)：上游版本、项目配置与工程方法的组合方式。
 - [OpenSpec 配置](../openspec/config.yaml)、[贡献流程](../.github/CONTRIBUTING.md)：项目上下文、行为规范和变更验收。
 - [历史文档](archive/README.md)：保留旧稿，仅供追溯。

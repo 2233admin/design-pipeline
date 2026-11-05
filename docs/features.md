@@ -311,6 +311,52 @@ node skill/scripts/evaluate-website-clone.cjs \
 
 持久空间工作添加 `scene.json` 和 `scene.md` 投影，记录坐标、生命周期、资产、性能预算。
 
+### 模板库与风格包
+
+模板是带参数的 SVG 版式：KV、视频封面、卡片、活动横幅、UI 面板和字幕卡快切。每个模板有槽位（带字数和行数预算）、在实测范围内可调的参数、配色角色和出处。模板属于风格包；风格包把字体角色、版式语法、素材、动效节奏和检查规则放在一起。现有两个风格包、20 个模板：`arknights-endfield`（9 个，从官方宣传图的版式研究里量出来，只作参考，不附带任何图片、描摹、logo 或官方文字）和 `shinbo`（11 个，来自《夜想回廊》实验）。
+
+```bash
+node skill/scripts/designer-pipeline.cjs template list --style shinbo
+node skill/scripts/designer-pipeline.cjs template render card.onechar-bleed --set char=夜 -o out.svg --png out.png
+node skill/scripts/designer-pipeline.cjs template check page.html --browser --size 1920x1080
+```
+
+`render` 写出文件后马上检查：文字放不放得下、最小字号、对比度、主体区与裁切区、强调色面积、对齐线。`check --browser` 也能查手写的 SVG 和 HTML：按墨迹算文字重叠、出画、拼贴压字、隐藏文字后看底图算对比度、被遮挡、资源缺失和缺字。每条发现都带修法；退出码 0 通过，2 未通过，需要浏览器却没有浏览器时是 1（`TOOL_MISSING`），不会当作通过。
+
+模板是起点，不是成品：没有合适的模板时不要硬套，手写版式后照样用 `template check` 检查。README 里的卡牌、HUD、Steam 案例就是这样做的。说明见 [模板库指南](../skill/references/template-bank.md)。
+
+### 参考蒸馏
+
+```bash
+node skill/scripts/designer-pipeline.cjs template distill provenance.csv --images refs/ -o out/ [--annotations labels.csv] [--compare <style-id>] [--ablate]
+```
+
+读一组参考图（只读本地文件，从不复制），不用模型，量出 OKLab 配色、底色彩度与明度、主色和中性色占比、色相离散、重心、对称、留白和纹理；给了标注时再量标题位置、边距、字号比和标题压主体的程度。每个特征用参考的分布定阈值（上限取 p75、下限取 p25），并标出证据是 `measured`、`thin` 还是 `gap`。输出 `style.json` 草稿（`draft: true`）、`distill.json` 和一页 `report.md`，把版式归成原型并指向最近的模板或新骨架，按笔画对比判断字体角色。`--compare` 和手写风格包逐条对比，`--ablate` 去掉每条规则各渲染一次，报告成对的变化。
+
+### 字体目录
+
+```bash
+node skill/scripts/designer-pipeline.cjs fonts query --text-file copy.txt --style mincho --weight 700
+node skill/scripts/designer-pipeline.cjs fonts measure --path fonts/ --text "要检查的文案"
+```
+
+`fonts query` 只返回字形表覆盖全部文案的字体；差几个字的列为候选，并写出缺哪几个字；一个都没有时退出码 2（`font-coverage-none`）。目录收了 98 个家族、169 个文件（Google Fonts 里全部 97 个中日文家族加霞鹜文楷），每个都记录通用规范汉字表、GB 2312、JIS 第一水准、Big5 常用字和拉丁字母的覆盖、字重、风格（明朝、黑体、楷体、圆体、展示、手写、等宽）、笔画对比，以及许可（能否商用、嵌入、修改，保留字体名）和钉住的上游提交。`fonts measure` 量你自己的 TTF、OTF、TTC、WOFF 文件。
+
+### 素材来源与自制素材
+
+```bash
+node skill/scripts/designer-pipeline.cjs materials search --query "key,pocket watch,butterfly" --source met
+node skill/scripts/designer-pipeline.cjs materials fetch --project-root . --source cleveland --id <object id> --name <stem>
+node skill/scripts/designer-pipeline.cjs materials cut --project-root . --file materials/raw/<stem>.png --mode paper --finish sticker,ink
+node skill/scripts/designer-pipeline.cjs materials generate --project-root . --generator paper --seed 1
+node skill/scripts/designer-pipeline.cjs materials check --project-root .
+```
+
+- **取图**：`search` / `fetch` 只下载 CC0 和公有领域的记录，其他许可连同证据一起拒绝。克利夫兰、大都会、Rijksmuseum 可以自动查和取；Wikimedia Commons 按确切的 `File:` 名取；需要密钥或被拦截的来源会说明原因和替代做法（`materials sources`、`probe` 重新测可达性）。你自己的字体、扫描和照片用 `materials add` 登记。
+- **切图**：`cut` 把图切成贴纸、墨层（黑色加透明度，即墨色密度）、剪纸白边和手剪版画块，并提示渐变背景、碰到画框的物件和可能的投影。
+- **自制**：`generate` 用固定种子生成纸纹、网点、油墨平涂、建筑线稿（走廊、拱廊、楼梯、窗墙、棋盘地）和纹样，`process` 把任何已登记的图做成木刻、网点、剪纸、复印或双色效果；同一记录可以原样重放。`measure` 把纹理和真实扫描的校准档比较，量它像不像真的。
+- **账目**：所有文件的出处、许可、作者、取用日期、哈希和派生关系写在 `materials/licenses.json`；`check` 拒绝没有记录的文件、出处不全的记录，以及来源已经变了的切图和派生图。采集纸张和网点扫描的方法见 [`material-capture.md`](../skill/references/material-capture.md)。
+
 ### 统一前端工具链
 
 `toolchain resolve` 将框架、样式、组件库、外部工具和图形运行时合并成一份可执行计划。
