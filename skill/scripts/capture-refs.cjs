@@ -36,6 +36,8 @@ function parseArgs(argv) {
     });
     process.stdout.write(`${JSON.stringify(jsonResult(true, { status: "captured", capture: doc, png: png.toString("base64"), loaded }))}\n`);
   } catch (error) {
+    // A refused block page is reported with its code, so the CLI keeps REFERENCE_BLOCKED.
+    if (error.code === "REFERENCE_BLOCKED") process.stdout.write(`${JSON.stringify(jsonResult(false, {}, error))}\n`);
     process.stderr.write(`${error.message}\n`);
     process.exitCode = 1;
   }

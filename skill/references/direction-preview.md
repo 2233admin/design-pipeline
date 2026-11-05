@@ -49,7 +49,7 @@ library described in [design-direction-library.md](design-direction-library.md):
 2. **Same-medium real work**: real work of the same medium, found and captured with `composition
    capture` (an existing browser tool, no Python). When the work cannot be captured the card says
    `seen: false` with the reason; it never pretends to have seen it.
-3. **Style roulette**: two draws from the 84-style catalog by the current second `S`:
+3. **Style roulette**: two draws from the style catalog (web, slides, infographic, app and east sections) by the current second `S`:
    `S % sectionCount + 1` in the medium's section and `S % 12 + 1` in east. Print both with
    `direction draw --medium <web|ppt|info|app> [--second S]`. The draw skips past styles the
    [appearance ledger](#appearance-ledger) shows in the user's last three deliveries and records what

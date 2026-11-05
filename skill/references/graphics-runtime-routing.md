@@ -126,8 +126,8 @@ acceptance.
 
 ## Threejs Project Lifecycle
 
-Reviewed runtime baseline: Three.js 0.186.1, source commit
-`9b4a2ac29c63ccb43fd51c5661f2f873ac2c39b8` (r186), checked 2026-10-07. The r186 migration notes
+Reviewed runtime baseline: Three.js 0.187.0, release tag commit
+`7e89746a687bb88271253698fa108b1dd59825d0`, checked 2026-11-04. The r186 migration notes
 that `BufferGeometryUtils.toTrianglesDrawMode()` now mutates its input geometry and that
 `LightProbeGrid`/`LightProbeGridHelper` were renamed to their `WebGL` forms. Clone geometry before
 conversion when the original must remain unchanged. This reviewed baseline does not pin or upgrade

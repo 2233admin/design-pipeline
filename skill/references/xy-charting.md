@@ -4,8 +4,8 @@ Use this reference when a Python product needs interactive charts, notebook disp
 exports, Reflex integration, or large-data rendering. XY is a built-in routing contract, not a
 vendored runtime: the target project must install and pin its own compatible `xy` version.
 
-Reviewed baseline: `reflex-dev/xy` v0.0.6 at commit
-`55b8b61e432842995dc0b581113b0998a70a052d` on 2026-08-13. XY is Apache-2.0 and
+Reviewed baseline: `reflex-dev/xy` v0.0.8 at commit
+`6483032a7947e1f44ced1a560ac08f1025637529` on 2026-11-04. XY is Apache-2.0 and
 alpha; pre-1.0 upgrades require a changelog and migration review.
 
 ## Selection Boundary

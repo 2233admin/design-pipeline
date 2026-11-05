@@ -2,11 +2,11 @@
   "schema": "design-pipeline.gepa-source.v1",
   "source": {
     "repository": "https://github.com/gepa-ai/gepa",
-    "revision": "462e437a09be67d2acb59564cc0ea59132f5777c",
-    "gitTree": "105cafea9959b259f1fa63ca0b5b375bcc611b9e",
-    "committedAt": "2026-10-08T12:30:53-07:00",
+    "revision": "8c7b697a71977980afc7537dac0881e784eef99f",
+    "gitTree": "22284bd2f2a442022fd12547845b34a2af5bad01",
+    "committedAt": "2026-10-31T12:40:38-07:00",
     "license": "MIT",
-    "reviewedAt": "2026-10-09",
+    "reviewedAt": "2026-11-04",
     "scope": [
       ".claude/skills/gepa-optimize-anything/**",
       "LICENSE",
@@ -25,8 +25,8 @@
   "snapshot": {
     "root": "upstream",
     "fileCount": 10,
-    "byteCount": 107619,
-    "treeSha256": "c8bc85080ff2179e42879d573a29fa4f7d779e179da67a9d37528b8d2cfc2795",
+    "byteCount": 112408,
+    "treeSha256": "6d549f5cbb4eac9ed00ae5fa618d0e51a8cc617b930313d05f71b4b019fc1e78",
     "executableFiles": [],
     "objects": [
       {
@@ -86,8 +86,8 @@
       {
         "path": "README.md",
         "mode": "100644",
-        "oid": "379d0a38ef009c1b0a01dec2a325a5fe1a5190ac",
-        "size": 39867
+        "oid": "365edf3d878f6996259cfc95c401547825fdc65b",
+        "size": 44656
       }
     ]
   },
