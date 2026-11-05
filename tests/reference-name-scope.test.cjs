@@ -32,7 +32,7 @@ function repository(t, files) {
 
 test("the name is allowed inside its vendored folder, the notices and the importer only", (t) => {
   assert.equal(allowedFolder, "skill/vendor/design-direction-library/");
-  assert.deepEqual([...allowedFiles].sort(), ["THIRD_PARTY_NOTICES.md", "scripts/import-design-direction-library.cjs"]);
+  assert.deepEqual([...allowedFiles].sort(), ["THIRD_PARTY_NOTICES.md", "scripts/import-design-direction-library.cjs", "sources.lock.json"]);
   const dir = repository(t, {
     ["skill/vendor/design-direction-library/manifest.json"]: `{"source":"${name}-design"}\n`,
     [`skill/vendor/design-direction-library/upstream/${name}.md`]: `${name}\n`,

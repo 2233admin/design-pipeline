@@ -2,11 +2,11 @@
   "schema": "design-pipeline.ff-tracking-source.v1",
   "source": {
     "repository": "https://github.com/mrsarac/ff-tracking",
-    "revision": "cc7f4e192eccefb55ae7f18f5a370955122b651b",
-    "gitTree": "0f550821569078a4c91e11b65a1eb575f3bd7453",
-    "committedAt": "2026-10-13T09:04:06+02:00",
+    "revision": "579f5be9e10023164bc2fe7e5b955dea20ddd1c9",
+    "gitTree": "3fc75cf25361ae4e9835bf0703d5d09d3da259fc",
+    "committedAt": "2026-10-22T14:51:38+02:00",
     "license": "MIT",
-    "reviewedAt": "2026-10-13",
+    "reviewedAt": "2026-11-04",
     "scope": [
       "**"
     ]
@@ -30,9 +30,9 @@
   ],
   "snapshot": {
     "root": "upstream",
-    "fileCount": 46,
-    "byteCount": 6959604,
-    "treeSha256": "5e1ebba1adcfbf83ebf3c5cc32af4abbec618eaf1a1c3acfe8ce11a4e9b27fe6",
+    "fileCount": 47,
+    "byteCount": 6964053,
+    "treeSha256": "93fddd17220fdd8e24e4a367b1af88473cc9ece56af17ce6eb524bcaa72caf63",
     "executableFiles": [
       "tools/render.sh",
       "tools/score.sh"
@@ -111,9 +111,9 @@
       {
         "path": "flat/Cargo.toml",
         "mode": "100644",
-        "oid": "c239f00031f31ef11d7a51644f7ae54fd075a5e6",
-        "size": 671,
-        "sha256": "9ddf98e02b9788200d227cf1377ea010836b22f54dc73dc106cc12783f4a332b"
+        "oid": "2dba2eae3d062342df9754626094cbc06e34bb9f",
+        "size": 816,
+        "sha256": "04df38ccf942573669180a73e4a45cdb031042aa20f5f1ff5d108ab445d572ae"
       },
       {
         "path": "flat/src/lib.rs",
@@ -125,9 +125,9 @@
       {
         "path": "flat/src/main.rs",
         "mode": "100644",
-        "oid": "24e1bc1001cd46424582f7b8f7a87b452460f1b4",
-        "size": 1832,
-        "sha256": "89a40beabb3e410694b8dfcf1e8b7534427be19fe3f880f0c3d476fdd2f7cd19"
+        "oid": "895c15079c7fe03b39766843e7bb0e2cba4021ef",
+        "size": 861,
+        "sha256": "91d4eab985059dc6dbe1629b7e9e4a9b9e97463845fb3fda0d4c351f94bad68b"
       },
       {
         "path": "hud/Cargo.toml",
@@ -160,9 +160,9 @@
       {
         "path": "lens/Cargo.toml",
         "mode": "100644",
-        "oid": "fc3cf367000278f17186ceb3f548f5039366db75",
-        "size": 671,
-        "sha256": "b1386de780ce54b07e93da569dcd4516b5fd23dfc97b8366bdabd730f29d7b04"
+        "oid": "2d4d492c43891e3b464fc239d28cf8c6345f9489",
+        "size": 816,
+        "sha256": "044c68191ca709fb477e15604e5a721b7f5a00f8040a8489a8848efc43bdec94"
       },
       {
         "path": "lens/shaders/lens.sksl",
@@ -181,9 +181,9 @@
       {
         "path": "lens/src/main.rs",
         "mode": "100644",
-        "oid": "c5f6270e5805017bb5c69c617976d8a976c51159",
-        "size": 2281,
-        "sha256": "40207ffd06194da862010b48ad07d93adb9625022e014e7daa82a49ceff163d9"
+        "oid": "93c327197b5fa0a2e259731134165637d4b7fe02",
+        "size": 1551,
+        "sha256": "2daf0c5648740f5e6c1fefd23dd05fe8e11d746df38919854acb966d7b1d88dd"
       },
       {
         "path": "LICENSE",
@@ -223,9 +223,9 @@
       {
         "path": "README.md",
         "mode": "100644",
-        "oid": "1a594608b6882eb78b31a84a376f692abcaa24a6",
-        "size": 14277,
-        "sha256": "7d8110aac55617e8dd38f0aa4ec90a4da962bf045d596352fc0844cf24da52ae"
+        "oid": "85f0a51b982995ea502de628b3e460bea4df783a",
+        "size": 16007,
+        "sha256": "e34e53c87908de500ec356cfadad8d2350eb3c1689ff167e888494f9f04eae6c"
       },
       {
         "path": "score/Cargo.toml",
@@ -319,6 +319,13 @@
         "sha256": "b7fea234250cd616b4fa52e160803cddc0c739462888252595a88c3c4bfdfa73"
       },
       {
+        "path": "tools/backend.rs",
+        "mode": "100644",
+        "oid": "8d1cb9f0dc5b08671b0e9ee28dba089a822cb1f3",
+        "size": 3582,
+        "sha256": "e0d8d59a80e575f960ee8a88f482069cab62742cdb62947fe1534cfb83a3801c"
+      },
+      {
         "path": "tools/check_score.py",
         "mode": "100644",
         "oid": "2186d7aa3cd9a911cfefc6182b46779e838e3b13",
@@ -342,9 +349,9 @@
       {
         "path": "tools/render.sh",
         "mode": "100755",
-        "oid": "58a3a157014ae9446826937bba044a8fc4958fa9",
-        "size": 494,
-        "sha256": "75fc8312405e5e009045093b29286f42ba6f8a5d6d6860562341c55bc5ccd187"
+        "oid": "d1c4f713fae219e72937526ab6a610ce90059839",
+        "size": 1042,
+        "sha256": "875f60fb412ff7b4d6c1a78c2ac673bc8db4e399ee5ece58778a2ac300c1baeb"
       },
       {
         "path": "tools/score.sh",

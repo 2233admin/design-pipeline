@@ -19,15 +19,7 @@ const { copyTrackedFiles, fail, inspectCheckout } = require("./git-tree-snapshot
 const destination = path.resolve(__dirname, "../skill/vendor/design-direction-library");
 const repository = "https://github.com/alchaincyf/huashu-design";
 const copyright = "Copyright (c) 2026 alchaincyf (花叔 · 花生)";
-const reviewed = {
-  revision: "798c4235ebff03d5c45e3c8affdf5e9d18f9dfa7",
-  gitTree: "cf7e7baaf14ed1331ee1bb06cff2bc8e1af344de",
-  shippedTreeSha256: "00f8af6104de1fed3f732dab5cda61fa60acd6e052490fdb6e169e9912c63542",
-  fetchedTreeSha256: "94c0ed573aea3620ecba6d304c9fcfa2a38cdd4a24c1301f8973055fef74b573",
-  shipped: { files: 181, bytes: 1594218 },
-  fetched: { files: 208, bytes: 40136313 },
-  specimens: 84,
-};
+// The revision comes from the checkout; sources.lock.json records which upstream HEAD was imported.
 
 const rootTexts = new Set(["LICENSE", "README.md", "README.en.md", "SECURITY.md", "SKILL.md", "test-prompts.json"]);
 const textExtension = /\.(md|html|jsx|js|mjs|cjs|py|sh|json|svg|txt)$/i;
@@ -86,8 +78,6 @@ function section(entries, blobs, root) {
 
 function importSnapshot(source, reviewedAt) {
   const checkout = inspectCheckout(source);
-  if (checkout.revision !== reviewed.revision) fail(`source revision must be the reviewed ${reviewed.revision}; received ${checkout.revision}`);
-  if (checkout.gitTree !== reviewed.gitTree) fail("source Git tree does not match the reviewed tree");
   const license = checkout.blobs.get("LICENSE")?.toString("utf8") || "";
   if (!license.startsWith("MIT License") || !license.includes(copyright)) fail("source LICENSE does not match the reviewed MIT attribution");
   for (const file of ["SKILL.md", "README.md", "references/design-styles.md", "references/directions.md"]) {
@@ -102,7 +92,7 @@ function importSnapshot(source, reviewedAt) {
     (ships ? shippedEntries : fetchedEntries).push(entry);
   }
   const specimenFiles = shippedEntries.map((entry) => entry.path).filter((file) => /^assets\/style-specimens\/[^/]+\/[^/]+\.html$/.test(file));
-  if (specimenFiles.length !== reviewed.specimens) fail(`expected ${reviewed.specimens} HTML specimens; found ${specimenFiles.length}`);
+  if (!specimenFiles.length) fail("upstream ships no HTML specimens under assets/style-specimens/<family>/; the layout moved");
   const fetchedPaths = new Set(fetchedEntries.map((entry) => entry.path));
   const specimens = specimenFiles.map((file) => {
     const [, family, name] = file.match(/^assets\/style-specimens\/([^/]+)\/([^/]+)\.html$/);
@@ -113,8 +103,6 @@ function importSnapshot(source, reviewedAt) {
 
   const shipped = section(shippedEntries, checkout.blobs, "upstream");
   const fetched = section(fetchedEntries, checkout.blobs, "fetched");
-  if (shipped.treeSha256 !== reviewed.shippedTreeSha256 || fetched.treeSha256 !== reviewed.fetchedTreeSha256) fail(`content does not match the reviewed hashes (shipped ${shipped.treeSha256}, fetched ${fetched.treeSha256})`);
-  if (shipped.fileCount !== reviewed.shipped.files || shipped.byteCount !== reviewed.shipped.bytes || fetched.fileCount !== reviewed.fetched.files || fetched.byteCount !== reviewed.fetched.bytes) fail(`reviewed inventory does not match (shipped ${shipped.fileCount} files ${shipped.byteCount} bytes, fetched ${fetched.fileCount} files ${fetched.byteCount} bytes)`);
   if (checkout.indexEntries.length !== shipped.fileCount + fetched.fileCount) fail("shipped and fetched files must cover the whole tree");
 
   fs.mkdirSync(path.dirname(destination), { recursive: true });

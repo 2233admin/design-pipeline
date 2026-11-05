@@ -236,6 +236,169 @@ function checkComponents(dir, findings) {
   return components.sort();
 }
 
+// ---- token use: previews and bundle.css style with tokens, never raw values ---------------------
+// After open-design's components manifest (Apache-2.0): every var(--x) must be declared (tokens.json
+// via tokens.css, or a local custom property), and colours and font families come from tokens.
+// Only declaration values are scanned: selectors, comments, strings, url(...), @font-face and
+// @property blocks never count. Named colours (white, red) are a known gap and are not reported.
+
+const RAW_COLOR = /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|oklch|oklab|lab|lch|color|color-mix)\(/gi;
+const SVG_PAINT = /\s(fill|stroke|stop-color|flood-color|lighting-color)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi;
+const ENTITIES = { quot: '"', apos: "'", amp: "&", lt: "<", gt: ">", nbsp: " ", num: "#", lpar: "(", rpar: ")", semi: ";", colon: ":", comma: "," };
+
+function decodeEntities(text) {
+  return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);?/gi, (whole, ref) => {
+    if (ref[0] === "#") {
+      const code = ref[1] === "x" || ref[1] === "X" ? parseInt(ref.slice(2), 16) : parseInt(ref.slice(1), 10);
+      return Number.isFinite(code) && code <= 0x10ffff ? String.fromCodePoint(code) : whole;
+    }
+    return ENTITIES[ref.toLowerCase()] ?? whole;
+  });
+}
+
+// Live CSS and markup of a preview: <style> blocks are raw text, HTML comments and <script> drop out.
+function splitHtml(text) {
+  const styles = [];
+  let markup = "";
+  let i = 0;
+  while (i < text.length) {
+    const lower = text.slice(i).toLowerCase();
+    const next = lower.search(/<!--|<style\b|<script\b/);
+    if (next < 0) {
+      markup += text.slice(i);
+      break;
+    }
+    markup += text.slice(i, i + next);
+    i += next;
+    const rest = text.slice(i).toLowerCase();
+    if (rest.startsWith("<!--")) {
+      const end = rest.indexOf("-->", 4);
+      i = end < 0 ? text.length : i + end + 3;
+      continue;
+    }
+    const tag = rest.startsWith("<style") ? "style" : "script";
+    const open = rest.indexOf(">");
+    const close = rest.indexOf(`</${tag}`, open < 0 ? 0 : open);
+    if (open < 0) break;
+    if (tag === "style") styles.push(text.slice(i + open + 1, close < 0 ? text.length : i + close));
+    markup += `<${tag}>`;
+    i = close < 0 ? text.length : i + close + rest.slice(close).indexOf(">") + 1;
+  }
+  return { styles, markup };
+}
+
+// Drops comments and url(...) contents, and swaps string literals for "<n>" placeholders kept in
+// `strings` so a reported font stack can show them.
+function stripCss(css, strings) {
+  let out = "";
+  let i = 0;
+  while (i < css.length) {
+    const c = css[i];
+    if (c === "/" && css[i + 1] === "*") {
+      const end = css.indexOf("*/", i + 2);
+      i = end < 0 ? css.length : end + 2;
+      out += " ";
+    } else if (c === '"' || c === "'") {
+      let j = i + 1;
+      while (j < css.length && css[j] !== c && css[j] !== "\n") j += css[j] === "\\" ? 2 : 1;
+      strings.push(css.slice(i, j + 1));
+      out += `"${strings.length - 1}"`;
+      i = j + 1;
+    } else if (/^url\(/i.test(css.slice(i, i + 4))) {
+      const end = css.indexOf(")", i);
+      out += "url()";
+      i = end < 0 ? css.length : end + 1;
+    } else if (css.startsWith("<!--", i) || css.startsWith("-->", i)) {
+      out += " ";
+      i += css.startsWith("<!--", i) ? 4 : 3;
+    } else {
+      out += c;
+      i += 1;
+    }
+  }
+  return out.replace(/@(?:font-face|property)\b[^{;]*\{[^{}]*\}/gi, " ");
+}
+
+// Declarations of cleaned CSS: text before `{` is a selector or at-rule prelude and is skipped.
+function declarationsOf(css) {
+  const out = [];
+  let buffer = "";
+  for (const c of css) {
+    if (c === "{") buffer = "";
+    else if (c === ";" || c === "}") {
+      const colon = buffer.indexOf(":");
+      if (colon > 0) out.push({ property: buffer.slice(0, colon).trim(), value: buffer.slice(colon + 1).trim() });
+      buffer = "";
+    } else buffer += c;
+  }
+  const colon = buffer.indexOf(":");
+  if (colon > 0) out.push({ property: buffer.slice(0, colon).trim(), value: buffer.slice(colon + 1).trim() });
+  return out;
+}
+
+function sourceOf(file, html) {
+  const text = readText(file);
+  const strings = [];
+  if (!html) return { declarations: declarationsOf(stripCss(text, strings)), strings, paints: [] };
+  const { styles, markup } = splitHtml(text);
+  const inline = [...markup.matchAll(/\sstyle\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi)].map((m) => `x{${decodeEntities(m[1] ?? m[2] ?? m[3])}}`);
+  const css = [...styles, ...inline].map((block) => stripCss(block, strings)).join("\n");
+  // Paint attributes on elements only, not text inside a style attribute (such as a data: URI).
+  const attributes = markup.replace(/\sstyle\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, " ");
+  const paints = [...attributes.matchAll(SVG_PAINT)]
+    .map((m) => decodeEntities(m[2] ?? m[3] ?? m[4]).trim())
+    .filter((value) => !/^(?:none|currentcolor|transparent|inherit)$/i.test(value) && !/^(?:url\(\s*['"]?#|var\()/i.test(value));
+  return { declarations: declarationsOf(css), strings, paints };
+}
+
+function checkTokenUse(dir, tokens, findings) {
+  const declared = new Set([...compileTokensCss(tokens).matchAll(/--([\w-]+)\s*:/g)].map((m) => m[1]));
+  const files = [];
+  const bundle = path.join(dir, "components", "bundle.css");
+  if (fs.existsSync(bundle)) files.push({ rel: "components/bundle.css", shared: true, ...sourceOf(bundle, false) });
+  const root = path.join(dir, "components");
+  if (fs.existsSync(root)) {
+    for (const entry of fs.readdirSync(root, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      const preview = path.join(root, entry.name, "preview.html");
+      if (entry.isDirectory() && fs.existsSync(preview)) files.push({ rel: `components/${entry.name}/preview.html`, shared: false, ...sourceOf(preview, true) });
+    }
+  }
+  const localOf = (file) => new Set(file.declarations.filter((d) => /^--[\w-]+$/.test(d.property)).map((d) => d.property.slice(2)));
+  // bundle.css is loaded with every preview; a property a preview declares stays in that preview.
+  const shared = new Set(files.filter((file) => file.shared).flatMap((file) => [...localOf(file)]));
+  const referenced = new Set();
+  for (const file of files) {
+    const local = localOf(file);
+    const undeclared = new Set();
+    const colors = new Set();
+    const fonts = [];
+    for (const { property, value } of file.declarations) {
+      for (const m of value.matchAll(/var\(\s*--([\w-]+)/g)) {
+        referenced.add(m[1]);
+        if (!declared.has(m[1]) && !shared.has(m[1]) && !local.has(m[1])) undeclared.add(m[1]);
+      }
+      if (property.startsWith("--")) continue;
+      for (const m of value.match(RAW_COLOR) || []) colors.add(m.toLowerCase());
+      if (/^font-family$/i.test(property)) {
+        const stack = value.replace(/\s*!\s*important\s*$/i, "").trim();
+        if (!/^var\(--font-/.test(stack) && !/^(inherit|initial|unset)$/i.test(stack)) {
+          fonts.push(value.replace(/"(\d+)"/g, (whole, index) => file.strings[Number(index)] ?? whole));
+        }
+      }
+    }
+    for (const paint of file.paints) for (const m of paint.match(RAW_COLOR) || []) colors.add(m.toLowerCase());
+    for (const name of undeclared) {
+      const where = file.shared ? "declare it in bundle.css" : "declare it in bundle.css or this preview";
+      findings.push({ file: file.rel, message: `var(--${name}) is not a token: add it to tokens.json, ${where}, or use an existing token` });
+    }
+    const list = [...colors];
+    if (list.length) findings.push({ file: file.rel, message: `raw colour values ${list.slice(0, 5).join(", ")}${list.length > 5 ? " ..." : ""}: use the colour tokens (var(--<name>)) so a token change reaches every component` });
+    if (fonts.length) findings.push({ file: file.rel, message: `font-family ${fonts[0]} is not a token: use var(--font-<family>) or a type-style class` });
+  }
+  const unused = [...declared].filter((name) => !referenced.has(name)).sort();
+  return { declared: declared.size, referenced: referenced.size, unused };
+}
+
 // ---- tokens.json -> CSS and DESIGN.md front matter -------------------------------------------
 
 function firstTheme(tokens) {
@@ -527,6 +690,8 @@ function checkDesignSystemPackage(options = {}) {
   }
   checkReadme(dir, findings);
   const components = checkComponents(dir, findings);
+  const tokensValid = tokens && !findings.some((f) => f.file === "tokens.json");
+  const tokenUse = tokensValid ? checkTokenUse(dir, tokens, findings) : null;
   if (tokens && !findings.some((f) => f.file === "tokens.json") && fs.existsSync(designFile)) {
     checkDesignMdDrift(readText(designFile), tokens, findings);
   }
@@ -538,6 +703,7 @@ function checkDesignSystemPackage(options = {}) {
     systemDir: rel,
     components,
     contrast,
+    ...(tokenUse ? { tokenUse } : {}),
     findings,
     ...(tokens ? { tokensSha256: sha256Text(readText(path.join(dir, "tokens.json"))) } : {}),
   };
