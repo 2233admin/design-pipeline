@@ -62,6 +62,7 @@ const { scoreFilm } = require("./score-project-core.cjs");
 const { renderBlenderShot } = require("./blender-project-core.cjs");
 const { listTemplates } = require("./blender-core.cjs");
 const editProject = require("./edit-project-core.cjs");
+const materials = require("./material-core.cjs");
 const workflow = require("./workflow-core.cjs");
 const { checkComposition } = require("./composition-core.cjs");
 const { compareComposition } = require("../tools/visual-diagnostics/diagnostics.cjs");
@@ -152,7 +153,7 @@ const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sh
 const { inspectEnvironment, nodeAtLeast, renderDoctor } = require("./doctor-report.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots", "--commercial-use"]);
 const REPEATABLE_OPTIONS = new Set(["--mix", "--taste", "--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
@@ -168,6 +169,7 @@ const KNOWN_OPTIONS = new Set([
   "--spec", "--stills", "--ffmpeg", "--ffprobe", "--medium", "--second", "--pool", "--east-pool",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
   "--target-id",
+  "--use", "--name", "--license", "--finish",
 ]);
 function parseArgs(argv) {
   const positionals = [];
@@ -477,6 +479,12 @@ function publicHelp() {
     "  film-edit analyze --project-root <dir> --audio <music> [--sources sources]   (beat grid + footage shots)",
     "  film-edit auto --project-root <dir> --style mad|pv [--duration <sec>] [--width 1280 --height 720] [--replace]",
     "  film-edit render|check --project-root <dir> [--output renders/edit.mp4]",
+    "  materials sources | probe [--source <id>]   (public-domain/CC0 image sources with measured reachability; probe re-measures now, exit 2 on drift)",
+    "  materials search --query <term[,term]> [--source cleveland|met|rijksmuseum] [--limit 5]   (candidates with their licence field; blocked sources say why)",
+    "  materials fetch --project-root <dir> --source <id> --id <object id|File:name> [--use <purpose>] [--name <stem>] [--width 1200] [--replace]   (CC0/public domain only; writes materials/raw/<stem>.png and its record in materials/licenses.json; exit 2 blocked or refused)",
+    "  materials add --project-root <dir> --file materials/<path> --license <licence> --by <author> [--url <source page>] [--kind image|font|scan|photo|texture] [--title <t>] [--use <purpose>] [--commercial-use] [--replace]   (owner-supplied material)",
+    "  materials cut --project-root <dir> --file materials/raw/<x>.png --mode border|paper|white-matte|none [--finish cut,sticker,ink,plate] [--params '{\"threshold\":14,\"keep\":2,\"roi\":[x0,y0,x1,y1]}'] [--replace]",
+    "  materials check --project-root <dir>   (every file recorded with licence and provenance; cut pieces match their source hash; exit 2 on findings)",
     "  film score --project-root <dir> --bpm <n> [--template punchy-launch|calm-build|tech-pulse --key c] | [--pattern score.strudel.js] [--output assets/score.wav] [--write] [--replace]",
     "    (Strudel, AGPL-3.0, is installed into <dir>/.design-pipeline/strudel on first use; never bundled)",
     "  film voiceover --project-root <dir> --audio <narration.wav> [--script lines.txt] [--start <sec>] [--min-pause 0.25] [--write]   (phrase cues measured from the take's pauses with silencedetect; --script: one spoken line per line; --write records vo-* cues and the narration hash in storyboard.json)",
@@ -1611,6 +1619,44 @@ function designMdCommand(parsed, root, action) {
     };
   }
   fail("cli", `unknown designmd action ${String(action)}`, { code: "UNKNOWN_COMMAND" });
+}
+
+// `materials`: registry listing, add, cut and check are synchronous; probe, search and fetch touch
+// the network and run in the fetch-materials kernel.
+function materialsCommand(parsed, root, action) {
+  if (action === "sources") return { result: materials.listSources(), exitCode: 0 };
+  const sources = option(parsed, "--source") ? String(option(parsed, "--source")).split(",") : undefined;
+  if (action === "probe") {
+    const { value, exitCode } = runKernel("fetch-materials.cjs", ["probe", JSON.stringify({ sources })], process.cwd(), { timeout: 5 * 60 * 1000 });
+    return { result: value, exitCode };
+  }
+  if (action === "search") {
+    const limit = Number(option(parsed, "--limit", 5));
+    if (!Number.isInteger(limit) || limit < 1 || limit > 20) fail("cli", "--limit must be an integer from 1 to 20", { code: "OPTION_VALUE_INVALID" });
+    const { value, exitCode } = runKernel("fetch-materials.cjs", ["search", JSON.stringify({ query: requireOption(parsed, "--query"), sources, limit })], process.cwd(), { timeout: 5 * 60 * 1000 });
+    return { result: value, exitCode };
+  }
+  const project = contained(root, requireOption(parsed, "--project-root"), "--project-root");
+  if (action === "fetch") {
+    const width = Number(option(parsed, "--width", 1200));
+    const args = { project, sourceId: requireOption(parsed, "--source"), id: requireOption(parsed, "--id"), use: option(parsed, "--use") || undefined, name: option(parsed, "--name") || undefined, width, replace: option(parsed, "--replace") === true };
+    const { value, exitCode } = runKernel("fetch-materials.cjs", ["fetch", JSON.stringify(args)], process.cwd(), { timeout: 5 * 60 * 1000 });
+    return { result: value, exitCode };
+  }
+  if (action === "add") {
+    const result = materials.addMaterial(project, {
+      file: requireOption(parsed, "--file"), license: requireOption(parsed, "--license"), author: requireOption(parsed, "--by"), sourceUrl: option(parsed, "--url") || undefined,
+      source: option(parsed, "--source") || undefined, kind: option(parsed, "--kind") || undefined, title: option(parsed, "--title") || undefined, use: option(parsed, "--use") || undefined,
+      commercialUse: option(parsed, "--commercial-use") === true ? true : undefined, replace: option(parsed, "--replace") === true,
+    });
+    return { result, exitCode: 0 };
+  }
+  if (action === "cut") {
+    const result = materials.cutMaterial(project, { file: requireOption(parsed, "--file"), mode: requireOption(parsed, "--mode"), finish: option(parsed, "--finish") || undefined, params: option(parsed, "--params") || undefined, use: option(parsed, "--use") || undefined, replace: option(parsed, "--replace") === true });
+    return { result, exitCode: result.status === "failed" ? 2 : 0 };
+  }
+  const result = materials.checkMaterials(project);
+  return { result, exitCode: result.status === "passed" ? 0 : 2 };
 }
 
 // MengTo and iart are downloaded on demand into the user cache (vendor-cache.cjs); the download is
@@ -2782,6 +2828,9 @@ const COMMANDS = {
         return { result, exitCode: failed ? 2 : 0 };
       },
     }])),
+  },
+  materials: {
+    actions: Object.fromEntries(["sources", "probe", "search", "fetch", "add", "cut", "check"].map((name) => [name, { run: ({ parsed, root }) => materialsCommand(parsed, root, name) }])),
   },
   "film-eval": {
     actions: {

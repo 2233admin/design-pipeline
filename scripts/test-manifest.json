@@ -151,6 +151,7 @@
     "art-motion-runtime.test.cjs",
     "art-motion-scroll.test.cjs",
     "art-motion-assets-audio.test.cjs",
+    "materials.test.cjs",
     "art-motion-tools.test.cjs",
     "taste-skill.test.cjs",
     "art-motion-voice.test.cjs",
