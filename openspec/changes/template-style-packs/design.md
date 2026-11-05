@@ -34,6 +34,10 @@
     cut-list approximation, not a verdict. The fixture is the experiment's whole final cut (394 frames,
     41 segments, `final/film-edl.json`); its remaining findings: a 7-frame hold, groups mixing grounds
     (segments 7, 18, 31, 37) and a 2-flash group;
+  - re-review: contrast takes each text run's own colour (an SVG `<text>` fill inside a marked
+    `<g>`, each span; worst wins); uncaught exceptions and console errors are `page-error`; a page
+    with no visible text is `no-text-measured` unless its root carries `data-no-text`; a page that
+    navigates away during the check is `KERNEL_FAILED`;
   - the MODIFIED delta rewrites #271's "Not a template render" scenario; it archives after
     `template-bank`.
 - **Contrast in both halves**: when the browser runs, its pixel contrast replaces the static

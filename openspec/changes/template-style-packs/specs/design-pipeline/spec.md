@@ -57,6 +57,11 @@ The shinbo pack SHALL ship card, key visual, UI and motion templates whose defau
 - **WHEN** paper-colour text sits on the paper stroke of a giant character on black
 - **THEN** its contrast SHALL be measured against that stroke and fail, while black text there passes.
 
+#### Scenario: Script error or no text
+
+- **WHEN** the page throws, or shows no text without declaring `data-no-text` on its root
+- **THEN** the check SHALL report `page-error` or `no-text-measured` with a fix, and a page that navigates away SHALL exit 1 with `KERNEL_FAILED`.
+
 #### Scenario: Covered by a plate
 
 - **WHEN** a plain element painted above a text hides more than 15% of its glyphs

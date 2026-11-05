@@ -428,3 +428,41 @@ test("a system font collection is selected by family name, not embedded", { skip
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("each text run's own colour is measured, page errors and empty pages are findings, navigation away breaks the check", { skip: BROWSER.skip, timeout: 300000 }, async (t) => {
+  const root = tempRoot(t);
+  const opts = { puppeteerModule: BROWSER.puppeteerModule, chrome: BROWSER.chrome };
+  // a marked <g> with a black fill holding white <text> on black: the text's own fill counts
+  fs.writeFileSync(path.join(root, "group.svg"), `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300">
+<rect width="600" height="300" fill="#0D0B0B"/>
+<g data-chk="title" fill="#0D0B0B"><text x="40" y="150" font-family="sans-serif" font-size="80" fill="#F2EEE4">ABCD</text></g>
+<g data-chk="dim" fill="#F2EEE4"><text x="40" y="260" font-family="sans-serif" font-size="40" fill="#262222">EFGH</text></g></svg>`);
+  const group = await pageCheck.checkPage({ file: path.join(root, "group.svg"), ...opts });
+  assert.ok(!byRule(group).includes("contrast:title"), byRule(group).join(" "));
+  assert.ok(byRule(group).includes("contrast:dim"), byRule(group).join(" "));
+  // mixed-colour spans: the worst span decides
+  fs.writeFileSync(path.join(root, "spans.html"), `<!doctype html><html><body style="margin:0;width:600px;height:200px;background:#0D0B0B">
+<div data-chk="mix" style="position:absolute;left:20px;top:40px;font:700 40px sans-serif;color:#F2EEE4">ABC<span style="color:#2A2626">DEF</span></div>
+<div data-chk="even" style="position:absolute;left:20px;top:120px;font:700 40px sans-serif;color:#F2EEE4">ABC<span style="color:#FFFFFF">DEF</span></div></body></html>`);
+  const spans = await pageCheck.checkPage({ file: path.join(root, "spans.html"), ...opts });
+  const mix = spans.findings.find((f) => f.rule === "contrast" && f.slot === "mix");
+  assert.ok(mix && mix.measured.text === "#2A2626", JSON.stringify(spans.findings));
+  assert.ok(!byRule(spans).includes("contrast:even"));
+  // an uncaught exception
+  fs.writeFileSync(path.join(root, "throws.html"), `<!doctype html><html><body style="margin:0;width:400px;height:200px"><div data-chk="t" style="font:40px sans-serif">OK</div><script>throw new Error("boom in layout")</script></body></html>`);
+  const thrown = await pageCheck.checkPage({ file: path.join(root, "throws.html"), ...opts });
+  const error = thrown.findings.find((f) => f.rule === "page-error");
+  assert.ok(error && /boom in layout/.test(error.message) && error.fix.length > 30, JSON.stringify(thrown.findings));
+  assert.equal(thrown.status, "failed");
+  // no text at all fails, unless the page says it has none
+  fs.writeFileSync(path.join(root, "empty.html"), `<!doctype html><html><body style="margin:0;width:400px;height:200px;background:#D10E1F"></body></html>`);
+  const empty = await pageCheck.checkPage({ file: path.join(root, "empty.html"), ...opts });
+  assert.deepEqual(byRule(empty), ["no-text-measured:page"]);
+  fs.writeFileSync(path.join(root, "blank.html"), `<!doctype html><html data-no-text><body style="margin:0;width:400px;height:200px;background:#D10E1F"></body></html>`);
+  assert.equal((await pageCheck.checkPage({ file: path.join(root, "blank.html"), ...opts })).status, "passed");
+  // a page that navigates away is not measured: the kernel reports CHECK_FAILED (KERNEL_FAILED in the CLI)
+  fs.writeFileSync(path.join(root, "away.html"), `<!doctype html><html><body style="margin:0;width:400px;height:200px"><div data-chk="t" style="font:40px sans-serif">OK</div><script>setTimeout(() => { location.href = "about:blank"; }, 300)</script></body></html>`);
+  const away = cli(root, "template", "check", "away.html", "--chrome", BROWSER.chrome, "--puppeteer-module", BROWSER.puppeteerModule);
+  assert.equal(away.status, 1, JSON.stringify(away.payload));
+  assert.equal(away.payload.error.code, "KERNEL_FAILED");
+});

@@ -139,7 +139,9 @@ function discover() {
       const text = node.textContent.replace(/\s+/g, "");
       if (!text) continue;
       const parentStyle = getComputedStyle(node.parentElement || element);
-      runs.push({ text, family: parentStyle.fontFamily, weight: Number(parentStyle.fontWeight) || 400 });
+      // each run's own paint: an SVG <text> inside a marked <g> paints with its own fill, a span with its own colour
+      const painted = node.parentElement instanceof SVGElement ? parentStyle.fill : parentStyle.color;
+      runs.push({ text, family: parentStyle.fontFamily, weight: Number(parentStyle.fontWeight) || 400, color: painted });
     }
     const id = element.getAttribute("data-chk") || element.getAttribute("data-slot") || element.getAttribute("data-id") || `${element.localName}:${(element.textContent || "").trim().slice(0, 12)}`;
     const group = element.getAttribute("data-grp") || element.getAttribute("data-chk") || element.getAttribute("data-slot") || `u${index}`;
@@ -189,7 +191,7 @@ function discover() {
     }
   };
   for (const sheet of document.styleSheets) { try { collect(sheet.cssRules); } catch { /* cross-origin sheet */ } }
-  return { W, H, units, collage, faces };
+  return { W, H, units, collage, faces, noText: document.documentElement.hasAttribute("data-no-text") };
 }
 
 // ---- pixel helpers -----------------------------------------------------------------------------
@@ -309,7 +311,9 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
     const page = await browser.newPage();
     pages.push(page);
     const errors = [];
-    page.on("pageerror", (error) => errors.push(error.message));
+    const pageErrors = [];
+    page.on("pageerror", (error) => { pageErrors.push(error.message); errors.push(error.message); });
+    page.on("console", (message) => { if (message.type() === "error" && !/Failed to load resource/.test(message.text())) { pageErrors.push(message.text()); errors.push(message.text()); } });
     const failed = [];
     page.on("requestfailed", (request) => { failed.push(request.url()); errors.push(`request failed: ${request.url().slice(-120)}`); });
     let [W, H] = size ? size : [1920, 1080];
@@ -399,9 +403,27 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
     }
     await setState({ textOff: [], collageOff: [] });
 
+    // a page that navigated away or lost its document is not the file asked for: the check broke
+    const startUrl = pathToFileURL(absolute).href;
+    if (page.url() !== startUrl) throw new Error(`the page navigated away from ${path.basename(absolute)} to ${page.url()} during the check`);
     const findings = [];
     const measured = [];
     const notes = [];
+    for (const message of [...new Set(pageErrors)]) {
+      findings.push({
+        rule: "page-error", slot: "page", measuredBy: "browser", measured: { message: message.slice(0, 300) }, limit: { errors: 0 },
+        message: `the page reported an error: ${message.slice(0, 200)}`,
+        fix: "Fix the script error (open the file in a browser and read the console); what was measured may not be what the page should show.",
+      });
+    }
+    // no text measured: only a page that declares itself text-free (data-no-text on its root) may pass
+    if (!units.length && !found.noText) {
+      findings.push({
+        rule: "no-text-measured", slot: "page", measuredBy: "browser", measured: { textUnits: 0 }, limit: { textUnits: 1 },
+        message: "no visible text was found on the page, so overlap, contrast and coverage measured nothing",
+        fix: "Check that the text renders (fonts, scripts, visibility, the right file); if the page is meant to have no text, add data-no-text to its root element (<html> or <svg>).",
+      });
+    }
     const prefix = (group) => String(group).split("/")[0];
     // 0. missing resources: a failed image or font request changes what is measured
     for (const url of [...new Set(failed)]) {
@@ -499,30 +521,40 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
       const row = { slot: unit.id, text: unit.text, sizePx: r1(unit.fontSize), inkBox: unit.inkBox ? box4(unit.inkBox) : null, layoutBox: box4(unit.layout) };
       measured.push(row);
       if (unit.deco) continue;
-      const paint = parseCss(unit.color);
-      if (!paint) { notes.push(`${unit.id}: text colour ${unit.color} is not a colour; contrast not measured`); continue; }
-      const fg = paint.slice(0, 3);
-      const alpha = Math.min(1, paint[3] * (unit.opacity ?? 1));
+      // every colour the unit's text runs paint (mixed-colour spans: the worst wins); lettering has no runs
+      const colours = [...new Set((unit.runs.length && !unit.lettering ? unit.runs.map((r) => r.color) : [unit.color]))];
+      const paints = colours.map((c) => ({ css: c, paint: parseCss(c) })).filter((c) => c.paint);
+      if (!paints.length) { notes.push(`${unit.id}: text colour ${colours.join(", ")} is not a colour; contrast not measured`); continue; }
       const base = unit.inkBox || unit.layout;
       if (!unit.inkBox) notes.push(`${unit.id}: no ink found (text matches its ground or is clipped); contrast measured over its layout box`);
       const dx = (base.x1 - base.x0) * rules.contrastShrink; const dy = (base.y1 - base.y0) * rules.contrastShrink;
       const region = clampRegion({ x0: base.x0 + dx, y0: base.y0 + dy, x1: base.x1 - dx, y1: base.y1 - dy }, W, H);
       if (!region || region.w < 2 || region.h < 2 || !unit.ground) continue;
       const ground = unit.ground; const gr = unit.groundRegion;
-      const values = new Float64Array(region.w * region.h);
       const lums = new Float64Array(region.w * region.h);
+      let worstPaint = null;
       let k = 0;
-      for (let y = region.y; y < region.y + region.h; y += 1) for (let x = region.x; x < region.x + region.w; x += 1) {
-        if (x < gr.x || y < gr.y || x >= gr.x + gr.w || y >= gr.y + gr.h) continue;
-        const p = ((y - gr.y) * ground.width + (x - gr.x)) * 4;
-        const under = [ground.data[p], ground.data[p + 1], ground.data[p + 2]];
-        const L = luminance(under);
-        // a translucent text colour (rgba, opacity) is composited over the ground it sits on
-        const seen = alpha >= 0.999 ? fg : fg.map((v, i) => alpha * v + (1 - alpha) * under[i]);
-        values[k] = ratio(luminance(seen), L); lums[k] = L; k += 1;
+      for (const { paint } of paints) {
+        const fg = paint.slice(0, 3);
+        const alpha = Math.min(1, paint[3] * (unit.opacity ?? 1));
+        const values = new Float64Array(region.w * region.h);
+        k = 0;
+        for (let y = region.y; y < region.y + region.h; y += 1) for (let x = region.x; x < region.x + region.w; x += 1) {
+          if (x < gr.x || y < gr.y || x >= gr.x + gr.w || y >= gr.y + gr.h) continue;
+          const p = ((y - gr.y) * ground.width + (x - gr.x)) * 4;
+          const under = [ground.data[p], ground.data[p + 1], ground.data[p + 2]];
+          const L = luminance(under);
+          // a translucent text colour (rgba, opacity) is composited over the ground it sits on
+          const seen = alpha >= 0.999 ? fg : fg.map((v, i) => alpha * v + (1 - alpha) * under[i]);
+          values[k] = ratio(luminance(seen), L); lums[k] = L; k += 1;
+        }
+        if (!k) break;
+        const v = percentile(values.subarray(0, k), rules.contrastPercentile);
+        if (!worstPaint || v < worstPaint.value) worstPaint = { value: v, fg, alpha };
       }
-      if (!k) continue;
-      const value = percentile(values.subarray(0, k), rules.contrastPercentile);
+      if (!k || !worstPaint) continue;
+      const { value, fg, alpha } = worstPaint;
+      if (paints.length > 1) row.colours = paints.map((c) => c.css);
       // the ground's dark and light ends (10th and 90th percentile luminance) for the colour advice
       const darkL = percentile(lums.subarray(0, k), rules.contrastPercentile); const lightL = percentile(lums.subarray(0, k), 100 - rules.contrastPercentile);
       const greyOf = (L) => { const c = L <= 0.0031308 ? L * 12.92 : 1.055 * L ** (1 / 2.4) - 0.055; return hex([c * 255, c * 255, c * 255]); };
