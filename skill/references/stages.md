@@ -500,7 +500,7 @@ punctuation, shapes, effects, or common layout families are not automatic reject
 
 Default decision rule:
 
-- Product dashboards and operational tools: choose the quietest direction that maximizes scanability and repeated use.
+- Product dashboards and operational tools: choose the quietest direction that maximizes scanability and repeated use. Compose the page by `xy-charting.md#dashboard-and-chart-composition`, whatever the chart runtime.
 - Marketing pages and portfolios: choose the direction with the strongest first-viewport signal and least generic composition.
 - Components and app flows: choose the direction with the clearest states, accessibility, and interaction feedback.
 

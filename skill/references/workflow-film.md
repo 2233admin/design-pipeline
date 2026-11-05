@@ -269,8 +269,31 @@ until `productSource` is admitted; the run log, captures and bound job plan are 
 The gates sample beats and text, not every frame, and never grant acceptance. Before asking,
 review the checked draft frame by frame: `ffmpeg -i out.mp4 -vf fps=1 evidence/second-%03d.png`,
 open every frame at full size and look for text overlap, clipping, empty transitional frames,
-edge crowding, too-small text and wrong values. Fix, re-render and rerun `film check`; write the
-frame and creative review in `qa.md`. Then show the draft video, `evidence/contact-sheet.png` and
+edge crowding, too-small text and wrong values. The 1 fps sweep samples; it can miss the frames a
+viewer judges the film by, so extract those exactly and name each in `qa.md`:
+
+```bash
+ffmpeg -i out.mp4 -frames:v 1 evidence/frame-first.png                 # t = 0
+ffmpeg -sseof -0.04 -i out.mp4 -frames:v 1 evidence/frame-last.png     # final frame
+ffmpeg -i out.mp4 -vf "select='gte(t\,6.5)'" -frames:v 1 evidence/beat-02.png   # first frame at or after 6.5 s
+```
+
+| Frame | Where | Passes when |
+| --- | --- | --- |
+| Opening | `t = 0` | Complete and legible as a thumbnail: what the film is and who made it; not black, not mid-entrance (no half-typed line); by about 3 s something gives a reason to stay |
+| Peak of each beat | About 0.3 s before the beat's last spoken line ends (its `end` from the storyboard) | Most content is on screen and nothing has exited yet; one element is clearly the subject |
+| Closing | The final frame | Matches `endState` (`product-film-direction.md`): `rest` returns to the opening frame, `loop` continues into it without a jump, `free` shows the point or next step complete and still |
+| Strip | One small frame every 2–3 s, read in sequence | No long run of near-duplicate frames; no chain of hard cuts between unrelated pictures |
+
+For vertical films made for a feed, words and faces stay out of the top 15%, the bottom 25% and the
+right edge strip that apps cover with their own controls, and the point survives with sound off.
+
+Overall test: someone seeing the film once, at its real size, can state its point from frames and
+lines alone. If the point is missing or the peak is buried, rework the scene rather than adjusting
+layout. If one problem survives three fix rounds, stop and record it in the review. Fix, re-render
+and rerun `film check`; write the frame and creative review in `qa.md`. (These frame rules
+restate `motion-director`'s review guide from `JimLiu/baoyu-design`, MIT, in this repository's words.)
+Then show the draft video, `evidence/contact-sheet.png` and
 a one-paragraph gate summary. The owner accepts, or rejects with one sentence
 (`decide --stage review --verdict accept|reject`). A rejection becomes a rule that every later
 `next` returns until the owner accepts a draft, and reopens the check. Every tier asks; quick

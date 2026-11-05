@@ -8,7 +8,9 @@ This contract adapts the visible-comparison mechanism reviewed from
 [`joeseesun/qiaomu-design`](https://github.com/joeseesun/qiaomu-design) revision
 `39dac8238a6ba44a4e39c1f0f6ca641224b01879`. It keeps Design Pipeline's autonomous, resumable
 artifact lifecycle: a user may select a direction when present, while an unattended run may select
-one only after recording the same preview evidence and an explicit rationale.
+one only after recording the same preview evidence and an explicit rationale. The presentation
+rules (no rigged vote, stable names, decision fidelity) distil Claude Design's canvas craft as
+published in `JimLiu/baoyu-design`; see `openspec/changes/distill-claude-design-methods/design.md`.
 
 ## Applicability
 
@@ -75,6 +77,22 @@ captures with their card summaries and the thumbnail board; the other three card
 the owner may promote. `decide --by owner` keeps the exact words, the chosen ids and any mix
 (`--mix part=id`) as structured fields; an explicit taste statement (`--taste "<as said>"`) becomes a
 rule scoped as the owner said it.
+
+How the versions are put to the owner:
+
+- **No rigged vote.** Each version gets the same treatment in the message: its honest motivation and
+  its main trade-off, side by side. A set where only the favourite has a case made for it is not a
+  choice. The motivation and trade-off go in the reply, not on the version's canvas.
+- **Stable names.** Versions keep their ids (`dir-1` to `dir-3`) and names across every turn, and
+  cards keep their card ids; nothing is renumbered or renamed after the owner has seen it.
+- **Promoting an alternate.** The owner names the version it replaces. The alternate is built as a
+  full version in that slot: it takes the replaced version's `dir-N` id and file
+  (`direction-previews/dir-N.html` and its capture), its `card` field changes to the promoted card,
+  and the replaced card becomes an alternate under its own card id. `direction check` then runs again
+  on the new set.
+- **Fidelity.** The six cards and the thumbnail board only need enough fidelity to compare
+  directions; the three versions stay full versions as required above. After the pick the decision
+  stays settled unless the owner reopens it.
 
 The `ui` standard and full flow opens with a playback that restates the need, audience, scene, tone
 and what the owner did not say, and ends with "I'll make several real directions for you to see".

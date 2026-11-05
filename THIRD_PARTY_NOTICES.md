@@ -891,3 +891,26 @@ Project-owned references written in this repository's words; no upstream text is
 - `skill/references/interface-defaults.md` and `skill/references/timeline-deconstruction.md`: from
   https://github.com/raphaelsalaja/skill (`defaults`, `deconstruct`) at `5e989857664e5fb5f2b1b4b319edf3a8b076048f`,
   MIT, Copyright (c) 2026 Raphael Salaja.
+
+## JimLiu/baoyu-design and nexu-io/open-design design methods (distilled, not distributed)
+
+Change `distill-claude-design-methods` (#254) restates design mechanisms from two public
+collections in this repository's own words and structure. No prompt text, code, font or other asset
+is copied or distributed (`codeCopied: false`); the gap analysis and what landed where are in
+`openspec/changes/distill-claude-design-methods/design.md`.
+
+- Source: https://github.com/JimLiu/baoyu-design, reviewed commit
+  `609638de1594fe264f6e89b28cae986086093210`. Its `skills/claude-*` instructions and
+  `artifact-type/reference/` pages, `skills/dataviz` and the archived Claude Design prompt and
+  built-in skills are material from Anthropic, PBC, for which that repository grants no licence
+  (its NOTICE.md); the owner accepted that risk in #254 and only mechanisms are learned from them
+  (design-system inventory, role colours and cover; deck craft; dashboard composition; option
+  presentation). `skills/motion-director` is Copyright (c) 2026 Jim Liu 宝玉, MIT (film frame
+  review).
+- Source: https://github.com/nexu-io/open-design, reviewed commit
+  `5a0c47777975ddb91d09c1c16b423a3ef74bf572`, Apache License 2.0
+  (full text at apache.org). Mechanisms from `skills/pptx-html-fidelity-audit`
+  (footer rail) and `skills/data-report` (explicit chart container height). Its `craft/` files adapt
+  MIT `referodesign/refero_skill`; none of their text is used here.
+
+Neither upstream sponsors or has reviewed this project.
