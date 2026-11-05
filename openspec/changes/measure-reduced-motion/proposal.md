@@ -14,8 +14,10 @@ and keep an infinite parallax loop running for users who asked for less motion.
   the capture, bound to the target's sha256 (or URL and capture time), viewport and browser identity.
 - `verify composition --image <png> --reduced-motion <reduced-motion.json>` loads and validates the artifact, rejects
   it when the target file's current sha256 differs, and fails with `reduced-motion-still-moving` when the
-  reduce pass still has motion one second after load: an infinite or longer-than-one-second running animation
-  that moves (transform, position, size or scroll), or more than 0.5 % of pixels changing between consecutive frames.
+  reduce pass still has motion one second after load: a running animation that is "still moving" by the one
+  definition `audit.reduced-motion` of `verify interaction` uses (`STILL_MOVING` in `interaction-audit.cjs`:
+  properties beyond opacity and color, loading indicators exempt), or more than 0.5 % of pixels changing between
+  consecutive frames.
   Each animation is named by a stable identity: CSS animation name or transitioned property, plus the target's
   selector path; Web Animations created by script use their `id` when set.
   Opacity and colour changes are reported but do not fail, since they are the usual reduced-motion substitute.
@@ -29,6 +31,9 @@ and keep an infinite parallax loop running for users who asked for less motion.
 
 ## Reuse
 
+- `STILL_MOVING` and the reduce-pass animation inventory of `interaction-audit.cjs` (change
+  `interaction-reading-motion-states`, `audit.reduced-motion`): this change adds pixel sampling and the
+  composition artifact, not a second definition of motion.
 - `composition capture` browser launch and `verify composition` findings; the stabilisation helper from
   `capture-stable-frames` is not used here, because this pass must see motion.
 

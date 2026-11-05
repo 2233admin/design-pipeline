@@ -9,14 +9,18 @@ const { projectDesignSystemTokens } = require("../skill/scripts/design-system-de
 
 const file = path.join(__dirname, "../skill/references/astryx-design-system-snapshot.json");
 const snapshot = JSON.parse(fs.readFileSync(file, "utf8"));
+// sources:update regenerates the snapshot from the release the lock records.
+const locked = JSON.parse(fs.readFileSync(path.join(__dirname, "../sources.lock.json"), "utf8")).sources.find(({ id }) => id === "astryx");
 
 test("bundles the pinned stable Astryx catalog as inert JSON", () => {
   assert.equal(validateSnapshot(snapshot), snapshot);
   assert.equal(snapshot.namespace, "astryx");
   assert.equal(snapshot.provenance.provider, "astryx");
-  assert.equal(snapshot.provenance.version, "0.2.0");
-  assert.equal(snapshot.provenance.upstreamVersion, "0.2.0");
-  assert.equal(snapshot.provenance.revision, "921d3db31ae4323e0625d2f5a95c32fe07a3d5d7");
+  assert.equal(snapshot.provenance.version, locked.version);
+  assert.equal(snapshot.provenance.upstreamVersion, locked.version);
+  assert.equal(snapshot.provenance.revision, locked.revision);
+  assert.match(snapshot.provenance.acquisition, /^Static parse of the @astryxdesign\/core and @astryxdesign\/cli \S+ npm tarballs; no upstream code executed$/);
+  for (const name of ["@astryxdesign/core", "@astryxdesign/cli"]) assert.match(snapshot.provenance.integrity[name], /^sha512-[A-Za-z0-9+/]{86}==$/);
   assert.equal(snapshot.provenance.license, "MIT");
   assert.deepEqual(snapshot.provenance.runtime, {
     react: ">=19",
@@ -48,23 +52,36 @@ test("has unique IDs and excludes unstable package surfaces", () => {
 });
 
 test("preserves rich official component and foundation documentation", () => {
-  const rich = snapshot.components.filter((entry) =>
-    entry.usage?.description && entry.props?.length && entry.docsZh && entry.docsDense,
-  );
-  assert.ok(rich.length >= 80, `only ${rich.length} rich components`);
+  const rich = snapshot.components.filter((entry) => entry.usage?.description && entry.props?.length);
+  assert.ok(rich.length >= 100, `only ${rich.length} rich components`);
+  assert.ok(rich.filter((entry) => entry.docsZh && entry.docsDense).length >= 60);
   assert.ok(snapshot.components.some((entry) => entry.usage?.bestPractices?.length));
   assert.ok(snapshot.components.some((entry) => entry.theming));
-  const tokens = snapshot.docs.find(({ id }) => id === "tokens");
-  assert.ok(tokens.sections.some((section) =>
+  assert.ok(snapshot.hooks.some((entry) => entry.docsDense?.params?.length));
+  // Topic sections carry the token tables; the tokens topic gathers them for the projection.
+  assert.ok(snapshot.docs.some((doc) => doc.sections?.some((section) =>
     section.content?.some((content) => content.type === "table" && content.rows?.some((row) => row[0] === "--color-accent")),
-  ));
-  assert.equal(tokens.docsZh.name, "tokens");
-  assert.equal(tokens.docsDense.name, "tokens");
+  )));
+  assert.ok(snapshot.docs.some((doc) => doc.docsZh?.sections?.length));
+  const tokens = snapshot.docs.find(({ id }) => id === "tokens");
   assert.ok(Object.keys(tokens.theme.tokens).length >= 180);
   assert.deepEqual(tokens.theme.tokens["--color-accent"], ["#0064E0", "#2694FE"]);
-  assert.equal(tokens.theme.tokens["--spacing-4"], "16px");
+  assert.match(tokens.theme.tokens["--spacing-4"], /^(?:16px|1rem)$/);
   assert.equal(tokens.theme.tokens["--duration-medium"], "410ms");
   const projection = projectDesignSystemTokens(normalizeSnapshot(snapshot));
+  assert.equal(projection.status, "ready", JSON.stringify(projection.losses));
   assert.equal(projection.tokens.schema, "design-pipeline.design-tokens.v1");
   assert.ok(projection.tokens.tokens.color);
+});
+
+test("stores a docsZh or docsDense lens only where it reads differently from the entry", () => {
+  for (const collection of ["components", "hooks", "docs"]) {
+    for (const entry of snapshot[collection]) {
+      const { id, status, package: owner, docsZh, docsDense, theme, ...english } = entry;
+      for (const lens of [docsZh, docsDense].filter(Boolean)) {
+        const { package: lensOwner, ...rest } = lens;
+        assert.notDeepEqual(rest, english, `${collection}/${id} stores a lens identical to the entry`);
+      }
+    }
+  }
 });

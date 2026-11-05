@@ -7,6 +7,7 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { validateReceipt } = require("./evidence-core.cjs");
 const { fail, jsonResult, pathInside } = require("./contract-utils.cjs");
+const { detectBlockPage, refuseBlockPage, signalsFromHtml } = require("./block-page-core.cjs");
 
 const AGENT_BROWSER_ADAPTER = fs.realpathSync(path.join(__dirname, "..", "adapters", "agent-browser.cjs"));
 
@@ -133,6 +134,11 @@ function capture(options) {
     const receipt = validateReceipt(parsed, { evidenceRoot: stage, requireFiles: true });
     if (receipt.target.url !== url || receipt.target.viewport.width !== width || receipt.target.viewport.height !== height) {
       fail("evidence capture", "adapter receipt target does not match the capture request", { code: "ADAPTER_FAILED" });
+    }
+    // A challenge, WAF or captcha page is not the reference: refuse it before it becomes evidence.
+    if (receipt.artifacts.dom) {
+      const verdict = detectBlockPage(signalsFromHtml(fs.readFileSync(path.join(stage, receipt.artifacts.dom), "utf8")));
+      if (verdict.blocked) refuseBlockPage("evidence capture", url, verdict);
     }
     fs.writeFileSync(path.join(stage, "receipt.json"), `${JSON.stringify(receipt, null, 2)}\n`, { flag: "wx" });
     if (fs.existsSync(outputRoot)) fail("evidence capture", "--output-root appeared during capture");

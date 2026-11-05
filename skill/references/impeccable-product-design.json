@@ -2,8 +2,8 @@
   "schema": "design-pipeline.impeccable-product-design.v1",
   "source": {
     "url": "https://github.com/pbakaus/impeccable",
-    "revision": "ae388ac58fb33aade50fc47e2be07c3192dcaabd",
-    "reviewedAt": "2026-08-12"
+    "revision": "9fadc41729c38fd47d7ae622b501558653f9d2e9",
+    "reviewedAt": "2026-11-04"
   },
   "visitorModes": [
     {"id": "Persuade", "success": "The visitor decides and acts.", "primaryEvidence": ["brief.md", "directions.md", "qa.md"]},
@@ -41,7 +41,7 @@
     {"id": "adapt", "kind": "fix", "stage": "implementation-evidence", "route": "Device, breakpoint, and context adaptation", "outputs": ["brief.md", "design.md", "qa.md"], "proves": ["mobile", "tablet", "desktop", "low-data", "touch", "keyboard", "native constraints"]},
     {"id": "optimize", "kind": "fix", "stage": "implementation-evidence", "route": "UI performance diagnosis and repair", "outputs": ["qa.md", "benchmark result"], "proves": ["load cost", "runtime cost", "layout stability", "animation budget", "asset budget"]},
     {"id": "live", "kind": "iterate", "stage": "implementation-evidence", "route": "Browser variant iteration and acceptance", "outputs": ["browser evidence", "approved variant", "qa.md"], "proves": ["actual rendered behavior", "responsive result", "accepted variant", "source cleanup"]},
-    {"id": "visualize", "kind": "build", "stage": "surface-shaping", "route": "Comp-led direction and asset production", "outputs": [".impeccable/mocks/", "surface brief", "asset inventory", "directions.md"], "proves": ["composition", "narrative", "density", "focal moment", "asset medium", "approval"]}
+    {"id": "generate", "kind": "iterate", "stage": "implementation-evidence", "route": "Named-element variants in the live browser", "outputs": ["browser evidence", "approved variant", "qa.md"], "proves": ["named element", "variant count", "accepted variant", "source cleanup"]}
   ],
   "aliases": [
     {"id": "craft", "mapsTo": ["shape", "new-work"], "deprecated": true},
@@ -52,12 +52,14 @@
     {"id": "hooks", "route": "post-edit detector and narrow ignores", "outputs": [".impeccable/config.json", "hook findings"]},
     {"id": "doctor", "route": "artifact and schema drift maintenance", "outputs": ["drift report"]},
     {"id": "pin", "route": "standalone command shortcuts", "outputs": ["$<command> shortcut"]},
+    {"id": "comp-round", "route": "visualize.md comp round inside new work: three compositional comps approved before a comp-led build", "outputs": [".impeccable/mocks/", "directions.md"]},
     {"id": "native-platform", "route": "iOS, Android, and adaptive guidance", "outputs": ["platform-specific design constraints"]}
   ],
   "coverage": {
+    "upstreamListedCommandCount": 24,
     "upstreamCoreCommandCount": 23,
     "mappedCoreCommandCount": 23,
-    "mappedSupportingCapabilityCount": 5,
+    "mappedSupportingCapabilityCount": 6,
     "productDesignOnly": true,
     "skinThemeImported": false
   }

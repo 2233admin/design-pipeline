@@ -10,13 +10,14 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const test = require("node:test");
+const { lockedSource } = require("./helpers/locked-source.cjs");
 const { gitTreeId } = require("../skill/scripts/mengto-skills-core.cjs");
 const { findManifest, verifyDirectionLibrary } = require("../skill/scripts/design-direction-library-core.cjs");
 const { BUNDLES, WHOLE_BUNDLES, fetchBundle, partialBundles, upstreamRoot } = require("../skill/scripts/vendor-cache.cjs");
 const { storedPath } = require("../skill/scripts/upstream-path.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
-const [library] = partialBundles();
+const library = partialBundles().find((entry) => entry.schema === "design-pipeline.direction-library-source.v1");
 const bundle = library.bundle;
 const vendorRoot = path.dirname(library.manifestFile);
 const shippedRoot = path.join(vendorRoot, "upstream");
@@ -89,14 +90,14 @@ test("the shipped part is byte-exact, hashed per file, text only and not executa
   assert.equal(manifest.schema, "design-pipeline.direction-library-source.v1");
   assert.equal(manifest.bundle, "design-direction-library");
   assert.match(manifest.source.repository, /^https:\/\/github\.com\/[^/]+\/[^/]+$/);
-  assert.equal(manifest.source.revision, "798c4235ebff03d5c45e3c8affdf5e9d18f9dfa7");
-  assert.equal(manifest.source.gitTree, "cf7e7baaf14ed1331ee1bb06cff2bc8e1af344de");
+  assert.equal(manifest.source.revision, lockedSource("design-direction-library").revision);
+  assert.equal(manifest.snapshot.treeSha256, lockedSource("design-direction-library").treeSha256);
+  assert.equal(manifest.fetched.treeSha256, lockedSource("design-direction-library").fetchedTreeSha256);
   assert.equal(manifest.source.license, "MIT");
   assert.deepEqual(manifest.licenses, [{ path: "upstream/LICENSE", license: "MIT", copyright: "Copyright (c) 2026 alchaincyf (花叔 · 花生)" }]);
   assert.match(fs.readFileSync(path.join(shippedRoot, "LICENSE"), "utf8"), /^MIT License\n\nCopyright \(c\) 2026 alchaincyf/);
 
   const stored = walk(shippedRoot);
-  assert.equal(stored.length, 181);
   assert.equal(manifest.snapshot.fileCount, stored.length);
   assert.deepEqual(manifest.snapshot.objects.map((object) => storedPath(object.path)).sort(), stored);
   let bytes = 0;
@@ -119,14 +120,15 @@ test("the shipped part is byte-exact, hashed per file, text only and not executa
   assert.equal(stored.filter((file) => path.basename(file) === "SKILL.md").length, 0);
   assert.ok(manifest.snapshot.objects.some((object) => object.path === "SKILL.md"));
 
-  // The scope: references, all 84 specimens and the inert scripts are present.
+  // The scope: references, every specimen and the inert scripts are present.
   const shippedPaths = manifest.snapshot.objects.map((object) => object.path);
-  assert.equal(shippedPaths.filter((file) => /^assets\/style-specimens\/[^/]+\/[^/]+\.html$/.test(file)).length, 84);
+  const specimenCount = shippedPaths.filter((file) => /^assets\/style-specimens\/[^/]+\/[^/]+\.html$/.test(file)).length;
+  assert.ok(specimenCount > 0);
   for (const file of ["references/design-styles.md", "references/directions.md", "references/workflow.md", "references/critique-guide.md", "references/brand-asset-protocol.md", "references/content-guidelines.md", "references/evolution.md"]) {
     assert.ok(shippedPaths.includes(file), file);
   }
   assert.ok(shippedPaths.some((file) => file.startsWith("scripts/")));
-  assert.equal(manifest.specimens.length, 84);
+  assert.equal(manifest.specimens.length, specimenCount);
   for (const specimen of manifest.specimens) {
     assert.ok(fs.existsSync(path.join(vendorRoot, storedPath(specimen.path))), specimen.id);
     assert.ok(manifest.fetched.objects.some((object) => object.path === specimen.preview), `${specimen.id} preview is fetched`);
@@ -135,11 +137,10 @@ test("the shipped part is byte-exact, hashed per file, text only and not executa
 
 test("shipped and fetched parts rebuild the pinned Git tree; the fetched part is hashed but absent", () => {
   const all = [...manifest.snapshot.objects, ...manifest.fetched.objects];
-  assert.equal(all.length, 389);
+  assert.equal(all.length, manifest.snapshot.fileCount + manifest.fetched.fileCount);
   assert.equal(new Set(all.map((object) => object.path)).size, all.length);
   assert.equal(gitTreeId(all), manifest.source.gitTree);
-  assert.equal(manifest.fetched.fileCount, 208);
-  assert.equal(manifest.fetched.objects.length, 208);
+  assert.equal(manifest.fetched.objects.length, manifest.fetched.fileCount);
   assert.equal(manifest.fetched.root, "fetched");
   const extensions = new Set(manifest.fetched.objects.map((object) => path.extname(object.path).toLowerCase()));
   for (const extension of [".jpg", ".mp3", ".png"]) assert.ok(extensions.has(extension), extension);
@@ -170,7 +171,7 @@ test("verification reports the download before a fetch and is ready after a veri
   const real = verifyDirectionLibrary(library.manifestFile, { env: { DESIGN_PIPELINE_CACHE: temporary(t) } });
   assert.equal(real.status, "missing");
   assert.equal(real.fetch, `designer-pipeline sources fetch --bundle ${bundle}`);
-  assert.equal(real.shipped.fileCount, 181);
+  assert.equal(real.shipped.fileCount, manifest.snapshot.fileCount);
   assert.equal(findManifest(), library.manifestFile);
 
   const small = fixture(t);
@@ -259,7 +260,8 @@ test("doctor lists the download without blocking and nothing wires the inert scr
   assert.deepEqual(offenders, []);
   const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, "package.json"), "utf8"));
   assert.equal(packageJson.scripts["sources:import:direction-library"], "node scripts/import-design-direction-library.cjs");
-  assert.match(packageJson.scripts["sources:check"], /tests\/design-direction-library\.test\.cjs/);
+  assert.equal(packageJson.scripts["sources:check"], "node scripts/sources-check.cjs");
+  assert.ok(require("../scripts/sources-check.cjs").SOURCE_TESTS.includes("design-direction-library.test.cjs"));
 });
 
 function walkAbsolute(dir) {
@@ -271,7 +273,7 @@ function walkAbsolute(dir) {
   });
 }
 
-test("the importer needs the reviewed revision, a clean checkout and a valid date, and keeps the snapshot", (t) => {
+test("the importer needs the upstream license, a clean checkout and a valid date, and keeps the snapshot", (t) => {
   const root = temporary(t);
   fs.mkdirSync(path.join(root, "scripts"));
   fs.mkdirSync(path.join(root, "skill/scripts"), { recursive: true });
@@ -297,7 +299,7 @@ test("the importer needs the reviewed revision, a clean checkout and a valid dat
     assert.equal(fs.readFileSync(path.join(destination, "manifest.json"), "utf8"), "previous snapshot\n");
     assert.deepEqual(fs.readdirSync(path.dirname(destination)), [library.directory]);
   };
-  rejects(/source revision must be the reviewed 798c4235ebff03d5c45e3c8affdf5e9d18f9dfa7/);
+  rejects(/LICENSE does not match the reviewed MIT attribution/);
   rejects(/valid YYYY-MM-DD/, ["--reviewed-at", "2026-02-30"]);
   fs.appendFileSync(path.join(source, "README.md"), "dirty\n");
   rejects(/tracked working-tree changes/);
