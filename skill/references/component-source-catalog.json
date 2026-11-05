@@ -6756,37 +6756,6 @@
       "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA a18858fb7b014098cba85703e66609be66a26ef5 (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
     },
     {
-      "id": "source/raphaelsalaja/skill",
-      "sourceId": "raphaelsalaja/skill",
-      "recordType": "source",
-      "name": "12-principles-of-animation",
-      "availability": "bundled-implementation",
-      "aliases": [
-        "https://github.com/raphaelsalaja/skill"
-      ],
-      "localPaths": {
-        "guide": "references/ui-craft-sources.md",
-        "manifest": "vendor/12-principles-of-animation/manifest.json",
-        "implementation": "vendor/12-principles-of-animation/upstream"
-      },
-      "provenance": {
-        "source": "12-principles-of-animation",
-        "license": "MIT",
-        "url": "https://github.com/raphaelsalaja/skill",
-        "revision": "dc9eef22f13635df77d9b9e67c82aa85d52a97b7",
-        "contentHash": "c836d17cb89f4c7d0cdd88829968db5484d9fd8f8e1762b4dc3fc29b067859e7",
-        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
-      },
-      "license": {
-        "state": "verified",
-        "id": "MIT",
-        "evidence": [
-          "https://github.com/raphaelsalaja/skill/blob/dc9eef22f13635df77d9b9e67c82aa85d52a97b7/skills/12-principles-of-animation/SKILL.md"
-        ]
-      },
-      "licenseScope": "MIT is declared only in the pinned SKILL.md frontmatter (license: MIT); the repository has no LICENSE file and publishes no copyright line at the reviewed revision. Scope: README.md and skills/12-principles-of-animation/** snapshot."
-    },
-    {
       "id": "source/swamimalode07/rare-ui",
       "sourceId": "swamimalode07/rare-ui",
       "recordType": "source",

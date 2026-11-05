@@ -20,9 +20,8 @@ const repoRoot = path.resolve(__dirname, "..");
 const skillRoot = path.join(repoRoot, "skill");
 const vendorRoot = path.join(skillRoot, "vendor");
 const GUIDES = ["references/ui-craft-sources.md", "references/react-doctor.md"];
-const GUIDE_ANCHORS = ["emil-design-eng", "make-interfaces-feel-better", "fixing-accessibility", "12-principles-of-animation", "shadcn", "playwright-cli", "react-doctor"];
+const GUIDE_ANCHORS = ["emil-design-eng", "make-interfaces-feel-better", "fixing-accessibility", "shadcn", "playwright-cli", "react-doctor"];
 const BOUNDARY = { mode: "built-in-reference-adaptation", installsUpstreamDependencies: false, executesUpstreamCommands: false, fetchesRemotePrompts: false, changesProjectRuntime: false };
-const LICENSE_NAME = /^(?:licen[cs]e|copying)(?:\.[^/]*)?$/i;
 
 // A bundle holds exactly its scope at the locked upstream revision: the skill folder plus the listed
 // root files. The inventory follows upstream; the lock's treeSha256 pins the bytes.
@@ -82,32 +81,32 @@ function verifySnapshot(name, root) {
   assert.deepEqual(manifest.skills, [{ name: reviewed.skill, path: `upstream/${entry}`, description: metadata.description }]);
 
   const license = reviewed.license;
-  if (license.kind === "frontmatter") {
-    assert.equal(metadata.license, "MIT");
-    assert.ok(entryText.includes(`\n${license.evidence}\n`));
-    assert.deepEqual(files.filter(file => LICENSE_NAME.test(path.posix.basename(file))), []);
-    assert.deepEqual(manifest.licenses, [{ path: `upstream/${entry}`, license: "MIT", evidence: "license: MIT", note: license.note }]);
-    assert.match(manifest.licenses[0].note, /no LICENSE file .*no copyright line/);
+  const text = fs.readFileSync(path.join(upstream, license.file), "utf8");
+  assert.ok(text.split(/\r?\n/).some(line => line.trim() === license.copyright), `${name} copyright line`);
+  if (license.kind === "mit-file") {
+    assert.ok(text.startsWith("MIT License") && text.includes("Permission is hereby granted, free of charge"), name);
+    assert.deepEqual(manifest.licenses, [{ path: `upstream/${license.file}`, license: "MIT", copyright: license.copyright }]);
   } else {
-    const text = fs.readFileSync(path.join(upstream, license.file), "utf8");
-    assert.ok(text.split(/\r?\n/).some(line => line.trim() === license.copyright), `${name} copyright line`);
-    if (license.kind === "mit-file") {
-      assert.ok(text.startsWith("MIT License") && text.includes("Permission is hereby granted, free of charge"), name);
-      assert.deepEqual(manifest.licenses, [{ path: `upstream/${license.file}`, license: "MIT", copyright: license.copyright }]);
-    } else {
-      assert.match(text, /^\s*Apache License\r?\n\s*Version 2\.0, January 2004\r?\n/);
-      assert.equal(license.copyright, "Copyright (c) Microsoft Corporation.");
-      assert.deepEqual(manifest.licenses, [{ path: "upstream/LICENSE", license: "Apache-2.0", copyright: license.copyright, notice: "No NOTICE file exists at the reviewed revision." }]);
-      assert.deepEqual(files.filter(file => /^notice(?:\.|$)/i.test(path.posix.basename(file))), []);
-    }
+    assert.match(text, /^\s*Apache License\r?\n\s*Version 2\.0, January 2004\r?\n/);
+    assert.equal(license.copyright, "Copyright (c) Microsoft Corporation.");
+    assert.deepEqual(manifest.licenses, [{ path: "upstream/LICENSE", license: "Apache-2.0", copyright: license.copyright, notice: "No NOTICE file exists at the reviewed revision." }]);
+    assert.deepEqual(files.filter(file => /^notice(?:\.|$)/i.test(path.posix.basename(file))), []);
   }
   assert.deepEqual(manifest.boundary, BOUNDARY);
   return manifest;
 }
 
-test("the six reviewed UI craft sources are exactly the contracted bundles; React Doctor is not vendored", () => {
-  assert.deepEqual(Object.keys(REVIEWED), ["emil-design-eng", "make-interfaces-feel-better", "fixing-accessibility", "12-principles-of-animation", "shadcn", "playwright-cli"]);
+test("the five reviewed UI craft sources are exactly the contracted bundles; React Doctor is not vendored", () => {
+  assert.deepEqual(Object.keys(REVIEWED), ["emil-design-eng", "make-interfaces-feel-better", "fixing-accessibility", "shadcn", "playwright-cli"]);
   assert.equal(fs.existsSync(path.join(vendorRoot, "react-doctor")), false);
+});
+
+test("the dropped 12-principles-of-animation bundle leaves no route, lock entry or catalog link behind (#264)", () => {
+  assert.equal(fs.existsSync(path.join(vendorRoot, "12-principles-of-animation")), false);
+  assert.throws(() => lockedSource("12-principles-of-animation"), /has no 12-principles-of-animation/);
+  const shipped = ["SKILL.md", ...fs.readdirSync(path.join(skillRoot, "references"), { recursive: true }).map(file => path.join("references", file)), "vendor/README.md"]
+    .filter(file => fs.statSync(path.join(skillRoot, file)).isFile());
+  for (const file of shipped) assert.equal(fs.readFileSync(path.join(skillRoot, file), "utf8").includes("12-principles-of-animation"), false, file);
 });
 
 for (const name of Object.keys(REVIEWED)) {
@@ -238,17 +237,7 @@ test("UI craft import takes whatever revision the clean checkout is at and recor
   assert.deepEqual(manifest.snapshot.objects.map(object => object.path).includes("apps/out-of-scope.txt"), false);
 });
 
-test("UI craft import verifies frontmatter-only MIT evidence and the absent Apache NOTICE", t => {
-  const principles = rejectionFixture(t, "12-principles-of-animation");
-  fs.writeFileSync(path.join(principles.source, "skills/12-principles-of-animation/LICENSE"), "MIT License\n");
-  principles.commit();
-  principles.rejects(/expects no license file, but the source tracks skills\/12-principles-of-animation\/LICENSE/);
-  fs.rmSync(path.join(principles.source, "skills/12-principles-of-animation/LICENSE"));
-  const entry = path.join(principles.source, "skills/12-principles-of-animation/SKILL.md");
-  fs.writeFileSync(entry, fs.readFileSync(entry, "utf8").replace(/^license: MIT$/m, "license: Apache-2.0"));
-  principles.commit();
-  principles.rejects(/does not declare the reviewed 12-principles-of-animation license: license: MIT/);
-
+test("UI craft import verifies the absent Apache NOTICE", t => {
   const playwright = rejectionFixture(t, "playwright-cli");
   fs.writeFileSync(path.join(playwright.source, "NOTICE"), "notice\n");
   playwright.commit();
@@ -263,7 +252,7 @@ test("UI craft import verifies frontmatter-only MIT evidence and the absent Apac
 let packaged = null;
 test.after(() => { if (packaged) fs.rmSync(packaged.root, { recursive: true, force: true }); });
 
-// Builds the release archive once, lists it and extracts the six bundles plus both guides.
+// Builds the release archive once, lists it and extracts the five bundles plus both guides.
 function packageArchive() {
   if (packaged) return packaged;
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "design-pipeline-ui-craft-package-"));
