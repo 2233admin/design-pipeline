@@ -95,6 +95,7 @@
     "interaction-audit.test.cjs",
     "page-compare.test.cjs",
     "page-refs.test.cjs",
+    "reference-extract.test.cjs",
     "page-review.test.cjs",
     "workflow-next.test.cjs",
     "workflow-replicate.test.cjs",

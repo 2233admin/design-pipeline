@@ -164,6 +164,14 @@ A `quick` project started before quick intake existed records its stated line fi
 
 ## reference
 
+For a live page run `reference extract --url <page> --output <dir>` before reading it yourself: it
+measures the palette (CIEDE2000 clusters tiered by share), type scale and spacing from computed
+styles with no model, and writes `extraction.json`, `palette-evidence.json` (pending, DOM source
+ready) and `design-md-draft.md`. Judge that draft; never copy a `(low confidence)` value, and check
+merged dark surfaces it lists. A challenge or block page (`REFERENCE_BLOCKED`), an HTTP error
+(`REFERENCE_HTTP_STATUS`) or a page that renders nothing (`REFERENCE_EMPTY`) exits 1; use a
+screenshot as an image reference instead.
+
 For a local video run `reference analyze-video --path <contained-video> --output <new-dir>`.
 Inspect ordered timed windows, record named target/property/state observations and uncertainties,
 and bind `videoAnalysis` in the existing reference carrier. A note alone does not finish temporal

@@ -1,13 +1,29 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
-### Requirement: Replicate extraction is measured from the reference page
+### Requirement: Reference pages are measured before they are judged
 
-When the replicate reference is a live page or HTML, the pipeline SHALL measure its colours, type, spacing, radii, shadows and motion from computed styles and running animations into `extraction.json`. In replicate mode with a measured extraction, each DESIGN.md and MOTION.md token SHALL match a measured value within tolerance or be declared as added with a reason.
+`reference extract --url <page> | --path <index.html> --output` SHALL measure a reference page's colours, type scale, spacing, radii, shadows and motion from computed styles and running animations without a model, in one page walk, and write `extraction.json`, palette evidence conforming to `design-pipeline.palette-evidence.v1` with status `pending`, draft DESIGN.md tokens and `tokens.dtcg.json`. Unsupported values SHALL be `(low confidence)`. Replicate EXTRACT and website-cloning Stage B SHALL run it first.
 
 #### Scenario: Measured page
 
 - **WHEN** `reference extract` runs on a page whose primary button is #1F6FEB with a 450 ms cubic-bezier(.2,.8,.2,1) hover transition
 - **THEN** `extraction.json` SHALL list #1F6FEB with its count and sample selector, and the 450 ms duration and that easing
+
+#### Scenario: Local page
+
+- **WHEN** `--path` names an index.html inside `--root`
+- **THEN** it SHALL be measured with the same walk and written to the same files as a `--url` page
+
+#### Scenario: Existing outputs keep their meaning
+
+- **WHEN** an extraction with motion and radii is written
+- **THEN** the palette, type and spacing fields of `extraction.json`, `palette-evidence.json` and `design-md-draft.md` SHALL be the same as without them
+
+## ADDED Requirements
+
+### Requirement: Replicate tokens match the measured extraction
+
+In replicate mode with a measured extraction, each DESIGN.md and MOTION.md token SHALL match a measured value within tolerance or be declared as added with a reason, and the owner's confirmation SHALL bind `extraction.json`.
 
 #### Scenario: Estimated token is caught
 
