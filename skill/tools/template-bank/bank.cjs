@@ -11,7 +11,7 @@ const { pathToFileURL } = require("node:url");
 const lettering = require("./lettering.cjs");
 const measure = require("./measure.cjs");
 const coverage = require("./coverage.cjs");
-const LAYOUTS = Object.assign({}, ...["layouts.cjs", "layouts-shinbo.cjs", "layouts-citypop.cjs", "layouts-xerox.cjs", "layouts-litho.cjs", "layouts-pixel.cjs", "layouts-hud.cjs", "layouts-cyanotype.cjs"]
+const LAYOUTS = Object.assign({}, ...["layouts.cjs", "layouts-shinbo.cjs", "layouts-citypop.cjs", "layouts-xerox.cjs", "layouts-litho.cjs", "layouts-pixel.cjs", "layouts-hud.cjs", "layouts-cyanotype.cjs", "layouts-street.cjs"]
   .filter((file) => fs.existsSync(path.join(__dirname, file))).map((file) => require(`./${file}`).LAYOUTS));
 
 const TEMPLATES_ROOT = path.join(__dirname, "templates");

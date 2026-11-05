@@ -1,0 +1,131 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.tape-topbar",
+  "family": "ui",
+  "style": "street-tape",
+  "title": "Site top bar: a black full-width bar, a sticker wordmark, a white capsule for the current page, one acid capsule CTA, round icon buttons",
+  "use": "The fixed top bar of a game's official site (1920 wide, 66 high). Six nav labels; the current one is a white capsule. Not for in-game HUD bars.",
+  "canvas": {
+    "width": 1920,
+    "height": 66
+  },
+  "sizes": [
+    "1920x66",
+    "2560x88",
+    "3840x132"
+  ],
+  "aspect": "320:11",
+  "accent": {
+    "roles": [
+      "acid"
+    ],
+    "maxShare": 0.06
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "current": {
+      "type": "integer",
+      "default": 1,
+      "min": 1,
+      "max": 6,
+      "class": "decoration",
+      "note": "which nav item is the current page (white capsule)"
+    },
+    "more_caret": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "a caret after the sixth label (a 'more' menu)"
+    },
+    "icons": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "the three round icon buttons (music, community, account)"
+    }
+  },
+  "slots": {
+    "brand_cjk": {
+      "kind": "text",
+      "default": "回放街区",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "brand_latin": {
+      "kind": "text",
+      "default": "REPLAY WARD",
+      "maxChars": 12,
+      "font": "num",
+      "note": "Latin and digits only"
+    },
+    "nav_1": {
+      "kind": "text",
+      "default": "首页",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "nav_2": {
+      "kind": "text",
+      "default": "角色介绍",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "nav_3": {
+      "kind": "text",
+      "default": "影像资料",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "nav_4": {
+      "kind": "text",
+      "default": "新闻资讯",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "nav_5": {
+      "kind": "text",
+      "default": "设定档案",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "nav_6": {
+      "kind": "text",
+      "default": "更多",
+      "maxChars": 3,
+      "font": "head"
+    },
+    "cta": {
+      "kind": "text",
+      "default": "立即下载",
+      "maxChars": 4,
+      "font": "head"
+    }
+  },
+  "relations": [
+    "Bar 66 units high, pure black, content between x 275 and 1620 (1370 wide, centred).",
+    "Current page: white capsule 103 x 35, black 900 text; others mute grey on black, 121-unit pitch.",
+    "One acid capsule CTA (100 x 33) after the nav, then three round buttons on a 70-unit pitch."
+  ],
+  "decoration": [
+    "Cassette mark in the brand sticker, the caret, the three icons: drawn."
+  ],
+  "provenance": {
+    "corpus": "replay-ward case (回放街区 REPLAY WARD): our own original one-page game site and two in-game screens in the street-tape grammar",
+    "experiment": "styles/street-tape/style.json provenance (reference board measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "Positions measured on the board's top bar (66 px, capsules 103 x 35 and 93 x 33) and kept in 1920 units; the case's bar is the same.",
+    "sampleIds": [
+      "replay-ward/topbar"
+    ],
+    "measured": [
+      "Board: bar #000 66 px; current capsule 103 x 35 white; CTA 93 x 33 acid; nav pitch about 123 px.",
+      "Case: the brand Latin under the CJK name touched it at 2 px (8 text-overlap findings over 7 pages); the lockup is one block."
+    ],
+    "summary": "replay-ward top bar"
+  }
+}

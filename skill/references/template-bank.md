@@ -25,8 +25,9 @@ grammar + check rules; its templates are the parameterised layouts of that gramm
 | `woodblock-pixel` | 2 (title screen, inventory) | Road-station woodblock on a 480 x 270 grid: bokashi dither bands, ink one pixel out of register, paper panels on dark-red plates, a vertical vermilion cartouche |
 | `acid-print-hud` | 1 (combat HUD) | One acid ink on black slabs, giant chamfered numerals with a misregistered plate, the scene as a cold halftone |
 | `cyanotype-specimen` | 2 (card frame in four rarities, pack opening) | Cyanotype specimen sheets: one Prussian blue, hand-brushed fields, white-line specimens, rarity by process not colour |
+| `street-tape` | 5 (site top bar, section title block, vertical pager, cut container with carousel, sticker CTA) | Japanese street-fashion city game site: light grey, one acid yellow-green, black fine stripes, rounded slabs with one 49-degree cut, a film strip, numbered three-line section titles |
 
-The six game packs come from owner-approved cases (each pack's `provenance` names the case, its lineage and
+The six game packs come from owner-approved cases, and `street-tape` from a reference board the owner supplied (kept private, measured, never shipped) and an original site built on it (each pack's `provenance` names the case, its lineage and
 the rule *borrow grammar, never assets*); `examples` in each pack lists the case screens that stayed example
 renders because their structure was a one-off.
 
@@ -237,6 +238,15 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
   image slot: print it as a halftone first (pack recipes).
 - **cyanotype-specimen**: `card.tcg-frame --param rarity=common|rare|epic|legend` changes the process, not
   the hue; the specimen goes in the `art` slot as white lines with alpha, and a drawn algae frond stands in.
+
+- **street-tape**: every diagonal is 49 degrees (`CUT` in `layouts-street.cjs`; measured three ways on the
+  board, not 45). The section number (`number`) and the pager's `current` / `next` take digits only; `date`
+  takes digits and `/ . -`. Anton and Oswald are Latin-only roles (`num`, `label`): put mixed CJK and
+  Latin copy in `head` or `body`, or the browser check reports glyph coverage. The number is sized from
+  Anton's digit height (0.868 em) so its ink is 2.7 times the CJK title's, as measured; without Anton
+  installed it falls back to Oswald at 400, which is thinner (pass `--font-dir` with Anton). `side=right`
+  mirrors the slabs and the title edge; `kv.tape-cut-carousel --param control=dots` swaps the thumb track
+  for dots. Pictures go in `media`; characters come from an image-generation task sheet (#311).
 
 Layout helpers for new packs: `layout-kit.cjs` (`rbox` for a tilted slot's box, `tilt`, `ngon`,
 `discStripes`, a seeded `rng`); `d.text(..., { italic, filter })`, `d.lettering(..., { shadow: { dx, dy,

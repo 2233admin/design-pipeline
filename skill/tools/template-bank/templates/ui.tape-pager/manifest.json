@@ -1,0 +1,70 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.tape-pager",
+  "family": "ui",
+  "style": "street-tape",
+  "title": "Right-edge vertical pager: a black bar, acid to-previous and to-next marks around the current number set sideways, the next number half visible",
+  "use": "The fixed section pager on the right edge of a long page or a game menu. current and next are two-digit numbers.",
+  "canvas": {
+    "width": 46,
+    "height": 268
+  },
+  "sizes": [
+    "46x268",
+    "92x536",
+    "138x804"
+  ],
+  "aspect": "23:134",
+  "accent": {
+    "roles": [
+      "acid"
+    ],
+    "maxShare": 0.2
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    }
+  },
+  "slots": {
+    "current": {
+      "kind": "text",
+      "default": "02",
+      "maxChars": 2,
+      "font": "num",
+      "note": "digits only"
+    },
+    "next": {
+      "kind": "text",
+      "default": "03",
+      "maxChars": 2,
+      "font": "num",
+      "note": "digits only",
+      "bleed": true
+    }
+  },
+  "relations": [
+    "Bar 46 units wide, round inner corners (12), bleeding off the right edge.",
+    "Current number acid, sideways, between the two acid marks; the next number white, cut by the bar's bottom."
+  ],
+  "decoration": [
+    "The bar-and-chevron marks: drawn."
+  ],
+  "provenance": {
+    "corpus": "replay-ward case (回放街区 REPLAY WARD): our own original one-page game site and two in-game screens in the street-tape grammar",
+    "experiment": "styles/street-tape/style.json provenance (reference board measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "Measured on the board: bar 46 px wide, 263-268 px visible, acid part 150 px; the case's pager is the same.",
+    "sampleIds": [
+      "replay-ward/pager"
+    ],
+    "measured": [
+      "Board: black bar 46 x 263 at the right edge, acid marks and number 28 x 150 px.",
+      "Case: the pager stays readable at 390 wide scaled to 0.75."
+    ],
+    "summary": "replay-ward pager"
+  }
+}
