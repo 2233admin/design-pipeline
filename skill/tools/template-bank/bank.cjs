@@ -906,7 +906,7 @@ function check(svgText, options = {}) {
     add({
       rule: "unsupported-geometry", slot: item.element.startsWith("slot ") ? item.element.slice(5) : undefined, measured: { element: item.element, found: item.what }, limit: { supported: "rect, polygon, path, circle, line, text with dy-only tspans; transform attributes with matrix, translate, scale, rotate" },
       message: `${item.element} contains ${item.what}, which the check cannot measure`,
-      fix: "Flatten it: no <use>, nested <svg>, <foreignObject> or CSS transforms; put moves in the transform attribute (translate, rotate, scale, matrix) and give tspans only dy; or render again with template render and change the layout through --set and --param.",
+      fix: item.fix || "Flatten it: no <use>, nested <svg>, <foreignObject> or CSS transforms; put moves in the transform attribute (translate, rotate, scale, matrix) and give tspans only dy; or render again with template render and change the layout through --set and --param.",
     });
   }
   // 10. cutting rhythm (motion templates): segment lengths, flash groups, duration and flash rate.

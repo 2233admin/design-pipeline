@@ -151,7 +151,11 @@ is hidden with it and never taken as its ground.
 Mark your own layers so they group and exempt correctly: `data-chk="<id>"` names a text unit (an
 element holding marked children is a container), `data-grp="<group>/<n>"` makes a lock-up whose
 parts may touch, `data-deco` exempts decoration from overlap and contrast, `data-bleed` from the
-canvas edge, `data-collage` marks a cut-out drawn in SVG. When both halves run, the browser's pixel
+canvas edge, `data-collage` marks a cut-out drawn in SVG.
+Do not put `data-chk` on decorative paths: a marked element is measured as text (overlap, off-canvas and
+contrast), even when it holds only paths; use `data-deco` for decoration. Path data is read in full
+(arc flags may be glued to the next number, as svgo writes them); a `d` that cannot be read is
+reported as `unsupported-geometry` (unmeasured) with a fix, never measured in part. When both halves run, the browser's pixel
 contrast replaces the static estimate.
 Without it, the static check samples the rendered pixels under text on a real image slot (or
 takes a declared `--tone`).

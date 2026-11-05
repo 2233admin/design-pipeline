@@ -171,29 +171,66 @@ const apply = (m, [x, y]) => [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + 
 // Subpaths of a path as polygons. Lines (M L H V, absolute and relative) are exact; curves (C S Q T)
 // keep their control points and end point, arcs (A) their end point, so a filled curve is measured
 // by its control polygon and never by stray numbers (an unparsed arc used to add a phantom
-// triangle reaching the origin).
-function pathSubpaths(d) {
+// triangle reaching the origin). The data is read character by character, as SVG defines it: numbers
+// may touch (`10-5`, `.5.5`) and the two arc flags are single 0/1 characters that may be glued to
+// the next number (svgo writes `a10 10 0 0110 10` for flags 0 and 1, then x=10, y=10).
+// `parsePath` also says whether all of the data was read; `pathSubpaths` keeps the polygons only.
+const PATH_ARGS = { M: "nn", L: "nn", H: "n", V: "n", C: "nnnnnn", S: "nnnn", Q: "nnnn", T: "nn", A: "nnnffnn" };
+const PATH_NUMBER = /[-+]?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/iy;
+function parsePath(d) {
+  const text = String(d);
   const subpaths = [];
   let current = null;
   let pen = [0, 0];
   let start = [0, 0];
-  const ARGS = { M: 2, L: 2, H: 1, V: 1, C: 6, S: 4, Q: 4, T: 2, A: 7 };
-  for (const [, command, rest] of String(d).matchAll(/([MLHVCSQTAZmlhvcsqtaz])([^MLHVCSQTAZmlhvcsqtaz]*)/g)) {
+  let pos = 0;
+  let error = null;
+  let started = false;
+  const skip = () => { while (pos < text.length && /[\s,]/.test(text[pos])) pos += 1; };
+  const readNumber = () => {
+    skip();
+    PATH_NUMBER.lastIndex = pos;
+    const m = PATH_NUMBER.exec(text);
+    if (!m) return null;
+    pos += m[0].length;
+    return Number(m[0]);
+  };
+  const readFlag = () => {
+    skip();
+    if (text[pos] !== "0" && text[pos] !== "1") return null;
+    pos += 1;
+    return Number(text[pos - 1]);
+  };
+  const fail = (what) => { error = `${what} at character ${pos} of "${text.length > 60 ? `${text.slice(0, 57)}...` : text}"`; };
+  skip();
+  while (pos < text.length && !error) {
+    const command = text[pos];
     const upper = command.toUpperCase();
+    if (!/[MLHVCSQTAZ]/i.test(command)) { fail(`unexpected "${command}"`); break; }
+    if (upper !== "M" && !started) { fail("path data does not start with a moveto (M or m)"); break; }
+    started = true;
+    pos += 1;
     const relative = command !== upper;
-    if (upper === "Z") { if (current) pen = start; current = null; continue; }
-    const numbers = (rest.match(/-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/gi) || []).map(Number);
-    const n = ARGS[upper];
-    for (let i = 0; i + n <= numbers.length; i += n) {
-      const a = numbers.slice(i, i + n);
+    if (upper === "Z") { if (current) pen = start; current = null; skip(); continue; }
+    const kinds = PATH_ARGS[upper];
+    for (let count = 0; ; count += 1) {
+      skip();
+      if (count > 0 && (pos >= text.length || /[A-Za-z]/.test(text[pos]))) break;
+      const a = [];
+      for (const kind of kinds) {
+        const value = kind === "f" ? readFlag() : readNumber();
+        if (value === null) { fail(`${command} needs ${kinds.length} values (${kind === "f" ? "an arc flag must be a single 0 or 1" : "expected a number"})`); break; }
+        a.push(value);
+      }
+      if (error) break;
       const abs = (x, y) => (relative ? [pen[0] + x, pen[1] + y] : [x, y]);
       let points;
       if (upper === "H") points = [[relative ? pen[0] + a[0] : a[0], pen[1]]];
       else if (upper === "V") points = [[pen[0], relative ? pen[1] + a[0] : a[0]]];
       else if (upper === "A") points = [abs(a[5], a[6])];
-      else { points = []; for (let j = 0; j < n; j += 2) points.push(abs(a[j], a[j + 1])); }
+      else { points = []; for (let j = 0; j < a.length; j += 2) points.push(abs(a[j], a[j + 1])); }
       const end = points.at(-1);
-      if (upper === "M" && i === 0) { current = [end]; subpaths.push(current); start = end; }
+      if (upper === "M" && count === 0) { current = [end]; subpaths.push(current); start = end; }
       else {
         if (!current) { current = [pen]; subpaths.push(current); start = pen; }
         current.push(...points);
@@ -201,8 +238,9 @@ function pathSubpaths(d) {
       pen = end;
     }
   }
-  return subpaths;
+  return { subpaths, error };
 }
+const pathSubpaths = (d) => parsePath(d).subpaths;
 
 function polygonArea(points) {
   let sum = 0;
@@ -457,6 +495,10 @@ function unsupportedGeometry(tree) {
   };
   for (const node of walk(tree)) {
     if (node.name === "svg" && node.parent && node.parent.name !== "#root") found.push({ element: where(node), what: "a nested <svg>" });
+    if (node.name === "path" && node.attrs.d !== undefined) {
+      const { error } = parsePath(node.attrs.d);
+      if (error) found.push({ element: where(node), what: `path data that cannot be read in full (${error}), so the element is unmeasured`, fix: "Rewrite the d attribute as valid SVG path data (a command letter, then every value it needs; arc flags are single 0 or 1), or draw the shape as a rect, polygon or circle." });
+    }
     if (["use", "foreignObject", "textPath", "switch", "symbol"].includes(node.name)) found.push({ element: where(node), what: `<${node.name}>` });
     // @font-face rules only load faces (template render --font-dir embeds them); they move nothing.
     if (node.name === "style" && /transform|translate|rotate|scale|matrix|writing-mode|letter-spacing|font/i.test(String(node.text || "").replace(/@font-face\s*\{[^}]*\}/gi, ""))) found.push({ element: "<style>", what: "CSS rules that move or restyle elements" });
@@ -589,5 +631,5 @@ module.exports = {
   advanceEm, isCjk, textWidth, wrapText,
   parseXml, walk, textContent, ctm, apply, bounds, polygonArea, clipToBox,
   parseColor, hex, luminance, contrastRatio, mix,
-  gradients, paints, paintArea, groundAt, samplePoints, unsupportedGeometry, readSlots, round, roundBox,
+  gradients, paints, paintArea, groundAt, samplePoints, unsupportedGeometry, readSlots, round, roundBox, parsePath, pathSubpaths,
 };

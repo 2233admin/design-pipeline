@@ -219,6 +219,36 @@ test("geometry the check cannot measure fails as unsupported-geometry", () => {
   }
 });
 
+test("path data is read as SVG defines it: glued arc flags, compact numbers, nothing skipped silently", () => {
+  const measure = require("../skill/tools/template-bank/measure.cjs");
+  const rings = (d) => { const parsed = measure.parsePath(d); assert.equal(parsed.error, null, d); return parsed.subpaths; };
+  // svgo-style: flags 0 and 1 glued to x (10), then y 10, then l 5 5
+  assert.deepEqual(rings("M0 0a10 10 0 0110 10l5 5"), [[[0, 0], [10, 10], [15, 15]]]);
+  assert.deepEqual(rings("M0 0a10 10 0 0110 10l5 5"), rings("M0 0A10 10 0 0 1 10 10l5 5".replace("A", "a")));
+  assert.deepEqual(rings("M10 10a5 5 0 00-5 5"), [[[10, 10], [5, 15]]]);
+  assert.deepEqual(rings("M0,0A4,4,0,1,1,8,0Z"), [[[0, 0], [8, 0]]]);
+  // repeated arc groups with glued flags, and numbers that touch
+  assert.deepEqual(rings("M0 0a2 2 0 0010 0 2 2 0 1110 0"), [[[0, 0], [10, 0], [20, 0]]]);
+  assert.deepEqual(rings("M0 0l1-2.5.5.5h-.5v1z"), [[[0, 0], [1, -2.5], [1.5, -2], [1, -2], [1, -1]]]);
+  // an implicit lineto after a moveto, and a new subpath after Z
+  assert.deepEqual(rings("M0 0 5 0 5 5zm1 1l2 2"), [[[0, 0], [5, 0], [5, 5]], [[1, 1], [3, 3]]]);
+  for (const d of ["M0 0a10 10 0 2 1 5 5", "M0 0a10 10 0 0 1 5", "M0 0L1", "M0 0 L", "L1 1", "M0 0 5", "M0 0 x 5 5"]) {
+    const parsed = measure.parsePath(d);
+    assert.ok(parsed.error, `${d} is unmeasured`);
+  }
+  // the check reports an unreadable path as unmeasured instead of measuring part of it
+  const clean = bank.render("kv.outfit-title-left").svg;
+  const bad = clean.replace("</svg>\n", "<path d=\"M0 0a10 10 0 2 1 5 5\" fill=\"#000\"/></svg>\n");
+  assert.notEqual(bad, clean);
+  const report = bank.check(bad);
+  const finding = report.findings.find((f) => f.rule === "unsupported-geometry");
+  assert.equal(report.status, "failed");
+  assert.match(finding.measured.found, /path data that cannot be read in full.*unmeasured/);
+  assert.match(finding.fix, /valid SVG path data/);
+  const compact = clean.replace("</svg>\n", "<path d=\"M0 0a10 10 0 0110 10l5 5z\" fill=\"none\" stroke=\"#000\"/></svg>\n");
+  assert.equal(bank.check(compact).findings.filter((f) => f.rule === "unsupported-geometry").length, 0);
+});
+
 test("text on a real image needs sampled pixels or a declared tone", (t) => {
   const root = tempRoot(t);
   fs.writeFileSync(path.join(root, "white.png"), solidPng(250, 250, 250));
