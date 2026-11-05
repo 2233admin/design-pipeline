@@ -171,6 +171,7 @@
     "template-bank.test.cjs",
     "template-style-pack.test.cjs",
     "ablation-eval.test.cjs",
-    "template-bank-browser.test.cjs"
+    "template-bank-browser.test.cjs",
+    "template-distill.test.cjs"
   ]
 }

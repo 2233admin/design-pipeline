@@ -8,7 +8,7 @@ and shared alignment lines. It works like a sound-effects bank: sounds as code, 
 knobs, measured on playback.
 
 Code: `tools/template-bank/` (`bank.cjs` render and static check, `page-check.cjs` the browser
-check, `coverage.cjs` glyph coverage, `layouts.cjs` / `layouts-shinbo.cjs` geometry, `lettering.cjs`
+check, `coverage.cjs` glyph coverage, `distill.cjs` / `reference-measure.cjs` reference distillation, `layouts.cjs` / `layouts-shinbo.cjs` geometry, `lettering.cjs`
 code-drawn display lettering, `styles/<id>/style.json`, `templates/<id>/manifest.json` +
 `template.svg` + `spec.md`).
 
@@ -43,6 +43,7 @@ designer-pipeline template list [--family kv|cover|card|banner|ui|motion] [--sty
 designer-pipeline template render <id> --set slot=value ... --param name=value ... \
   [--seed <n>] [--size WxH] -o out.svg [--png out.png] [--font-dir <dir>] [--browser]
 designer-pipeline template check <out.svg | page.html | hand-made.svg> [--browser] [--size WxH]
+designer-pipeline template distill <provenance.csv> --images <dir> -o <out-dir> [--annotations <file>] [--compare <style-id>] [--ablate]
 ```
 
 - `list` gives each template's id, family, sizes, slots with their character budgets, and its
@@ -195,6 +196,46 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
 2. Write the layouts with font roles (`family: "<role>"`) and give each template `"style": "<id>"`.
 3. Render every template, check with `--browser`, and keep fixtures of real outputs that the check
    must catch and pass.
+
+## Distill a style pack draft from references
+
+Instead of measuring by hand, give the references to `template distill`:
+
+```sh
+designer-pipeline template distill refs/provenance.csv --images refs/raw -o drafts/<id> \
+  [--annotations refs/annotations.csv | refs/labels.jsonl] [--category KV,COVER] [--id <id>] \
+  [--compare <style-id>] [--ablate]
+```
+
+- **Board**: the provenance list below (id, source URL, size, category; a `file` column or
+  `<id>.jpg|png|webp` in `--images`). Images are read locally (ffmpeg) and never copied: the outputs
+  carry ids, source URLs, sha256 and numbers only. Keep the images out of the repository.
+- **Annotations** (optional, recommended): the study's `annotations.csv` (title box, figure x range,
+  logo corner, orientation) or `labels.jsonl` (text lines with box and size, figure box). Without
+  them only the pixel features are measured; title, margins, type ratio and font roles are gaps.
+- **What it measures** (no model): OKLab palette, ground lightness and chroma, main and neutral
+  shares, hue spread, strong-colour share, visual-weight centre, mirror symmetry, whitespace cells,
+  spectral texture; from annotations, title position and area, text margins, type-size ratio,
+  figure centre and width, title over figure; stroke contrast and weight of annotated text.
+- **Output** in `-o`: `style.json` (a style pack with `draft: true`; `checks.measured` holds each
+  threshold with its kind, basis and support), `distill.json` (every reference's measures) and
+  `report.md`. Thresholds are the reference distribution: a maximum is the p75, a minimum the p25,
+  a band p25-p75; `measured` needs 8 references, `thin` 3, fewer is a `gap` (no limit). Only measured
+  features write grammar into `style.json`; thin ones are listed as tendencies in the report.
+- **Archetypes**: references grouped by aspect, title position, figure side (or symmetry) and
+  whitespace; each names the nearest bank template or a skeleton (median boxes) to write.
+- **Font roles**: mincho when stem / bar is 1.8 or more (the catalog's measure on 十), gothic at 1.35
+  or less, otherwise left to the eye (brush kai and rounded faces read as even strokes). With the
+  open-font catalog installed its candidates fill the stack; otherwise the report gives the
+  `fonts query` command. Crops need text 16 px or more high: annotate on the full-size image.
+- `--compare <style-id>` diffs a hand-made pack, with a reason for every difference. `--ablate`
+  renders the nearest templates with the draft and with the measured palette, the neutral ground or
+  the single hue removed (needs the browser, as `--png`), and reports the paired change in distance
+  to the references. Read the change, not the absolute distance: templates carry placeholders.
+
+The draft describes what the references are like, not what is good, and a template that sits at
+the median is not better than one that does not. Read the gaps in the report, decide them, then copy
+`style.json` into `styles/<id>/` and write its templates.
 
 ## Add a template distilled from a reference
 

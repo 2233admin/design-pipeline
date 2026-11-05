@@ -1307,6 +1307,8 @@
     "tools/template-bank/measure.cjs",
     "tools/template-bank/coverage.cjs",
     "tools/template-bank/page-check.cjs",
+    "tools/template-bank/reference-measure.cjs",
+    "tools/template-bank/distill.cjs",
     "tools/template-bank/layouts-shinbo.cjs",
     "tools/template-bank/styles/shinbo/style.json",
     "tools/template-bank/styles/arknights-endfield/style.json",
