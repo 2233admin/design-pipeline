@@ -10,7 +10,8 @@
       "controlContainers": [".toolbar"],
       "alignGroups": [{ "selector": ".hero", "items": ".hero > *", "edge": "start" }],
       "radiusPairs": [{ "outer": ".media", "inner": ".media > .media-inner" }],
-      "contentBoxes": [".card"]
+      "contentBoxes": [".card"],
+      "bodyText": [".hero p", ".card p"]
     }
   },
   "violating": {
@@ -24,7 +25,8 @@
       "controlContainers": [".toolbar"],
       "alignGroups": [{ "selector": ".group", "items": ".group > p", "edge": "start" }],
       "radiusPairs": [{ "outer": ".media", "inner": ".media > .media-inner" }],
-      "contentBoxes": [".box"]
+      "contentBoxes": [".box"],
+      "bodyText": [".prose"]
     }
   },
   "undeclared": {

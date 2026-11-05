@@ -247,6 +247,8 @@ Pick the lowest-rung tool that reaches each beat:
 | Virtual camera filming an agent's terminal while a tracker locks onto typed glyphs | `film scaffold --template tracking-hud --output <new-dir>`, edit `film.config.js`, `node build.cjs` | `film-tracking-hud-template.md` |
 | Narration phrase timing | `film voiceover --project-root . --audio <take> --write` | this page, storyboard |
 | Loudness and fades | `audio master --input <audio> --output <wav>` | `audio-gate.md` |
+| Hit cues on their frames | `verify audio --audio <film> --storyboard storyboard.json` (`film check` runs it) | `audio-gate.md#hit-cues` |
+| Effects made in code, listening review (optional earshot) | `earshot kit init --preset <name>`, `kit render`, `timeline`, `sheet` | `audio-gate.md#listening-and-effects-with-earshot-optional` |
 
 Product promo: build from the admitted captures cited in `beats[].source`. Place the recorded
 screens and clips, then crop, zoom, mask, sequence and caption them; never redraw the product's UI
@@ -255,7 +257,7 @@ or invent screens, data or cards. Motion and type support the product's own mate
 For a new movement choice, render a short study before extending the film. Inspect key poses,
 spacing, contact and handoff at speed and by frame; a smooth ease alone does not design an action.
 Then render the draft: `npx --no-install hyperframes render --output out.mp4` (the scaffold's
-`package.json` pins hyperframes 0.8.137 and gsap 3.15.0; run `npm install` once first).
+`package.json` pins hyperframes 0.8.137 and gsap 3.15.1; run `npm install` once first).
 Before a full material shot, verify shader compilation, reverse seeking and fixed-time angle
 response, and inspect actual frames at `rendering.samples`. Reuse `film-materials/enamel.mjs`.
 
@@ -284,8 +286,48 @@ until `productSource` is admitted; the run log, captures and bound job plan are 
 The gates sample beats and text, not every frame, and never grant acceptance. Before asking,
 review the checked draft frame by frame: `ffmpeg -i out.mp4 -vf fps=1 evidence/second-%03d.png`,
 open every frame at full size and look for text overlap, clipping, empty transitional frames,
-edge crowding, too-small text and wrong values. Fix, re-render and rerun `film check`; write the
-frame and creative review in `qa.md`. Then show the draft video, `evidence/contact-sheet.png` and
+edge crowding, too-small text and wrong values. The 1 fps sweep samples; it can miss the frames a
+viewer judges the film by, so extract those exactly and name each in `qa.md`:
+
+```bash
+ffmpeg -i out.mp4 -frames:v 1 evidence/frame-first.png                 # t = 0
+ffmpeg -sseof -0.04 -i out.mp4 -frames:v 1 evidence/frame-last.png     # final frame
+ffmpeg -i out.mp4 -vf "select='gte(t\,6.5)'" -frames:v 1 evidence/beat-02.png   # first frame at or after 6.5 s
+```
+
+| Frame | Where | Passes when |
+| --- | --- | --- |
+| Opening | `t = 0` | Complete and legible as a thumbnail: what the film is and who made it; not black, not mid-entrance (no half-typed line); by about 3 s something gives a reason to stay |
+| Peak of each beat | About 0.3 s before the beat's last spoken line ends (its `end` from the storyboard) | Most content is on screen and nothing has exited yet; one element is clearly the subject |
+| Closing | The final frame | Matches `endState` (`product-film-direction.md`): `rest` returns to the opening frame, `loop` continues into it without a jump, `free` shows the point or next step complete and still |
+| Strip | One small frame every 2–3 s, read in sequence | No long run of near-duplicate frames; no chain of hard cuts between unrelated pictures |
+
+For vertical films made for a feed, words and faces stay out of the top 15%, the bottom 25% and the
+right edge strip that apps cover with their own controls, and the point survives with sound off.
+
+One frame a second also misses fast moves and phone reading, so add three sheets where they apply:
+
+```bash
+# 12 consecutive frames from just before a fast move or handoff at <t>
+ffmpeg -ss <t-0.1> -i out.mp4 -vf "scale=320:-1,tile=12x1" -frames:v 1 evidence/strip-<t>.png
+# one frame a second at 360 px wide: is every line readable at phone width?
+ffmpeg -i out.mp4 -vf "fps=1,scale=360:-1,tile=5x3" -frames:v 1 evidence/phone.png
+# loop films: last 3 and first 3 frames in a row (N = frame count from ffprobe -count_frames)
+ffmpeg -stream_loop 1 -i out.mp4 -vf "select='between(n\,N-3\,N+2)',scale=320:-1,tile=6x1" -frames:v 1 evidence/seam.png
+```
+
+The storyboard gate's `loop-seam-jump` compares the pixels of the last and first frames; the seam
+strip shows whether motion keeps its speed and direction across the loop, which the gate does not
+measure.
+
+Overall test: someone seeing the film once, at its real size, can state its point from frames and
+lines alone. If the point is missing or the peak is buried, rework the scene rather than adjusting
+layout. If one problem survives three fix rounds, stop and record it in the review. Fix, re-render
+and rerun `film check`; write the frame and creative review in `qa.md`. (These frame rules
+restate `motion-director`'s review guide from `JimLiu/baoyu-design`, MIT, in this repository's words.)
+Have a reader who did not build the film (a fresh agent or the owner) watch it muted once and say
+what it shows in one sentence; if that sentence is not the brief's, the problem is the action or
+the order, not the polish. Then show the draft video, `evidence/contact-sheet.png` and
 a one-paragraph gate summary. The owner accepts, or rejects with one sentence
 (`decide --stage review --verdict accept|reject`). A rejection becomes a rule that every later
 `next` returns until the owner accepts a draft, and reopens the check. Every tier asks; quick
@@ -296,3 +338,25 @@ render.
 
 Render the final quality once (`npx --no-install hyperframes render --quality high --output final.mp4`), then
 `decide --stage deliver --answer final.mp4`.
+
+**Motion blur (optional).** A browser render is a set of instant snapshots, so fast moves strobe.
+When the owner wants blur on fast moves, render subframes and average them, like a film shutter:
+render at N times the delivery rate, average the first half of every group of N (a 180° shutter)
+and keep one frame per group. For 30 fps delivery with 8 subframes:
+
+```bash
+npx --no-install hyperframes render --fps 240 --quality high --output renders/sub240.mp4
+ffmpeg -i renders/sub240.mp4 -vf "tmix=frames=4,select='eq(mod(n\,8)\,3)',setpts=N/30/TB" -r 30 \
+  -c:v libx264 -crf 16 -pix_fmt yuv420p renders/blur30.mp4
+ffmpeg -i renders/blur30.mp4 -i final.mp4 -map 0:v -map 1:a? -c copy final-blur.mp4   # keep the film's audio
+```
+
+`--fps` accepts up to 240, so 60 fps delivery gets at most 4 subframes (`tmix=frames=2`, `mod(n\,4)\,1`,
+`N/60/TB`). The exposure of each output frame opens at that frame's time, so a cut placed exactly
+on a frame boundary is never blended; a cut between frame times leaves one double-exposed frame.
+Put cut times on whole frames. Averaging blurs everything that moves, readable text included:
+review the strip sheets of text moves after blending and keep the unblurred render where text must
+stay crisp. Cost grows with N (a 2-second 640×360 test: 5 s at 30 fps, 24 s at 240 fps). Check
+the blended file with `verify film-render --storyboard storyboard.json --video final-blur.mp4
+--output qa/film-evidence-blur` before delivering it. Measured behaviour and limits are recorded in
+OpenSpec change `game-ui-lens-and-code-video`.

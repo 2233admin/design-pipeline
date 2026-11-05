@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const test = require("node:test");
+const { lockedSource } = require("./helpers/locked-source.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const cli = path.join(repoRoot, "skill/scripts/designer-pipeline.cjs");
@@ -12,40 +13,27 @@ const manifestFile = path.join(repoRoot, "skill/vendor/mengto-skills/manifest.js
 const kageCaseStudyFile = path.join(repoRoot, "skill/references/kage-scroll-world.md");
 const { gitTreeId, loadMengToCatalog, searchMengToSkills, verifyMengToSnapshot } = require("../skill/scripts/mengto-skills-core.cjs");
 
-test("bundles the complete pinned MengTo skills source tree", () => {
+test("bundles the complete locked MengTo skills source tree", () => {
   const { manifest } = loadMengToCatalog(manifestFile);
-  assert.deepEqual(manifest.source, {
-    repository: "https://github.com/MengTo/skills",
-    revision: "83a47fee32f0b6349bff1fede99257a5ef03dc93",
-    gitTree: "4c231bc88ecbad19627105dcd8a16fd122ddf5e7",
-    committedAt: "2026-10-06T22:20:24+08:00",
-    license: "MIT",
-    reviewedAt: "2026-10-07",
-    scope: ["**"],
-  });
-  assert.deepEqual(manifest.categories, {
-    "3d": 16,
-    codex: 20,
-    "game-combat": 6,
-    "game-development": 20,
-    illustration: 14,
-    media: 2,
-    ui: 3,
-    "web-design": 91,
-    workflow: 4,
-  });
-  assert.equal(manifest.skills.length, 176);
-  assert.equal(manifest.snapshot.fileCount, 1313);
-  assert.equal(manifest.snapshot.byteCount, 136325371);
-  assert.equal(manifest.snapshot.treeSha256, "856f257256ae8022de29a9518df9adebe1e67043d2d1e5a8b442b4c4b7a9ed4c");
-  assert.equal(manifest.snapshot.executableFiles.length, 26);
-  assert.equal(manifest.snapshot.objects.length, 1313);
+  const locked = lockedSource("mengto-skills");
+  assert.deepEqual(Object.keys(manifest.source), ["repository", "revision", "gitTree", "committedAt", "license", "reviewedAt", "scope"]);
+  assert.equal(manifest.source.repository, locked.repo);
+  assert.equal(manifest.source.revision, locked.revision);
+  assert.equal(manifest.source.license, "MIT");
+  assert.deepEqual(manifest.source.scope, ["**"]);
+  // Category counts follow upstream; every skill is counted once.
+  const counted = Object.values(manifest.categories).reduce((sum, count) => sum + count, 0);
+  assert.equal(counted, manifest.skills.length);
+  for (const [category, count] of Object.entries(manifest.categories)) assert.equal(manifest.skills.filter((skill) => skill.category === category).length, count, category);
+  assert.equal(manifest.snapshot.objects.length, manifest.snapshot.fileCount);
+  assert.equal(manifest.snapshot.treeSha256, locked.treeSha256);
+  assert.deepEqual(manifest.snapshot.executableFiles, manifest.snapshot.objects.filter((object) => object.mode === "100755").map((object) => object.path).sort());
   assert.equal(manifest.skills.find((skill) => skill.id === "workflow/workflow-ship-change").activation, "explicit");
   assert.equal(manifest.skills.find((skill) => skill.id === "workflow/workflow-threads-manager").activation, "explicit");
   assert.equal(gitTreeId(manifest.snapshot.objects), manifest.source.gitTree);
   const verification = verifyMengToSnapshot(manifestFile);
   assert.equal(verification.status, "ready");
-  assert.equal(verification.executableFiles, 26);
+  assert.equal(verification.executableFiles, manifest.snapshot.executableFiles.length);
   assert.equal(verification.gitTree, manifest.source.gitTree);
   assert.match(
     fs.readFileSync(path.join(path.dirname(manifestFile), "upstream/LICENSE"), "utf8"),

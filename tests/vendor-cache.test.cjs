@@ -116,5 +116,5 @@ test("packaged guide links and index paths reach the downloaded bundles only thr
   assert.deepEqual(offenders, [], "these files point into a tree the package does not carry");
   const catalog = JSON.parse(fs.readFileSync(path.join(skill, "references/component-source-catalog.json"), "utf8"));
   const downloaded = JSON.stringify(catalog).match(/"downloaded-implementation"/g) || [];
-  assert.equal(downloaded.length, 16, "15 iart packs and MengTo are downloaded implementations");
+  assert.equal(downloaded.length, 18, "15 iart packs, MengTo and the two brand design-system sources are downloaded");
 });

@@ -1,0 +1,8 @@
+<!doctype html><html><head><style>
+body{font:16px/1.5 Arial;background:#fff;color:#111;margin:0;padding:20px}
+.fade{display:grid}.fade>div{grid-area:1/1;opacity:0;transition:opacity .4s}.fade>div.on{opacity:1}
+</style></head><body>
+<h1>Crossfade rotator, 800ms</h1>
+<div class="fade"><div class="on">Slide A</div><div>Slide B</div></div>
+<script>let i=0;const s=[...document.querySelectorAll('.fade>div')];setInterval(()=>{s.forEach((e,k)=>e.classList.toggle('on',k===(++i%2)))},800)</script>
+</body></html>

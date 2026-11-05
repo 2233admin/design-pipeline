@@ -1,7 +1,6 @@
 ## Why
 
-HyperFrames, the film runtime, is at v0.8.221; the package scaffolds 0.8.137 (after `refresh-upstream-snapshots`
-unifies the pins). Upstream retired the eight workflow skills our route list points at (`motion-graphics`,
+HyperFrames, the film runtime, is at v0.8.221; the package scaffolds 0.8.137. Upstream retired the eight workflow skills our route list points at (`motion-graphics`,
 `product-launch-video`, `pr-to-video`, `faceless-explainer`, `general-video`, `music-to-video`, `embedded-captions`,
 `talking-head-recut`) in favour of one `hyperframes` skill with type references; `check` gained a craft section
 (`line_unread`, `dead_stretch`, `text_below_floor`, `first_frame_empty`, `film_silent`) and lost-audio detection;
@@ -35,4 +34,5 @@ Owner decision (2026-10-30): our product-film contract leads. HyperFrames is the
 
 ## Dependencies
 
-- `refresh-upstream-snapshots` (one pinned version before this bump).
+- `track-latest-upstream`: the lock holds the `hyperframes` runtime entry at 0.8.137 until this change lands
+  (#262); the target is the latest release when implemented, written through the lock's version sites.
