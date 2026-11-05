@@ -11,7 +11,7 @@ import { REPO } from "./variants.mjs";
 
 const require = createRequire(import.meta.url);
 const scripts = join(REPO, "skill/scripts");
-const { auditOptions, auditPage, summarizeAudit } = require(join(scripts, "interaction-audit.cjs"));
+const { auditOptions, auditPage, auditPass, summarizeAudit } = require(join(scripts, "interaction-audit.cjs"));
 const { checkComposition } = require(join(scripts, "composition-core.cjs"));
 const { extract } = require(join(scripts, "capture-composition.cjs"));
 const { frontMatterGroups } = require(join(scripts, "design-system-package-core.cjs"));
@@ -295,7 +295,18 @@ export async function render(file, { width, height, minFontPx, captureDir }) {
 		writeFileSync(join(captureDir, "screenshot.png"), png);
 		const elements = await tab.evaluate(extract);
 		const options = auditOptions({ thresholds: { minFontPx } });
-		const audit = await tab.evaluate(auditPage, options);
+		// 页面审计要先有一次 prefers-reduced-motion: reduce 加载的快照（与 verify interaction 同一顺序）；
+		// 消融只用布局与对比度几项，状态对比度不量，记为未声明
+		const reduce = await browser.newPage();
+		await reduce.setViewport({ width, height, deviceScaleFactor: 1 });
+		await reduce.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "reduce" }]);
+		await reduce.goto(url, { waitUntil: "networkidle0", timeout: 30000 });
+		await reduce.evaluate(settle);
+		await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
+		const reduced = await reduce.evaluate(auditPage, options, auditPass("reduced-motion"));
+		await reduce.close();
+		const audit = await tab.evaluate(auditPage, options, auditPass("audit", { reducedMotion: reduced.contractErrors.length ? null : { hidden: reduced.hidden, moving: reduced.moving, animations: reduced.animations } }));
+		if (!audit.contractErrors.length) audit.checks["audit.state-contrast"] = { declared: false, checked: 0, failedCount: 0, indeterminateCount: 0, failed: [], indeterminate: [], notMeasured: [] };
 		const facts = await tab.evaluate(pageFacts);
 		const loadRequests = requests.slice();
 
