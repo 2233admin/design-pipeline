@@ -730,4 +730,4 @@ function cutCollage(input, options) {
   return { input: { width: image.width, height: image.height, sha256: sha256(input) }, mode, finishes, params, measurements, findings, outputs };
 }
 
-module.exports = { CUT_FINISHES, CUT_MODES, cutCollage, inkImage, inspectRegions, keyFiles, keyedImage, plateImage, splitFile, splitSprites, stickerImage };
+module.exports = { CUT_FINISHES, CUT_MODES, cutCollage, gaussianBlur, inkImage, inspectRegions, keyFiles, keyedImage, labPlanes, percentile, plateImage, seededRandom, splitFile, splitSprites, stickerImage };

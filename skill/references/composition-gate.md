@@ -21,6 +21,10 @@ on the call; without either it fails with `puppeteer-core not found`. It writes 
 plus `elements.json` (visible text with box, size, weight, alignment, own fill or gradient stop and
 effective colors; a separate `media` list of image, video, canvas, svg and url() background boxes,
 with natural size where known, that the appearance ledger reads).
+When a text sits
+on a background image, gradient or texture, it also writes `ground.png` (the page with every glyph
+hidden) and records that text's `ground`: mean colour and luminance percentiles under its line
+boxes (the glyph runs, plus 2 px; not a block's padding or the empty rest of its row).
 `--seek <sec>` positions the page first. A page whose loaded DOM has a `[data-composition-id]`
 root is a HyperFrames composition (a mention in a comment or string does not count). It is reloaded
 the way `hyperframes render` prepares a frame: the render frame rate (the root's `data-fps`, else 30)
@@ -36,8 +40,10 @@ Other pages seek their registered GSAP timelines as given (`seek.clock` is `time
 HyperFrames it is `hyperframes-runtime`).
 Without `--elements` the gate runs on pixels alone.
 
-Errors fail the gate: `blank-frame`, `low-contrast`, `text-contrast` (WCAG 4.5:1, 3:1 large),
-`text-off-canvas`. Warnings are review prompts: `weak-separation`, `off-balance`, `dead-band`,
+Errors fail the gate: `blank-frame`, `low-contrast`, `text-contrast` (WCAG 4.5:1, 3:1 large;
+on a sampled image or textured ground, against the worst 5% of the pixels under the text),
+`text-off-canvas`. Warnings are review prompts: `contrast-unmeasured` (text on an image or
+gradient whose ground was not sampled; recapture), `weak-separation`, `off-balance`, `dead-band`,
 `no-focal-point`, `clutter`, `palette-sprawl`, `edge-crowding`, `alignment-near-miss`,
 `flat-hierarchy`, `type-scale-sprawl`. Every finding carries a `fix`. Allow a warning only when
 the composition deliberately does that (`--allow dead-band` for intended negative space) and say

@@ -15,6 +15,49 @@ const { pathToFileURL } = require("node:url");
 const { resolveHyperframesRuntime, resolvePuppeteer } = require("./film-capture-core.cjs");
 const { resolveBrowser } = require("./browser-locate.cjs");
 const { fail, jsonResult } = require("./contract-utils.cjs");
+const { decodePng } = require("./png-core.cjs");
+
+// Hides every glyph (fill, stroke, shadow, decoration) and nothing else, so the screenshot shows
+// the ground each text sits on: image, gradient, texture, other elements.
+const HIDE_TEXT = "*,*::before,*::after{color:transparent!important;-webkit-text-fill-color:transparent!important;-webkit-text-stroke:0!important;text-shadow:none!important;text-decoration-color:transparent!important;caret-color:transparent!important}";
+
+const luminance = (rgb) => {
+  const [r, g, b] = rgb.map((v) => { const c = v / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+
+// For each text with an unknown (image-backed) background: the ground under its line boxes with
+// text hidden, as its mean colour and the 0th..100th percentiles of relative luminance. The gate turns
+// these into the contrast of every ground pixel against the text colour and judges the worst 5%.
+function groundSamples(ground, items) {
+  for (const item of items) {
+    if (item.kind !== "text" || item.background) continue;
+    // Line boxes inflated by 2 px (antialiased edges, descenders); the border box only when the
+    // text has no measurable line box.
+    const rects = item.lines?.length ? item.lines.map((r) => ({ x: r.x - 2, y: r.y - 2, w: r.w + 4, h: r.h + 4 })) : [item.box];
+    const seen = new Set(), lum = [], sum = [0, 0, 0];
+    for (const rect of rects) {
+      const x0 = Math.max(0, Math.floor(rect.x)), y0 = Math.max(0, Math.floor(rect.y));
+      const x1 = Math.min(ground.width, Math.ceil(rect.x + rect.w)), y1 = Math.min(ground.height, Math.ceil(rect.y + rect.h));
+      for (let y = y0; y < y1; y += 1) for (let x = x0; x < x1; x += 1) {
+        const p = y * ground.width + x;
+        if (seen.has(p)) continue;
+        seen.add(p);
+        const i = p * 4, rgb = [ground.data[i], ground.data[i + 1], ground.data[i + 2]];
+        lum.push(luminance(rgb)); for (let c = 0; c < 3; c += 1) sum[c] += rgb[c];
+      }
+    }
+    if (!lum.length) continue;
+    lum.sort((a, b) => a - b);
+    item.ground = {
+      source: "ground.png",
+      region: item.lines?.length ? "line-boxes" : "box",
+      pixels: lum.length,
+      mean: sum.map((v) => Math.round(v / lum.length)),
+      luminancePercentiles: Array.from({ length: 101 }, (_, p) => Number(lum[Math.round((p / 100) * (lum.length - 1))].toFixed(5))),
+    };
+  }
+}
 
 function parseArgs(argv) {
   const allowed = new Set(["--composition", "--url", "--output", "--width", "--height", "--seek", "--chrome", "--puppeteer-module"]);
@@ -32,7 +75,8 @@ function parseArgs(argv) {
 }
 
 // Runs in the page. Effective background walks ancestors to the first opaque background color;
-// a background image or gradient on the way makes the background unknown (contrast skipped).
+// a background image or gradient on the way makes the background unknown (null). Such text is
+// then judged on the pixels under it: groundSamples() reads a second screenshot with text hidden.
 // Async only to read the natural size of url() backgrounds, which says a photograph from a texture.
 async function extract() {
   const parse = (value) => {
@@ -93,12 +137,21 @@ async function extract() {
     else if (MEDIA_TAGS.has(tag)) media.push({ tag: tag.toLowerCase(), box, ...(tag === "IMG" && element.naturalWidth > 0 ? { natural: { w: element.naturalWidth, h: element.naturalHeight } } : {}), ...(tag === "VIDEO" && element.videoWidth > 0 ? { natural: { w: element.videoWidth, h: element.videoHeight } } : {}) });
     if (text) {
       const color = parse(style.color);
+      // The glyphs' own line boxes (content area, no padding or the rest of a block's row): the
+      // ground that matters for contrast is under these, not under the element's border box.
+      const lines = [];
+      for (const node of element.childNodes) {
+        if (node.nodeType !== 3 || !node.textContent.trim()) continue;
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        for (const r of range.getClientRects()) if (r.width > 0 && r.height > 0) lines.push({ x: r.x, y: r.y, w: r.width, h: r.height });
+      }
       const own = parse(style.backgroundColor);
       // Own gradient, or a small parent's (a label inside a gradient button), never a section's.
       const parent = element.parentElement;
       const parentRect = parent && parent !== document.body ? parent.getBoundingClientRect() : null;
       const stop = gradientStop(style) || (parentRect && parentRect.width * parentRect.height < innerWidth * innerHeight * 0.15 ? gradientStop(getComputedStyle(parent)) : null);
-      items.push({ kind: "text", id, text: text.slice(0, 80), box, fontSize: parseFloat(style.fontSize), fontWeight: Number(style.fontWeight) || 400, fontFamily: style.fontFamily, color: color ? color.slice(0, 3) : null, background: effectiveBackground(element), align: style.textAlign, ...(own && own[3] >= 0.99 ? { fill: own.slice(0, 3) } : {}), ...(stop && stop[3] >= 0.99 ? { gradient: stop.slice(0, 3) } : {}) });
+      items.push({ kind: "text", id, text: text.slice(0, 80), box, ...(lines.length ? { lines } : {}), fontSize: parseFloat(style.fontSize), fontWeight: Number(style.fontWeight) || 400, fontFamily: style.fontFamily, color: color ? color.slice(0, 3) : null, background: effectiveBackground(element), align: style.textAlign, ...(own && own[3] >= 0.99 ? { fill: own.slice(0, 3) } : {}), ...(stop && stop[3] >= 0.99 ? { gradient: stop.slice(0, 3) } : {}) });
     } else if (element.children.length === 0 || (parse(style.backgroundColor) || [0, 0, 0, 0])[3] > 0.5 || style.borderStyle !== "none") {
       const fill = parse(style.backgroundColor);
       items.push({ kind: "block", id, box, ...(fill && fill[3] >= 0.99 ? { fill: fill.slice(0, 3) } : {}) });
@@ -192,6 +245,11 @@ async function main() {
     fs.mkdirSync(output, { recursive: true });
     await page.screenshot({ path: path.join(output, "screenshot.png"), type: "png" });
     const elements = await page.evaluate(extract);
+    if (elements.items.some((item) => item.kind === "text" && !item.background)) {
+      await page.addStyleTag({ content: HIDE_TEXT });
+      await page.screenshot({ path: path.join(output, "ground.png"), type: "png" });
+      groundSamples(decodePng(fs.readFileSync(path.join(output, "ground.png")), "ground.png"), elements.items);
+    }
     fs.writeFileSync(path.join(output, "elements.json"), `${JSON.stringify(elements, null, 2)}\n`);
     process.stdout.write(`${JSON.stringify(jsonResult(true, { status: "captured", output, screenshot: "screenshot.png", elements: "elements.json", items: elements.items.length, ...(seeked ? { seek: seeked } : {}) }))}\n`);
   } catch (error) {

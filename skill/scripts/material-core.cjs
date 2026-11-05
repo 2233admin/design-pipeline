@@ -16,6 +16,8 @@ const { spawnSync } = require("node:child_process");
 const { fail, readJson, sha256 } = require("./contract-utils.cjs");
 const { decodePng, encodePng } = require("./png-core.cjs");
 const { cutCollage } = require("../tools/art-motion/assets.cjs");
+const procedural = require("../tools/art-motion/procedural.cjs");
+const textureStats = require("../tools/art-motion/texture-stats.cjs");
 
 const SCOPE = "materials";
 const REGISTRY = path.resolve(__dirname, "../references/material-sources.json");
@@ -190,6 +192,249 @@ function cutMaterial(project, options) {
   };
 }
 
+// ---- procedural, processed and measured material -------------------------------------------
+
+const GENERATED_LICENSE = "generated";
+const GENERATED_AUTHOR = "design-pipeline procedural generator";
+
+function parseParams(raw) {
+  if (raw === undefined || raw === null || raw === "") return {};
+  if (typeof raw === "object") return raw;
+  try {
+    const value = JSON.parse(raw);
+    if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("not an object");
+    return value;
+  } catch (error) {
+    fail(SCOPE, `--params must be a JSON object: ${error.message}`, { code: "OPTION_VALUE_INVALID" });
+  }
+}
+
+function parseSeed(raw) {
+  const seed = raw === undefined || raw === null ? 1 : Number(raw);
+  if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) fail(SCOPE, "--seed must be an integer from 0 to 4294967295", { code: "OPTION_VALUE_INVALID" });
+  return seed;
+}
+
+function profileFile(project, id) {
+  return path.join(materialsDir(project), "calibration", `${id}.json`);
+}
+
+function profileRef(project, id) {
+  return { id, origin: procedural.loadProfile(id, project).origin };
+}
+
+// Digest of one calibration profile as it is now: a built-in entry of
+// references/material-calibration.json, or a project file materials/calibration/<id>.json.
+function profileDigest(project, id) {
+  const builtin = procedural.builtinProfiles().profiles[id];
+  if (builtin) return { id, origin: "builtin", file: `references/material-calibration.json#${id}`, sha256: sha256(Buffer.from(JSON.stringify(builtin))) };
+  const file = profileFile(project, id);
+  return fs.existsSync(file) ? { id, origin: "project", file: `${MATERIALS_DIR}/calibration/${id}.json`, sha256: sha256(fs.readFileSync(file)) } : null;
+}
+
+// Every calibration profile a generated or processed file was made or graded from (its own
+// profile, the paper it is printed on, a woodcut's grain, the --reference it was measured
+// against), with the digest of the profile: changing one, built in or the owner's, makes the file
+// stale in materials check.
+function calibrationUsed(project, params, extraIds = []) {
+  const ids = [...new Set([...["profile", "paper", "grain"].map((key) => params?.[key]), ...extraIds].filter((v) => typeof v === "string" && v !== "none" && !v.startsWith("#")))];
+  return ids.map((id) => profileDigest(project, id)).filter(Boolean);
+}
+
+function similarityTo(project, stats, kind, referenceId) {
+  const id = referenceId || (kind === "halftone" ? "autotype-1904" : null);
+  if (!id) return null;
+  const profile = procedural.loadProfile(id, project);
+  if ((profile.kind === "halftone") !== (kind === "halftone")) fail(SCOPE, `reference ${id} is a ${profile.kind} profile; it cannot be compared with a ${kind} measurement`, { code: "OPTION_VALUE_INVALID" });
+  // Held out: the generator was fitted on region A of the scan; it is compared with region B.
+  const reference = profile.heldOut || profile.stats;
+  const distance = textureStats.distance({ ...stats, kind: reference.kind }, reference, profile.stats);
+  const yardsticks = { natural: profile.natural, between: profile.between, grading: profile.grading };
+  return { reference: { id, origin: profile.origin, kind: profile.kind, description: profile.description }, distance, assessment: textureStats.assess(kind, distance, yardsticks) };
+}
+
+function generatedRecord(run, extra) {
+  return {
+    license: GENERATED_LICENSE,
+    commercialUse: true,
+    kind: run.format === "svg" ? "image" : "texture",
+    source: "procedural",
+    sourceUrl: `design-pipeline:procedural/${run.generator}@${run.version}`,
+    author: GENERATED_AUTHOR,
+    retrieved: today(),
+    ...extra,
+    ...(run.calibration.length ? { calibration: run.calibration } : {}),
+    generator: { name: run.generator, version: run.version, seed: run.seed, params: run.params, ...(run.profileRef ? { profile: run.profileRef } : {}) },
+  };
+}
+
+function runGenerator(project, generator, params, seed) {
+  const run = procedural.generate(generator, params, seed, project);
+  const bytes = run.format === "svg" ? Buffer.from(run.svg) : encodePng(run.image);
+  if (run.profile) run.profileRef = profileRef(project, run.profile.id);
+  run.calibration = calibrationUsed(project, run.params);
+  return { run, bytes };
+}
+
+function generateMaterial(project, options) {
+  if (options.file) return replayMaterial(project, options.file);
+  if (!options.generator) fail(SCOPE, `--generator is required (${Object.keys(procedural.GENERATORS).join(", ")})`, { code: "OPTION_REQUIRED" });
+  const params = parseParams(options.params), seed = parseSeed(options.seed);
+  const { run, bytes } = runGenerator(project, options.generator, params, seed);
+  const dir = materialsDir(project), records = readRecords(dir);
+  // The default name carries the seed only when the output depends on it.
+  const stem = slug(options.name || `${options.generator}-${run.params.profile || run.params.scene || run.params.motif || run.params.shape || "out"}${run.usesSeed === false ? "" : `-s${seed}`}`);
+  const rel = `generated/${stem}.${run.format}`, target = path.join(dir, rel);
+  if ((fs.existsSync(target) || records[rel]) && !options.replace) fail(SCOPE, `${MATERIALS_DIR}/${rel} exists. Fix: pass --replace or --name <other>`, { code: "OUTPUT_EXISTS" });
+  let similarity = null;
+  if (run.image && run.measureAs) {
+    const stats = textureStats.measure(run.image, run.measureAs.kind, run.measureAs);
+    similarity = similarityTo(project, stats, run.measureAs.kind, options.reference || run.profile?.id);
+    if (similarity) run.calibration = calibrationUsed(project, run.params, [similarity.reference.id]);
+    if (similarity) similarity = { ...similarity, measured: { rmsL: stats.rmsL, visibleRmsL: stats.visibleRmsL, ...(stats.offLatticeFraction !== undefined ? { offLatticeFraction: stats.offLatticeFraction, periodPx: stats.periodPx } : {}) } };
+  }
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, bytes);
+  const record = generatedRecord(run, {
+    ...(options.use ? { use: options.use } : {}),
+    ...(run.geometry ? { geometry: run.geometry } : {}),
+    ...(similarity ? { similarity: { reference: similarity.reference.id, metric: similarity.assessment.metric, value: similarity.assessment.value, natural: similarity.assessment.natural, between: similarity.assessment.between, ...(similarity.assessment.histogramL ? { histogramL: similarity.assessment.histogramL } : {}), level: similarity.assessment.level, ...(similarity.assessment.reason ? { reason: similarity.assessment.reason } : {}) } } : {}),
+    sha256: sha256(bytes), bytes: bytes.length, width: run.params.width, height: run.params.height,
+  });
+  records[rel] = record;
+  writeRecords(dir, records);
+  return {
+    status: "generated",
+    file: `${MATERIALS_DIR}/${rel}`,
+    record,
+    ...(similarity ? { similarity } : {}),
+    ...(run.geometry ? { geometry: run.geometry } : {}),
+    creativeAcceptance: "not-assessed",
+    next: [
+      `Replay: materials generate --project-root ${project} --file ${MATERIALS_DIR}/${rel} (same bytes from the recorded generator, version, params and seed)`,
+      run.format === "png" ? `Process: materials process --project-root ${project} --file ${MATERIALS_DIR}/${rel} --effect woodcut|halftone|papercut|photocopy|duotone` : "SVG line art: place it as vector, or render it to PNG before materials process.",
+    ],
+  };
+}
+
+// Regenerate a recorded file in memory and compare bytes; never overwrites.
+function replayMaterial(project, file) {
+  const dir = materialsDir(project), rel = relativeMaterial(project, file), records = readRecords(dir), record = records[rel];
+  if (!record || !record.generator) fail(SCOPE, `${rel} has no generator record. Fix: only files written by materials generate can be replayed`, { code: "OPTION_VALUE_INVALID" });
+  const { name, version, seed, params } = record.generator;
+  if (procedural.GENERATORS[name] !== version) {
+    return { status: "version-changed", file: `${MATERIALS_DIR}/${rel}`, recorded: version, current: procedural.GENERATORS[name] ?? null, fix: `The ${name} generator is now version ${procedural.GENERATORS[name]}; regenerate with materials generate --project-root ${project} --generator ${name} --params '${JSON.stringify(params)}' --seed ${seed} --name ${path.basename(rel, path.extname(rel))} --replace and re-check the pieces that use it` };
+  }
+  // Pixels, not deflate bytes, are what a generator promises: a PNG encoder or zlib update may
+  // change the bytes of identical pixels. SVG is text and compared as is.
+  const { run } = runGenerator(project, name, params, seed);
+  const raw = fs.readFileSync(path.join(dir, rel)), fileUnchanged = sha256(raw) === record.sha256;
+  const content = (image) => sha256(Buffer.concat([Buffer.from(`${image.width}x${image.height}:`), image.data]));
+  const regenerated = run.format === "svg" ? sha256(Buffer.from(run.svg)) : content(run.image);
+  let onDisk;
+  try { onDisk = run.format === "svg" ? sha256(raw) : content(decodePng(raw, rel)); } catch { onDisk = null; }
+  const status = fileUnchanged && regenerated === onDisk ? "reproduced" : "differs";
+  return {
+    status, file: `${MATERIALS_DIR}/${rel}`, compared: run.format === "svg" ? "svg-text" : "decoded-rgba", recorded: record.sha256, regenerated, onDisk,
+    ...(status === "differs" ? { fix: !fileUnchanged ? `The file was edited after generation; re-record it with materials add --project-root ${project} --replace if the edit is intended, or regenerate it with --replace` : `The same generator version no longer gives the same pixels (a calibration profile it uses changed?); regenerate: materials generate --project-root ${project} --generator ${name} --params '${JSON.stringify(params)}' --seed ${seed} --name ${path.basename(rel, path.extname(rel))} --replace` } : {}),
+  };
+}
+
+function processMaterial(project, options) {
+  if (!options.file) fail(SCOPE, "--file is required", { code: "OPTION_REQUIRED" });
+  if (!options.effect) fail(SCOPE, `--effect is required (${Object.keys(procedural.EFFECTS).join(", ")})`, { code: "OPTION_REQUIRED" });
+  const dir = materialsDir(project), rel = relativeMaterial(project, options.file), records = readRecords(dir), parent = records[rel];
+  if (!parent) fail(SCOPE, `${rel} has no licence record. Fix: record it first with materials fetch, add or generate`, { code: "LICENSE_UNRECORDED" });
+  if (!/\.png$/i.test(rel)) fail(SCOPE, `${rel} is not a PNG; processing reads PNG`, { code: "OPTION_VALUE_INVALID" });
+  const input = fs.readFileSync(path.join(dir, rel));
+  if (parent.sha256 && parent.sha256 !== sha256(input)) fail(SCOPE, `${rel} changed since it was recorded. Fix: re-record it before processing`, { code: "SOURCE_CHANGED" });
+  const params = parseParams(options.params), seed = parseSeed(options.seed);
+  const result = procedural.processImage(input, options.effect, params, seed, project);
+  const stem = slug(options.name || `${path.basename(rel, path.extname(rel))}-${options.effect}`), outRel = `processed/${stem}.png`, target = path.join(dir, outRel);
+  if ((fs.existsSync(target) || records[outRel]) && !options.replace) fail(SCOPE, `${MATERIALS_DIR}/${outRel} exists. Fix: pass --replace or --name <other>`, { code: "OUTPUT_EXISTS" });
+  const bytes = encodePng(result.image);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, bytes);
+  records[outRel] = {
+    license: parent.license,
+    commercialUse: parent.commercialUse === true,
+    kind: parent.kind || "image",
+    source: parent.source,
+    sourceUrl: parent.sourceUrl,
+    author: parent.author,
+    retrieved: parent.retrieved,
+    ...(parent.title ? { title: parent.title } : {}),
+    ...(options.use || parent.use ? { use: options.use || parent.use } : {}),
+    sha256: sha256(bytes), width: result.image.width, height: result.image.height,
+    ...(calibrationUsed(project, result.params).length ? { calibration: calibrationUsed(project, result.params) } : {}),
+    derivedFrom: { file: rel, sha256: parent.sha256 || sha256(input), operation: "process", effect: result.effect, version: result.version, seed, params: result.params, ...(result.padPx ? { padPx: result.padPx } : {}) },
+  };
+  writeRecords(dir, records);
+  return { status: "processed", source: `${MATERIALS_DIR}/${rel}`, file: `${MATERIALS_DIR}/${outRel}`, record: records[outRel], creativeAcceptance: "not-assessed", next: ["Look at it at 100% where it will be used; the effect is reproducible from the record, its look is not assessed."] };
+}
+
+// Measure a texture; compare it with a calibration profile; or save it as a project profile.
+function measureMaterial(project, options) {
+  if (!options.file) fail(SCOPE, "--file is required", { code: "OPTION_REQUIRED" });
+  const dir = materialsDir(project), rel = relativeMaterial(project, options.file), records = readRecords(dir), record = records[rel] || null;
+  if (!/\.png$/i.test(rel)) fail(SCOPE, `${rel} is not a PNG`, { code: "OPTION_VALUE_INVALID" });
+  const params = parseParams(options.params), generated = record?.generator;
+  const genKind = generated ? { paper: "paper", print: "print", halftone: "halftone" }[generated.name] : null;
+  const kind = options.kind || genKind;
+  if (!kind) fail(SCOPE, `--kind is required for ${rel} (${textureStats.KINDS.join(", ")})`, { code: "OPTION_REQUIRED" });
+  const pxPerMm = params.pxPerMm ?? generated?.params?.pxPerMm ?? record?.pxPerMm ?? null;
+  const image = decodePng(fs.readFileSync(path.join(dir, rel)), rel);
+  const stats = textureStats.measure(image, kind, { pxPerMm, roi: params.roi });
+  const out = { status: "measured", file: `${MATERIALS_DIR}/${rel}`, kind, stats };
+  if (!pxPerMm) out.warning = "No px/mm: bands are in pixels and cannot be compared with a calibration profile. Fix: pass params.pxPerMm (scanner dpi / 25.4, or ruler pixels per mm)";
+  if (options.name) {
+    // Owner calibration: fit on one half of the region, hold out the other; the halves' distance
+    // is the natural variation later generated textures are judged against.
+    if (!record) fail(SCOPE, `${rel} has no licence record. Fix: record the scan with materials add --kind scan --license <licence> --by <who scanned it> first`, { code: "LICENSE_UNRECORDED" });
+    if (!pxPerMm) fail(SCOPE, "a calibration profile needs params.pxPerMm (scanner dpi / 25.4)", { code: "OPTION_REQUIRED" });
+    const [a, b] = textureStats.halves(params.roi);
+    const fit = textureStats.measure(image, kind, { pxPerMm, roi: a }), held = textureStats.measure(image, kind, { pxPerMm, roi: b });
+    const id = slug(options.name);
+    if (procedural.builtinProfiles().profiles[id]) fail(SCOPE, `${id} is a built-in profile name. Fix: choose another --name`, { code: "OUTPUT_EXISTS" });
+    const file = profileFile(project, id);
+    if (fs.existsSync(file) && !options.replace) fail(SCOPE, `${MATERIALS_DIR}/calibration/${id}.json exists. Fix: pass --replace`, { code: "OUTPUT_EXISTS" });
+    const profile = {
+      schema: "design-pipeline.material-calibration-profile.v1",
+      kind,
+      description: options.title || record.title || rel,
+      sample: { file: rel, sha256: record.sha256, license: record.license, source: record.source, sourceUrl: record.sourceUrl, author: record.author },
+      pxPerMm, fitRoi: a, heldOutRoi: b, stats: fit, heldOut: held, natural: textureStats.distance(fit, held),
+      measured: today(),
+    };
+    // Between: the nearest built-in sample of the same kind, per metric; the profile grades only
+    // when the owner's sheet is clearly more like itself than like another real sheet.
+    const metrics = kind === "halftone" ? ["offLattice"] : ["spectralDb", "histogramL"], others = [];
+    for (const [otherId, other] of Object.entries(procedural.builtinProfiles().profiles)) {
+      if (other.kind !== kind) continue;
+      const d = textureStats.distance(fit, other.stats);
+      if (d.comparable && metrics.every((m) => Number.isFinite(d[m]))) others.push({ id: otherId, ...Object.fromEntries(metrics.map((m) => [m, d[m]])) });
+    }
+    profile.between = others.length ? Object.fromEntries(metrics.map((m) => [m, Math.min(...others.map((o) => o[m]))])) : null;
+    profile.grading = textureStats.calibration(kind, profile.natural, profile.between);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, `${JSON.stringify(profile, null, 2)}\n`);
+    Object.assign(out, { status: "calibrated", profile: { id, file: `${MATERIALS_DIR}/calibration/${id}.json`, natural: profile.natural, between: profile.between, grading: profile.grading }, next: [kind === "halftone" ? `materials measure --file <generated halftone> --reference ${id}` : `materials generate --generator ${kind === "print" ? "print" : "paper"} --params '{"profile":"${id}","pxPerMm":4}' --seed 1`] });
+  }
+  const referenceId = options.reference || generated?.params?.profile || (kind === "halftone" && generated ? "autotype-1904" : null);
+  if (referenceId && pxPerMm) Object.assign(out, similarityTo(project, stats, kind, referenceId));
+  out.creativeAcceptance = "not-assessed";
+  return out;
+}
+
+function listProfiles(project) {
+  const builtin = procedural.builtinProfiles();
+  const local = project && fs.existsSync(path.join(materialsDir(project), "calibration")) ? fs.readdirSync(path.join(materialsDir(project), "calibration")).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)) : [];
+  return {
+    builtin: Object.fromEntries(Object.entries(builtin.profiles).map(([id, p]) => [id, { kind: p.kind, description: p.description, pxPerMm: p.pxPerMm, source: p.sample?.sourceUrl, license: p.sample?.license, natural: p.natural?.spectralDb ?? p.natural?.offLattice }])),
+    project: local,
+  };
+}
+
 // ---- check ---------------------------------------------------------------------------------
 
 function walk(dir, base = dir, out = []) {
@@ -215,18 +460,37 @@ function checkMaterials(project) {
   for (const rel of files) {
     const record = records[rel];
     if (!record) {
-      findings.push({ code: "material-unrecorded", severity: "error", file: rel, message: `${rel} has no licence record`, fix: `Record it: materials add --file ${MATERIALS_DIR}/${rel} --license <licence> --by <author> [--url <source page>], or delete the file` });
+      findings.push({ code: "material-unrecorded", severity: "error", file: rel, message: `${rel} has no licence record`, fix: `Record it: materials add --project-root ${project} --file ${MATERIALS_DIR}/${rel} --license <licence> --by <author> [--url <source page>], or delete the file` });
       continue;
     }
-    if (!record.license || record.license === "unrecorded") findings.push({ code: "material-license-missing", severity: "error", file: rel, message: `${rel} has no licence`, fix: "Set the licence from the source's own rights field (materials add --replace --license ...)" });
+    if (!record.license || record.license === "unrecorded") findings.push({ code: "material-license-missing", severity: "error", file: rel, message: `${rel} has no licence`, fix: `Set the licence from the source's own rights field (materials add --project-root ${project} --replace --license ...)` });
     const missing = PROVENANCE_FIELDS.filter((field) => !record[field]);
-    if (missing.length) findings.push({ code: "material-provenance-incomplete", severity: "error", file: rel, message: `${rel} is missing ${missing.join(", ")}`, fix: `Re-record with materials add --replace and supply ${missing.join(", ")}` });
-    if (record.sha256 && hashOf(rel) !== record.sha256 && !record.derivedFrom) findings.push({ code: "material-changed", severity: "error", file: rel, message: `${rel} no longer matches its recorded hash`, fix: "If the edit is intended, re-record it with materials add --replace; then re-cut its pieces" });
+    if (missing.length) findings.push({ code: "material-provenance-incomplete", severity: "error", file: rel, message: `${rel} is missing ${missing.join(", ")}`, fix: `Re-record with materials add --project-root ${project} --replace and supply ${missing.join(", ")}` });
+    if (record.generator) {
+      const g = record.generator, missingG = ["name", "version", "seed", "params"].filter((key) => g[key] === undefined);
+      if (missingG.length) findings.push({ code: "material-generator-incomplete", severity: "error", file: rel, message: `${rel} records a generator without ${missingG.join(", ")}, so it cannot be reproduced`, fix: "Regenerate it with materials generate (which records name, version, params and seed) and --replace" });
+      else if (procedural.GENERATORS[g.name] !== g.version) findings.push({ code: "material-generator-version", severity: "warn", file: rel, message: `${rel} was made by ${g.name}@${g.version}; the current generator is ${procedural.GENERATORS[g.name] ?? "gone"}, so a replay may not give the same bytes`, fix: `Keep the file (its bytes are recorded), or regenerate: materials generate --project-root ${project} --generator ${g.name} --params '${JSON.stringify(g.params)}' --seed ${g.seed} --name ${path.basename(rel, path.extname(rel))} --replace` });
+    }
+    for (const used of Array.isArray(record.calibration) ? record.calibration : []) {
+      const current = /^[a-z0-9-]+$/.test(String(used.id)) ? profileDigest(project, used.id) : null, now = current && current.origin === used.origin ? current.sha256 : null;
+      if (now === used.sha256) continue;
+      const again = record.generator
+        ? `materials generate --project-root ${project} --generator ${record.generator.name} --params '${JSON.stringify(record.generator.params)}' --seed ${record.generator.seed} --name ${path.basename(rel, path.extname(rel))} --replace`
+        : record.derivedFrom?.operation === "process" ? `materials process --project-root ${project} --file ${MATERIALS_DIR}/${record.derivedFrom.file} --effect ${record.derivedFrom.effect} --seed ${record.derivedFrom.seed} --params '${JSON.stringify(record.derivedFrom.params)}' --name ${path.basename(rel, ".png")} --replace` : "re-make it";
+      findings.push({ code: "material-calibration-stale", severity: "error", file: rel, message: `${rel} was made from calibration profile ${used.id}, which ${now ? "has changed" : "is gone"}`, fix: now ? `Regenerate with the current profile: ${again}` : `Restore ${used.file}, or ${again} with another profile` });
+    }
+    if (record.sha256 && hashOf(rel) !== record.sha256 && !record.derivedFrom) findings.push({ code: "material-changed", severity: "error", file: rel, message: `${rel} no longer matches its recorded hash`, fix: `If the edit is intended, re-record it with materials add --project-root ${project} --replace; then re-cut its pieces` });
     if (record.derivedFrom) {
       const parent = records[record.derivedFrom.file];
       const parentHash = hashOf(record.derivedFrom.file);
       if (!parent || !parentHash) findings.push({ code: "material-derived-orphan", severity: "error", file: rel, message: `${rel} comes from ${record.derivedFrom.file}, which is gone or unrecorded`, fix: `Restore and record ${record.derivedFrom.file}, or delete ${rel}` });
-      else if (parentHash !== record.derivedFrom.sha256) findings.push({ code: "material-derived-stale", severity: "error", file: rel, message: `${rel} was cut from an earlier version of ${record.derivedFrom.file}`, fix: `Cut again: materials cut --file ${MATERIALS_DIR}/${record.derivedFrom.file} --mode ${record.derivedFrom.mode} --replace` });
+      else if (parentHash !== record.derivedFrom.sha256) {
+        const made = record.derivedFrom.operation === "process" ? "processed" : "cut";
+        const again = record.derivedFrom.operation === "process"
+          ? `Process again: materials process --project-root ${project} --file ${MATERIALS_DIR}/${record.derivedFrom.file} --effect ${record.derivedFrom.effect} --seed ${record.derivedFrom.seed} --params '${JSON.stringify(record.derivedFrom.params)}' --name ${path.basename(rel, ".png")} --replace`
+          : `Cut again: materials cut --project-root ${project} --file ${MATERIALS_DIR}/${record.derivedFrom.file} --mode ${record.derivedFrom.mode} --replace`;
+        findings.push({ code: "material-derived-stale", severity: "error", file: rel, message: `${rel} was ${made} from an earlier version of ${record.derivedFrom.file}`, fix: again });
+      }
       else if (parent.license !== record.license) findings.push({ code: "material-license-mismatch", severity: "error", file: rel, message: `${rel} records ${record.license} but its source records ${parent.license}`, fix: "Derived pieces carry their source's licence; cut again with --replace" });
       if (record.sha256 && hashOf(rel) !== record.sha256) findings.push({ code: "material-changed", severity: "warn", file: rel, message: `${rel} was edited after cutting`, fix: "Fine for hand retouching; note it in the record's notes so the piece is not re-cut over the retouch" });
     }
@@ -461,8 +725,13 @@ function imageForWidth(url, width) {
   return /\/full\/max\/0\/default\.jpg$/.test(url) ? url.replace("/full/max/", `/full/${width},/`) : url;
 }
 
-async function fetchMaterial({ project, sourceId, id, use, name, width = 1200, replace = false, http = httpClient(), ffmpeg = "ffmpeg" }) {
+async function fetchMaterial({ project, sourceId, id, use, name, width = 1200, region, replace = false, http = httpClient(), ffmpeg = "ffmpeg" }) {
   if (!id) fail(SCOPE, "--id is required", { code: "OPTION_REQUIRED" });
+  if (region !== undefined && (!Array.isArray(region) || region.length !== 4 || region.some((v) => !Number.isInteger(v) || v < 0) || region[2] < 64 || region[3] < 64 || region[2] > 4096 || region[3] > 4096)) {
+    fail(SCOPE, "params.region must be [x, y, width, height] in the master image's pixels, each side 64 to 4096", { code: "OPTION_VALUE_INVALID" });
+  }
+  // A region is kept at native resolution: the point is the detail, not a downscaled overview.
+  if (region) width = Math.max(region[2], region[3]);
   if (!Number.isInteger(width) || width < 64 || width > 4096) fail(SCOPE, "--width must be an integer from 64 to 4096 (the longest side kept)", { code: "OPTION_VALUE_INVALID" });
   const dir = materialsDir(project), records = readRecords(dir);
   let source, adapter;
@@ -482,12 +751,16 @@ async function fetchMaterial({ project, sourceId, id, use, name, width = 1200, r
     return { status: "refused", source: sourceId, id: item.id, license: item.license, restrictions: item.restrictions, licenseEvidence: item.licenseEvidence, message: `${item.title} is ${item.license} but carries restrictions: ${item.restrictions}`, fix: "Pick a file without restrictions; if the owner has cleared this use, download it and record it with materials add --license <licence> --by <author> (commercialUse stays false unless --commercial-use)" };
   }
   if (!item.imageUrl) return { status: "refused", source: sourceId, id: item.id, message: "the record has no downloadable image", fix: "Pick another object" };
-  const rel = `raw/${name ? slug(name) : `${source.id}-${slug(item.id)}`}.png`;
+  // A region is a native-resolution detail (paper tooth, a halftone screen) cut by the IIIF server.
+  if (region && !/\/full\/max\/0\/default\.jpg$/.test(item.imageUrl)) {
+    return { status: "refused", source: sourceId, id: item.id, message: `${source.id} has no IIIF image service, so a native-resolution region cannot be requested`, fix: "Fetch the whole image (largest --width) and measure a region with params.roi, or use a IIIF source such as rijksmuseum" };
+  }
+  const rel = `raw/${name ? slug(name) : `${source.id}-${slug(item.id)}${region ? `-r${region.join("-")}` : ""}`}.png`;
   const target = path.join(dir, rel);
   if (fs.existsSync(target) && !replace) fail(SCOPE, `${MATERIALS_DIR}/${rel} exists. Fix: pass --replace or --name <other>`, { code: "OUTPUT_EXISTS" });
   // Download the smallest published size that still covers the kept width.
   const covering = (item.sizes || []).filter((size) => size.longSide >= width).sort((a, b) => a.longSide - b.longSide)[0];
-  const fileUrl = covering ? covering.url : imageForWidth(item.imageUrl, width);
+  const fileUrl = region ? item.imageUrl.replace("/full/max/", `/${region.join(",")}/max/`) : covering ? covering.url : imageForWidth(item.imageUrl, width);
   let bytes;
   try { bytes = await http.bytes(fileUrl); } catch (error) {
     if (error instanceof SourceError) return { status: "blocked", source: sourceId, reason: error.status, message: error.message, fix: "The metadata answered but the image host did not; retry later or download it in a browser and use materials add" };
@@ -517,6 +790,7 @@ async function fetchMaterial({ project, sourceId, id, use, name, width = 1200, r
     fileUrl,
     licenseEvidence: item.licenseEvidence,
     retrieved: today(),
+    ...(region ? { region } : {}),
     ...(use ? { use } : {}),
     downloadedBytes: bytes.length,
     ...fileFacts(target),
@@ -566,5 +840,5 @@ async function probeSources({ http = httpClient(), sources } = {}) {
 
 module.exports = {
   ADAPTERS, MATERIALS_DIR, OPEN_LICENSES, SourceError, summarize,
-  addMaterial, checkMaterials, classify, cutMaterial, fetchMaterial, httpClient, isOpenLicense, licenseOf, listSources, loadRegistry, probeSources, readRecords, searchSources, writeRecords,
+  addMaterial, checkMaterials, classify, cutMaterial, fetchMaterial, generateMaterial, httpClient, isOpenLicense, licenseOf, listProfiles, listSources, loadRegistry, measureMaterial, probeSources, processMaterial, readRecords, replayMaterial, searchSources, writeRecords,
 };
