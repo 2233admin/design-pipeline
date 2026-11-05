@@ -972,3 +972,44 @@ media is copied or shipped.
   lengthening, the unbroken table-cell string, the huge number and truncation with no way back, from
   https://github.com/feimacode/open-design-agent-kit (`packages/core/src/export/screenChecks.ts`) at
   `927d4b6e6a29d8bfebdccadb4bb4a1b2a6438e73`, MIT, Copyright (c) 2026 Iven Xu.
+
+## Template bank: measured references and named fonts (2026-11-04)
+
+`skill/tools/template-bank/` holds project-owned layout templates. Their proportions and colour
+roles were measured from a reference corpus; nothing from that corpus is bundled.
+
+- Reference corpus: official Arknights and Arknights: Endfield promotional art, © HYPERGRYPH, as
+  re-hosted in the gallery of ignoredone's space (https://www.ignoredone.space/index.php/arknights_design/),
+  accessed 2026-11-04. 119 images were sampled for measurement only. No image, crop, trace, logo,
+  official text or font is redistributed; image and logo areas in the templates are hatched
+  placeholder slots. The sample list (URLs, sizes, categories) is
+  `docs/research/arknights-endfield-provenance.csv`; the method and numbers are in
+  `docs/research/arknights-endfield-template-study.md`. Each template's `manifest.json` names its
+  samples. No licence for the referenced artwork is asserted.
+- ignoredone's space tutorials (© ignoredone): read for the study
+  `docs/research/ignoredone-arknights-design.md`, which restates rules and structures in this
+  repository's words and copies no artwork or tutorial images.
+- Display lettering: `skill/tools/template-bank/lettering.cjs` draws its 58 glyphs (the study's 53 plus `, ; " &` and the euro sign) from stroke
+  skeletons written for this repository. It is not derived from a font file.
+- Named, not bundled (SIL Open Font License 1.1): Source Han Sans SC and Source Han Serif SC
+  (Adobe), Noto Sans CJK SC and Noto Serif CJK SC, Noto Sans SC and Noto Serif SC (Google). The
+  study also names OFL Latin near-matches for reference (Montserrat, Outfit, Urbanist, Archivo
+  Black, Bebas Neue, Oswald, Big Shoulders Display and Stencil, Saira Stencil One, Chakra Petch,
+  Oxanium, Teko, Michroma, Cinzel, Playfair Display, Bodoni Moda); none is bundled or required.
+
+## Template style packs: the shinbo pack and its check fixtures (2026-11-05)
+
+- The `shinbo` style pack (`skill/tools/template-bank/styles/shinbo/`, `layouts-shinbo.cjs`) is
+  project-owned: its grammar, layouts, procedural corridor, door and butterfly shapes and all copy
+  were written for the Nocturne Corridor (夜想回廊) experiment, an original fictional work. "Shinbo /
+  SHAFT style" names a genre of flat graphic and typographic design; no frame, logo, character,
+  title or text of any existing work is used.
+- Fonts named by the pack, not bundled in the skill (SIL Open Font License 1.1): Shippori Mincho and
+  Shippori Mincho B1 (FONTDASU), Hina Mincho (Satsuyako), Zen Kaku Gothic New (Yoshimichi Ohira),
+  Noto Serif CJK SC and Noto Sans CJK SC (Google / Adobe).
+- Test fixtures only (`tests/fixtures/style-pack-shinbo/`, not packaged): WOFF subsets of those
+  fonts, limited to the characters the fixture pages set, each family's OFL text beside it
+  (`assets/fonts/OFL-*.txt`); cut-out and downscaled pieces of public-domain works released as CC0
+  by the Cleveland Museum of Art Open Access (Piranesi, Hollar, Redouté, De Gouy, scissors) and The
+  Met Open Access (keys, padlock, watch movement); generated paper textures. Every file's source
+  URL, licence and author are in `tests/fixtures/style-pack-shinbo/provenance.csv`.

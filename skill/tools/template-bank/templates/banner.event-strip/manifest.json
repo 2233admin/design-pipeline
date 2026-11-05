@@ -1,0 +1,214 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "banner.event-strip",
+  "family": "banner",
+  "title": "Event banner strip (about 3.1:1): figure at one end, boxed title rows and large date numerals",
+  "use": "Event entry banner: figure at one end; event name on solid plates and the start/end dates at the other.",
+  "canvas": {
+    "width": 1560,
+    "height": 500
+  },
+  "sizes": [
+    "1560x500",
+    "2340x750",
+    "3120x1000"
+  ],
+  "aspect": "3.12:1",
+  "style": "arknights-endfield",
+  "palette": {
+    "bg": {
+      "value": "#7E2F33",
+      "use": "deep red ground (category C* median 12.7, red-dominant)"
+    },
+    "ink": {
+      "value": "#FFFFFF",
+      "use": "text"
+    },
+    "plate": {
+      "value": "#D0283A",
+      "use": "title plate 1"
+    },
+    "plate2": {
+      "value": "#FFFFFF",
+      "use": "title plate 2"
+    },
+    "plate2_ink": {
+      "value": "#D0283A",
+      "use": "text on plate 2"
+    },
+    "ink2": {
+      "value": "#F3E2D4",
+      "use": "times"
+    },
+    "edge": {
+      "value": "#E22B3B",
+      "use": "right edge, arrow"
+    }
+  },
+  "accent": {
+    "roles": [
+      "plate",
+      "edge"
+    ],
+    "maxShare": 0.08
+  },
+  "params": {
+    "fig_w": {
+      "default": 0.5,
+      "min": 0.44,
+      "max": 0.52,
+      "class": "proportion"
+    },
+    "title_x0": {
+      "default": 0.53,
+      "min": 0.52,
+      "max": 0.56,
+      "class": "proportion",
+      "note": "text half starts here; plates and dates share this left line"
+    },
+    "row_h": {
+      "default": 0.15,
+      "min": 0.13,
+      "max": 0.16,
+      "class": "rhythm"
+    },
+    "date_h": {
+      "default": 0.17,
+      "min": 0.14,
+      "max": 0.18,
+      "class": "rhythm"
+    },
+    "date_y": {
+      "default": 0.64,
+      "min": 0.62,
+      "max": 0.66,
+      "class": "proportion"
+    },
+    "letter_width": {
+      "default": 0.5,
+      "min": 0.44,
+      "max": 0.54,
+      "class": "rhythm",
+      "note": "code-drawn display lettering: glyph width / cap height"
+    },
+    "letter_stroke": {
+      "default": 0.17,
+      "min": 0.13,
+      "max": 0.2,
+      "class": "rhythm",
+      "note": "display lettering stroke / cap height"
+    },
+    "letter_chamfer": {
+      "default": 0.07,
+      "min": 0,
+      "max": 0.12,
+      "class": "rhythm",
+      "note": "display lettering corner cut / cap height"
+    },
+    "letter_stencil": {
+      "default": 0,
+      "min": 0,
+      "max": 0.06,
+      "class": "rhythm",
+      "note": "display lettering stencil gap / cap height (0 = off)"
+    },
+    "accent_max_share": {
+      "default": 0.08,
+      "min": 0.02,
+      "max": 0.15,
+      "class": "proportion",
+      "note": "accent-colour area budget as a share of the canvas; measured on the render"
+    },
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "show safe zones, figure zones and alignment lines in the output"
+    }
+  },
+  "slots": {
+    "figure": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "figure + props; caption slot bottom-left"
+    },
+    "caption": {
+      "kind": "text",
+      "default": "<小字说明>",
+      "maxChars": 12
+    },
+    "title_row_1": {
+      "kind": "text",
+      "default": "活动名称",
+      "maxChars": 6,
+      "title": true,
+      "sizeParam": "row_h"
+    },
+    "title_row_2": {
+      "kind": "text",
+      "default": "限时活动开启",
+      "maxChars": 9,
+      "title": true,
+      "sizeParam": "row_h"
+    },
+    "date_start": {
+      "kind": "lettering",
+      "default": "12/24",
+      "maxChars": 5,
+      "fallbackFont": "sans",
+      "sizeParam": "date_h"
+    },
+    "date_start_time": {
+      "kind": "lettering",
+      "default": "04:00",
+      "maxChars": 5,
+      "fallbackFont": "sans"
+    },
+    "date_end": {
+      "kind": "lettering",
+      "default": "01/07",
+      "maxChars": 5,
+      "fallbackFont": "sans",
+      "sizeParam": "date_h"
+    },
+    "date_end_time": {
+      "kind": "lettering",
+      "default": "03:59",
+      "maxChars": 5,
+      "fallbackFont": "sans"
+    }
+  },
+  "relations": [
+    "Date numerals are the largest Latin glyphs.",
+    "Event name sits on solid colour plates.",
+    "Figure and text do not overlap."
+  ],
+  "decoration": [
+    "Coloured edge at the right end, arrow between dates."
+  ],
+  "changesFromStudy": [
+    "The arrow and end date follow the measured start date and time widths."
+  ],
+  "provenance": {
+    "corpus": "ignoredone's space gallery of official Arknights / Arknights: Endfield promotional art (© HYPERGRYPH), reference only, never redistributed",
+    "gallery": "https://www.ignoredone.space/index.php/arknights_design/",
+    "accessed": "2026-11-04",
+    "study": "docs/research/arknights-endfield-template-study.md",
+    "provenanceCsv": "docs/research/arknights-endfield-provenance.csv",
+    "method": "Our own structural skeleton from measured proportions (median of eye-annotated layout boxes, Lab colour measurements). No traced artwork, logos or official text; image and logo areas are hatched placeholder slots.",
+    "samples": "Arknights BANNER, 4 images (1560x500 x3, 1052x337 x1)",
+    "sampleIds": [
+      "AK030",
+      "AK031",
+      "AK032",
+      "AK033"
+    ],
+    "measured": [
+      "title area median 29% (largest of all categories); text half about 0.45W wide",
+      "2/4 figure at one end and text at the other",
+      "C* median 12.7; neutral pixels 0.34; 45% of chromatic clusters at hue 0-30°"
+    ],
+    "summary": "Arknights BANNER, 4 images (1560x500 x3, 1052x337 x1); docs/research/arknights-endfield-template-study.md"
+  }
+}

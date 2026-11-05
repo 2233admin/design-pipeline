@@ -1,6 +1,7 @@
 "use strict";
 
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const { fileURLToPath } = require("node:url");
 const { spawnSync } = require("node:child_process");
@@ -54,6 +55,9 @@ const { evaluateFilmRuns } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
 const { prepareFilmMethods } = require("../tools/film-methods/prepare.cjs");
 const { templates: filmTemplates } = require("../tools/prompt-motion/library.cjs");
+const templateBank = require("../tools/template-bank/bank.cjs");
+const templateDistill = require("../tools/template-bank/distill.cjs");
+const referenceMeasure = require("../tools/template-bank/reference-measure.cjs");
 const { scaffoldVisualCraft, TEMPLATES: scaffoldTemplates } = require("../tools/visual-craft/scaffold.cjs");
 const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
 const { evaluateProbeFile, validateProbeFile } = require("./interaction-core.cjs");
@@ -129,7 +133,8 @@ const {
   verifyComponentReceipt,
 } = require("./component-capability-core.cjs");
 const { searchMengToSkills, verifyMengToSnapshot } = require("./mengto-skills-core.cjs");
-const { BUNDLES: FETCHABLE_BUNDLES } = require("./vendor-cache.cjs");
+const { BUNDLES: FETCHABLE_BUNDLES, cacheRoot: vendorCacheRoot } = require("./vendor-cache.cjs");
+const fontCatalog = require("./font-catalog-core.cjs");
 const { findManifest: findDirectionLibraryManifest, verifyDirectionLibrary } = require("./design-direction-library-core.cjs");
 const { findManifest: findBrandDesignSystemsManifest, verifyBrandDesignSystems } = require("./brand-design-systems-core.cjs");
 const { searchShadcnioComponents, verifyShadcnioComponentSnapshot } = require("./shadcnio-react-components-core.cjs");
@@ -153,8 +158,8 @@ const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sh
 const { inspectEnvironment, nodeAtLeast, renderDoctor } = require("./doctor-report.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots", "--commercial-use"]);
-const REPEATABLE_OPTIONS = new Set(["--mix", "--taste", "--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots", "--browser", "--commercial-use", "--discover", "--ablate"]);
+const REPEATABLE_OPTIONS = new Set(["--set", "--param", "--mix", "--taste", "--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation", "--tone"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
   ...REPEATABLE_OPTIONS,
@@ -167,10 +172,12 @@ const KNOWN_OPTIONS = new Set([
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--start", "--end", "--min-pause", "--script", "--fps", "--max-frames", "--cut-threshold", "--min-shot", "--by", "--page-review", "--until", "--assisted-by", "--tradeoff", "--revision", "--affects",
   "--spec", "--stills", "--ffmpeg", "--ffprobe", "--medium", "--second", "--pool", "--east-pool",
+  "--family", "--size", "--seed", "--png", "-o", "--font-dir", "--images", "--annotations", "--compare",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
   "--target-id",
   "--use", "--name", "--license", "--finish",
   "--generator", "--seed", "--reference",
+  "--text", "--text-file", "--weight", "--contrast",
 ]);
 function parseArgs(argv) {
   const positionals = [];
@@ -424,6 +431,10 @@ function publicHelp() {
     "  template adapt --receipt <file> --context <file> --json",
     "  template review --plan <file> --review <file> --json",
     "  template approve --plan <file> --approval <file> --json",
+    "  template list [--family kv|cover|card|banner|ui|motion] [--style <id>]   (template bank: parameterised SVG layouts with slots, knobs and provenance; --style shows a style pack: font roles, layout grammar, materials, motion grammar, checks)",
+    "  template render <id> [--set slot=value ...] [--param name=value ...] [--seed <n>] [--size WxH] [--tone <image-slot>=#RRGGBB ...] -o <out.svg> [--png <out.png>] [--font-dir <dir>] [--browser] [--chrome <exe>] [--puppeteer-module <path>]   (renders and audits the output; image slots take a file path; --seed varies the rhythm knobs; --font-dir reads the style's fonts for whole-string glyph coverage; --browser, or a style that asks for it, adds the browser check; exit 2 when a check fails)",
+    "  template distill <provenance.csv> --images <dir> -o <out-dir> [--annotations <annotations.csv|labels.jsonl>] [--category A,B] [--id <style-id>] [--compare <style-id>] [--ablate] [--ffmpeg <exe>] [--chrome <exe>] [--puppeteer-module <path>]   (reference board -> style pack draft: thresholds from the reference distribution, layout archetypes with the nearest template or a skeleton, font roles from stroke contrast, report of supported rules and gaps; --compare diffs a hand-made pack; --ablate renders with and without each rule; images are never copied)",
+    "  template check <file.svg|file.html> [--tone <image-slot>=#RRGGBB ...] [--browser] [--size WxH] [--chrome <exe>] [--puppeteer-module <path>]   (measured: text fit, minimum size, contrast, figure and crop zones, accent budget, alignment, rhythm; in the browser also ink overlap, off-canvas, collage over text, contrast with the text hidden and glyph coverage, for injected layers and hand-written SVG or HTML too; every finding has a fix; 0 pass, 2 fail)",
     "  doctor [--json]   (readable install and tool report; --json for machine output) | status --change-root <dir>",
     "  plan --manifest <file> --output <file>",
     "  run --plan <file> --to <phase>",
@@ -431,6 +442,9 @@ function publicHelp() {
     "  explain-block --change-root <dir>",
     "  package --change-root <dir> --output <file>",
     "  route --query [--write --output]",
+    "  fonts query --text <copy>|--text-file <file> [--style mincho|gothic|kai|fangsong|round|display|handwriting|mono] [--contrast high|low] [--weight 700] [--path <font file or dir>] [--catalog <file>] [--limit 20]   (fonts whose measured cmap covers every character; near misses list the missing ones)",
+    "  fonts measure --path <font file or dir> [--text <copy>|--text-file <file>]   (cmap coverage per glyph set, weights, stroke contrast, style)",
+    "  fonts refresh [--source <id> --revision <commit>|head] [--output <file>] [--discover]   (re-measure the pinned sources by HTTP range; default output is the user cache)",
     "  change init|resume|advance|migrate|repair",
     "  foundation check [--kind design|motion|all] | direction check | direction draw --medium web|ppt|info|app [--second 0-59] [--pool <numbers>] [--east-pool <numbers>]   (the roulette: S % count + 1 in the medium's section and S % 12 + 1 in east, past styles the ledger's last three deliveries used) | playground check | reference check|resolve | reconstruction check | scene check",
     "  reference analyze-video --path <video> --output <new-dir> [--project-root <dir>] [--start sec --end sec --fps 12 --max-frames 400] [--study] [--shots [--cut-threshold 0.18] [--min-shot 0.25]]   (decoded timed windows; observations pending; --study adds study.json with audio and cut-grid candidates; --shots segments by detected shot with per-shot frames, motion and sound events)",
@@ -888,7 +902,8 @@ const RUNTIME_REVIEW_EXIT_CODES = { built: 0, matched: 0, recorded: 0, stale: 2,
 function validateRuntimeReviewOptions(parsed) {
   const [, action] = parsed.positionals;
   const help = option(parsed, "--help") === true || option(parsed, "-h") === true;
-  if (parsed.positionals.length > 2) {
+  const operandEntry = parsed.positionals.length === 3 ? resolveCommand(parsed.positionals[0], parsed.positionals[1]) : null;
+  if (parsed.positionals.length > 2 && !operandEntry?.operand) {
     fail("cli", `unexpected positional arguments: ${parsed.positionals.slice(2).join(" ")}`, { code: "UNKNOWN_ARGUMENT" });
   }
   if ((action && !Object.hasOwn(RUNTIME_REVIEW_ACTION_OPTIONS, action)) || (!action && !help)) {
@@ -1697,6 +1712,109 @@ function sourcesFetchCommand(parsed) {
   return { result: value, exitCode };
 }
 
+// `fonts`: the open-font catalog (change add-open-font-catalog). query and measure read local
+// files and the packaged or cached catalog offline; refresh re-measures the pinned sources.
+function fontError(error) {
+  if (error instanceof fontCatalog.FontError) fail("fonts", `${error.message}. Fix: ${error.fix}`, { code: error.code, fix: error.fix });
+  throw error;
+}
+
+function fontQueryText(parsed) {
+  const text = option(parsed, "--text");
+  const file = option(parsed, "--text-file");
+  if (Boolean(text) === Boolean(file)) fail("fonts", "pass exactly one of --text <copy> or --text-file <file>", { code: "OPTION_REQUIRED" });
+  if (file && !fs.existsSync(file)) fail("fonts", `--text-file ${file} does not exist`, { code: "FILE_NOT_FOUND" });
+  return text || fs.readFileSync(file, "utf8");
+}
+
+function measureFontPath(target) {
+  if (!fs.existsSync(target)) fail("fonts", `--path ${target} does not exist`, { code: "FILE_NOT_FOUND" });
+  const files = fontCatalog.listFontFiles(path.resolve(target));
+  if (!files.length) fail("fonts", `--path ${target} holds no .ttf, .otf, .ttc, .woff or .woff2 file`, { code: "FONT_FILE_MISSING" });
+  const faces = [];
+  const problems = [];
+  for (const file of files) {
+    try {
+      faces.push(...fontCatalog.measureFile(file));
+    } catch (error) {
+      if (!(error instanceof fontCatalog.FontError)) throw error;
+      problems.push({ file, code: error.code, message: error.message, fix: error.fix });
+    }
+  }
+  return { faces, problems };
+}
+
+function fontsCommand(parsed, action) {
+  try {
+    if (action === "query") {
+      const text = fontQueryText(parsed);
+      const limitCheck = option(parsed, "--limit") === null ? null : numberOption(parsed, "--limit", { max: 1000 });
+      const { origin, file, catalog, skippedCache } = fontCatalog.resolveCatalog({ catalog: option(parsed, "--catalog"), cacheRoot: vendorCacheRoot });
+      const local = option(parsed, "--path") ? measureFontPath(option(parsed, "--path")) : { faces: [], problems: [] };
+      const result = fontCatalog.queryCatalog({
+        catalog,
+        text,
+        style: option(parsed, "--style"),
+        contrast: option(parsed, "--contrast"),
+        weight: option(parsed, "--weight"),
+        localFaces: fontCatalog.localEntries(local.faces),
+      });
+      const limit = limitCheck ?? 20;
+      const findings = result.candidates.length ? [] : [{
+        code: "font-coverage-none",
+        message: `no ${option(parsed, "--style") || "listed"} font covers all ${result.characters} characters`,
+        fix: result.missing.length
+          ? `Closest: ${result.missing[0].family} lacks ${result.missing[0].missing}. Set the whole string in a face that covers it (one font per string, no per-glyph fallback), relax --style/--contrast/--weight, or add a font with --path.`
+          : "Relax --style, --contrast or --weight, or add a font with --path.",
+      }];
+      for (const row of [...result.candidates, ...result.missing]) {
+        if (row.origin === "local") row.licenseNote = "unknown: record the licence and its source file before shipping this font";
+      }
+      return {
+        result: {
+          status: result.candidates.length ? "ready" : "blocked",
+          catalog: { origin, file, revisions: catalog.revisions, ...(skippedCache ? { skippedCache } : {}) },
+          ...result,
+          candidates: result.candidates.slice(0, limit),
+          missing: result.missing.slice(0, limit),
+          excluded: result.excluded.length,
+          localProblems: local.problems,
+          findings,
+        },
+        exitCode: result.candidates.length ? 0 : 2,
+      };
+    }
+    if (action === "measure") {
+      const target = requireOption(parsed, "--path");
+      const { faces, problems } = measureFontPath(target);
+      const wanted = option(parsed, "--text") || option(parsed, "--text-file") ? fontCatalog.textCodepoints(fontQueryText(parsed)) : null;
+      const entries = new Map(fontCatalog.localEntries(faces).map((entry) => [entry.family, entry.styles]));
+      const rows = faces.map((face) => {
+        const set = new Set(face.codepoints);
+        const { codepoints, ...rest } = face;
+        const row = { ...rest, codepoints: codepoints.length, styles: entries.get(face.family || path.basename(face.file)) || [], coverage: fontCatalog.coverageOf(set) };
+        if (wanted) row.missing = wanted.filter((cp) => !set.has(cp)).map((cp) => String.fromCodePoint(cp)).join("");
+        return row;
+      });
+      const blocked = problems.length || (wanted && rows.every((row) => row.missing));
+      return { result: { status: blocked ? "blocked" : "ready", faces: rows, problems }, exitCode: blocked ? 2 : 0 };
+    }
+    if (action === "refresh") {
+      const output = option(parsed, "--output") || fontCatalog.userCatalogFile(vendorCacheRoot);
+      const revision = option(parsed, "--revision");
+      const source = option(parsed, "--source");
+      if (revision && !source) fail("fonts", "--revision needs --source: each source pins its own repository", { code: "OPTION_REQUIRED" });
+      if (revision && revision !== "head" && !/^[0-9a-f]{40}$/.test(revision)) fail("fonts", "--revision must be a 40-hex commit or head", { code: "OPTION_VALUE_INVALID" });
+      const args = JSON.stringify({ output, revision, source, discover: option(parsed, "--discover") === true });
+      const { value, exitCode } = runKernel("refresh-font-catalog.cjs", [args], process.cwd(), { timeout: 30 * 60 * 1000 });
+      return { result: value, exitCode };
+    }
+    fail("cli", "fonts needs an action: query, measure or refresh", { code: "ACTION_REQUIRED" });
+  } catch (error) {
+    return fontError(error);
+  }
+}
+
 function iartCommand(parsed, action) {
   if (action === "search") {
     return {
@@ -2375,6 +2493,309 @@ function requireTemplatePreviewRoot(receipt, root) {
 }
 
 
+const TEMPLATE_IMAGE_TYPES = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".svg": "image/svg+xml" };
+
+function keyValues(parsed, flag) {
+  const values = {};
+  for (const raw of optionList(parsed, flag)) {
+    const index = String(raw).indexOf("=");
+    if (index <= 0) fail("template", `${flag} takes name=value, got ${raw}`, { code: "OPTION_VALUE_INVALID" });
+    const name = raw.slice(0, index);
+    if (Object.hasOwn(values, name)) fail("template", `${flag} ${name} is given twice`, { code: "DUPLICATE_OPTION" });
+    values[name] = raw.slice(index + 1);
+  }
+  return values;
+}
+
+function templateBankCall(fn) {
+  try {
+    return fn();
+  } catch (error) {
+    if (error instanceof templateBank.BankError) fail("template", error.message, { code: error.code });
+    throw error;
+  }
+}
+
+function templatePuppeteer(parsed, root) {
+  const explicit = option(parsed, "--puppeteer-module");
+  if (explicit !== null) return String(explicit);
+  try { return path.dirname(require.resolve("puppeteer-core/package.json", { paths: [root, process.cwd(), __dirname] })); } catch { return null; }
+}
+
+// Check a render; when text sits on a real image, sample the rendered pixels under it through the
+// browser. Without a browser the check keeps its contrast-unverified finding and says why.
+// sample: false when the browser half runs on the same file; its pixel contrast replaces this one.
+function templateAudit(parsed, root, svg, { sample = true } = {}) {
+  const tones = keyValues(parsed, "--tone");
+  const requests = templateBankCall(() => templateBank.pixelRequests(svg, { tones }));
+  const warnings = [];
+  let pixels = {};
+  if (sample && Object.keys(requests.points).length) {
+    const request = { mode: "pixels", svg, width: requests.width, height: requests.height, points: requests.points, chrome: option(parsed, "--chrome") ?? undefined, puppeteerModule: templatePuppeteer(parsed, root) ?? undefined };
+    const child = spawnSync(process.execPath, [path.join(__dirname, "template-sample.cjs")], { cwd: root, input: JSON.stringify(request), encoding: "utf8", timeout: 120000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
+    let value = null;
+    try { value = child.status === 0 ? JSON.parse(child.stdout) : null; } catch { value = null; }
+    if (value?.ok) pixels = value.result;
+    else warnings.push(`pixel sampling unavailable: ${(child.stderr || child.error?.message || "no output").trim().split("\n")[0]}`);
+  }
+  const report = templateBankCall(() => templateBank.check(svg, { tones, pixels }));
+  return { report, warnings };
+}
+
+function templatePng(root, parsed, svg, size, pngFile) {
+  const [width, height] = size.split("x");
+  const work = fs.mkdtempSync(path.join(os.tmpdir(), "template-png-"));
+  try {
+    const html = path.join(work, "index.html");
+    fs.writeFileSync(html, `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;padding:0;background:#fff}svg{display:block}</style></head><body>${svg}</body></html>`);
+    const args = ["--composition", html, "--output", path.join(work, "capture"), "--width", width, "--height", height];
+    if (option(parsed, "--chrome") !== null) args.push("--chrome", String(option(parsed, "--chrome")));
+    const puppeteerModule = templatePuppeteer(parsed, root);
+    if (puppeteerModule !== null) args.push("--puppeteer-module", puppeteerModule);
+    runKernel("capture-composition.cjs", args, root, { timeout: 120000 });
+    fs.copyFileSync(path.join(work, "capture", "screenshot.png"), pngFile);
+  } finally {
+    fs.rmSync(work, { recursive: true, force: true });
+  }
+  return pngFile;
+}
+
+// Browser half of the template check (tools/template-bank/page-check.cjs) in a child process.
+// Returns { report }, { unavailable } (no puppeteer-core or Chrome) or { crashed } (the check broke).
+function templateBrowserCheck(root, parsed, file, size) {
+  const args = [path.join(__dirname, "../tools/template-bank/page-check.cjs"), file];
+  if (size) args.push("--size", size);
+  if (option(parsed, "--chrome") !== null) args.push("--chrome", String(option(parsed, "--chrome")));
+  let puppeteerModule = option(parsed, "--puppeteer-module");
+  if (puppeteerModule === null) {
+    try { puppeteerModule = path.dirname(require.resolve("puppeteer-core/package.json", { paths: [root, process.cwd(), __dirname] })); } catch { puppeteerModule = null; }
+  }
+  if (puppeteerModule !== null) args.push("--puppeteer-module", String(puppeteerModule));
+  const child = spawnSync(process.execPath, args, { cwd: root, encoding: "utf8", windowsHide: true, timeout: 600000, maxBuffer: 64 * 1024 * 1024 });
+  if (child.error || child.signal || child.status !== 0) {
+    const reason = String(child.error?.message || child.stderr || child.signal || `exit ${child.status}`).trim().split("\n")[0];
+    return /^TOOL_MISSING: /.test(reason) ? { unavailable: reason.slice(14) } : { crashed: reason.replace(/^CHECK_FAILED: /, "") };
+  }
+  try { return { report: JSON.parse(child.stdout) }; } catch { return { crashed: "the browser check printed no JSON" }; }
+}
+
+// Static report (template metadata) and browser report merged into one: the browser's pixel
+// contrast replaces the static estimate; other rules add up.
+// A check the file needs but could not run is never a pass: exit 1 with status unverified.
+function mergeTemplateReports(staticReport, browser, extra = {}) {
+  if (!browser) return staticReport;
+  if (browser.unavailable) {
+    fail("template", `browser check could not run: ${browser.unavailable}. The result is unverified (collage, overlap and contrast need the rendered pixels). Fix: install puppeteer-core and Chrome, or pass --chrome <exe> --puppeteer-module <path>`, { code: "TOOL_MISSING", status: "unverified", ...extra });
+  }
+  if (browser.crashed) {
+    fail("template", `browser check failed: ${browser.crashed}. The result is unverified. Fix: open the file in a browser and resolve the error, then check again`, { code: "KERNEL_FAILED", status: "unverified", ...extra });
+  }
+  const page = browser.report;
+  const kept = (staticReport?.findings || []).filter((finding) => finding.rule !== "contrast" && !(finding.rule === "glyph-coverage" && page.findings.some((other) => other.rule === "glyph-coverage" && other.slot === finding.slot)));
+  const findings = [...kept, ...page.findings];
+  const notes = [...(staticReport?.notes || []).filter((note) => !/recheck contrast on the real image/.test(note)), ...page.notes];
+  if (staticReport) notes.push("contrast measured in the browser (ground rendered with the text hidden, 10th percentile under each text's ink) replaces the static estimate");
+  return {
+    ...(staticReport || { template: null, canvas: page.canvas, measured: [] }),
+    status: findings.length ? "failed" : "passed",
+    summary: { ...(staticReport?.summary || {}), findings: findings.length, browser: page.summary },
+    findings, notes: [...new Set(notes)],
+    browser: { status: page.status, canvas: page.canvas, measured: page.measured, collage: page.collage, errors: page.errors, rules: page.rules },
+    scope: "Technical conformance only: measured on the rendered file and, in the browser, on its pixels. It does not grant visual or creative acceptance.",
+  };
+}
+
+function templateStyleWantsBrowser(svgText) {
+  const match = /data-template="([^"]+)"/.exec(svgText);
+  if (!match) return false;
+  try { return templateBank.loadStyle(templateBank.loadManifest(match[1]).style).checks.browserOnRender === true; } catch { return false; }
+}
+
+// Template bank (skill/tools/template-bank): list, render with knobs and audit, check a render.
+function templateBankCommand(parsed, root, action, operand) {
+  if (action === "list") {
+    if (operand) fail("cli", "template list takes no positional argument", { code: "UNKNOWN_ARGUMENT" });
+    return { result: templateBankCall(() => templateBank.listTemplates({ family: option(parsed, "--family"), style: option(parsed, "--style") })), exitCode: 0 };
+  }
+  const browserFlag = option(parsed, "--browser") === true;
+  if (action === "check") {
+    if (!operand) fail("template", "template check needs a file: template check <file.svg|file.html>", { code: "OPTION_REQUIRED" });
+    const file = contained(root, operand, "<file>");
+    const size = option(parsed, "--size");
+    if (size !== null && !/^\d{2,5}x\d{2,5}$/.test(String(size))) fail("template", `--size must be WxH, got ${size}`, { code: "OPTION_VALUE_INVALID" });
+    const isHtml = /\.html?$/i.test(file);
+    const text = fs.readFileSync(file, "utf8");
+    const templated = !isHtml && text.includes("id=\"template-check\"");
+    // A file without template metadata (HTML, hand-written SVG) has only the browser check.
+    if (!templated && !/\.svg$/i.test(file) && !isHtml) fail("template", "template check takes an .svg or .html file", { code: "OPTION_VALUE_INVALID" });
+    const wantBrowser = browserFlag || !templated || templateStyleWantsBrowser(text);
+    const audited = templated ? templateAudit(parsed, root, text, { sample: !wantBrowser }) : null;
+    const staticReport = audited ? audited.report : null;
+    const warnings = audited ? audited.warnings : [];
+    const browser = wantBrowser ? templateBrowserCheck(root, parsed, file, size) : null;
+    const report = mergeTemplateReports(staticReport, browser, { file });
+    return { result: { ...report, file, ...(warnings.length ? { warnings } : {}) }, exitCode: report.status === "passed" ? 0 : 2 };
+  }
+  if (!operand) fail("template", `template render needs a template id: template render <id> -o <out.svg>; ids: ${templateBank.templateIds().join(", ")}`, { code: "OPTION_REQUIRED" });
+  const outRaw = option(parsed, "-o") ?? option(parsed, "--output");
+  if (option(parsed, "-o") !== null && option(parsed, "--output") !== null) fail("template", "give -o or --output, not both", { code: "DUPLICATE_OPTION" });
+  if (typeof outRaw !== "string" || !outRaw.trim()) fail("template", "template render needs -o <out.svg>", { code: "OPTION_REQUIRED" });
+  if (!/\.svg$/i.test(outRaw)) fail("template", `-o must end in .svg, got ${outRaw}`, { code: "OPTION_VALUE_INVALID" });
+  const pngRaw = option(parsed, "--png");
+  if (pngRaw !== null && !/\.png$/i.test(String(pngRaw))) fail("template", `--png must end in .png, got ${pngRaw}`, { code: "OPTION_VALUE_INVALID" });
+  const seedRaw = option(parsed, "--seed");
+  if (seedRaw !== null && !/^\d{1,9}$/.test(String(seedRaw))) fail("template", `--seed must be a whole number, got ${seedRaw}`, { code: "OPTION_VALUE_INVALID" });
+  const set = keyValues(parsed, "--set");
+  const manifest = templateBankCall(() => templateBank.loadManifest(operand));
+  for (const [slot] of Object.entries(keyValues(parsed, "--tone"))) {
+    if (templateBank.slotSpec(manifest, slot)?.spec.kind !== "image") fail("template", `--tone ${slot}: not an image slot of ${operand}`, { code: "OPTION_VALUE_INVALID" });
+  }
+  for (const [name, value] of Object.entries(set)) {
+    const found = templateBank.slotSpec(manifest, name);
+    if (found?.spec.kind !== "image") continue;
+    const image = contained(root, value, `--set ${name}`);
+    const type = TEMPLATE_IMAGE_TYPES[path.extname(image).toLowerCase()];
+    if (!type) fail("template", `--set ${name} must be a ${Object.keys(TEMPLATE_IMAGE_TYPES).join(", ")} file, got ${value}`, { code: "OPTION_VALUE_INVALID" });
+    set[name] = `data:${type};base64,${fs.readFileSync(image).toString("base64")}`;
+  }
+  const fontDir = option(parsed, "--font-dir") === null ? null : contained(root, option(parsed, "--font-dir"), "--font-dir");
+  const rendered = templateBankCall(() => templateBank.render(operand, { set, params: keyValues(parsed, "--param"), size: option(parsed, "--size"), seed: seedRaw === null ? null : Number(seedRaw), fontDir }));
+  const output = contained(root, outRaw, "-o", false);
+  fs.mkdirSync(path.dirname(output), { recursive: true });
+  fs.writeFileSync(output, rendered.svg);
+  const wantBrowser = browserFlag || templateBank.loadStyle(rendered.style).checks.browserOnRender === true;
+  const { report: staticReport, warnings } = templateAudit(parsed, root, rendered.svg, { sample: !wantBrowser });
+  let png = null;
+  if (pngRaw !== null) {
+    const pngFile = contained(root, pngRaw, "--png", false);
+    try { png = templatePng(root, parsed, rendered.svg, rendered.size, pngFile); } catch (error) { warnings.push(`--png capture failed, the SVG and its check stand: ${String(error.message).split("\n")[0]}`); }
+  }
+  const browser = wantBrowser ? templateBrowserCheck(root, parsed, output, rendered.size) : null;
+  const report = mergeTemplateReports(staticReport, browser, { output, ...(png ? { png } : {}) });
+  return {
+    result: {
+      status: report.status === "passed" ? "rendered" : "rendered-with-findings",
+      template: rendered.template, style: rendered.style, size: rendered.size, output, ...(png ? { png } : {}),
+      ...(seedRaw === null ? {} : { seed: Number(seedRaw), varied: Object.fromEntries(rendered.varied.map((name) => [name, rendered.params[name]])) }),
+      ...(rendered.fontSwitches.length ? { fontSwitches: rendered.fontSwitches } : {}),
+      ...(rendered.edl ? { edl: rendered.edl } : {}),
+      check: { status: report.status, summary: report.summary, findings: report.findings, notes: report.notes, ...(report.browser ? { browser: report.browser.status } : {}) },
+      ...(warnings.length ? { warnings } : {}),
+      next: report.status === "passed" ? `Inspect the pixels (--png) against the brief; the check covers technical conformance only.` : "Apply each finding's fix and render again.",
+    },
+    exitCode: report.status === "passed" ? 0 : 2,
+  };
+}
+
+// Reference distillation (tools/template-bank/distill.cjs): a provenance list + local images ->
+// a style pack draft, its measured distributions and a one-page report. With --ablate, renders the
+// nearest bank templates with the draft and with one rule removed at a time, and measures how far
+// each set lands from the reference distribution (needs the browser).
+function templateDistillCommand(parsed, root, operand) {
+  if (!operand) fail("template", "template distill needs a board: template distill <provenance.csv> --images <dir> -o <out-dir>", { code: "OPTION_REQUIRED" });
+  const board = contained(root, operand, "<provenance.csv>");
+  if (!/\.csv$/i.test(board)) fail("template", `the board must be a provenance .csv (id, source URL, size, category), got ${operand}`, { code: "OPTION_VALUE_INVALID" });
+  const outRaw = option(parsed, "-o") ?? option(parsed, "--output");
+  if (option(parsed, "-o") !== null && option(parsed, "--output") !== null) fail("template", "give -o or --output, not both", { code: "DUPLICATE_OPTION" });
+  if (typeof outRaw !== "string" || !outRaw.trim()) fail("template", "template distill needs -o <out-dir> (the draft, its measures and the report are written there; images are never copied)", { code: "OPTION_REQUIRED" });
+  const images = option(parsed, "--images") === null ? null : contained(root, option(parsed, "--images"), "--images");
+  const annotations = option(parsed, "--annotations") === null ? null : contained(root, option(parsed, "--annotations"), "--annotations");
+  if (annotations && !/\.(csv|jsonl)$/i.test(annotations)) fail("template", `--annotations takes the study's annotations .csv or labels .jsonl, got ${option(parsed, "--annotations")}`, { code: "OPTION_VALUE_INVALID" });
+  const categories = option(parsed, "--category") === null ? null : String(option(parsed, "--category")).split(",").map((c) => c.trim()).filter(Boolean);
+  const id = option(parsed, "--id") === null ? `draft-${path.basename(board, path.extname(board)).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 34) || "board"}` : String(option(parsed, "--id"));
+  const compare = option(parsed, "--compare") === null ? null : String(option(parsed, "--compare"));
+  const tools = { ...(option(parsed, "--ffmpeg") !== null ? { ffmpeg: String(option(parsed, "--ffmpeg")) } : {}), ...(option(parsed, "--ffprobe") !== null ? { ffprobe: String(option(parsed, "--ffprobe")) } : {}) };
+  let result;
+  try {
+    result = templateDistill.distill({ board, images, annotations, categories, id, compare, tools, root });
+  } catch (error) {
+    if (error instanceof templateDistill.DistillError || error instanceof templateBank.BankError) fail("template", error.message, { code: error.code });
+    throw error;
+  }
+  const out = contained(root, outRaw, "-o", false);
+  fs.mkdirSync(out, { recursive: true });
+  if (option(parsed, "--ablate") === true) result.ablation = templateAblation(root, parsed, result, out, tools);
+  const files = { style: path.join(out, "style.json"), measures: path.join(out, "distill.json"), report: path.join(out, "report.md") };
+  fs.writeFileSync(files.style, `${JSON.stringify(result.draft, null, 2)}\n`);
+  fs.writeFileSync(files.measures, `${JSON.stringify(result, null, 1)}\n`);
+  fs.writeFileSync(files.report, templateDistill.reportMarkdown(result));
+  const gaps = Object.entries(result.thresholds).filter(([, t]) => t.support === "gap").map(([k]) => k);
+  return {
+    result: {
+      status: "drafted", id, files: Object.fromEntries(Object.entries(files).map(([k, f]) => [k, templateDistill.relPath(f, root)])), references: result.board.measured, skipped: result.board.skipped, annotated: result.board.annotated,
+      supported: Object.entries(result.thresholds).filter(([, t]) => t.support === "measured").map(([k]) => k),
+      thin: Object.entries(result.thresholds).filter(([, t]) => t.support === "thin").map(([k]) => k), gaps,
+      archetypes: result.archetypes.slice(0, 5).map((a) => ({ key: a.key, n: a.n, nearest: a.nearest[0] || null, skeleton: Boolean(a.skeleton) })),
+      fonts: Object.fromEntries(Object.entries(result.fonts).map(([role, f]) => [role, { ...f.query, support: f.support, catalog: f.catalog.status, command: f.command }])),
+      ...(result.comparison ? { comparison: { style: result.comparison.style, rows: result.comparison.rows.map(({ label, hand, draft, ratio, same }) => ({ label, hand, draft, ratio, same })), palette: result.comparison.palette } } : {}),
+      ...(result.ablation ? { ablation: result.ablation } : {}),
+      scope: "A draft from measured distributions: it says what the references are like, not what is good. Review report.md, then copy style.json into styles/<id>/ and write templates for it. No gate or acceptance changes.",
+      next: `Read ${templateDistill.relPath(files.report, root)}; the gaps need human judgement.${option(parsed, "--ablate") === true ? "" : " Add --ablate to render the nearest templates with and without each rule."}`,
+    },
+    exitCode: 0,
+  };
+}
+
+function templateAblation(root, parsed, result, out, tools) {
+  const picks = [];
+  for (const a of result.archetypes) for (const n of a.nearest.slice(0, 1)) if (!picks.includes(n.id) && picks.length < 3) picks.push(n.id);
+  if (!picks.length) return { status: "not-run", reason: "no archetype has a nearest template" };
+  // The browser is checked before rendering: only a browser that cannot be found or launched is
+  // "install a browser"; any other failure is a real error and is raised.
+  // One fix per reason: the resolver's own "Fix: ..." is dropped in favour of the install fix.
+  const withoutFix = (message) => String(message).split("\n")[0].split(/\s*Fix:/)[0].replace(/[.\s]+$/, "");
+  const installFix = "Fix: install puppeteer-core and Chrome (npm run browser:install), or pass --chrome <exe> --puppeteer-module <path>";
+  try {
+    const { resolvePuppeteer } = require("./film-capture-core.cjs");
+    const { resolveBrowser } = require("./browser-locate.cjs");
+    let puppeteerModule = option(parsed, "--puppeteer-module");
+    if (puppeteerModule === null) { try { puppeteerModule = path.dirname(require.resolve("puppeteer-core/package.json", { paths: [root, process.cwd(), __dirname] })); } catch { puppeteerModule = null; } }
+    resolvePuppeteer(root, puppeteerModule === null ? undefined : String(puppeteerModule));
+    resolveBrowser(option(parsed, "--chrome") === null ? undefined : String(option(parsed, "--chrome")));
+  } catch (error) {
+    return { status: "not-run", reason: `no browser to render with: ${withoutFix(error.message)}. ${installFix}` };
+  }
+  const dir = path.join(out, "ablation");
+  fs.mkdirSync(dir, { recursive: true });
+  const variants = templateDistill.ablationVariants(result.draft);
+  const seeds = [1, 2];
+  const rows = [];
+  try {
+    for (const v of variants) {
+      const features = [];
+      for (const id of picks) {
+        const manifest = templateBank.loadManifest(id);
+        // The roles the template paints (their colours appear in its draft-palette render).
+        const draftSvg = templateBank.render(id, { params: Object.fromEntries(Object.entries(templateDistill.mapPalette(manifest, result.draft.palette)).map(([role, hex]) => [`palette.${role}`, hex])) }).svg.replace(/<metadata[\s\S]*?<\/metadata>/g, "").toUpperCase();
+        const used = new Set(Object.entries(templateDistill.mapPalette(manifest, result.draft.palette)).filter(([, hex]) => draftSvg.includes(hex.toUpperCase())).map(([role]) => role));
+        const palette = v.palette === null ? {} : templateDistill.mapPalette(manifest, result.draft.palette, { ...v.palette, used });
+        const params = Object.fromEntries(Object.entries(palette).map(([role, hex]) => [`palette.${role}`, hex]));
+        for (const seed of seeds) {
+          const rendered = templateBank.render(id, { params, seed });
+          const base = path.join(dir, `${v.variant}-${id}-${seed}`);
+          fs.writeFileSync(`${base}.svg`, rendered.svg);
+          templatePng(root, parsed, rendered.svg, rendered.size, `${base}.png`);
+          features.push(referenceMeasure.measurePixels(referenceMeasure.decode(`${base}.png`, { tools })).features);
+        }
+      }
+      rows.push({ ...v, ...templateDistill.distanceTo(features, result.thresholds) });
+    }
+  } catch (error) {
+    if (/Failed to launch|Could not find (?:Chrome|Chromium|browser|expected browser)|executablePath|Browser was not found/i.test(String(error.message))) {
+      return { status: "not-run", reason: `the browser did not launch: ${withoutFix(error.message)}. ${installFix}` };
+    }
+    throw error;
+  }
+  const baseline = templateDistill.distanceTo([templateDistill.blankFeatures(result.draft.palette.bg?.value || "#FFFFFF")], result.thresholds);
+  const full = rows[0];
+  return {
+    status: "measured", templates: picks, seeds, samples: picks.length * seeds.length, features: templateDistill.ABLATION_FEATURES, dir: templateDistill.relPath(dir, root),
+    baseline: { variant: "blank-page", ground: result.draft.palette.bg?.value || "#FFFFFF", ...baseline },
+    variants: rows.map((r) => ({ variant: r.variant, rule: r.rule, distance: r.distance, delta: r === full ? 0 : Number((r.distance - full.distance).toFixed(3)), per: r.per, ...(r.axis ? { axis: { feature: r.axis, delta: Number(((r.per[r.axis] ?? 0) - (full.per[r.axis] ?? 0)).toFixed(3)) } } : {}) })),
+    note: "Paired change against the full draft on the same templates and seeds; templates render placeholders where art goes, so absolute distances stay high. The blank-page baseline is a flat page of the draft ground: colour axes carry little signal for template renders that do not beat it clearly.",
+  };
+}
+
 function templateCommand(parsed, root, action) {
   if (action === "inventory") {
     const catalogArtifact = readJson(artifact(parsed, root, "--catalog"), "region-template catalog");
@@ -2531,6 +2952,10 @@ const COMMANDS = {
       adapt: { required: ["--receipt", "--context"], run: ({ parsed, root }) => templateCommand(parsed, root, "adapt") },
       review: { required: ["--plan", "--review"], run: ({ parsed, root }) => templateCommand(parsed, root, "review") },
       approve: { required: ["--plan", "--approval"], run: ({ parsed, root }) => templateCommand(parsed, root, "approve") },
+      list: { run: ({ parsed }) => templateBankCommand(parsed, null, "list") },
+      render: { operand: true, run: ({ parsed, root, operand }) => templateBankCommand(parsed, root, "render", operand) },
+      check: { operand: true, run: ({ parsed, root, operand }) => templateBankCommand(parsed, root, "check", operand) },
+      distill: { operand: true, run: ({ parsed, root, operand }) => templateDistillCommand(parsed, root, operand) },
     },
   },
   doctor: { run: doctorCommand },
@@ -2556,6 +2981,13 @@ const COMMANDS = {
   designmd: { run: ({ parsed, root, action }) => designMdCommand(parsed, root, action) },
   iart: { run: ({ parsed, action }) => iartCommand(parsed, action) },
   sources: { actions: { fetch: { run: ({ parsed }) => sourcesFetchCommand(parsed) } } },
+  fonts: {
+    actions: {
+      query: { run: ({ parsed }) => fontsCommand(parsed, "query") },
+      measure: { required: ["--path"], run: ({ parsed }) => fontsCommand(parsed, "measure") },
+      refresh: { run: ({ parsed }) => fontsCommand(parsed, "refresh") },
+    },
+  },
   toolchain: { run: ({ parsed, root, action }) => toolchainCommand(parsed, root, action) },
   execution: { run: ({ parsed, root, action }) => executionCommand(parsed, root, action) },
   adapter: { run: ({ parsed, root, action }) => adapterCommand(parsed, root, action) },
@@ -2939,7 +3371,8 @@ function dispatch(argv) {
   if (option(parsed, "--help") === true || option(parsed, "-h") === true || !parsed.positionals.length || parsed.positionals[0] === "help") {
     return { result: { status: "help", help: publicHelp() }, exitCode: 0, json };
   }
-  if (parsed.positionals.length > 2) {
+  const operandEntry = parsed.positionals.length === 3 ? resolveCommand(parsed.positionals[0], parsed.positionals[1]) : null;
+  if (parsed.positionals.length > 2 && !operandEntry?.operand) {
     fail("cli", `unexpected positional arguments: ${parsed.positionals.slice(2).join(" ")}`, { code: "UNKNOWN_ARGUMENT" });
   }
   const [command, action] = parsed.positionals;
@@ -2954,7 +3387,7 @@ function dispatch(argv) {
   const root = rootFrom(parsed);
   const entry = resolveCommand(command, action);
   if (!entry) fail("cli", `unknown command: ${[command, action].filter(Boolean).join(" ")}`, { code: "UNKNOWN_COMMAND" });
-  const outcome = entry.run({ parsed, root, command, action, file: fileResolver(parsed, root, entry) });
+  const outcome = entry.run({ parsed, root, command, action, operand: parsed.positionals[2] ?? null, file: fileResolver(parsed, root, entry) });
   return { ...outcome, json };
 }
 

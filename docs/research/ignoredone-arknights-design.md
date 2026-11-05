@@ -35,7 +35,7 @@
 | 封面设计库 | /index.php/coverdesign/ | 作者自己的封面系列（矢量突破、涤墨作战、追迹日落以西、辞岁行、弧光行动、红丝绒…17 个系列） | 页面 947KB，图片可下 |
 | 作品库 | /index.php/portfolio/ | 委托封面（攻略视频封面）、字标合集、JUMP[OVER] 海报 | 图片可下 |
 | 个人设计库 | /index.php/personaldesign/ | 个人作品画廊 | 同上（未细看） |
-| 学习工程 | /index.php/ignoredone-project/、/learningproject/ | 30 个源文件包（基础 20 + 进阶 10），百度网盘，提取码 igno | 列表可读，文件未下 |
+| 学习工程 | /index.php/ignoredone-project/、/learningproject/ | 30 个源文件包（基础 20 + 进阶 10），百度网盘 | 列表可读，文件未下 |
 | 免费工程 | /index.php/free_project/ | 12 个直播间套件 zip（OSS 直链）+ 网盘 | 已下 2 个看结构 |
 | 字体库 Font Lab | /index.php/fontlab/ | 44 款常用字体，10 类，6 款标“推荐” | 可读 |
 | IgnoBoard | /index.php/ignoboard/ | 作者做的本地灵感画布软件（Windows，v1.1.8） | 可读 |

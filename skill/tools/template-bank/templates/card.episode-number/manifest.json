@@ -1,0 +1,95 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.episode-number",
+  "family": "card",
+  "style": "shinbo",
+  "title": "Episode card: red bar, episode number, bracketed title, Japanese line, Latin credit",
+  "use": "Opening card of an episode or chapter: number, title in 「」, a second-language line.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "1280x720",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "ground": {
+      "type": "enum",
+      "values": [
+        "paper",
+        "black"
+      ],
+      "default": "paper",
+      "class": "decoration",
+      "note": "ground tone of the card: black, paper white or signal red (style groundTones)"
+    },
+    "title_size": {
+      "default": 0.139,
+      "min": 0.12,
+      "max": 0.14,
+      "class": "rhythm",
+      "note": "title size x H"
+    }
+  },
+  "slots": {
+    "number": {
+      "kind": "text",
+      "default": "第一夜",
+      "maxChars": 4,
+      "font": "display"
+    },
+    "title": {
+      "kind": "text",
+      "default": "「走廊，又长了一间」",
+      "maxChars": 11,
+      "font": "title",
+      "title": true
+    },
+    "ja": {
+      "kind": "text",
+      "default": "『廊下が伸びる』",
+      "maxChars": 16,
+      "font": "ja"
+    },
+    "en": {
+      "kind": "text",
+      "default": "NOCTURNE CORRIDOR — 01",
+      "maxChars": 30,
+      "font": "num"
+    }
+  },
+  "relations": [
+    "Bar, number and title share the left edge zone; the Latin credit goes to the opposite corner."
+  ],
+  "decoration": [
+    "The red bar is the only colour."
+  ],
+  "provenance": {
+    "corpus": "Nocturne Corridor (夜想回廊) experiment: our own original fictional anime set in the shinbo style pack's grammar, first pass and reviewed final",
+    "experiment": "styles/shinbo/style.json provenance; fixtures in tests/fixtures/style-pack-shinbo",
+    "accessed": "2026-11-05",
+    "method": "Geometry taken from the final round's HTML/CSS as fractions of W and H; text sizes and colours chosen so the final passed the browser check (contrast with text hidden, ink overlap, collage alpha, off-canvas). All copy is original.",
+    "sampleIds": [
+      "c02-white-episode"
+    ],
+    "measured": [
+      "bar 0.078W x 0.278-0.722H; number 64px; title 150px at 0.407H; Japanese line 46px; credit 22px bottom right"
+    ],
+    "summary": "Nocturne Corridor c02 final"
+  }
+}

@@ -3,6 +3,7 @@
   "tests": [
     "gepa-source.test.cjs",
     "sources-lock.test.cjs",
+    "font-catalog.test.cjs",
     "gepa-runtime.test.cjs",
     "reference-analysis-entry.test.cjs",
     "reference-video.test.cjs",
@@ -169,6 +170,10 @@
     "design-direction-library.test.cjs",
     "brand-design-systems.test.cjs",
     "reference-name-scope.test.cjs",
-    "ablation-eval.test.cjs"
+    "template-bank.test.cjs",
+    "template-style-pack.test.cjs",
+    "ablation-eval.test.cjs",
+    "template-bank-browser.test.cjs",
+    "template-distill.test.cjs"
   ]
 }

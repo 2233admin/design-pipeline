@@ -1,0 +1,127 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.onechar-bleed",
+  "family": "card",
+  "style": "shinbo",
+  "title": "Title card: one character fills the frame and bleeds off it, a reading in the far corner",
+  "use": "One word reduced to one character as a full-screen beat of a title-card cut or a chapter divider. Not for sentences.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "1280x720",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "ground": {
+      "type": "enum",
+      "values": [
+        "black",
+        "paper",
+        "red"
+      ],
+      "default": "black",
+      "class": "decoration",
+      "note": "ground tone of the card: black, paper white or signal red (style groundTones)"
+    },
+    "char_size": {
+      "default": 1.2,
+      "min": 1.0,
+      "max": 1.2,
+      "class": "rhythm",
+      "note": "character size x H (bleeds past the frame)"
+    },
+    "char_x": {
+      "default": 0.17,
+      "min": 0.1,
+      "max": 0.17,
+      "class": "rhythm",
+      "note": "left edge x W"
+    },
+    "char_top": {
+      "default": -0.1,
+      "min": -0.16,
+      "max": -0.04,
+      "class": "rhythm",
+      "note": "top of the em box x H"
+    },
+    "ruby_x": {
+      "default": 0.88,
+      "min": 0.87,
+      "max": 0.92,
+      "class": "proportion",
+      "note": "reading column centre x W; kept right of the character's em box"
+    },
+    "ruby_top": {
+      "default": 0.23,
+      "min": 0.18,
+      "max": 0.3,
+      "class": "rhythm"
+    },
+    "ruby_size": {
+      "default": 0.04,
+      "min": 0.034,
+      "max": 0.046,
+      "class": "rhythm"
+    }
+  },
+  "slots": {
+    "char": {
+      "kind": "text",
+      "default": "夜",
+      "maxChars": 1,
+      "font": "display",
+      "title": true,
+      "bleed": true
+    },
+    "ruby": {
+      "kind": "text",
+      "default": "よる",
+      "maxChars": 6,
+      "font": "ruby",
+      "note": "reading, vertical"
+    },
+    "label": {
+      "kind": "text",
+      "default": "第〇夜",
+      "maxChars": 6,
+      "font": "label"
+    }
+  },
+  "relations": [
+    "The character is the only large element; the reading and the label sit in the two corners farthest from its centre.",
+    "Small text tracked .3-.4em."
+  ],
+  "decoration": [
+    "Ground tone only; no texture is required."
+  ],
+  "provenance": {
+    "corpus": "Nocturne Corridor (夜想回廊) experiment: our own original fictional anime set in the shinbo style pack's grammar, first pass and reviewed final",
+    "experiment": "styles/shinbo/style.json provenance; fixtures in tests/fixtures/style-pack-shinbo",
+    "accessed": "2026-11-05",
+    "method": "Geometry taken from the final round's HTML/CSS as fractions of W and H; text sizes and colours chosen so the final passed the browser check (contrast with text hidden, ink overlap, collage alpha, off-canvas). All copy is original.",
+    "sampleIds": [
+      "c01-black-onechar",
+      "c03-red-onechar"
+    ],
+    "measured": [
+      "c01: 夜 at 1300px (1.2H) from x 330 (0.17W), top -110 (-0.1H); reading よる 44px vertical at x 1580; the em-box check reported an overlap, the ink check does not"
+    ],
+    "summary": "Nocturne Corridor c01/c03 final"
+  }
+}

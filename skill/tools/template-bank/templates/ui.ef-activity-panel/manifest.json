@@ -1,0 +1,320 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.ef-activity-panel",
+  "family": "ui",
+  "title": "Endfield-style activity panel: left nav, right-aligned title block, task rows, accent pill CTA",
+  "use": "Activity, task or reward screen prototype, or a promotional UI screenshot layout.",
+  "canvas": {
+    "width": 1920,
+    "height": 1200
+  },
+  "sizes": [
+    "1920x1200",
+    "2560x1600",
+    "2880x1800"
+  ],
+  "aspect": "16:10",
+  "style": "arknights-endfield",
+  "palette": {
+    "bg": {
+      "value": "#1B2226",
+      "use": "expected tone of the scene image (largest cluster L* median 15)"
+    },
+    "scrim": {
+      "value": "#0B0F12",
+      "use": "nav scrim"
+    },
+    "ink": {
+      "value": "#FFFFFF",
+      "use": "text"
+    },
+    "ink2": {
+      "value": "#A8B3B8",
+      "use": "status"
+    },
+    "nav": {
+      "value": "#2A3236",
+      "use": "nav item"
+    },
+    "nav_active": {
+      "value": "#F4F6F6",
+      "use": "active nav item"
+    },
+    "nav_active_ink": {
+      "value": "#121618",
+      "use": "active nav text"
+    },
+    "accent": {
+      "value": "#F2EE1C",
+      "use": "actionable elements only: tag pill, CTA"
+    },
+    "accent_ink": {
+      "value": "#121618",
+      "use": "text on accent"
+    },
+    "row": {
+      "value": "#E9F3F4",
+      "use": "task rows"
+    },
+    "row_ink": {
+      "value": "#1A2226",
+      "use": "task text"
+    },
+    "strip": {
+      "value": "#1E7C89",
+      "use": "active strip, progress (darkened from #3FA7B5 to pass 3:1 on rows)"
+    },
+    "badge": {
+      "value": "#F07A1A",
+      "use": "NEW badges"
+    }
+  },
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.02
+  },
+  "params": {
+    "nav_x0": {
+      "default": 0.06,
+      "min": 0.05,
+      "max": 0.07,
+      "class": "proportion"
+    },
+    "nav_x1": {
+      "default": 0.2,
+      "min": 0.19,
+      "max": 0.21,
+      "class": "proportion"
+    },
+    "nav_y0": {
+      "default": 0.17,
+      "min": 0.15,
+      "max": 0.18,
+      "class": "proportion"
+    },
+    "nav_item_h": {
+      "default": 0.085,
+      "min": 0.075,
+      "max": 0.088,
+      "class": "rhythm"
+    },
+    "nav_gap": {
+      "default": 0.02,
+      "min": 0.014,
+      "max": 0.022,
+      "class": "rhythm"
+    },
+    "nav_items": {
+      "type": "integer",
+      "default": 7,
+      "min": 3,
+      "max": 7,
+      "class": "decoration"
+    },
+    "active": {
+      "type": "integer",
+      "default": 2,
+      "min": 0,
+      "max": 6,
+      "class": "decoration"
+    },
+    "panel_x0": {
+      "default": 0.545,
+      "min": 0.53,
+      "max": 0.56,
+      "class": "proportion"
+    },
+    "panel_x1": {
+      "default": 0.94,
+      "min": 0.93,
+      "max": 0.95,
+      "class": "proportion"
+    },
+    "rows_y0": {
+      "default": 0.53,
+      "min": 0.52,
+      "max": 0.55,
+      "class": "proportion"
+    },
+    "row_h": {
+      "default": 0.13,
+      "min": 0.12,
+      "max": 0.135,
+      "class": "rhythm"
+    },
+    "rows": {
+      "type": "integer",
+      "default": 3,
+      "min": 1,
+      "max": 3,
+      "class": "decoration"
+    },
+    "title_right": {
+      "default": 0.94,
+      "min": 0.92,
+      "max": 0.95,
+      "class": "proportion",
+      "note": "right text edge (0.94W)"
+    },
+    "accent_max_share": {
+      "default": 0.02,
+      "min": 0.005,
+      "max": 0.2,
+      "class": "proportion",
+      "note": "accent-colour area budget as a share of the canvas; measured on the render"
+    },
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "show safe zones, figure zones and alignment lines in the output"
+    }
+  },
+  "slots": {
+    "scene": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "full-bleed environment / key art"
+    },
+    "header_slashes": {
+      "kind": "lettering",
+      "default": "//",
+      "maxChars": 3,
+      "fallbackFont": "sans"
+    },
+    "header_cjk": {
+      "kind": "text",
+      "default": "页面名",
+      "maxChars": 6
+    },
+    "nav_thumb_{i}": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "entry thumbnail"
+    },
+    "nav_label_{i}": {
+      "kind": "text",
+      "default": "入口名称",
+      "maxChars": 6
+    },
+    "help_label": {
+      "kind": "text",
+      "default": "? 说明",
+      "maxChars": 6
+    },
+    "title_cjk": {
+      "kind": "text",
+      "default": "活动标题",
+      "maxChars": 6,
+      "title": true
+    },
+    "timer": {
+      "kind": "text",
+      "default": "◷ 00天00小时",
+      "maxChars": 10
+    },
+    "tag_pill": {
+      "kind": "text",
+      "default": "标签",
+      "maxChars": 4
+    },
+    "panel_intro": {
+      "kind": "text",
+      "default": "<一句导语, ≤34字>",
+      "maxChars": 34
+    },
+    "task_{k}": {
+      "kind": "text",
+      "default": "<任务描述 ≤2行×16字>",
+      "maxChars": 32,
+      "lines": 2
+    },
+    "progress_{k}": {
+      "kind": "lettering",
+      "default": "1/1",
+      "maxChars": 5,
+      "fallbackFont": "sans"
+    },
+    "reward_{k}_{j}": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "reward icon",
+      "fit": "contain"
+    },
+    "claim_{k}": {
+      "kind": "text",
+      "default": "✓ 领取",
+      "maxChars": 4
+    },
+    "cta_label": {
+      "kind": "text",
+      "default": "前往",
+      "maxChars": 4
+    },
+    "status_line": {
+      "kind": "text",
+      "default": "<ping / uid 状态行>",
+      "maxChars": 24
+    }
+  },
+  "relations": [
+    "Left nav and right title block balance on the diagonal.",
+    "Only actionable elements use the fluorescent accent.",
+    "Page names always carry the // prefix."
+  ],
+  "decoration": [
+    "NEW corner badges, thin vertical rule, status line."
+  ],
+  "changesFromStudy": [
+    "strip #3FA7B5 -> #1E7C89: the progress numerals measured 2.15:1 on the rows, below 3:1.",
+    "Nav label size 0.020H -> 0.019H and thumbnail 0.055W -> 0.050W so six characters fit beside the thumbnail.",
+    "help_label aligned to the title's right edge (it sat 0.008W further right)."
+  ],
+  "provenance": {
+    "corpus": "ignoredone's space gallery of official Arknights / Arknights: Endfield promotional art (© HYPERGRYPH), reference only, never redistributed",
+    "gallery": "https://www.ignoredone.space/index.php/arknights_design/",
+    "accessed": "2026-11-04",
+    "study": "docs/research/arknights-endfield-template-study.md",
+    "provenanceCsv": "docs/research/arknights-endfield-provenance.csv",
+    "method": "Our own structural skeleton from measured proportions (median of eye-annotated layout boxes, Lab colour measurements). No traced artwork, logos or official text; image and logo areas are hatched placeholder slots.",
+    "samples": "Endfield UI_SCREEN, 24 images (EF072 measured, 2340x1080 converted)",
+    "sampleIds": [
+      "EF056",
+      "EF061",
+      "EF063",
+      "EF064",
+      "EF065",
+      "EF066",
+      "EF067",
+      "EF068",
+      "EF069",
+      "EF070",
+      "EF071",
+      "EF072",
+      "EF073",
+      "EF074",
+      "EF075",
+      "EF077",
+      "EF078",
+      "EF079",
+      "EF080",
+      "EF081",
+      "EF094",
+      "XEF07",
+      "XEF08",
+      "XEF12"
+    ],
+    "measured": [
+      "left nav 0.06-0.20W, first item 0.17H, item 0.085H, gap 0.02H; active item bleeds to x=0",
+      "title block right-aligned to 0.94W, 0.14-0.29H; close button centre (0.935W, 0.05H)",
+      "content panel 0.545-0.94W from 0.475H; rows about 0.13H",
+      "fluorescent yellow in 14/24, only on primary buttons, tags and the current item; largest cluster L* median 15"
+    ],
+    "summary": "Endfield UI_SCREEN, 24 images (EF072 measured, 2340x1080 converted); docs/research/arknights-endfield-template-study.md"
+  }
+}

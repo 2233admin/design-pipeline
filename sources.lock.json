@@ -237,6 +237,18 @@
       "treeSha256": "bc4375b2fce2417ccf354e00b08cc7365e7bd11cd3ce6b5d501ff82a7d15fcd4"
     },
     {
+      "id": "free-font-list",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/wordshub/free-font",
+      "revision": "8de624069342f03a78e83e81636126e37c9c7ac9",
+      "reviewedAt": "2026-11-05",
+      "committedAt": "2025-02-27T23:36:34+08:00",
+      "held": {
+        "reason": "skill/references/fonts/catalog.json is measured at this revision; sources:update cannot move the pin until it re-measures the catalog.",
+        "issue": "https://github.com/2233admin/design-pipeline/issues/302"
+      }
+    },
+    {
       "id": "frog",
       "kind": "catalog-reference",
       "repo": "https://github.com/wevm/frog",
@@ -276,6 +288,18 @@
       "profiles": [
         "good-css"
       ]
+    },
+    {
+      "id": "google-fonts",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/google/fonts",
+      "revision": "bbda7253fc363238b05d97515ca71f8ae49c4fa9",
+      "reviewedAt": "2026-11-05",
+      "committedAt": "2026-11-04T18:40:09+00:00",
+      "held": {
+        "reason": "skill/references/fonts/catalog.json is measured at this revision; sources:update cannot move the pin until it re-measures the catalog.",
+        "issue": "https://github.com/2233admin/design-pipeline/issues/302"
+      }
     },
     {
       "id": "gsap",
@@ -706,6 +730,18 @@
       "treeSha256": "61dc34e854081e3dba00bc07a91d41b45c7bf7b13bb7e3ada17246e7ed921896"
     },
     {
+      "id": "lxgw-wenkai",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/lxgw/LxgwWenKai",
+      "revision": "da0fdf92a0adc5d83c82ecde06d6665c97a2a45e",
+      "reviewedAt": "2026-11-05",
+      "committedAt": "2026-11-03T16:32:17+08:00",
+      "held": {
+        "reason": "skill/references/fonts/catalog.json is measured at this revision; sources:update cannot move the pin until it re-measures the catalog.",
+        "issue": "https://github.com/2233admin/design-pipeline/issues/302"
+      }
+    },
+    {
       "id": "make-interfaces-feel-better",
       "kind": "vendored",
       "repo": "https://github.com/jakubkrehel/make-interfaces-feel-better",
@@ -1087,6 +1123,18 @@
       "profiles": [
         "ui-ux-pro-max"
       ]
+    },
+    {
+      "id": "zhuque-fangsong",
+      "kind": "catalog-reference",
+      "repo": "https://github.com/TrionesType/zhuque",
+      "revision": "005a8d0d620cb1fe2a576620a69daea3cc7477b4",
+      "reviewedAt": "2026-11-05",
+      "committedAt": "2026-07-23T12:55:37+08:00",
+      "held": {
+        "reason": "skill/references/fonts/catalog.json is measured at this revision; sources:update cannot move the pin until it re-measures the catalog.",
+        "issue": "https://github.com/2233admin/design-pipeline/issues/302"
+      }
     }
   ]
 }

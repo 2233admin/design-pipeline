@@ -1,0 +1,196 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "cover.pv-lowerthird",
+  "family": "cover",
+  "title": "Video cover, logo and title on one centred lower-third row",
+  "use": "Event or release video cover: a full-bleed scene, all information in the lower third, one label plate. 16:10 with a 16:9 centre crop kept safe.",
+  "canvas": {
+    "width": 1600,
+    "height": 1000
+  },
+  "sizes": [
+    "1600x1000",
+    "1920x1200",
+    "2560x1600"
+  ],
+  "aspect": "16:10",
+  "style": "arknights-endfield",
+  "palette": {
+    "bg": {
+      "value": "#3A3A3E",
+      "use": "expected tone of the key art under the title band; set it to the real art's tone so contrast is checked against it"
+    },
+    "ink": {
+      "value": "#FFFFFF",
+      "use": "title"
+    },
+    "ink2": {
+      "value": "#D9D9D9",
+      "use": "Latin line, copyright"
+    },
+    "accent": {
+      "value": "#E8C35A",
+      "use": "label-plate bars"
+    },
+    "plate": {
+      "value": "#1C1C1E",
+      "use": "label plate"
+    },
+    "rule": {
+      "value": "#FFFFFF",
+      "use": "rules"
+    }
+  },
+  "accent": {
+    "roles": [
+      "accent"
+    ],
+    "maxShare": 0.02
+  },
+  "params": {
+    "band_y0": {
+      "default": 0.6,
+      "min": 0.57,
+      "max": 0.63,
+      "class": "proportion",
+      "note": "title band top (title centre median 0.72H, p25-p75 0.71-0.725)"
+    },
+    "title_h": {
+      "default": 0.085,
+      "min": 0.07,
+      "max": 0.092,
+      "class": "rhythm"
+    },
+    "label_h": {
+      "default": 0.055,
+      "min": 0.046,
+      "max": 0.06,
+      "class": "rhythm"
+    },
+    "scrim": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "dark gradient under the lower half; 5/8 samples set the title over the figure and rely on it. Turning it off usually fails contrast"
+    },
+    "letter_width": {
+      "default": 0.6,
+      "min": 0.5,
+      "max": 0.64,
+      "class": "rhythm",
+      "note": "code-drawn display lettering: glyph width / cap height"
+    },
+    "letter_stroke": {
+      "default": 0.14,
+      "min": 0.1,
+      "max": 0.17,
+      "class": "rhythm",
+      "note": "display lettering stroke / cap height"
+    },
+    "letter_chamfer": {
+      "default": 0.1,
+      "min": 0,
+      "max": 0.14,
+      "class": "rhythm",
+      "note": "display lettering corner cut / cap height"
+    },
+    "letter_stencil": {
+      "default": 0,
+      "min": 0,
+      "max": 0.06,
+      "class": "rhythm",
+      "note": "display lettering stencil gap / cap height (0 = off)"
+    },
+    "accent_max_share": {
+      "default": 0.02,
+      "min": 0.005,
+      "max": 0.2,
+      "class": "proportion",
+      "note": "accent-colour area budget as a share of the canvas; measured on the render"
+    },
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "show safe zones, figure zones and alignment lines in the output"
+    }
+  },
+  "slots": {
+    "key_art": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "full-bleed scene; figure may sit under the title"
+    },
+    "logo": {
+      "kind": "image",
+      "default": "",
+      "ground": "bg",
+      "note": "wordmark",
+      "fit": "contain"
+    },
+    "title_cjk": {
+      "kind": "text",
+      "default": "活动标题",
+      "maxChars": 9,
+      "title": true,
+      "font": "serif",
+      "sizeParam": "title_h"
+    },
+    "title_latin": {
+      "kind": "lettering",
+      "default": "EVENT TITLE",
+      "maxChars": 22,
+      "fallbackFont": "sans",
+      "title": true
+    },
+    "pv_label": {
+      "kind": "text",
+      "default": "宣传PV",
+      "maxChars": 6,
+      "sizeParam": "label_h"
+    },
+    "copyright": {
+      "kind": "text",
+      "default": "© <owner>",
+      "maxChars": 30
+    }
+  },
+  "relations": [
+    "Logo and title share one baseline band in the lower third.",
+    "Label plate centred under the title band.",
+    "Key information stays inside the 16:9 centre crop."
+  ],
+  "decoration": [
+    "Bars and rules either side of the label plate."
+  ],
+  "changesFromStudy": [
+    "Key-art placeholder is hatched in the declared ground tone so the preview shows what contrast is checked against."
+  ],
+  "provenance": {
+    "corpus": "ignoredone's space gallery of official Arknights / Arknights: Endfield promotional art (© HYPERGRYPH), reference only, never redistributed",
+    "gallery": "https://www.ignoredone.space/index.php/arknights_design/",
+    "accessed": "2026-11-04",
+    "study": "docs/research/arknights-endfield-template-study.md",
+    "provenanceCsv": "docs/research/arknights-endfield-provenance.csv",
+    "method": "Our own structural skeleton from measured proportions (median of eye-annotated layout boxes, Lab colour measurements). No traced artwork, logos or official text; image and logo areas are hatched placeholder slots.",
+    "samples": "Arknights PV_COVER, 8 images (1146x717, 960x600, 1728x1080)",
+    "sampleIds": [
+      "AK016",
+      "AK017",
+      "AK018",
+      "AK019",
+      "AK020",
+      "AK021",
+      "AK022",
+      "AK023"
+    ],
+    "measured": [
+      "title centred 6/8; title centre y median 0.72H (p25-p75 0.71-0.725); title area median 16%",
+      "title over the figure > 30%: 5/8, hence the default scrim",
+      "C* median 7.2, vivid pixels median 0.3%",
+      "title band 0.60-0.86H stays inside the 16:10 -> 16:9 centre crop (0.056-0.944H)"
+    ],
+    "summary": "Arknights PV_COVER, 8 images (1146x717, 960x600, 1728x1080); docs/research/arknights-endfield-template-study.md"
+  }
+}
