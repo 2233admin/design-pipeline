@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card borders</title>
+<style>
+  @font-face { font-family: "Fixture Display"; src: url("fixture.woff") format("woff"); }
+  body { margin: 0; font-family: "Fixture Display", sans-serif; color: #1a1a2e; background: #fff; }
+  .band { background: #3366ff; color: #ffffff; padding: 40px; }
+  .grid { display: grid; grid-template-columns: repeat(6, 200px); gap: 16px; padding: 40px; }
+  /* 26 cards with a 1px off-token border: far below 1% of the painted area */
+  .card { border: 1px solid #ff00aa; height: 120px; }
+  /* partial opacity on an ancestor: black text at 50% composites to grey over white */
+  .faded { opacity: 0.5; }
+  .faded p { color: #000000; }
+</style>
+</head>
+<body>
+  <section class="band" style="height: 4000px"><h1>Card grid</h1></section>
+  <section class="grid">
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+    <div class="card">Card</div>
+  </section>
+  <div class="faded"><p>Half-opacity note</p></div>
+</body>
+</html>

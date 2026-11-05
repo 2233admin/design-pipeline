@@ -1091,6 +1091,26 @@ review; a conflicting checklist rule is not applicable, and none of it is Visual
   `reconciliation-manifest-unreadable`, `reconciliation-manifest-malformed`, or
   `reconciliation-manifest-contradictory`, because a broken manifest leaves applicability itself
   undecidable.
+- Measured spec drift: `reconciliation measure` loads the built `index.html` in headless Chromium
+  and writes change `built-styles.json` (the computed text, surface, border and SVG colours and the
+  font families the page paints, with their share, bound to the page digest, the hash of every
+  local file the page loaded (fonts, CSS) and the DESIGN.md hash). `reconciliation check` compares
+  it with the DESIGN.md front-matter `colors` and `typography.fontFamily` tokens: a colour further
+  than CIEDE2000 2 from every token, a rendered family no token names, or a token family the
+  browser cannot render is major drift when it covers at least 1% of its kind (text characters, or
+  painted area excluding the page background); a colour more than CIEDE2000 10 from every token is
+  major at any share when it is the page background, on an interactive element, or a surface or
+  border on 3 or more elements. Major drift blocks as `reconciliation-measured-drift` unless a Spec
+  Reconciliation row's `Implemented` cell names the measured hex or a whole comma-separated family
+  entry. Smaller strays and unused tokens are `reconciliation-measured-minor` warnings. A
+  measurement whose page, loaded files or DESIGN.md changed is `reconciliation-measurement-stale`;
+  a DESIGN.md without colour or font tokens is `reconciliation-baseline-empty`, never a clean pass.
+  Without `built-styles.json` the gate warns `reconciliation-unmeasured` when a built page and
+  DESIGN.md tokens both exist. On a change without a reference, `measure` says its drift only warns.
+  Not measured (recorded as `scope.notMeasured`): `<canvas>`, image, video and gradient pixels;
+  text and box shadows, outlines, filters and blend modes; pseudo-element content; the dark colour
+  scheme (light only); per-glyph fallback such as CJK glyphs a token font lacks; hover, focus and
+  other states; viewports other than 1440x900.
 - Exact reconstruction gate: `reconstruction.json` separates image/canonical/world/camera spaces;
   binds rectification, front elevation, locked camera, distributed landmarks, and overlay; and
   passes `designer-pipeline reconstruction check --stage geometry`.
