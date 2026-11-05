@@ -358,10 +358,11 @@ Read `references/pipeline-method.md` for the state, artifact, and invalidation c
   `references/interface-discipline.md` remains the fallback.
 - `frontend-design` supplies subject grounding, deliberate visual direction, critique-before-build,
   and anti-default judgment when installed; project contracts remain authoritative.
-- The built-in [Taste suite](taste-skill.md) supplies thirteen complete local methods for new
-  websites, redesign, selected style, reference-to-code, Stitch rules, image/brand concepts and
-  complete output. Read the relevant entry; v2 is experimental and v1 is explicit compatibility.
-  Its method rules adapt to project authority and reuse these stages without an ambient install.
+- The built-in [Taste skill](taste-skill.md) (tasteskill v2.1.5, one packaged skill) routes new
+  sites, redesign, app screens and critique of a render to its complete local source. Its house
+  rules adapt to project authority and reuse these stages without an ambient install. Its
+  `draw.mjs`, `inspect.mjs` and `lint.mjs` are optional agent tools; their findings about taste are
+  advisory and never a stage gate.
 - `emil-design-eng` is built in as a pinned source routed by
   [ui-craft-sources.md](ui-craft-sources.md), with five other UI craft sources and the React
   Doctor reference; `ui-ux-pro-max` and `web-design-guidelines` add companion detail when installed.
@@ -532,10 +533,9 @@ records a `Spec Reconciliation` section; an empty table is a valid result, an ab
 `design.md` records:
 
 - Layout grid and responsive behavior.
-- Selected Taste method/version from `references/taste-skill.md`, its product/audience fit,
-  relevant source checks, adaptations and non-applicable rules. Preserve user references and
-  existing brand/stack; image concepts remain distinct from implemented behavior, and the Stitch
-  DESIGN.md example is translated through design-synthesis rather than copied as a foundation.
+- Selected Taste route from `references/taste-skill.md`, its product/audience fit, the idea
+  sentence, adopted and excluded house rules, and any draw (direction id, seed, redraws). Preserve
+  user references and existing brand/stack; image concepts remain distinct from implemented behavior.
 - Applicable CSS practices from `references/good-css.md`: intrinsic layout, logical axes,
   content/overflow and token decisions, target-browser support and usable fallbacks.
 - Color tokens and contrast posture. For website references, these must cite the ready
@@ -876,11 +876,11 @@ The `ui` route has a generic `work` stage completed by recording delivery eviden
 arbitrary project file shapes, not a web `build` stage or an `index.html` output contract.
 Keep its runtime and evidence requirements unchanged; do not force HTML or the web manifest.
 
-For web design, redesign, style or image/brand work, read the selected complete source through
+For web design, redesign or app-screen work, read the selected route's complete source through
 `references/taste-skill.md` and implement its agreed decisions in the existing stack. An authorized
 image-only deliverable uses an available provider and retains its output boundary. Do not generate
-replacement references, add GSAP/React, or apply all style variants merely because the library is
-present. Reference-to-code follows the existing reference/reconstruction gates and actual inputs.
+replacement references or add GSAP/React merely because the source mentions them. Reference-to-code
+follows the existing reference/reconstruction gates and actual inputs.
 
 Whenever writing, editing or reviewing styles (plain CSS, utility classes, StyleX, CSS-in-JS or
 inline styles), use the built-in `references/good-css.md` and read the matched original entries

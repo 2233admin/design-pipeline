@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
+const { lockedSource } = require("./helpers/locked-source.cjs");
 const { validateRegistry } = require("../skill/scripts/adapter-core.cjs");
 
 const references = path.resolve(__dirname, "../skill/references");
@@ -39,8 +40,9 @@ test("XY is a pinned native vector-data route with packaged alpha boundaries", (
   assert.ok(route.adapterIds.includes("reflex-xy"));
   assert.equal(xy.support, "native");
   assert.equal(xy.hostPolicy, "project-installed-only");
-  assert.equal(xy.provenance.reviewedVersion, "0.0.6");
-  assert.equal(xy.provenance.revision, "55b8b61e432842995dc0b581113b0998a70a052d");
+  // sources.lock.json follows the latest XY release tag; the adapter record agrees with it.
+  assert.equal(xy.provenance.reviewedVersion, lockedSource("reflex-xy").version);
+  assert.equal(xy.provenance.revision, lockedSource("reflex-xy").revision);
   assert.equal(xy.license.id, "Apache-2.0");
   assert.match(guidance, /alpha/i);
   assert.match(guidance, /semantic data table/i);

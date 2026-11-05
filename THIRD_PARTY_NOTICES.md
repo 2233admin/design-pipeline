@@ -4,7 +4,7 @@
 
 The complete official `gepa-optimize-anything` skill (seven files), repository README,
 pyproject metadata and original MIT license are bundled under `skill/vendor/gepa/upstream/`
-from reviewed revision `462e437a09be67d2acb59564cc0ea59132f5777c` (reviewed 2026-10-09).
+from reviewed revision `8c7b697a71977980afc7537dac0881e784eef99f` (reviewed 2026-11-04).
 Copyright © 2025 Lakshya A Agrawal. `skill/vendor/gepa/manifest.json` records the scoped
 original Git blobs and hashes. The native Python runtime is an optional, separately prepared
 dependency pinned to that same revision. Upstream plugin/preflight metadata and alternative
@@ -18,12 +18,12 @@ runtime, workflow, remote prompt, or skill implementation is bundled or executed
 
 - `hi5jeff/deepclonewebsite`, reviewed commit
   `ab180fbe14a0f86c478bf033b375b1d40fabe6b1`, MIT, Copyright (c) 2026 hi5jeff.
-- `wevm/frog`, reviewed commit `702c4eadefe175a208290a99c36e7f4ac1390e53`, MIT,
+- `wevm/frog`, reviewed commit `cbe18b192b59a8770466ee9f193b17294778c8a9`, MIT,
   Copyright (c) 2025-present weth LLC.
 - `MengTo/skills`, reviewed commit `3f4c22d10055d3fdddb17248d59d0c1b731cb8d3`, MIT,
   Copyright (c) 2026 Meng To. The bundled index contains names, categories, and reviewed routes,
   not upstream `SKILL.md` bodies.
-- `shadcn-ui/ui`, reviewed commit `a85299a9edd2a961e32f01ced86963a852652bd2`, MIT,
+- `shadcn-ui/ui`, reviewed commit `4aaea19d9cff3e0908e12a8c1d504b8c5ec34610`, MIT,
   Copyright (c) 2023 shadcn. Preset option values and defaults are declarative compatibility data.
 - `Koboyo Icons`, reviewed 2026-08-13 from https://koboyo.com/icons and
   https://koboyo.com/icons/license. The registry stores discovery, license, and access-boundary
@@ -41,7 +41,7 @@ runtime, workflow, remote prompt, or skill implementation is bundled or executed
   and compatibility metadata only; no upstream source code, runtime, or dependency is bundled.
   Licenses and usage terms remain unverified and the respective upstream sites are authoritative.
 - `reflex-dev/xy`, reviewed release `v0.0.6` at commit
-  `55b8b61e432842995dc0b581113b0998a70a052d`, Apache-2.0. The pipeline bundles only routing and
+  `6483032a7947e1f44ced1a560ac08f1025637529`, Apache-2.0. The pipeline bundles only routing and
   integration guidance; no XY Python, Rust, WebGL, or Reflex runtime code is redistributed.
 - `anthropics/claude-plugins-official`, `plugins/playground/skills/playground`, reviewed
   2026-08-14 from the main branch, Apache-2.0. Design Pipeline adapts the high-level interactive
@@ -57,8 +57,9 @@ remain the authority for full license text and runtime installation instructions
 The bundled Astryx provider profile and attributed design-system snapshot were derived from:
 
 - Source: https://github.com/facebook/astryx
-- Reviewed commit: `921d3db31ae4323e0625d2f5a95c32fe07a3d5d7`
-- Package version: `0.2.0`
+- Reviewed commit: `de4692eeedb5039f6b168dadb2ed2b4afcc70f8c`
+- Packages: `@astryxdesign/core` and `@astryxdesign/cli` 0.7.7 npm tarballs, read statically by
+  `scripts/generate-astryx-snapshot.cjs`
 - Original copyright: Copyright (c) 2026 Meta Platforms, Inc.
 - License: MIT
 
@@ -93,7 +94,7 @@ SOFTWARE.
 The bundled interface-discipline snapshot was derived from:
 
 - Source: https://github.com/jakubkrehel/skills
-- Reviewed commit: `0c1f1e5b2481e86c168301bebb6aa3869691ac78`
+- Reviewed commit: `60bf140e43c98b248e6594487384ec967e89d98a`
 - Original copyright: Copyright (c) 2026 Jakub Krehel
 - License: MIT
 
@@ -234,7 +235,7 @@ SOFTWARE.
 The bundled design-playbook library is a byte-preserved snapshot of:
 
 - Source: https://github.com/MengTo/skills
-- Reviewed commit: `83a47fee32f0b6349bff1fede99257a5ef03dc93`
+- Reviewed commit: `1de14e21b2ba8937c0f7f6ddca581cf7cd9d94af`
 - Original copyright: Copyright (c) 2026 Meng To
 - License: MIT
 
@@ -452,7 +453,7 @@ The bundled motion-skill library is a byte-preserved snapshot of the MIT-license
 [`iart-ai/motion-skills`](https://github.com/iart-ai/motion-skills) index and the licensed packs
 listed in `skill/vendor/iart-motion-skills/manifest.json`.
 
-- Index commit: `945c4c70f7cf82a4502cfe3877ff8466972d2842`
+- Index commit: `238dfc55aac123d4649be39adfe58c43193ca349`
 - Reviewed: 2026-08-26
 - Original copyright: Copyright (c) 2026 iart.ai
 - License: MIT
@@ -557,7 +558,7 @@ not claim blanket clearance for upstream assets or include that font in generate
 
 The complete byte-preserved source snapshot under `skill/vendor/good-css/upstream/` is from
 https://github.com/vojtaholik/good-css at reviewed commit
-`6d16d2fd27f4892e2aea4b5c5c2b016f45be7eef` (reviewed 2026-10-08).
+`a6804e75b5ee946d6b007ac20734f958d7938bca` (reviewed 2026-11-04).
 All 133 tracked files are retained, including the 47 practices/specimens, eight generated reference
 files, harness assets, source generator/checker and inert plugin/deployment metadata.
 
@@ -578,24 +579,32 @@ The package does not install upstream dependencies, activate its plugin or run i
 
 The complete byte-preserved source snapshot under `skill/vendor/taste-skill/upstream/` is from
 https://github.com/Leonxlnx/taste-skill at reviewed commit
-`b482f7a970abb98c4108d4a9f761e458c64cefc8` (reviewed 2026-10-08).
-All 62 tracked files are retained, including the thirteen skill entries, Stitch design example,
-research notes, example images, artwork and inert plugin, installer and sponsor-script metadata.
+`12af471f627f866411b4bd785b19646d3672784c` (v2.1.5, reviewed 2026-11-03).
+All 72 tracked files are retained: the one skill entry `design-taste-frontend` with its references,
+direction library, scripts, CSS/JS assets and evals, the README, changelog, upstream tests, example
+screenshots, sponsor artwork and inert plugin, CI and installer metadata. No tracked files from this
+reviewed tree are excluded.
 
 The upstream repository is MIT, Copyright (c) 2026 Leonxlnx. The complete original license is
 `skill/vendor/taste-skill/upstream/LICENSE`. Original credits and links remain in the source.
-Example and sponsor artwork is preserved as source context, not a default project asset library
-or a claim of trademark rights. Research claims remain upstream claims, not our benchmark results.
+The example screenshots in `examples/v2/` show third-party photographs and films credited in
+`examples/v2/CREDITS.md` under their own licences (CC BY, CC BY-SA, public domain); they are source
+context, not a default project asset library. Library photographs are links to Lorem Picsum/Unsplash
+images under the Unsplash licence and fonts are links to Google Fonts and Fontshare; none of those
+files is bundled. Sponsor artwork carries no claim of trademark rights. Research claims remain
+upstream claims, not our benchmark results.
 
-`skill/references/taste-skill.md` adapts each capability into the existing project workflow.
-The package does not run upstream scripts, activate its plugin, install its dependencies or supply
-an image model. Image-only workflows use a separately available host image-generation provider.
+`skill/references/taste-skill.md` adapts the skill's routes into the existing project workflow.
+The package does not run upstream scripts, activate its plugin, install dependencies or supply an
+image model. Agents may run the upstream scripts in a target project as optional advisory tools;
+pictures fetched by `assets.mjs` keep their own licences and credits in that project.
+Leonxlnx/taste-skill-classics and Leonxlnx/imagegen-skills are not bundled.
 
 ## Leonxlnx/cinetic
 
 The complete byte-preserved source snapshot under `skill/vendor/cinetic/upstream/` is from
 https://github.com/Leonxlnx/cinetic at reviewed commit
-`bee5d7807205d5543472c38312507f9bf366cbbf` (reviewed 2026-10-09).
+`ecfa6605de1adb9345ce937724810dc32267d068` (reviewed 2026-11-04).
 All 137 tracked files are retained: 19 guides, the 273-entry technique library, treatment and
 critic templates, both engine starters, scripts and their tests, brand source assets, evaluation
 records and inert plugin/CI metadata. No tracked files from this reviewed tree are excluded.
@@ -635,7 +644,7 @@ execution is unverified and the package does not install their dependencies.
 
 The complete byte-preserved source snapshot under `skill/vendor/ff-tracking/upstream/` is from
 https://github.com/mrsarac/ff-tracking at reviewed commit
-`cc7f4e192eccefb55ae7f18f5a370955122b651b` (reviewed 2026-10-13).
+`579f5be9e10023164bc2fe7e5b955dea20ddd1c9` (reviewed 2026-11-04).
 All 46 tracked files are retained: the Rust/fframes `hud`, `flat`, `lens` and `score` crates,
 the SkSL lens shader, render/score/sound tools, design notes, README images, the committed
 `score/score.wav` and JetBrains Mono fonts. No tracked files from this reviewed tree are excluded.
@@ -655,7 +664,7 @@ a release asset and is not mirrored. The template's native Windows render and WS
 
 The byte-preserved scoped snapshot under `skill/vendor/emil-design-eng/upstream/` is from
 https://github.com/emilkowalski/skills at reviewed commit
-`2d228630ba1446365f614a108cb8252f1feda202` (reviewed 2026-10-13).
+`f1090bec277140d02ed202440185ad9d02ac1490` (reviewed 2026-11-04).
 Only `skills/emil-design-eng/**` and the root `LICENSE` are retained (2 files); sibling skills,
 the repository README and other root files are excluded.
 
@@ -679,7 +688,7 @@ MIT, Copyright (c) 2026 Jakub Krehel. The complete original license is
 
 The byte-preserved scoped snapshot under `skill/vendor/fixing-accessibility/upstream/` is from
 https://github.com/ibelick/ui-skills at reviewed commit
-`f2264c30213a8a55bd0a6a7668d0438e4564e090` (reviewed 2026-10-13).
+`73fb128d046d1f0d74c2909cd26eb616e3415567` (reviewed 2026-11-04).
 Only `skills/fixing-accessibility/**` and the root `LICENSE` are retained (2 files); the website,
 CLI, sibling skills and repository-root agent files are excluded.
 
@@ -702,7 +711,7 @@ which is retained unmodified. The manifest records that declaration as the licen
 ## shadcn-ui/ui (shadcn skill)
 
 The byte-preserved scoped snapshot under `skill/vendor/shadcn/upstream/` is from
-https://github.com/shadcn-ui/ui at reviewed commit `993eb2c3151997ce08a49635c10fd8c8ef3713c7`
+https://github.com/shadcn-ui/ui at reviewed commit `4aaea19d9cff3e0908e12a8c1d504b8c5ec34610`
 (reviewed 2026-10-13). Only `skills/shadcn/**` (the skill, its guides, rules, showcase assets,
 evals, coverage script and agent metadata) and the root `LICENSE.md` are retained (22 files); the
 application, registry and package sources of the monorepo are excluded.
@@ -715,7 +724,7 @@ or the bundled coverage script, and does not install shadcn/ui into a project.
 
 The byte-preserved scoped snapshot under `skill/vendor/playwright-cli/upstream/` is from
 https://github.com/microsoft/playwright-cli at reviewed commit
-`b85c7a736bb473bf55b584e54a09ffa698d6d871` (reviewed 2026-10-13).
+`db2a0fad3a768319a16e3a2bb8078cf62e690b07` (reviewed 2026-11-04).
 Only `skills/playwright-cli/**` (the skill and its ten reference guides), the root `README.md` and
 the root `LICENSE` are retained (13 files); the CLI source, tests, CI and repository-root agent
 files are excluded.
@@ -781,8 +790,8 @@ action in the user's own project.
 
 The byte-preserved text and HTML under `skill/vendor/huashu-design/upstream/` are from
 https://github.com/alchaincyf/huashu-design at reviewed commit
-`798c4235ebff03d5c45e3c8affdf5e9d18f9dfa7` (reviewed 2026-10-19), Git tree
-`cf7e7baaf14ed1331ee1bb06cff2bc8e1af344de`. 181 of the 389 tracked files ship in the package:
+`9b01ee8751679724dd43d855a532944aaa2c2b59` (reviewed 2026-11-04), Git tree
+`90bc6a8d9ed7a419b4b8436b24d635ba3a53ce08`. 181 of the 389 tracked files ship in the package:
 the license, READMEs, the project `SKILL.md` (stored as `UPSTREAM-SKILL.md`), `references/`, the
 84 HTML style specimens, small text assets and `scripts/` as inert reference material. The other
 208 files (specimen images, music and sound effects, showcase and demo pages and images, package

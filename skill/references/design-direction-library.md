@@ -25,7 +25,7 @@ Visual Acceptance.
 
 The shipped tree is `vendor/design-direction-library/upstream/` in the skill (from this guide:
 `../vendor/design-direction-library/upstream/`); `manifest.json` beside it records every file with
-its Git blob id, size and SHA-256 and lists the 84 specimens (`specimens[]`: `id`, `family`,
+its Git blob id, size and SHA-256 and lists every specimen (`specimens[]`: `id`, `family`,
 `title`, `path`, `preview`). Binaries live in the cache after the fetch below;
 `designer-pipeline doctor --json` reports both roots as `directionLibrary.shipped.root` and
 `directionLibrary.fetched.root`. Paths in the tables are relative to those roots.
@@ -35,8 +35,8 @@ its Git blob id, size and SHA-256 and lists the 84 specimens (`specimens[]`: `id
 | Path | What it is |
 | --- | --- |
 | `UPSTREAM-SKILL.md` | The source project's entry (its `SKILL.md`, renamed so the package has one `SKILL.md`). Read for its own routing; not our policy. |
-| `references/design-styles.md` | The style library: web 20, slides 20, infographic 20, app 12, Chinese and East Asian 12. Each entry names the look, the type and palette, and its specimen. |
-| `assets/style-specimens/<family>/NN-name.html` | The 84 single-file HTML specimens; `<family>` is `web`, `ppt`, `info`, `app` or `east`. |
+| `references/design-styles.md` | The style library: web, slides, infographic, app, Chinese and East Asian, and Xiaohongshu image-text sections. Each entry names the look, the type and palette, and its specimen. |
+| `assets/style-specimens/<family>/NN-name.html` | The single-file HTML specimens; `<family>` is `web`, `ppt`, `info`, `app`, `east` or `xhs` (Xiaohongshu image-text posts, which upstream added; the style roulette does not draw from it). |
 | `references/directions.md` | How to make three directions that differ in structure, not only in skin. |
 | `references/workflow.md`, `references/design-context.md` | Intake questions and the working order after a direction is chosen. |
 | `references/critique-guide.md` | Scored critique: concept first, then execution. Adopted into `web-direction.md#critique-on-request`; follow the pipeline text. |

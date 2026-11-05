@@ -7,9 +7,7 @@ const { canonicalTree, copyTrackedFiles, fail, inspectCheckout } = require("./gi
 
 const destination = path.resolve(__dirname, "../skill/vendor/gepa");
 const repository = "https://github.com/gepa-ai/gepa";
-const reviewedRevision = "462e437a09be67d2acb59564cc0ea59132f5777c";
-const reviewedGitTree = "105cafea9959b259f1fa63ca0b5b375bcc611b9e";
-const reviewedTreeSha256 = "c8bc85080ff2179e42879d573a29fa4f7d779e179da67a9d37528b8d2cfc2795";
+// The revision comes from the checkout; sources.lock.json records which upstream HEAD was imported.
 const skillPrefix = ".claude/skills/gepa-optimize-anything/";
 const rootFiles = ["LICENSE", "README.md", "pyproject.toml"];
 const copyright = "Copyright © 2025 Lakshya A Agrawal";
@@ -37,12 +35,10 @@ function importSnapshot(source, reviewedAt) {
   const checkout = inspectCheckout(source);
   const license = checkout.blobs.get("LICENSE")?.toString("utf8") || "";
   if (!license.startsWith(copyright) || !license.includes("Permission is hereby granted, free of charge")) fail("source LICENSE does not match reviewed GEPA MIT attribution");
-  if (checkout.revision !== reviewedRevision) fail(`source revision must be the reviewed ${reviewedRevision}; received ${checkout.revision}`);
-  if (checkout.gitTree !== reviewedGitTree) fail("source Git tree does not match reviewed GEPA root tree");
   const entries = checkout.indexEntries.filter(entry => entry.path.startsWith(skillPrefix) || rootFiles.includes(entry.path));
   const files = entries.map(entry => entry.path);
   const byteCount = entries.reduce((sum, entry) => sum + entry.size, 0);
-  if (files.length !== 10 || byteCount !== 107619 || files.filter(file => file.startsWith(skillPrefix)).length !== 7) fail("reviewed scoped source inventory does not match 10 files, 107619 bytes and 7 official skill files");
+  if (rootFiles.some(file => !files.includes(file)) || !files.includes(`${skillPrefix}SKILL.md`)) fail(`upstream scoped inventory lost a root file or the skill entry: ${files.join(", ")}`);
 
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   const backup = `${destination}.backup-${process.pid}`;
@@ -55,7 +51,6 @@ function importSnapshot(source, reviewedAt) {
     fs.mkdirSync(upstream);
     copyTrackedFiles(upstream, entries, checkout.blobs);
     const treeSha256 = canonicalTree(upstream, files);
-    if (treeSha256 !== reviewedTreeSha256) fail("source content does not match reviewed GEPA scoped tree hash");
     manifest = {
       schema: "design-pipeline.gepa-source.v1",
       source: {
