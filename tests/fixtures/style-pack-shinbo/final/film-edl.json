@@ -1,0 +1,302 @@
+{
+ "source": "Nocturne Corridor final film (final/film/edl-resolved.json); kind by length (black source, <=6 frames flash, else hold); ground from the card; luminance = mean relative luminance of the card as cut (variant applied), measured from the final renders",
+ "fps": 30,
+ "frames": 394,
+ "segments": [
+  {
+   "kind": "black",
+   "frames": 8,
+   "shot": "black",
+   "ground": "black",
+   "luminance": 0.0035
+  },
+  {
+   "kind": "hold",
+   "frames": 24,
+   "shot": "c09-black-void",
+   "ground": "black",
+   "luminance": 0.0044
+  },
+  {
+   "kind": "black",
+   "frames": 4,
+   "shot": "black",
+   "ground": "black",
+   "luminance": 0.0035
+  },
+  {
+   "kind": "flash",
+   "frames": 3,
+   "shot": "c01-black-onechar",
+   "ground": "black",
+   "luminance": 0.1996
+  },
+  {
+   "kind": "black",
+   "frames": 2,
+   "shot": "black",
+   "ground": "black",
+   "luminance": 0.0035
+  },
+  {
+   "kind": "flash",
+   "frames": 4,
+   "shot": "c01-black-onechar",
+   "ground": "black",
+   "luminance": 0.214,
+   "variant": "z106"
+  },
+  {
+   "kind": "hold",
+   "frames": 18,
+   "shot": "f01-corridor",
+   "ground": "black",
+   "luminance": 0.1342
+  },
+  {
+   "kind": "flash",
+   "frames": 5,
+   "shot": "f01-corridor",
+   "ground": "black",
+   "luminance": 0.1372,
+   "variant": "z105"
+  },
+  {
+   "kind": "flash",
+   "frames": 5,
+   "shot": "f01-corridor",
+   "ground": "black",
+   "luminance": 0.1401,
+   "variant": "z110"
+  },
+  {
+   "kind": "flash",
+   "frames": 3,
+   "shot": "c03-red-onechar",
+   "ground": "red",
+   "luminance": 0.115
+  },
+  {
+   "kind": "flash",
+   "frames": 3,
+   "shot": "c07-black-crop",
+   "ground": "black",
+   "luminance": 0.0596
+  },
+  {
+   "kind": "flash",
+   "frames": 3,
+   "shot": "c03-red-onechar",
+   "ground": "red",
+   "luminance": 0.1126,
+   "variant": "z106"
+  },
+  {
+   "kind": "hold",
+   "frames": 24,
+   "shot": "c02-white-episode",
+   "ground": "paper",
+   "luminance": 0.8095
+  },
+  {
+   "kind": "hold",
+   "frames": 14,
+   "shot": "f02-corridor-off",
+   "ground": "black",
+   "luminance": 0.1335
+  },
+  {
+   "kind": "hold",
+   "frames": 16,
+   "shot": "c05-white-bracket",
+   "ground": "paper",
+   "luminance": 0.8048
+  },
+  {
+   "kind": "black",
+   "frames": 6,
+   "shot": "black",
+   "ground": "black",
+   "luminance": 0.0035
+  },
+  {
+   "kind": "hold",
+   "frames": 12,
+   "shot": "f03-key-red",
+   "ground": "red",
+   "luminance": 0.1337
+  },
+  {
+   "kind": "hold",
+   "frames": 7,
+   "shot": "f03-key-red",
+   "ground": "red",
+   "luminance": 0.1368,
+   "variant": "z105"
+  },
+  {
+   "kind": "flash",
+   "frames": 3,
+   "shot": "f03-key-red",
+   "ground": "paper",
+   "luminance": 0.6581,
+   "variant": "inv"
+  },
+  {
+   "kind": "flash",
+   "frames": 4,
+   "shot": "c11-teal-repeat",
+   "ground": "paper",
+   "luminance": 0.2344
+  },
+  {
+   "kind": "flash",
+   "frames": 5,
+   "shot": "c06-red-twowords",
+   "ground": "red",
+   "luminance": 0.1633
+  },
+  {
+   "kind": "flash",
+   "frames": 4,
+   "shot": "f05-windows",
+   "ground": "black",
+   "luminance": 0.2633
+  },
+  {
+   "kind": "flash",
+   "frames": 5,
+   "shot": "c12-black-collide",
+   "ground": "black",
+   "luminance": 0.121
+  },
+  {
+   "kind": "flash",
+   "frames": 6,
+   "shot": "c13-split-qa",
+   "ground": "paper",
+   "luminance": 0.4808
+  },
+  {
+   "kind": "hold",
+   "frames": 16,
+   "shot": "f04-stairs",
+   "ground": "paper",
+   "luminance": 0.6432
+  },
+  {
+   "kind": "hold",
+   "frames": 22,
+   "shot": "c04-black-vertical",
+   "ground": "black",
+   "luminance": 0.0223
+  },
+  {
+   "kind": "hold",
+   "frames": 12,
+   "shot": "f06-eye",
+   "ground": "black",
+   "luminance": 0.1734
+  },
+  {
+   "kind": "hold",
+   "frames": 18,
+   "shot": "c08-white-vertical-ja",
+   "ground": "paper",
+   "luminance": 0.8231
+  },
+  {
+   "kind": "black",
+   "frames": 10,
+   "shot": "black",
+   "ground": "black",
+   "luminance": 0.0035
+  },
+  {
+   "kind": "hold",
+   "frames": 14,
+   "shot": "f07-collage",
+   "ground": "paper",
+   "luminance": 0.3382
+  },
+  {
+   "kind": "hold",
+   "frames": 18,
+   "shot": "c14-white-specimen",
+   "ground": "paper",
+   "luminance": 0.8258
+  },
+  {
+   "kind": "flash",
+   "frames": 3,
+   "shot": "c10-red-prologue",
+   "ground": "red",
+   "luminance": 0.159
+  },
+  {
+   "kind": "flash",
+   "frames": 2,
+   "shot": "c01-black-onechar",
+   "ground": "paper",
+   "luminance": 0.6716,
+   "variant": "inv"
+  },
+  {
+   "kind": "flash",
+   "frames": 3,
+   "shot": "c07-black-crop",
+   "ground": "black",
+   "luminance": 0.0596
+  },
+  {
+   "kind": "flash",
+   "frames": 2,
+   "shot": "c03-red-onechar",
+   "ground": "red",
+   "luminance": 0.115
+  },
+  {
+   "kind": "black",
+   "frames": 8,
+   "shot": "black",
+   "ground": "black",
+   "luminance": 0.0035
+  },
+  {
+   "kind": "hold",
+   "frames": 32,
+   "shot": "f08-title",
+   "ground": "black",
+   "luminance": 0.0497
+  },
+  {
+   "kind": "flash",
+   "frames": 2,
+   "shot": "f08-title",
+   "ground": "red",
+   "luminance": 0.1791,
+   "variant": "red"
+  },
+  {
+   "kind": "flash",
+   "frames": 6,
+   "shot": "f08-title",
+   "ground": "black",
+   "luminance": 0.0497
+  },
+  {
+   "kind": "hold",
+   "frames": 28,
+   "shot": "f09-end",
+   "ground": "red",
+   "luminance": 0.1469
+  },
+  {
+   "kind": "black",
+   "frames": 10,
+   "shot": "black",
+   "ground": "black",
+   "luminance": 0.0035
+  }
+ ]
+}

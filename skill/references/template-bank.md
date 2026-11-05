@@ -64,7 +64,8 @@ designer-pipeline template check <out.svg | page.html | hand-made.svg> [--browse
   string is then set in the first font of its role that covers every character, never glyph by
   glyph; the result lists `fontSwitches`, and the faces are embedded for `--png` and the browser.
 - `--browser` adds the browser half (below); a style whose checks ask for it (shinbo) runs it on
-  every render, and says `browser: unavailable` when no Chrome or puppeteer-core is found.
+  every render; without Chrome or puppeteer-core such a render is `unverified` (exit 1
+  `TOOL_MISSING`), never a pass, and a broken check exits 1 `KERNEL_FAILED`.
 
 Every finding carries a `fix`: how many characters fit, which parameter to set and to what value
 (inside its measured range, or a statement that only shorter copy helps), how far to move an element.
@@ -85,7 +86,7 @@ Measured on the rendered SVG, from its geometry and the rules embedded at render
 | `align-line` | Ink edge of each listed element against the template's shared left (or right) line | 0.5% of the width |
 
 | `glyph-coverage` | A string no font of its role covers (known from `--font-dir` or a coverage provider) | Every character covered |
-| `rhythm` | Motion templates: frames per cut by kind, flash groups (size, one ground tone), repeats, duration, ground-tone flashes per second | The style's motion grammar; at most 3 flashes a second |
+| `rhythm` | Motion templates: frames per cut by kind (a 2-6 frame black between flashes is a black flash), flash groups (size, one ground tone), repeats, duration, and a cut-list approximation of the flash rate from each card's mean luminance (or ground tone) | The style's motion grammar; 3 flashes a second, confirmed only on the encoded film |
 
 Decoration slots (watermark words, micro-markers, barcodes) are exempt from size and contrast; slots
 marked `bleed` are exempt from the box.
@@ -99,8 +100,11 @@ sees layers injected after rendering, hand-written SVG and HTML pages:
 | --- | --- | --- |
 | `text-overlap` | Ink of each text unit (painted alone in black, then white; their difference is its coverage, so plates above it count and the em box does not) against the ink of other groups | Touching within 0.06 em |
 | `off-canvas` | Line boxes (cross axis cut to the font size) past the canvas | 1 px; `data-bleed` exempts |
-| `collage-cover` | Pixels a collage layer (`img`, `image`, `[data-collage]`) actually paints inside a text's ink zone (glyphs + 0.1 em), above it or as its ground; the rotated frame does not count | 1% of the zone |
-| `contrast` | Text colour against the page rendered with all text hidden, 10th percentile inside the ink box | 4.5:1, 3:1 at 24 px (18.66 px bold) |
+| `collage-cover` | Pixels a collage layer (`img`, `image`, `[data-collage]`, an element with a `url()` background) actually paints inside a text's ink zone (glyphs + 0.1 em), above it or as its ground; the rotated frame does not count | 1% of the zone |
+| `contrast` | Text colour (translucent colours composited) against the page with only that text hidden, so other text under it counts, 10th percentile inside the ink box | 4.5:1, 3:1 at 24 px (18.66 px bold) |
+| `text-occluded` | Glyph pixels of the text painted alone that are missing on the page (a plate or panel above it) | 15% |
+| `asset-missing` | Requests that failed (images, fonts) | None |
+| `font-collection` | `@font-face` pointing at a `.ttc` (the browser takes face 0) | None |
 | `glyph-coverage` | Characters missing from the first font of a run's stack (the page's `@font-face` files, or a registered provider) | Every character |
 
 Mark your own layers so they group and exempt correctly: `data-chk="<id>"` names a text unit (an

@@ -86,12 +86,13 @@
     "flashFrames": [2, 6],
     "holdFrames": [12, 32],
     "blackFrames": [4, 14],
+    "blackFlash": "a black of 2-6 frames between two flashes is a black flash inside the group, not a separator",
     "flashGroup": [3, 6],
     "repeats": [2, 3],
     "durationSec": [10, 15],
     "variants": ["z105", "z110", "z106"],
     "groundsInFlashGroup": "one ground tone per flash group: cards in a group share the ground and vary by text, crop or push-in, so the cut does not strobe",
-    "flashLimit": { "perSecond": 3, "minLuminanceChange": 0.1, "darkerBelow": 0.8, "note": "WCAG 2.3.1 general and red flash, counted on the ground tones of the edit; verify film-render measures the encoded film" },
+    "flashLimit": { "perSecond": 3, "minLuminanceChange": 0.1, "darkerBelow": 0.8, "note": "a cut-list approximation after the WCAG 2.3.1 general-flash definition, on each card's mean luminance (or its ground tone); not a photosensitivity verdict: the encoded-film check (verify film-render) is authoritative" },
     "sound": "a 12 ms noise click on each flash cut, a 52 Hz thud on holds"
   },
   "checks": {

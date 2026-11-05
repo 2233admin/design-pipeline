@@ -214,13 +214,15 @@ class Doc {
   familyFor(roleName, text, weight) {
     const spec = this.roles[roleName];
     if (!spec) throw new BankError(`layout ${this.m.id} uses font role ${roleName}, which style ${this.m.style} does not declare`);
+    // The preferred font must be known to lack a glyph before anything switches: when its coverage
+    // is unknown (not in --font-dir, no provider), the stack stays as written.
+    const first = coverage.missingGlyphs(spec.stack[0], text, { weight, faces: this.faces });
+    if (!first.known || !first.missing) return { css: this.families[roleName] };
     const choice = coverage.chooseFamily(spec.stack, text, { weight, faces: this.faces });
     const known = choice.tried.filter((t) => t.known);
-    if (!known.length) return { css: this.families[roleName] };
     if (!choice.family) {
-      const first = known[0];
-      this.fontSwitches.push({ role: roleName, text, missing: first.missing, to: null });
-      return { css: this.families[roleName], missing: first.missing };
+      this.fontSwitches.push({ role: roleName, text, missing: known[0].missing, to: null });
+      return { css: this.families[roleName], missing: known[0].missing };
     }
     if (choice.family === spec.stack[0]) return { css: this.families[roleName] };
     const from = spec.stack[0];
@@ -404,7 +406,9 @@ class Doc {
       + `<metadata id="template-params">${esc(JSON.stringify(meta))}</metadata>`
       + `<metadata id="template-check">${esc(JSON.stringify(rules))}</metadata>`
       + "<defs>"
-      + (this.faces.length ? `<style>${this.faces.map((face) => `@font-face{font-family:'${face.family}';font-weight:${face.weight || 400};src:url("${esc(pathToFileURL(face.file).href)}")}`).join("")}</style>` : "")
+      // A font collection (.ttc) cannot be addressed by @font-face (no face index); it is a system
+      // font and the stack's family name selects its face (the SC face for 'Noto Serif CJK SC').
+      + (this.faces.some((face) => !/\.ttc$/i.test(face.file)) ? `<style>${this.faces.filter((face) => !/\.ttc$/i.test(face.file)).map((face) => `@font-face{font-family:'${face.family}';font-weight:${face.weight || 400};src:url("${esc(pathToFileURL(face.file).href)}")}`).join("")}</style>` : "")
       + this.defs.join("")
       + [...this.hatches].map((ground) => {
         const rgb = measure.parseColor(ground);
@@ -542,22 +546,31 @@ function fitChars(slot, available) {
 }
 
 // Rhythm of a title-card cut, as written in the render's check metadata: [{ kind: black|hold|flash,
-// frames, shot, ground, variant, group }]. Flash rate follows WCAG 2.3.1 on the ground tones: a
-// flash is a pair of opposing luminance changes of at least 0.1 with the darker side below 0.8;
-// more than three in any one second fails. The encoded film is measured by verify film-render.
+// frames, shot, ground, variant, group, luminance? }]. A short black between two flashes is a black
+// flash inside the group (2-6 frames), not a separator. The flash rate is a cut-list approximation:
+// one mean relative luminance per card (the segment's luminance when given, else its ground tone);
+// a flash is a pair of opposing changes of at least 0.1 with the darker side below 0.8. The
+// encoded film's photosensitive check (verify film-render) is the authoritative measurement.
 function checkRhythm(rhythm) {
   const findings = [];
-  const { fps, limits, edl, grounds } = rhythm;
+  const { fps, limits, grounds } = rhythm;
+  const flashMax = limits.flashFrames[1];
+  const edl = rhythm.edl.map((seg) => ({ ...seg }));
+  for (let i = 1; i < edl.length - 1; i += 1) {
+    if (edl[i].kind === "black" && edl[i].frames <= flashMax && edl[i - 1].kind === "flash" && edl[i + 1].kind === "flash") edl[i] = { ...edl[i], kind: "flash", blackFlash: true };
+  }
   const range = { black: limits.blackFrames, hold: limits.holdFrames, flash: limits.flashFrames };
   edl.forEach((seg, index) => {
     const [lo, hi] = range[seg.kind] || [1, Infinity];
     if (seg.frames < lo || seg.frames > hi) {
-      findings.push({ rule: "rhythm", slot: seg.shot || seg.kind, measured: { segment: index, kind: seg.kind, frames: seg.frames }, limit: { frames: [lo, hi] },
-        message: `segment ${index} (${seg.kind}${seg.shot ? ` ${seg.shot}` : ""}) lasts ${seg.frames} frames; ${seg.kind} cuts last ${lo}-${hi}`,
-        fix: `Set segment ${index} to ${Math.min(hi, Math.max(lo, seg.frames))} frames (--param ${seg.kind === "flash" ? "flash_frames" : seg.kind === "hold" ? "hold_frames" : "black_frames"} inside ${lo}-${hi}).` });
+      const label = seg.blackFlash ? "black flash" : seg.kind;
+      findings.push({ rule: "rhythm", slot: seg.shot || seg.kind, measured: { segment: index, kind: label, frames: seg.frames }, limit: { frames: [lo, hi] },
+        message: `segment ${index} (${label}${seg.shot ? ` ${seg.shot}` : ""}) lasts ${seg.frames} frames; ${label} cuts last ${lo}-${hi}`,
+        fix: seg.kind === "black" && seg.frames < lo
+          ? `Lengthen the black at segment ${index} to ${lo} frames, or put flashes on both sides of it so it is a black flash (2-${flashMax} frames).`
+          : `Set segment ${index} to ${Math.min(hi, Math.max(lo, seg.frames))} frames (--param ${seg.kind === "flash" ? "flash_frames" : seg.kind === "hold" ? "hold_frames" : "black_frames"} inside ${lo}-${hi}).` });
     }
   });
-  // flash groups
   const groups = [];
   for (let i = 0; i < edl.length; i += 1) {
     if (edl[i].kind !== "flash") continue;
@@ -569,7 +582,7 @@ function checkRhythm(rhythm) {
   for (const g of groups) {
     const n = g.segs.length;
     if (n < gmin || n > gmax) findings.push({ rule: "rhythm", slot: `flash group at ${g.start}`, measured: { flashes: n }, limit: { flashes: [gmin, gmax] },
-      message: `flash group at segment ${g.start} has ${n} flashes; groups hold ${gmin}-${gmax}`,
+      message: `flash group at segment ${g.start} has ${n} flash${n === 1 ? "" : "es"}; groups hold ${gmin}-${gmax}`,
       fix: `${n < gmin ? "Add" : "Remove"} ${n < gmin ? gmin - n : n - gmax} flash(es) (--param group_size inside ${gmin}-${gmax}), and keep a hold or black on each side.` });
     const tones = [...new Set(g.segs.map((seg) => seg.ground))];
     if (tones.length > 1) findings.push({ rule: "rhythm", slot: `flash group at ${g.start}`, measured: { grounds: tones }, limit: { grounds: 1 },
@@ -589,28 +602,29 @@ function checkRhythm(rhythm) {
   if (seconds < dmin - 1e-9 || seconds > dmax + 1e-9) findings.push({ rule: "rhythm", slot: "duration", measured: { seconds: measure.round(seconds, 2), frames }, limit: { seconds: [dmin, dmax] },
     message: `the cut runs ${measure.round(seconds, 2)} s; the grammar is ${dmin}-${dmax} s`,
     fix: `${seconds < dmin ? `Add ${Math.ceil((dmin - seconds) * fps)} frames (raise --param hold_frames or --param groups)` : `Remove ${Math.ceil((seconds - dmax) * fps)} frames (lower --param hold_frames or --param groups)`}.` });
-  // flash rate on ground tones
-  const lum = Object.fromEntries(Object.entries(grounds).map(([k, v]) => [k, measure.luminance(measure.parseColor(v))]));
+  // flash rate on per-card mean luminance
+  const tone = Object.fromEntries(Object.entries(grounds).map(([k, v]) => [k, measure.luminance(measure.parseColor(v))]));
   const timeline = [];
-  for (const seg of edl) for (let f = 0; f < seg.frames; f += 1) timeline.push(seg.ground);
+  for (const seg of edl) for (let f = 0; f < seg.frames; f += 1) timeline.push(typeof seg.luminance === "number" ? seg.luminance : tone[seg.ground]);
   const changes = [];
   for (let f = 1; f < timeline.length; f += 1) {
-    const a = lum[timeline[f - 1]]; const b = lum[timeline[f]];
+    const a = timeline[f - 1]; const b = timeline[f];
     if (a === undefined || b === undefined) continue;
     if (Math.abs(a - b) >= limits.flashLimit.minLuminanceChange && Math.min(a, b) < limits.flashLimit.darkerBelow) changes.push({ frame: f, up: b > a });
   }
   let worst = null;
   for (let i = 0; i < changes.length; i += 1) {
-    let pairs = 0; let last = null; let count = 0;
+    let last = null; let count = 0;
     for (let j = i; j < changes.length && changes[j].frame < changes[i].frame + fps; j += 1) {
       if (last === null || changes[j].up !== last) { count += 1; last = changes[j].up; }
     }
-    pairs = Math.floor(count / 2);
+    const pairs = Math.floor(count / 2);
     if (!worst || pairs > worst.flashes) worst = { flashes: pairs, at: changes[i].frame };
   }
-  if (worst && worst.flashes > limits.flashLimit.perSecond) findings.push({ rule: "rhythm", slot: "flash-rate", measured: { flashesInOneSecond: worst.flashes, fromFrame: worst.at, atSeconds: measure.round(worst.at / fps, 2) }, limit: { perSecond: limits.flashLimit.perSecond },
-    message: `${worst.flashes} ground-tone flashes within one second from ${measure.round(worst.at / fps, 2)} s; at most ${limits.flashLimit.perSecond} (WCAG 2.3.1)`,
-    fix: "Keep one ground per flash group and change grounds only across a hold or a black of at least 12 frames; check the encoded film with verify film-render." });
+  const source = edl.some((seg) => typeof seg.luminance === "number") ? "per-card mean luminance" : "ground tones";
+  if (worst && worst.flashes > limits.flashLimit.perSecond) findings.push({ rule: "rhythm", slot: "flash-rate", measured: { flashesInOneSecond: worst.flashes, fromFrame: worst.at, atSeconds: measure.round(worst.at / fps, 2), method: `cut-list approximation (${source})` }, limit: { perSecond: limits.flashLimit.perSecond },
+    message: `the cut list suggests ${worst.flashes} luminance flashes within one second from ${measure.round(worst.at / fps, 2)} s (approximation from ${source}; the limit used is ${limits.flashLimit.perSecond} a second). This is not a photosensitivity verdict: the encoded-film check is authoritative`,
+    fix: "Keep one ground per flash group, change grounds only across a hold or a black of at least 12 frames, avoid alternating a bright card with black every few frames; then check the encoded film with verify film-render." });
   return findings;
 }
 

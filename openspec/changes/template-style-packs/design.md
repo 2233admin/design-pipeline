@@ -12,9 +12,30 @@
   asked for.
 - **When the browser half runs**: always for HTML and SVG without template metadata (it is the only
   check that applies; no browser is exit 1 `TOOL_MISSING`), with `--browser`, and on every render or
-  check of a style whose `checks.browserOnRender` is true (shinbo). In the last case a missing
-  browser is reported as `browser.status: unavailable` with a note and the static result stands, so
-  the templates stay usable without Chrome; the result never claims the browser rules passed.
+  check of a style whose `checks.browserOnRender` is true (shinbo). Whenever it is needed and cannot
+  run, the result is `unverified`: exit 1 `TOOL_MISSING` (no browser stack) or `KERNEL_FAILED` (the
+  check broke: a page error, a timeout), never a pass; the rendered SVG is still written. There is no
+  static-only escape: shinbo's collage, overlap and contrast rules need the pixels.
+- **Review fixes (owner decisions on the PR review)**:
+  - contrast ground per text unit: the page with only that unit hidden, so small text over a giant
+    glyph is measured against the glyph (paper text on a paper stroke fails, black passes);
+  - `text-occluded`: each unit is also painted with everything else hidden; when more than 15% of
+    those glyph pixels (12 px or more) are missing from the page, the element above is named in the
+    finding with a paint-order fix. Elements painting a `url()` background (normal blend) are
+    collage layers, switched off by removing the background; multiply / screen texture overlays are not;
+  - translucent text (rgba, opacity) is composited over each ground pixel before the ratio;
+  - a failed request is an `asset-missing` finding; `@font-face` pointing at a `.ttc` is a
+    `font-collection` finding (the browser takes face 0, JP for Noto CJK); render never embeds a
+    collection and leaves it to the family name (verified: 直 in the render matches the SC face and
+    differs from JP by 548k px);
+  - a role's preferred font with unknown coverage keeps the stack, no switch is recorded;
+  - rhythm: a black of 2-6 frames between two flashes is a black flash in the group; the flash rate
+    uses each card's mean luminance when the cut list has it (ground tone otherwise) and says it is a
+    cut-list approximation, not a verdict. The fixture is the experiment's whole final cut (394 frames,
+    41 segments, `final/film-edl.json`); its remaining findings: a 7-frame hold, groups mixing grounds
+    (segments 7, 18, 31, 37) and a 2-flash group;
+  - the MODIFIED delta rewrites #271's "Not a template render" scenario; it archives after
+    `template-bank`.
 - **Contrast in both halves**: when the browser runs, its pixel contrast replaces the static
   estimate (the static model cannot see collage, filters, screentone or a real image), and static
   `glyph-coverage` findings for a slot the browser also reports are dropped.

@@ -2196,7 +2196,7 @@ function templatePng(root, parsed, svg, size, pngFile) {
 }
 
 // Browser half of the template check (tools/template-bank/page-check.cjs) in a child process.
-// Returns { report } or { unavailable } (no puppeteer-core or Chrome, or the page failed to load).
+// Returns { report }, { unavailable } (no puppeteer-core or Chrome) or { crashed } (the check broke).
 function templateBrowserCheck(root, parsed, file, size) {
   const args = [path.join(__dirname, "../tools/template-bank/page-check.cjs"), file];
   if (size) args.push("--size", size);
@@ -2207,18 +2207,23 @@ function templateBrowserCheck(root, parsed, file, size) {
   }
   if (puppeteerModule !== null) args.push("--puppeteer-module", String(puppeteerModule));
   const child = spawnSync(process.execPath, args, { cwd: root, encoding: "utf8", windowsHide: true, timeout: 600000, maxBuffer: 64 * 1024 * 1024 });
-  if (child.error || child.signal || child.status !== 0) return { unavailable: String(child.error?.message || child.stderr || child.signal || `exit ${child.status}`).trim().split("\n")[0] };
-  try { return { report: JSON.parse(child.stdout) }; } catch { return { unavailable: "the browser check printed no JSON" }; }
+  if (child.error || child.signal || child.status !== 0) {
+    const reason = String(child.error?.message || child.stderr || child.signal || `exit ${child.status}`).trim().split("\n")[0];
+    return /^TOOL_MISSING: /.test(reason) ? { unavailable: reason.slice(14) } : { crashed: reason.replace(/^CHECK_FAILED: /, "") };
+  }
+  try { return { report: JSON.parse(child.stdout) }; } catch { return { crashed: "the browser check printed no JSON" }; }
 }
 
 // Static report (template metadata) and browser report merged into one: the browser's pixel
 // contrast replaces the static estimate; other rules add up.
-function mergeTemplateReports(staticReport, browser, required) {
+// A check the file needs but could not run is never a pass: exit 1 with status unverified.
+function mergeTemplateReports(staticReport, browser, extra = {}) {
   if (!browser) return staticReport;
   if (browser.unavailable) {
-    const note = `browser check not run: ${browser.unavailable}. Fix: install puppeteer-core and Chrome or pass --chrome <exe> --puppeteer-module <path>`;
-    if (required) fail("template", note, { code: "TOOL_MISSING" });
-    return { ...staticReport, browser: { status: "unavailable", reason: browser.unavailable }, notes: [...(staticReport?.notes || []), note] };
+    fail("template", `browser check could not run: ${browser.unavailable}. The result is unverified (collage, overlap and contrast need the rendered pixels). Fix: install puppeteer-core and Chrome, or pass --chrome <exe> --puppeteer-module <path>`, { code: "TOOL_MISSING", status: "unverified", ...extra });
+  }
+  if (browser.crashed) {
+    fail("template", `browser check failed: ${browser.crashed}. The result is unverified. Fix: open the file in a browser and resolve the error, then check again`, { code: "KERNEL_FAILED", status: "unverified", ...extra });
   }
   const page = browser.report;
   const kept = (staticReport?.findings || []).filter((finding) => finding.rule !== "contrast" && !(finding.rule === "glyph-coverage" && page.findings.some((other) => other.rule === "glyph-coverage" && other.slot === finding.slot)));
@@ -2251,7 +2256,6 @@ function templateBankCommand(parsed, root, action, operand) {
   if (action === "check") {
     if (!operand) fail("template", "template check needs a file: template check <file.svg|file.html>", { code: "OPTION_REQUIRED" });
     const file = contained(root, operand, "<file>");
-    if (!fs.existsSync(file)) fail("template", `file not found: ${operand}`, { code: "OPTION_VALUE_INVALID" });
     const size = option(parsed, "--size");
     if (size !== null && !/^\d{2,5}x\d{2,5}$/.test(String(size))) fail("template", `--size must be WxH, got ${size}`, { code: "OPTION_VALUE_INVALID" });
     const isHtml = /\.html?$/i.test(file);
@@ -2262,7 +2266,7 @@ function templateBankCommand(parsed, root, action, operand) {
     const staticReport = templated ? templateBankCall(() => templateBank.check(text)) : null;
     const wantBrowser = browserFlag || !templated || templateStyleWantsBrowser(text);
     const browser = wantBrowser ? templateBrowserCheck(root, parsed, file, size) : null;
-    const report = mergeTemplateReports(staticReport, browser, browserFlag || !templated);
+    const report = mergeTemplateReports(staticReport, browser, { file });
     return { result: { ...report, file }, exitCode: report.status === "passed" ? 0 : 2 };
   }
   if (!operand) fail("template", `template render needs a template id: template render <id> -o <out.svg>; ids: ${templateBank.templateIds().join(", ")}`, { code: "OPTION_REQUIRED" });
@@ -2293,7 +2297,7 @@ function templateBankCommand(parsed, root, action, operand) {
   const staticReport = templateBank.check(rendered.svg);
   const wantBrowser = browserFlag || templateBank.loadStyle(rendered.style).checks.browserOnRender === true;
   const browser = wantBrowser ? templateBrowserCheck(root, parsed, output, rendered.size) : null;
-  const report = mergeTemplateReports(staticReport, browser, browserFlag);
+  const report = mergeTemplateReports(staticReport, browser, { output, ...(png ? { png } : {}) });
   return {
     result: {
       status: report.status === "passed" ? "rendered" : "rendered-with-findings",

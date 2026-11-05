@@ -30,7 +30,7 @@ The shinbo pack SHALL ship card, key visual, UI and motion templates whose defau
 
 ### Requirement: Template check measures rendered pixels in the browser
 
-`template check` SHALL measure an SVG or HTML file in headless Chrome when `--browser` is given, when the file has no template metadata, or when the render's style asks for it: ink overlap between text groups, text past the canvas, collage alpha in a text's ink zone, contrast against the ground rendered with the text hidden (10th percentile) and per-glyph font fallback. Each finding SHALL carry a fix.
+`template check` SHALL measure an SVG or HTML file in headless Chrome when `--browser` is given, when the file has no template metadata, or when the render's style asks for it: ink overlap, hidden glyphs, text past the canvas, collage alpha in a text's ink zone, contrast against the page with that text hidden, missing assets and per-glyph fallback. Each finding SHALL carry a fix.
 
 #### Scenario: The experiment's first pass
 
@@ -49,8 +49,18 @@ The shinbo pack SHALL ship card, key visual, UI and motion templates whose defau
 
 #### Scenario: No browser
 
-- **WHEN** the browser check is required and no Chrome or puppeteer-core is found
-- **THEN** the command SHALL exit 1 with `TOOL_MISSING`; for a style that only asks for it, the result SHALL say the browser check did not run.
+- **WHEN** the browser check is needed (asked, no template metadata, or the style asks for it) and no Chrome or puppeteer-core is found
+- **THEN** the command SHALL exit 1 with `TOOL_MISSING` and status `unverified`; when the check itself breaks it SHALL exit 1 with `KERNEL_FAILED`.
+
+#### Scenario: Small text on a giant glyph
+
+- **WHEN** paper-colour text sits on the paper stroke of a giant character on black
+- **THEN** its contrast SHALL be measured against that stroke and fail, while black text there passes.
+
+#### Scenario: Covered by a plate
+
+- **WHEN** a plain element painted above a text hides more than 15% of its glyphs
+- **THEN** the check SHALL report `text-occluded` naming that element.
 
 ### Requirement: A string is set in one font
 
@@ -79,3 +89,39 @@ The rhythm rule SHALL check each segment's frames by kind, flash groups of one g
 
 - **WHEN** the cut is rendered with eight groups and 32-frame holds
 - **THEN** the check SHALL report the duration with how many frames to remove.
+
+## MODIFIED Requirements
+
+### Requirement: Template check measures the rendered SVG and gives a fix per finding
+
+`template check <file.svg>` SHALL measure the file itself: text extent against each slot box and line budget, character budget, minimum type size, contrast against the composited ground, title overlap with a figure zone, slots inside a crop zone, accent-colour area and shared alignment lines. Every finding SHALL carry a fix. Exit 0 pass, 2 failed check, 1 when its metadata is malformed or a needed check cannot run.
+
+#### Scenario: Long text overflows
+
+- **WHEN** a title slot holds twice its budget
+- **THEN** the check SHALL fail with `text-overflow` and `text-length`, and the fix SHALL name how many characters fit, or that the size parameter cannot shrink enough inside its range.
+
+#### Scenario: Title over the figure
+
+- **WHEN** a title covers more than 30% of its width over a declared figure zone
+- **THEN** the check SHALL fail with `figure-zone` and a fix naming the distance and the title or figure parameter to move.
+
+#### Scenario: Hand-edited render
+
+- **WHEN** a rendered file is edited so the CJK title moves into the figure zone and off the shared left line
+- **THEN** `template check` SHALL report `figure-zone` and `align-line` for that slot.
+
+#### Scenario: Contrast, size, accent and crop
+
+- **WHEN** a palette change lowers text contrast, the canvas is rendered below the type minimum, the accent budget is lowered under the drawn accent, or a listed slot leaves the 16:9 crop
+- **THEN** the check SHALL report `contrast`, `type-size`, `accent-budget` or `safe-zone` with a fix.
+
+#### Scenario: Not a template render
+
+- **WHEN** the file has no template-check metadata (HTML or hand-written SVG)
+- **THEN** the command SHALL run the browser check on it, exit 0 or 2 on its findings, and exit 1 with `TOOL_MISSING` and status `unverified` when no browser can run.
+
+#### Scenario: Malformed metadata
+
+- **WHEN** the template-check metadata is not valid JSON of its schema
+- **THEN** the command SHALL exit 1 with `CONTRACT_INVALID`.

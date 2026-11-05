@@ -17,10 +17,13 @@
 //   ink      every text unit painted alone in black and then in white with all other text and
 //            collage hidden; where the two shots differ is its coverage, so the ink box is the
 //            glyphs, not the em box, and plates painted above the text are respected;
-//   ground   the page with all text hidden (collage kept);
+//   ground   per text unit, the page with only that unit hidden (other text and collage kept);
+//   alone    each unit painted with everything else hidden: the ink nothing covers (occlusion);
 //   collage  each layer's visible pixels: the full page against the page without that layer, so a
 //            layer counts only where its alpha actually paints, never by its rotated frame.
-// Rules: text-overlap (ink of two groups touching), off-canvas (text cut by the canvas edge),
+// Rules: text-overlap (ink of two groups touching), text-occluded (a non-collage layer hides the
+// glyphs), off-canvas (text cut by the canvas edge), asset-missing (a request failed),
+// font-collection (@font-face pointing at a .ttc),
 // collage-cover (a collage layer painting inside a text unit's ink zone, above it or as its ground), contrast (10th percentile of
 // the text colour against the ground inside the ink box), glyph-coverage (a string the browser
 // would set with per-glyph fallback).
@@ -39,6 +42,8 @@ const PAGE_RULES = Object.freeze({
   overlapMinShare: 0.002,
   coverMinShare: 0.01, // share of a text unit's ink zone a collage layer may paint (above or below)
   coverZoneEm: 0.1, // the ink zone: glyph pixels grown by this share of the font size
+  occludedMaxShare: 0.15, // share of a text's own glyph pixels that another layer may hide
+  occludedMinPx: 12,
   coverMinPx: 12,
   edgeTolerancePx: 1,
   contrastPercentile: 10,
@@ -54,7 +59,10 @@ const STYLE = `
 [data-tc-off],[data-tc-off] *{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;fill:transparent!important;stroke:transparent!important;text-decoration-color:transparent!important}
 [data-tc-key="0"],[data-tc-key="0"] *{color:#000!important;-webkit-text-fill-color:#000!important;fill:#000!important;stroke:transparent!important;text-shadow:none!important;opacity:1!important}
 [data-tc-key="1"],[data-tc-key="1"] *{color:#fff!important;-webkit-text-fill-color:#fff!important;fill:#fff!important;stroke:transparent!important;text-shadow:none!important;opacity:1!important}
-[data-tc-hide]{visibility:hidden!important}
+[data-tc-hide]:not([data-tc-bg]){visibility:hidden!important}
+[data-tc-hide][data-tc-bg]{background-image:none!important}
+:root[data-tc-iso] *{visibility:hidden!important}
+:root[data-tc-iso] [data-tc-solo],:root[data-tc-iso] [data-tc-solo] *{visibility:visible!important}
 `;
 
 // ---- runs in the page --------------------------------------------------------------------------
@@ -147,14 +155,24 @@ function discover() {
   }
   const collage = [];
   let c = 0;
-  for (const element of document.querySelectorAll("img, image, [data-collage]")) {
+  // Collage layers: images, [data-collage], and elements painting a background image (url, normal
+  // blend; multiply / screen texture overlays are paper and grain, not collage). A background layer
+  // is switched off by removing its background, so text inside it stays.
+  const bgLayers = [...document.querySelectorAll("body *")].filter((element) => {
+    const style = getComputedStyle(element);
+    return /url\(/.test(style.backgroundImage) && (style.mixBlendMode || "normal") === "normal" && !element.closest("[data-tc-unit]") && !insideSkipped(element);
+  });
+  for (const element of [...document.querySelectorAll("img, image, [data-collage]"), ...bgLayers]) {
+    if (element.hasAttribute("data-tc-collage")) continue;
     if (element.closest("[data-tc-unit]") || insideSkipped(element)) continue;
     if (element.parentElement && element.parentElement.closest("[data-collage]")) continue;
     const rect = element.getBoundingClientRect();
     if (rect.width < 1 || rect.height < 1 || effectiveOpacity(element) < 0.05) continue;
     element.setAttribute("data-tc-collage", String(c));
-    const src = element.getAttribute("data-collage") || element.getAttribute("src") || element.getAttribute("href") || element.getAttribute("xlink:href") || element.localName;
-    collage.push({ index: c, id: element.getAttribute("data-collage") || element.getAttribute("data-slot") || `${element.localName}:${String(src).startsWith("data:") ? "embedded" : String(src).split("/").pop()}`, rect: { x0: rect.left, y0: rect.top, x1: rect.right, y1: rect.bottom } });
+    if (bgLayers.includes(element) && !["IMG", "image"].includes(element.tagName) && !element.hasAttribute("data-collage")) element.setAttribute("data-tc-bg", "");
+    const bg = /url\(\s*["']?([^"')]+)/.exec(getComputedStyle(element).backgroundImage);
+    const src = element.getAttribute("data-collage") || element.getAttribute("src") || element.getAttribute("href") || element.getAttribute("xlink:href") || (bg ? `bg:${bg[1]}` : element.localName);
+    collage.push({ index: c, id: element.getAttribute("data-collage") || element.getAttribute("data-slot") || (bg && element.hasAttribute("data-tc-bg") ? `bg:${bg[1].startsWith("data:") ? "embedded" : bg[1].split("/").pop()}` : `${element.localName}:${String(src).startsWith("data:") ? "embedded" : String(src).split("/").pop()}`), rect: { x0: rect.left, y0: rect.top, x1: rect.right, y1: rect.bottom } });
     c += 1;
   }
   // @font-face files the page loads (for glyph coverage)
@@ -181,12 +199,14 @@ function luminance([r, g, b]) {
 }
 const ratio = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 const hex = (rgb) => `#${rgb.map((v) => Math.round(v).toString(16).padStart(2, "0")).join("").toUpperCase()}`;
+// [r, g, b, alpha] of a CSS colour, or null for none / transparent / non-colour paint
 function parseCss(value) {
   const m = String(value || "").match(/rgba?\(([^)]+)\)/);
   if (!m) return null;
-  const parts = m[1].split(/[ ,/]+/).filter(Boolean).map(Number);
-  if ((parts.length > 3 ? parts[3] : 1) < 0.99) return null;
-  return parts.slice(0, 3);
+  const parts = m[1].split(/[ ,/]+/).filter(Boolean).map((v) => (v.endsWith("%") ? Number(v.slice(0, -1)) / 100 : Number(v)));
+  const alpha = parts.length > 3 ? parts[3] : 1;
+  if (!(alpha > 0.01)) return null;
+  return [parts[0], parts[1], parts[2], alpha];
 }
 const r1 = (v) => Math.round(v * 10) / 10;
 const box4 = (b) => [Math.round(b.x0), Math.round(b.y0), Math.round(b.x1), Math.round(b.y1)];
@@ -290,7 +310,8 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
     pages.push(page);
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
-    page.on("requestfailed", (request) => errors.push(`request failed: ${request.url().slice(-120)}`));
+    const failed = [];
+    page.on("requestfailed", (request) => { failed.push(request.url()); errors.push(`request failed: ${request.url().slice(-120)}`); });
     let [W, H] = size ? size : [1920, 1080];
     await page.setViewport({ width: W, height: H, deviceScaleFactor: 1 });
     await page.goto(pathToFileURL(absolute).href, { waitUntil: "load", timeout: 60000 });
@@ -321,9 +342,11 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
     const collage = found.collage;
     const shot = async (region) => decodePng(Buffer.from(await page.screenshot({ type: "png", clip: region ? { x: region.x, y: region.y, width: region.w, height: region.h } : { x: 0, y: 0, width: W, height: H } })), "screenshot");
     const setState = (state) => page.evaluate((s) => {
+      if (s.isolate) document.documentElement.setAttribute("data-tc-iso", ""); else document.documentElement.removeAttribute("data-tc-iso");
       for (const el of document.querySelectorAll("[data-tc-unit]")) {
         const i = Number(el.getAttribute("data-tc-unit"));
         el.removeAttribute("data-tc-key");
+        if (s.isolate && s.key && s.key.unit === i) el.setAttribute("data-tc-solo", ""); else el.removeAttribute("data-tc-solo");
         if (s.textOff === "all" || (Array.isArray(s.textOff) && s.textOff.includes(i))) el.setAttribute("data-tc-off", ""); else el.removeAttribute("data-tc-off");
         if (s.key && s.key.unit === i) { el.removeAttribute("data-tc-off"); el.setAttribute("data-tc-key", String(s.key.tone)); }
       }
@@ -334,8 +357,6 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
     }, state);
 
     const full = await shot();
-    await setState({ textOff: "all", collageOff: [] });
-    const ground = await shot();
     // ink per unit: painted alone in black, then in white, with all other text and collage hidden;
     // the difference of the two shots is the unit's coverage (alpha) whatever the ground, and plates
     // painted above the text cancel out. ink = coverage >= inkThreshold / 255.
@@ -353,6 +374,20 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
       ink.region = region;
       unit.ink = ink.count ? ink : null;
       unit.inkBox = ink.count >= 4 ? maskBox(ink) : null;
+      // the same unit with every other element hidden: the ink it would have if nothing covered it
+      const alone = [];
+      for (const tone of [0, 1]) {
+        await setState({ textOff: "all", collageOff: "all", key: { unit: unit.index, tone }, isolate: true });
+        alone.push(await shot(region));
+      }
+      const expected = diffMask(alone[0], alone[1], local, rules.inkThreshold);
+      expected.region = region;
+      unit.expected = expected;
+      // the ground for this unit's contrast: the page with only this unit hidden (other text stays,
+      // so small text over a giant glyph is measured against that glyph)
+      await setState({ textOff: [unit.index], collageOff: [] });
+      unit.ground = await shot(region);
+      unit.groundRegion = region;
     }
     // visible pixels of each collage layer
     for (const layer of collage) {
@@ -368,6 +403,39 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
     const measured = [];
     const notes = [];
     const prefix = (group) => String(group).split("/")[0];
+    // 0. missing resources: a failed image or font request changes what is measured
+    for (const url of [...new Set(failed)]) {
+      findings.push({
+        rule: "asset-missing", slot: url.split("/").pop(), measuredBy: "browser", measured: { url }, limit: { failedRequests: 0 },
+        message: `the page could not load ${url}`,
+        fix: `Restore ${url.split("/").pop()} or fix its path (relative to the page), then check again; text, collage and contrast were measured without it.`,
+      });
+    }
+    // 0b. text hidden by a layer that is not collage (a plate, a panel, another element above it)
+    for (const unit of units.filter((u) => !u.deco && u.expected && u.expected.count >= rules.occludedMinPx)) {
+      let kept = 0; let probe = null;
+      const e = unit.expected;
+      for (let y = 0; y < e.region.h; y += 1) for (let x = 0; x < e.region.w; x += 1) {
+        if (!e.mask[y * e.region.w + x]) continue;
+        if (unit.ink && at(unit.ink, x + e.region.x, y + e.region.y)) kept += 1; else if (!probe) probe = [x + e.region.x, y + e.region.y];
+      }
+      const lost = 1 - kept / e.count;
+      if (lost > rules.occludedMaxShare && e.count - kept >= rules.occludedMinPx) {
+        const above = probe ? await page.evaluate(([px, py], self) => {
+          const own = document.querySelector(`[data-tc-unit="${self}"]`);
+          const hit = document.elementsFromPoint(px + 0.5, py + 0.5).find((el) => el !== own && !own.contains(el) && !el.contains(own));
+          if (!hit) return null;
+          return hit.getAttribute("data-chk") || hit.getAttribute("data-slot") || (hit.id ? `#${hit.id}` : `${hit.localName}${hit.classList.length ? `.${[...hit.classList].join(".")}` : ""}`);
+        }, probe, unit.index) : null;
+        findings.push({
+          rule: "text-occluded", slot: unit.id, measuredBy: "browser",
+          measured: { visibleInkShare: Math.round((kept / e.count) * 1000) / 1000, expectedInkPx: e.count, visibleInkPx: kept, coveredBy: above || "an element painted above it" },
+          limit: { maxHiddenShare: rules.occludedMaxShare },
+          message: `${Math.round(lost * 100)}% of ${unit.id}'s glyphs are hidden by ${above || "an element painted above it"}`,
+          fix: `Bring ${unit.id} above ${above || "the covering element"} in paint order (later in the document or a higher z-index), or move one of them apart; if the cover is intended, mark the text data-deco.`,
+        });
+      }
+    }
     // 1. text overlap by ink
     const live = units.filter((u) => !u.deco && u.ink);
     for (let i = 0; i < live.length; i += 1) for (let j = i + 1; j < live.length; j += 1) {
@@ -431,25 +499,32 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
       const row = { slot: unit.id, text: unit.text, sizePx: r1(unit.fontSize), inkBox: unit.inkBox ? box4(unit.inkBox) : null, layoutBox: box4(unit.layout) };
       measured.push(row);
       if (unit.deco) continue;
-      const fg = parseCss(unit.color);
-      if (!fg) { notes.push(`${unit.id}: text colour ${unit.color} is not a solid colour; contrast not measured`); continue; }
+      const paint = parseCss(unit.color);
+      if (!paint) { notes.push(`${unit.id}: text colour ${unit.color} is not a colour; contrast not measured`); continue; }
+      const fg = paint.slice(0, 3);
+      const alpha = Math.min(1, paint[3] * (unit.opacity ?? 1));
       const base = unit.inkBox || unit.layout;
       if (!unit.inkBox) notes.push(`${unit.id}: no ink found (text matches its ground or is clipped); contrast measured over its layout box`);
       const dx = (base.x1 - base.x0) * rules.contrastShrink; const dy = (base.y1 - base.y0) * rules.contrastShrink;
       const region = clampRegion({ x0: base.x0 + dx, y0: base.y0 + dy, x1: base.x1 - dx, y1: base.y1 - dy }, W, H);
-      if (!region || region.w < 2 || region.h < 2) continue;
-      const Lt = luminance(fg);
+      if (!region || region.w < 2 || region.h < 2 || !unit.ground) continue;
+      const ground = unit.ground; const gr = unit.groundRegion;
       const values = new Float64Array(region.w * region.h);
       const lums = new Float64Array(region.w * region.h);
       let k = 0;
       for (let y = region.y; y < region.y + region.h; y += 1) for (let x = region.x; x < region.x + region.w; x += 1) {
-        const p = (y * ground.width + x) * 4;
-        const L = luminance([ground.data[p], ground.data[p + 1], ground.data[p + 2]]);
-        values[k] = ratio(Lt, L); lums[k] = L; k += 1;
+        if (x < gr.x || y < gr.y || x >= gr.x + gr.w || y >= gr.y + gr.h) continue;
+        const p = ((y - gr.y) * ground.width + (x - gr.x)) * 4;
+        const under = [ground.data[p], ground.data[p + 1], ground.data[p + 2]];
+        const L = luminance(under);
+        // a translucent text colour (rgba, opacity) is composited over the ground it sits on
+        const seen = alpha >= 0.999 ? fg : fg.map((v, i) => alpha * v + (1 - alpha) * under[i]);
+        values[k] = ratio(luminance(seen), L); lums[k] = L; k += 1;
       }
-      const value = percentile(values, rules.contrastPercentile);
+      if (!k) continue;
+      const value = percentile(values.subarray(0, k), rules.contrastPercentile);
       // the ground's dark and light ends (10th and 90th percentile luminance) for the colour advice
-      const darkL = percentile(lums, rules.contrastPercentile); const lightL = percentile(lums, 100 - rules.contrastPercentile);
+      const darkL = percentile(lums.subarray(0, k), rules.contrastPercentile); const lightL = percentile(lums.subarray(0, k), 100 - rules.contrastPercentile);
       const greyOf = (L) => { const c = L <= 0.0031308 ? L * 12.92 : 1.055 * L ** (1 / 2.4) - 0.055; return hex([c * 255, c * 255, c * 255]); };
       const large = unit.fontSize >= rules.largePx || (unit.fontSize >= rules.largeBoldPx && unit.fontWeight >= 700);
       const need = large ? rules.contrastLarge : rules.contrastNormal;
@@ -463,7 +538,7 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
         const range = `${greyOf(darkL)}-${greyOf(lightL)} in luminance`;
         findings.push({
           rule: "contrast", slot: unit.id, measuredBy: "browser",
-          measured: { ratio: Math.round(value * 100) / 100, percentile: rules.contrastPercentile, text: hex(fg), groundLuminance: [Math.round(darkL * 1000) / 1000, Math.round(lightL * 1000) / 1000], box: box4(base) },
+          measured: { ratio: Math.round(value * 100) / 100, percentile: rules.contrastPercentile, text: hex(fg), ...(alpha < 0.999 ? { alpha: Math.round(alpha * 100) / 100 } : {}), groundLuminance: [Math.round(darkL * 1000) / 1000, Math.round(lightL * 1000) / 1000], box: box4(base) },
           limit: { min: need, large },
           message: `${unit.id} contrast ${Math.round(value * 100) / 100}:1 (${rules.contrastPercentile}th percentile of the ground under it) is below ${need}:1`,
           fix: pick.value >= need
@@ -479,6 +554,14 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
       try { const local = fileURLToPath(face.url); if (fs.existsSync(local)) faces.push({ family: face.family, weight: face.weight, file: local }); } catch { /* not a local file */ }
     }
     for (const face of extraFaces) faces.push(face);
+    // @font-face cannot pick a face inside a collection: Chrome takes the first (for Noto CJK that is JP)
+    for (const face of found.faces.filter((f) => /\.ttc(\?|#|$)/i.test(f.url))) {
+      findings.push({
+        rule: "font-collection", slot: face.family, measuredBy: "browser", measured: { family: face.family, url: face.url }, limit: { collections: 0 },
+        message: `@font-face for ${face.family} loads a font collection (${face.url.split("/").pop()}); the browser uses its first face, which may be another region's glyph forms`,
+        fix: `Use src: local('${face.family}') for an installed collection, or point the rule at a single-face file (.otf, .ttf, .woff) of ${face.family}.`,
+      });
+    }
     const checkedRuns = new Set();
     for (const unit of units) {
       for (const run of unit.runs) {
@@ -530,7 +613,17 @@ if (require.main === module) {
     else if (name === "--puppeteer-module") options.puppeteerModule = value;
     else { process.stderr.write(`unknown option ${name}\n`); process.exit(1); }
   }
-  checkPage(options).then((report) => {
-    process.stdout.write(`${JSON.stringify({ ok: true, ...report })}\n`);
-  }).catch((error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 1; });
+  // stderr starts with TOOL_MISSING when no browser stack is found, CHECK_FAILED when the check broke
+  (async () => {
+    let browser;
+    try { browser = await launch(options); } catch (error) { process.stderr.write(`TOOL_MISSING: ${error.message}\n`); process.exitCode = 1; return; }
+    try {
+      const report = await checkPage({ ...options, browser });
+      process.stdout.write(`${JSON.stringify({ ok: true, ...report })}\n`);
+    } catch (error) {
+      process.stderr.write(`CHECK_FAILED: ${error.message}\n`); process.exitCode = 1;
+    } finally {
+      await browser.close().catch(() => {});
+    }
+  })();
 }

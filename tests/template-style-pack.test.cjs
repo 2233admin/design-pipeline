@@ -122,6 +122,16 @@ test("render switches a whole string to the role's next font when a glyph is mis
   // without fonts the stack is written as named: coverage unknown, nothing switched
   assert.equal(bank.render("card.onechar-bleed", { set: { char: "钥" } }).fontSwitches.length, 0);
   assert.throws(() => bank.render("card.onechar-bleed", { fontDir: path.join(FONTS, "missing") }), /--font-dir/);
+  // the preferred font's coverage unknown (not in --font-dir): the stack stays, nothing switches
+  const onlyNoto = fs.mkdtempSync(path.join(os.tmpdir(), "style-pack-fonts-"));
+  try {
+    fs.copyFileSync(path.join(FONTS, "NotoSerifCJK-Black.woff"), path.join(onlyNoto, "NotoSerifCJK-Black.woff"));
+    const unknown = bank.render("card.onechar-bleed", { set: { char: "钥" }, fontDir: onlyNoto });
+    assert.equal(unknown.fontSwitches.length, 0);
+    assert.match(unknown.svg, /data-slot="char"[^>]*font-family="'Shippori Mincho B1','Noto Serif CJK SC',serif"/);
+  } finally {
+    fs.rmSync(onlyNoto, { recursive: true, force: true });
+  }
 });
 
 // ---- templates: collage slots, derived slots, rhythm ------------------------------------------
@@ -151,19 +161,37 @@ test("the title-card cut keeps the motion grammar and the rhythm check fails the
   const duration = long.findings.find((f) => f.rule === "rhythm" && f.slot === "duration");
   assert.ok(duration && /Remove \d+ frames/.test(duration.fix), JSON.stringify(long.findings));
 
-  // The experiment's final film edit: a 2-frame black, single flashes and grounds mixed inside a group.
+  // The experiment's whole final cut, with each card's mean luminance measured from its render.
   const style = bank.loadStyle("shinbo");
   const pal = Object.fromEntries(Object.entries(style.palette).map(([k, v]) => [k, v.value]));
-  const edl = [["black", 8, "black"], ["c09", 24, "black"], ["black", 4, "black"], ["c01", 3, "black"], ["black", 2, "black"], ["c01", 4, "black"],
-    ["f01", 18, "black"], ["f01", 5, "black"], ["f01", 5, "black"], ["c03", 3, "red"], ["c07", 3, "black"], ["c03", 3, "red"], ["c02", 24, "paper"]]
-    .map(([shot, frames, ground]) => ({ kind: shot === "black" ? "black" : frames <= 6 ? "flash" : "hold", frames, shot, ground }));
-  const findings = bank.checkRhythm({ fps: 30, limits: style.motion, edl, grounds: { black: pal.black, paper: pal.paper, red: pal.red } });
-  assert.ok(findings.some((f) => /lasts 2 frames; black cuts last 4-14/.test(f.message)));
-  assert.ok(findings.some((f) => /mixes grounds/.test(f.message) && /one ground/.test(f.fix)));
-  // strobing between black and paper every 2 frames fails the flash rate
-  const strobe = Array.from({ length: 12 }, (_, i) => ({ kind: "flash", frames: 2, shot: `s${i}`, ground: i % 2 ? "paper" : "black" }));
-  const rate = bank.checkRhythm({ fps: 30, limits: style.motion, edl: strobe, grounds: { black: pal.black, paper: pal.paper, red: pal.red } });
-  assert.ok(rate.some((f) => f.slot === "flash-rate" && f.measured.flashesInOneSecond > 3 && /WCAG 2\.3\.1/.test(f.message)));
+  const grounds = { black: pal.black, paper: pal.paper, red: pal.red };
+  const film = JSON.parse(fs.readFileSync(path.join(FIXTURES, "final", "film-edl.json"), "utf8"));
+  assert.equal(film.frames, 394);
+  const findings = bank.checkRhythm({ fps: 30, limits: style.motion, edl: film.segments, grounds });
+  // its 2-frame black between two flashes of c01 is a black flash, legitimately inside the group
+  assert.ok(!findings.some((f) => /black/.test(f.measured.kind || "") && f.measured.frames === 2), JSON.stringify(findings));
+  assert.deepEqual(findings.map((f) => f.message.replace(/ \(.*$/, "").replace(/;.*$/, "")).sort(), [
+    "flash group at segment 18 mixes grounds paper, red, black",
+    "flash group at segment 31 mixes grounds red, paper, black",
+    "flash group at segment 37 has 2 flashes",
+    "flash group at segment 37 mixes grounds red, black",
+    "flash group at segment 7 mixes grounds black, red",
+    "segment 17",
+  ]);
+  for (const f of findings) assert.ok(f.fix.length > 30);
+  // a short black outside a group is a separator below its 4 frames
+  const lone = bank.checkRhythm({ fps: 30, limits: style.motion, grounds, edl: [{ kind: "hold", frames: 20, shot: "a", ground: "black" }, { kind: "black", frames: 2, ground: "black" }, { kind: "hold", frames: 20, shot: "b", ground: "black" }] });
+  assert.ok(lone.some((f) => /lasts 2 frames; black cuts last 4-14/.test(f.message)));
+  // a paper giant glyph on black alternating with black every two frames: one ground, but the
+  // per-card luminance flashes; reported as a cut-list approximation, not a verdict
+  const strobe = Array.from({ length: 14 }, (_, i) => ({ kind: "flash", frames: 2, shot: i % 2 ? "black" : "c01", ground: "black", luminance: i % 2 ? 0.0035 : 0.2 }));
+  const rate = bank.checkRhythm({ fps: 30, limits: style.motion, edl: strobe, grounds });
+  const flash = rate.find((f) => f.slot === "flash-rate");
+  assert.ok(flash && flash.measured.flashesInOneSecond > 3, JSON.stringify(rate));
+  assert.match(flash.message, /approximation/);
+  assert.match(flash.message, /encoded-film check is authoritative/);
+  assert.doesNotMatch(flash.message, /WCAG/);
+  assert.ok(!bank.checkRhythm({ fps: 30, limits: style.motion, edl: strobe.map((seg) => ({ ...seg, luminance: undefined })), grounds }).some((f) => f.slot === "flash-rate"), "ground tones alone do not see it");
 });
 
 // ---- browser check: acceptance on the experiment ---------------------------------------------
@@ -319,4 +347,84 @@ test("a new set of title cards, a poster and two UI screens rendered from the st
   }
   const poster = fs.readFileSync(path.join(root, "out", "kv.vertical-band-corridor.svg"), "utf8");
   assert.equal((poster.match(/data-collage="collage\d"/g) || []).length, 4);
+});
+
+// ---- review fixes: ground per text, occlusion, background layers, rgba, missing assets ---------
+
+test("contrast is measured against the page with only that text hidden; covers, background images, rgba and missing files are findings", { skip: BROWSER.skip, timeout: 300000 }, async (t) => {
+  const root = tempRoot(t);
+  const page = `<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:"Noto Serif CJK SC";font-weight:900;src:url("${assetUrl("fonts/NotoSerifCJK-Black.woff")}")}
+@font-face{font-family:"Collection";src:url("fonts/missing.ttc")}
+html,body{margin:0;width:1200px;height:800px;background:#0D0B0B;overflow:hidden}
+.t{position:absolute;white-space:nowrap;line-height:1;font-family:'Noto Serif CJK SC';font-weight:900}
+</style></head><body>
+<div class="t" data-chk="giant" data-grp="lock/0" data-bleed style="left:20px;top:-150px;font-size:1000px;color:#F2EEE4">I</div>
+<div class="t" data-chk="pale" data-grp="lock/1" style="left:200px;top:200px;font-size:16px;color:#F2EEE4">门在</div>
+<div class="t" data-chk="dark" data-grp="lock/2" style="left:200px;top:300px;font-size:16px;color:#0D0B0B">门在</div>
+<div class="t" data-chk="covered" style="left:640px;top:60px;font-size:60px;color:#F2EEE4">门在身后</div>
+<div style="position:absolute;left:640px;top:40px;width:150px;height:120px;background:#8E0A16" class="plate"></div>
+<div class="t" data-chk="onbg" style="left:640px;top:300px;font-size:60px;color:#F2EEE4">门在身后</div>
+<div style="position:absolute;left:600px;top:250px;width:200px;height:200px;background:url('${assetUrl("collage/sticker-met-key-b-0.webp")}') center/contain no-repeat"></div>
+<div class="t" data-chk="faint" style="left:640px;top:600px;font-size:30px;color:rgba(242,238,228,0.3)">门在身后</div>
+<div class="t" data-chk="solid" style="left:640px;top:680px;font-size:30px;color:rgb(242,238,228)">门在身后</div>
+<img src="missing-piece.png" style="position:absolute;left:1000px;top:600px;width:50px;height:50px">
+</body></html>`;
+  fs.writeFileSync(path.join(root, "review.html"), page);
+  const report = await pageCheck.checkPage({ file: path.join(root, "review.html"), puppeteerModule: BROWSER.puppeteerModule, chrome: BROWSER.chrome });
+  const rules = byRule(report);
+  // paper text on the paper stroke of a giant glyph fails; black text on that stroke passes
+  const pale = report.findings.find((f) => f.rule === "contrast" && f.slot === "pale");
+  assert.ok(pale && pale.measured.ratio < 1.5, rules.join(" "));
+  assert.ok(!rules.includes("contrast:dark"), rules.join(" "));
+  // a plain plate painted above text
+  const covered = report.findings.find((f) => f.rule === "text-occluded" && f.slot === "covered");
+  assert.ok(covered && /plate/.test(covered.measured.coveredBy) && /paint order/.test(covered.fix), rules.join(" "));
+  // a background image is a collage layer
+  assert.ok(report.findings.some((f) => f.rule === "collage-cover" && f.slot === "onbg" && /^bg:/.test(f.layer)), rules.join(" "));
+  // translucent text is composited before the ratio is taken
+  const faint = report.findings.find((f) => f.rule === "contrast" && f.slot === "faint");
+  assert.ok(faint && faint.measured.alpha === 0.3, rules.join(" "));
+  assert.ok(!rules.includes("contrast:solid"), rules.join(" "));
+  // a missing image and a font collection in @font-face
+  assert.ok(report.findings.some((f) => f.rule === "asset-missing" && f.slot === "missing-piece.png"), rules.join(" "));
+  assert.ok(report.findings.some((f) => f.rule === "font-collection" && /local\('Collection'\)/.test(f.fix)), rules.join(" "));
+  assert.equal(report.status, "failed");
+});
+
+test("a needed browser check that cannot run or breaks is never a pass", { skip: BROWSER.skip, timeout: 300000 }, (t) => {
+  const root = tempRoot(t);
+  // shinbo renders need the browser: without one the render is unverified, exit 1, the SVG still written
+  const render = cli(root, "template", "render", "card.void-line", "-o", "out/v.svg", "--chrome", path.join(root, "no-chrome"), "--puppeteer-module", BROWSER.puppeteerModule);
+  assert.equal(render.status, 1, JSON.stringify(render.payload));
+  assert.equal(render.payload.error.code, "TOOL_MISSING");
+  assert.equal(render.payload.error.details.status, "unverified");
+  assert.ok(fs.existsSync(path.join(root, "out", "v.svg")));
+  const check = cli(root, "template", "check", "out/v.svg", "--chrome", path.join(root, "no-chrome"), "--puppeteer-module", BROWSER.puppeteerModule);
+  assert.equal(check.status, 1);
+  assert.equal(check.payload.error.code, "TOOL_MISSING");
+  // an Arknights render without --browser still has only the static check
+  assert.equal(cli(root, "template", "render", "kv.outfit-title-left", "-o", "out/k.svg", "--chrome", path.join(root, "no-chrome")).status, 0);
+  // the kernel separates "no browser" from "the check broke"
+  const kernel = path.join(__dirname, "..", "skill", "tools", "template-bank", "page-check.cjs");
+  const broke = spawnSync(process.execPath, [kernel, path.join(root, "absent.html"), "--chrome", BROWSER.chrome, "--puppeteer-module", BROWSER.puppeteerModule], { encoding: "utf8", timeout: 120000 });
+  assert.equal(broke.status, 1);
+  assert.match(broke.stderr, /^CHECK_FAILED: /);
+  const none = spawnSync(process.execPath, [kernel, path.join(root, "absent.html"), "--chrome", path.join(root, "no-chrome"), "--puppeteer-module", BROWSER.puppeteerModule], { encoding: "utf8", timeout: 120000 });
+  assert.match(none.stderr, /^TOOL_MISSING: /);
+});
+
+test("a system font collection is selected by family name, not embedded", { skip: fs.existsSync("/usr/share/fonts/opentype/noto/NotoSerifCJK-Black.ttc") ? false : "no Noto CJK collection installed" }, () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "style-pack-ttc-"));
+  try {
+    fs.symlinkSync("/usr/share/fonts/opentype/noto/NotoSerifCJK-Black.ttc", path.join(dir, "NotoSerifCJK-Black.ttc"));
+    fs.copyFileSync(path.join(FONTS, "ShipporiMinchoB1-ExtraBold.woff"), path.join(dir, "ShipporiMinchoB1-ExtraBold.woff"));
+    const rendered = bank.render("card.onechar-bleed", { set: { char: "直" }, fontDir: dir });
+    assert.doesNotMatch(rendered.svg, /@font-face[^}]*\.ttc/);
+    assert.match(rendered.svg, /@font-face\{font-family:'Shippori Mincho B1'/);
+    // coverage reads the collection's SC face (index 2)
+    assert.equal(coverage.missingGlyphs("Noto Serif CJK SC", "直钥", { faces: rendered.fontFaces }).missing, "");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
