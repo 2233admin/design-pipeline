@@ -55,6 +55,8 @@ const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
 const { prepareFilmMethods } = require("../tools/film-methods/prepare.cjs");
 const { templates: filmTemplates } = require("../tools/prompt-motion/library.cjs");
 const templateBank = require("../tools/template-bank/bank.cjs");
+const templateDistill = require("../tools/template-bank/distill.cjs");
+const referenceMeasure = require("../tools/template-bank/reference-measure.cjs");
 const { scaffoldVisualCraft, TEMPLATES: scaffoldTemplates } = require("../tools/visual-craft/scaffold.cjs");
 const { loadCatalog, searchBlocks } = require("./film-blocks-core.cjs");
 const { evaluateProbeFile, validateProbeFile } = require("./interaction-core.cjs");
@@ -151,7 +153,7 @@ const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sh
 const { inspectEnvironment, nodeAtLeast, renderDoctor } = require("./doctor-report.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots", "--browser"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots", "--browser", "--ablate"]);
 const REPEATABLE_OPTIONS = new Set(["--set", "--param", "--mix", "--taste", "--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
@@ -165,7 +167,7 @@ const KNOWN_OPTIONS = new Set([
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--start", "--end", "--fps", "--max-frames", "--cut-threshold", "--min-shot", "--by", "--page-review", "--until", "--assisted-by", "--tradeoff", "--revision", "--affects",
   "--spec", "--stills", "--ffmpeg", "--ffprobe", "--medium", "--second", "--pool", "--east-pool",
-  "--family", "--size", "--seed", "--png", "-o", "--font-dir",
+  "--family", "--size", "--seed", "--png", "-o", "--font-dir", "--images", "--annotations", "--compare",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
 ]);
 function parseArgs(argv) {
@@ -416,6 +418,7 @@ function publicHelp() {
     "  template approve --plan <file> --approval <file> --json",
     "  template list [--family kv|cover|card|banner|ui|motion] [--style <id>]   (template bank: parameterised SVG layouts with slots, knobs and provenance; --style shows a style pack: font roles, layout grammar, materials, motion grammar, checks)",
     "  template render <id> [--set slot=value ...] [--param name=value ...] [--seed <n>] [--size WxH] -o <out.svg> [--png <out.png>] [--font-dir <dir>] [--browser] [--chrome <exe>] [--puppeteer-module <path>]   (renders and audits the output; image slots take a file path; --seed varies the rhythm knobs; --font-dir reads the style's fonts for whole-string glyph coverage; --browser, or a style that asks for it, adds the browser check; exit 2 when a check fails)",
+    "  template distill <provenance.csv> --images <dir> -o <out-dir> [--annotations <annotations.csv|labels.jsonl>] [--category A,B] [--id <style-id>] [--compare <style-id>] [--ablate] [--ffmpeg <exe>] [--chrome <exe>] [--puppeteer-module <path>]   (reference board -> style pack draft: thresholds from the reference distribution, layout archetypes with the nearest template or a skeleton, font roles from stroke contrast, report of supported rules and gaps; --compare diffs a hand-made pack; --ablate renders with and without each rule; images are never copied)",
     "  template check <file.svg|file.html> [--browser] [--size WxH] [--chrome <exe>] [--puppeteer-module <path>]   (measured: text fit, minimum size, contrast, figure and crop zones, accent budget, alignment, rhythm; in the browser also ink overlap, off-canvas, collage over text, contrast with the text hidden and glyph coverage, for injected layers and hand-written SVG or HTML too; every finding has a fix; 0 pass, 2 fail)",
     "  doctor [--json]   (readable install and tool report; --json for machine output) | status --change-root <dir>",
     "  plan --manifest <file> --output <file>",
@@ -2312,6 +2315,95 @@ function templateBankCommand(parsed, root, action, operand) {
   };
 }
 
+// Reference distillation (tools/template-bank/distill.cjs): a provenance list + local images ->
+// a style pack draft, its measured distributions and a one-page report. With --ablate, renders the
+// nearest bank templates with the draft and with one rule removed at a time, and measures how far
+// each set lands from the reference distribution (needs the browser).
+function templateDistillCommand(parsed, root, operand) {
+  if (!operand) fail("template", "template distill needs a board: template distill <provenance.csv> --images <dir> -o <out-dir>", { code: "OPTION_REQUIRED" });
+  const board = contained(root, operand, "<provenance.csv>");
+  if (!/\.csv$/i.test(board)) fail("template", `the board must be a provenance .csv (id, source URL, size, category), got ${operand}`, { code: "OPTION_VALUE_INVALID" });
+  const outRaw = option(parsed, "-o") ?? option(parsed, "--output");
+  if (option(parsed, "-o") !== null && option(parsed, "--output") !== null) fail("template", "give -o or --output, not both", { code: "DUPLICATE_OPTION" });
+  if (typeof outRaw !== "string" || !outRaw.trim()) fail("template", "template distill needs -o <out-dir> (the draft, its measures and the report are written there; images are never copied)", { code: "OPTION_REQUIRED" });
+  const images = option(parsed, "--images") === null ? null : contained(root, option(parsed, "--images"), "--images");
+  const annotations = option(parsed, "--annotations") === null ? null : contained(root, option(parsed, "--annotations"), "--annotations");
+  if (annotations && !/\.(csv|jsonl)$/i.test(annotations)) fail("template", `--annotations takes the study's annotations .csv or labels .jsonl, got ${option(parsed, "--annotations")}`, { code: "OPTION_VALUE_INVALID" });
+  const categories = option(parsed, "--category") === null ? null : String(option(parsed, "--category")).split(",").map((c) => c.trim()).filter(Boolean);
+  const id = option(parsed, "--id") === null ? `draft-${path.basename(board, path.extname(board)).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 34) || "board"}` : String(option(parsed, "--id"));
+  const compare = option(parsed, "--compare") === null ? null : String(option(parsed, "--compare"));
+  const tools = { ...(option(parsed, "--ffmpeg") !== null ? { ffmpeg: String(option(parsed, "--ffmpeg")) } : {}), ...(option(parsed, "--ffprobe") !== null ? { ffprobe: String(option(parsed, "--ffprobe")) } : {}) };
+  let result;
+  try {
+    result = templateDistill.distill({ board, images, annotations, categories, id, compare, tools, root });
+  } catch (error) {
+    if (error instanceof templateDistill.DistillError || error instanceof templateBank.BankError) fail("template", error.message, { code: error.code });
+    throw error;
+  }
+  const out = contained(root, outRaw, "-o", false);
+  fs.mkdirSync(out, { recursive: true });
+  if (option(parsed, "--ablate") === true) result.ablation = templateAblation(root, parsed, result, out, tools);
+  const files = { style: path.join(out, "style.json"), measures: path.join(out, "distill.json"), report: path.join(out, "report.md") };
+  fs.writeFileSync(files.style, `${JSON.stringify(result.draft, null, 2)}\n`);
+  fs.writeFileSync(files.measures, `${JSON.stringify(result, null, 1)}\n`);
+  fs.writeFileSync(files.report, templateDistill.reportMarkdown(result));
+  const gaps = Object.entries(result.thresholds).filter(([, t]) => t.support === "gap").map(([k]) => k);
+  return {
+    result: {
+      status: "drafted", id, files, references: result.board.measured, skipped: result.board.skipped, annotated: result.board.annotated,
+      supported: Object.entries(result.thresholds).filter(([, t]) => t.support === "measured").map(([k]) => k),
+      thin: Object.entries(result.thresholds).filter(([, t]) => t.support === "thin").map(([k]) => k), gaps,
+      archetypes: result.archetypes.slice(0, 5).map((a) => ({ key: a.key, n: a.n, nearest: a.nearest[0] || null, skeleton: Boolean(a.skeleton) })),
+      fonts: Object.fromEntries(Object.entries(result.fonts).map(([role, f]) => [role, { ...f.query, support: f.support, catalog: f.catalog.status, command: f.command }])),
+      ...(result.comparison ? { comparison: { style: result.comparison.style, rows: result.comparison.rows.map(({ label, hand, draft, ratio, same }) => ({ label, hand, draft, ratio, same })), palette: result.comparison.palette } } : {}),
+      ...(result.ablation ? { ablation: result.ablation } : {}),
+      scope: "A draft from measured distributions: it says what the references are like, not what is good. Review report.md, then copy style.json into styles/<id>/ and write templates for it. No gate or acceptance changes.",
+      next: `Read ${files.report}; the gaps need human judgement.${option(parsed, "--ablate") === true ? "" : " Add --ablate to render the nearest templates with and without each rule."}`,
+    },
+    exitCode: 0,
+  };
+}
+
+function templateAblation(root, parsed, result, out, tools) {
+  const picks = [];
+  for (const a of result.archetypes) for (const n of a.nearest.slice(0, 1)) if (!picks.includes(n.id) && picks.length < 3) picks.push(n.id);
+  if (!picks.length) return { status: "not-run", reason: "no archetype has a nearest template" };
+  const dir = path.join(out, "ablation");
+  fs.mkdirSync(dir, { recursive: true });
+  const variants = templateDistill.ablationVariants(result.draft);
+  const seeds = [1, 2];
+  const rows = [];
+  try {
+    for (const v of variants) {
+      const features = [];
+      for (const id of picks) {
+        const manifest = templateBank.loadManifest(id);
+        // The roles the template paints (their colours appear in its draft-palette render).
+        const draftSvg = templateBank.render(id, { params: Object.fromEntries(Object.entries(templateDistill.mapPalette(manifest, result.draft.palette)).map(([role, hex]) => [`palette.${role}`, hex])) }).svg.replace(/<metadata[\s\S]*?<\/metadata>/g, "").toUpperCase();
+        const used = new Set(Object.entries(templateDistill.mapPalette(manifest, result.draft.palette)).filter(([, hex]) => draftSvg.includes(hex.toUpperCase())).map(([role]) => role));
+        const palette = v.palette === null ? {} : templateDistill.mapPalette(manifest, result.draft.palette, { ...v.palette, used });
+        const params = Object.fromEntries(Object.entries(palette).map(([role, hex]) => [`palette.${role}`, hex]));
+        for (const seed of seeds) {
+          const rendered = templateBank.render(id, { params, seed });
+          const base = path.join(dir, `${v.variant}-${id}-${seed}`);
+          fs.writeFileSync(`${base}.svg`, rendered.svg);
+          templatePng(root, parsed, rendered.svg, rendered.size, `${base}.png`);
+          features.push(referenceMeasure.measurePixels(referenceMeasure.decode(`${base}.png`, { tools })).features);
+        }
+      }
+      rows.push({ ...v, ...templateDistill.distanceTo(features, result.thresholds) });
+    }
+  } catch (error) {
+    return { status: "not-run", reason: `rendering failed: ${String(error.message).split("\n")[0]}. Fix: install puppeteer-core and Chrome (npm run browser:install), or pass --chrome <exe> --puppeteer-module <path>` };
+  }
+  const full = rows[0];
+  return {
+    status: "measured", templates: picks, seeds, samples: picks.length * seeds.length, features: templateDistill.ABLATION_FEATURES, dir,
+    variants: rows.map((r) => ({ variant: r.variant, rule: r.rule, distance: r.distance, delta: r === full ? 0 : Number((r.distance - full.distance).toFixed(3)), per: r.per, ...(r.axis ? { axis: { feature: r.axis, delta: Number(((r.per[r.axis] ?? 0) - (full.per[r.axis] ?? 0)).toFixed(3)) } } : {}) })),
+    note: "Paired change against the full draft on the same templates and seeds; templates render placeholders where art goes, so absolute distances stay high.",
+  };
+}
+
 function templateCommand(parsed, root, action) {
   if (action === "inventory") {
     const catalogArtifact = readJson(artifact(parsed, root, "--catalog"), "region-template catalog");
@@ -2471,6 +2563,7 @@ const COMMANDS = {
       list: { run: ({ parsed }) => templateBankCommand(parsed, null, "list") },
       render: { operand: true, run: ({ parsed, root, operand }) => templateBankCommand(parsed, root, "render", operand) },
       check: { operand: true, run: ({ parsed, root, operand }) => templateBankCommand(parsed, root, "check", operand) },
+      distill: { operand: true, run: ({ parsed, root, operand }) => templateDistillCommand(parsed, root, operand) },
     },
   },
   doctor: { run: doctorCommand },

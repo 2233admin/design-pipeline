@@ -43,12 +43,22 @@ function loadStyle(id) {
   if (typeof id !== "string" || !styleIds().includes(id)) throw new BankError(`unknown style ${JSON.stringify(id)}. Fix: use one of ${styleIds().join(", ")} (template list)`, "OPTION_VALUE_INVALID");
   if (!styleCache.has(id)) {
     const style = JSON.parse(fs.readFileSync(path.join(STYLES_ROOT, id, "style.json"), "utf8"));
-    if (style.schema !== STYLE_SCHEMA || style.id !== id) throw new BankError(`styles/${id}/style.json must have schema ${STYLE_SCHEMA} and id ${id}`);
-    for (const key of ["fonts", "layout", "materials", "checks"]) if (!style[key]) throw new BankError(`styles/${id}/style.json lacks ${key}`);
-    for (const [role, spec] of Object.entries(style.fonts.roles || {})) if (!Array.isArray(spec.stack) || !spec.stack.length) throw new BankError(`style ${id} font role ${role} needs a stack`);
+    validateStyle(style, id);
     styleCache.set(id, style);
   }
   return styleCache.get(id);
+}
+
+// The style pack shape, for installed packs and for drafts written by `template distill`.
+// checks.measured (optional) holds the reference distribution each threshold came from.
+function validateStyle(style, id) {
+  if (style?.schema !== STYLE_SCHEMA || style.id !== id) throw new BankError(`styles/${id}/style.json must have schema ${STYLE_SCHEMA} and id ${id}`);
+  for (const key of ["fonts", "layout", "materials", "checks"]) if (!style[key]) throw new BankError(`styles/${id}/style.json lacks ${key}`);
+  for (const [role, spec] of Object.entries(style.fonts.roles || {})) if (!Array.isArray(spec.stack) || !spec.stack.length) throw new BankError(`style ${id} font role ${role} needs a stack`);
+  for (const [feature, t] of Object.entries(style.checks.measured || {})) {
+    if (!["max", "min", "band"].includes(t?.kind) || !["measured", "thin", "gap"].includes(t.support) || typeof t.basis !== "string") throw new BankError(`style ${id} checks.measured.${feature} needs kind (max|min|band), support (measured|thin|gap) and basis`);
+  }
+  return style;
 }
 
 function loadManifest(id) {
@@ -824,4 +834,4 @@ function check(svgText) {
   };
 }
 
-module.exports = { BankError, MANIFEST_SCHEMA, STYLE_SCHEMA, CHECK_SCHEMA, PARAM_CLASSES, RULES, TEMPLATES_ROOT, STYLES_ROOT, check, checkRhythm, imageAspect, listTemplates, loadManifest, loadStyle, parseSize, render, resolveParams, slotSpec, styleIds, templateIds };
+module.exports = { BankError, MANIFEST_SCHEMA, STYLE_SCHEMA, CHECK_SCHEMA, PARAM_CLASSES, RULES, TEMPLATES_ROOT, STYLES_ROOT, check, checkRhythm, imageAspect, listTemplates, loadManifest, loadStyle, parseSize, render, resolveParams, slotSpec, styleIds, templateIds, validateStyle };
