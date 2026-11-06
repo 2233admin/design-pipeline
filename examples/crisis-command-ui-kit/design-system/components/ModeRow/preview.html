@@ -1,0 +1,13 @@
+<!-- @dsCard group="Controls" height=300 -->
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Mode row</title></head>
+<body class="cc-page">
+<section class="cc-demo"><p class="cc-demo__label">radio group: one lit cell (NORMAL), hover (forced, HOLD), focus (forced, LOW), pressed (forced, SURGE); the danger cell idle</p>
+<div class="cc-modes " role="radiogroup" aria-label="泵送模式 PUMP MODE"><button class="cc-mode is-hover" type="button" role="radio" aria-checked="false" tabindex="-1" data-group="mode"><span class="cc-mode__en">HOLD</span><span class="cc-mode__zh">停泵</span></button><button class="cc-mode is-focus" type="button" role="radio" aria-checked="false" tabindex="-1" data-group="mode"><span class="cc-mode__en">LOW</span><span class="cc-mode__zh">低速</span></button><button class="cc-mode" type="button" role="radio" aria-checked="true" tabindex="0" data-group="mode"><span class="cc-mode__en">NORMAL</span><span class="cc-mode__zh">常速</span></button><button class="cc-mode is-active" type="button" role="radio" aria-checked="false" tabindex="-1" data-group="mode"><span class="cc-mode__en">SURGE</span><span class="cc-mode__zh">全开</span></button><span class="cc-danger" data-danger><span>DANGER</span><span>EMERGENCY</span></span></div>
+</section>
+<section class="cc-demo"><p class="cc-demo__label">danger state: the danger cell fills and blinks; HOLD disabled</p>
+<div class="is-danger"><div class="cc-modes " role="radiogroup" aria-label="泵送模式 PUMP MODE"><button class="cc-mode" type="button" role="radio" aria-checked="false" tabindex="-1" disabled data-group="m2"><span class="cc-mode__en">HOLD</span><span class="cc-mode__zh">停泵</span></button><button class="cc-mode" type="button" role="radio" aria-checked="false" tabindex="-1" data-group="m2"><span class="cc-mode__en">LOW</span><span class="cc-mode__zh">低速</span></button><button class="cc-mode" type="button" role="radio" aria-checked="false" tabindex="-1" data-group="m2"><span class="cc-mode__en">NORMAL</span><span class="cc-mode__zh">常速</span></button><button class="cc-mode" type="button" role="radio" aria-checked="true" tabindex="0" data-group="m2"><span class="cc-mode__en">SURGE</span><span class="cc-mode__zh">全开</span></button><span class="cc-danger" data-danger><span>DANGER</span><span>EMERGENCY</span></span></div></div>
+</section>
+</body>
+</html>

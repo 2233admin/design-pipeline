@@ -1,0 +1,227 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "crisis-command",
+  "title": "Crisis command: 1990s Japanese mecha anime's crisis-terminal grammar - type cards in heavy compressed Mincho on black, red hexagon alarm walls, amber segment clocks, coupling graphs and a five-seat vote",
+  "summary": "Two kinds of screen with two light regimes. Type cards: an almost black ground (79-97% dark) carrying one heavy Mincho block, the episode number at half the title's size, the title broken into an L (one glyph, then the rest after a half-pitch comma), nothing else. Alarm screens: a hot field (14-32% red-orange or amber) of elongated hexagon panels (3.06:1, 55-degree tips) in double rules over a 45-degree lattice, square two-character stamps, compressed English under the CJK, segment-digit clocks with Mincho units at 0.21 of the digit, mode rows with one lit cell. One hot colour family per screen; state changes are hard cuts.",
+  "provenance": {
+    "case": "tidemark (潮位警报 TIDEMARK): an original organisation terminal site in this grammar - six screens (title card, alarm wall, countdown, coupling and vote, episode-card index, frame archive with image slots), a 390-wide page, a ?slot=1 placeholder mode with image-generation task sheets - plus two in-app screens (operator console, sortie coupling monitor), and the crisis-command UI kit under examples/crisis-command-ui-kit.",
+    "lineage": "The crisis-terminal and title-card grammar of 1990s Japanese mecha anime. Read and measured on frames and title cards collected for a private study (glyph ink boxes for the compression steps, palettes, whole-screen light and colour shares, frame-by-frame luminance of the countdown states); the frames stay private and are not shipped. Borrowed: the grammar and the measured proportions. Never borrowed: any name, logo, organisation, mark, character, mecha, line of dialogue, proprietary font or picture.",
+    "borrow": "Borrow grammar, never assets. Every name, term and line in the case and the templates is our own (潮位警报, 环海闸务局, 闸甲, 闸手, 五席表决, 耦合率, 蓄压); the heavy Mincho is the open Noto Serif SC Black compressed with a transform, never the proprietary face; digits are drawn segments; mecha and pilots are image slots with task sheets, never drawn in code.",
+    "rounds": "template check --browser on the case's pages (six screens at 1920 x 1080, the 390-wide page, two in-app screens) and the kit's previews: first pass and final counts in the PR."
+  },
+  "palette": {
+    "bg": {
+      "value": "#000000",
+      "use": "type cards, countdown and graph grounds (the cards measured #000000 / #030201)"
+    },
+    "ink": {
+      "value": "#FFFFFF",
+      "use": "type on the black card"
+    },
+    "paper": {
+      "value": "#F0F2F0",
+      "use": "the inverse card ground (measured on the white card)"
+    },
+    "black": {
+      "value": "#000000",
+      "use": "type on paper, amber and red fills"
+    },
+    "blood": {
+      "value": "#140202",
+      "use": "the red card's ground"
+    },
+    "alert": {
+      "value": "#E8380D",
+      "use": "the one main colour: red-orange for the red card, the film title, danger, thresholds and the dissenting vote (measured #E92D0B on the film title)"
+    },
+    "deep": {
+      "value": "#B8182C",
+      "use": "the darker film-title red (measured #66041A misses 3:1 on black; lifted)"
+    },
+    "dim": {
+      "value": "#A39890",
+      "use": "small English captions on black"
+    },
+    "screen": {
+      "value": "#2B4F69",
+      "use": "the alarm wall's screen under the panels (measured blues #49688B / #9EB2C0, darkened so the panels read)"
+    },
+    "lattice": {
+      "value": "#6F95B0",
+      "use": "the alarm wall's 45-degree lattice (decoration)"
+    },
+    "panel": {
+      "value": "#B0081F",
+      "use": "alarm hexagon fill (measured #BA0623), translucent over the lattice"
+    },
+    "rule_hot": {
+      "value": "#FF6A4A",
+      "use": "hexagon double rules (decoration)"
+    },
+    "type_hot": {
+      "value": "#FFF1EA",
+      "use": "type on the alarm panels (measured #EDE4E0)"
+    },
+    "plate": {
+      "value": "#120B05",
+      "use": "clock bezel, graph board, unlit supply plates"
+    },
+    "amber": {
+      "value": "#F2A93B",
+      "use": "data ink: clocks, labels, the main trace, lit mode cells (measured #FBBA30 / #E39626 / #D6B263)"
+    },
+    "amber_line": {
+      "value": "#7A5524",
+      "use": "bezel rules, unlit outlines, minor traces, major grid (decoration)"
+    },
+    "amber_dim_text": {
+      "value": "#A07A3F",
+      "use": "labels of unlit cells and plates (4.9:1 on plate)"
+    },
+    "grid": {
+      "value": "#2A1A0C",
+      "use": "the graph board's minor grid (decoration)"
+    }
+  },
+  "fonts": {
+    "roles": {
+      "head": {
+        "stack": [
+          "Noto Serif SC",
+          "Noto Serif CJK SC"
+        ],
+        "generic": "serif",
+        "weight": 900,
+        "use": "every CJK title, stamp, label and unit: the heavy Mincho, compressed by the layout in the measured steps (1.00 card, 0.85 caption, 0.65 credits, 0.40 film title)"
+      },
+      "grot": {
+        "stack": [
+          "Archivo",
+          "Noto Sans SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 700,
+        "use": "English under or beside the CJK, compressed to its box; Latin, digits and ASCII punctuation only"
+      },
+      "body": {
+        "stack": [
+          "Noto Sans SC",
+          "Noto Sans CJK SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 400,
+        "use": "paragraphs and mixed CJK and Latin copy"
+      }
+    },
+    "faces": [
+      {
+        "family": "Noto Serif SC",
+        "weight": 900,
+        "file": "NotoSerifSC[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/notoserifsc",
+        "licence": "SIL OFL 1.1",
+        "author": "Google"
+      },
+      {
+        "family": "Archivo",
+        "weight": 700,
+        "file": "Archivo[wdth,wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/archivo",
+        "licence": "SIL OFL 1.1",
+        "author": "The Archivo Project Authors"
+      },
+      {
+        "family": "Noto Sans SC",
+        "weight": 700,
+        "file": "NotoSansSC[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/notosanssc",
+        "licence": "SIL OFL 1.1",
+        "author": "Google"
+      }
+    ],
+    "bundled": false,
+    "substitution": "The reference's title face is a proprietary heavy Mincho (EB weight). Noto Serif SC Black is the open substitute: fonts query --style mincho returns it first with full simplified coverage; Zen Old Mincho Black is closer in feel (soft brush corners, thick horizontals) but covers 64% of the 3,500 common simplified characters. Differences: the original's horizontals are thicker (about 1:2.5 against the stems) and its corners and scales rounder; Noto's horizontals are thinner and its scales sharper, so the film title stops at 0.40 instead of the measured 0.35."
+  },
+  "layout": {
+    "grammar": [
+      "Two light regimes: a type card is 79-97% black with one block of type (16-19% of the frame on a card, 3-9% on a film title), weighted to the lower left (0.38, 0.60) or the centre; an alarm screen is a hot field, 14-32% red-orange or amber, weighted to the centre.",
+      "Heavy Mincho is compressed mechanically, never redrawn: 1.00 on a title card, 0.85 in a caption and on a panel, 0.65 in credits, 0.35 (0.40 with the open face) on a film title; Latin under it is compressed too (0.45-0.9). One screen uses at most two steps.",
+      "The title card: margins H/24 (left 6.5% of H, top 6.4%), the number line at 15.4% of H ink (half the title), the title at 31% of H ink in two lines 3.3% apart: line one carries one glyph, line two the rest after a comma at half pitch.",
+      "Alarm panels are elongated hexagons, 3.06:1 with 55-degree tips, filled red at 86-92% over the lattice, ruled twice (6 and 2 units, 12 apart); square stamps of two Mincho characters in a double frame sit inside them.",
+      "Clocks are segment digits (capsule 0.36 wide per digit with its gap, or slanted LCD), units in Mincho at 0.21 of the digit, labels in vertical brackets at 0.27; a mode row of equal cells with one lit, a danger cell that fills red.",
+      "One hot colour family per screen (red-orange or amber); white and black are structure. Scale contrast of 1:10 or more on every screen (the clock against its smallest caption is about 1:23).",
+      "English sits under or beside the CJK, never above; no ornaments between them."
+    ]
+  },
+  "materials": {
+    "procedural": [
+      "hexagon panels, stamps, hazard stripes, the 45-degree lattice and CRT scanlines (layouts-crisis.cjs)",
+      "segment digits (segText(): capsule and LCD)",
+      "the placeholder mark: three sluice bars over a water line (no letter shapes)"
+    ],
+    "recipes": [
+      "Screen grain under a panel: materials generate --generator halftone --params '{\"periodPx\":3,\"angleDeg\":0,\"coverage\":0.3}' --seed 1, laid at 10-14% over screens only, never over a type card.",
+      "Mecha, pilots and city views come from an image-generation task sheet (#311) with a painted-in blend (grade to the screen colour, a hot rim from the alarm side); until then the slot shows its size and safe box. Never draw them in code (#301)."
+    ],
+    "collage": [
+      "No pictures on type cards. On screens, pictures sit inside a framed monitor with a ground plate under any text."
+    ],
+    "sources": "Everything is drawn; pictures are your own art in image slots.",
+    "budget": {
+      "inks": 1,
+      "effectsMax": 2,
+      "tiltedElements": 0
+    }
+  },
+  "motion": {
+    "fps": 30,
+    "grammar": [
+      "State changes are hard cuts (one frame): the measured danger switch doubles the red share (7% to 18%, 15% to 46%) and darkens the screen.",
+      "A live screen shimmers at low amplitude: a 2-3% luminance flicker every 80-150 ms (measured 6.7 Hz at 2/255 and frame-alternating 12.5 Hz at 2.4%), never a flash.",
+      "Title cards cut in from black, hold about 2 s and cut out; no fades.",
+      "Alarm bands blink at 1 Hz (our value, under 3 flashes a second); a scan band crosses the screen top to bottom in 4 s; clocks tick every second and the last 10 s cut to the danger red."
+    ],
+    "flashLimit": "No more than 3 flashes a second; the only large-area blink is the 1 Hz alarm band."
+  },
+  "checks": {
+    "static": [
+      "text-overflow",
+      "text-length",
+      "type-size",
+      "contrast",
+      "accent-budget"
+    ],
+    "browser": [
+      "text-overlap",
+      "off-canvas",
+      "collage-cover",
+      "contrast",
+      "text-occluded",
+      "glyph-coverage"
+    ],
+    "browserOnRender": true,
+    "guidance": [
+      "64 px distinctiveness (guidance): shrink each screen to 64 px tall beside the other packs and the private reference thumbnails; a card should read as a white L of blocks on black, an alarm screen as a red honeycomb on blue, a clock as amber bars on black.",
+      "Never draw mecha, weapons or people in code (#301): leave an image slot with a task sheet; show mode uses type, frames, digits and stamps only.",
+      "Keep the compression steps: a line that needs less than 0.65 to fit is too long; cut the copy instead of squeezing further.",
+      "Latin roles take Latin, digits and ASCII punctuation only; mixed copy goes in head or body (glyph coverage).",
+      "Digits are drawn segments: clock slots take digits and the separators shown in their example; words go in a text slot."
+    ],
+    "note": "The browser check runs on every render (the lattice, scanlines and translucent panels are measured in pixels)."
+  },
+  "examples": {
+    "note": "Renders of the case that stay examples (outside the repository, with the owner).",
+    "renders": [
+      {
+        "screen": "organisation terminal site, six screens and the 390-wide page",
+        "file": "tidemark case, shots/ (owner's copy); the kit's pages are in examples/crisis-command-ui-kit/templates",
+        "why": "a paged site with scripts and interaction, not a parametric layout; its parts are the five templates"
+      },
+      {
+        "screen": "operator console and sortie coupling monitor",
+        "file": "examples/crisis-command-ui-kit/templates/console.html, sync.html",
+        "why": "app screens composed from the kit's components"
+      }
+    ]
+  }
+}

@@ -1,0 +1,195 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.crisis-countdown",
+  "family": "ui",
+  "style": "crisis-command",
+  "title": "Countdown bezel: a chamfered amber bezel with a bracketed Mincho label, a capsule-digit clock with Mincho units, a slanted LCD elapsed clock, a row of four mode cells and a danger cell, two supply plates (one lit)",
+  "use": "Countdowns, launch and deadline screens, live timers on a status page.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "alert"
+    ],
+    "maxShare": 0.18
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "state": {
+      "type": "enum",
+      "values": [
+        "normal",
+        "danger"
+      ],
+      "default": "normal",
+      "class": "decoration",
+      "note": "danger turns the ink red-orange and fills the danger cell (a hard cut)"
+    },
+    "mode": {
+      "default": 3,
+      "min": 1,
+      "max": 4,
+      "class": "decoration",
+      "note": "the lit mode cell"
+    },
+    "supply": {
+      "default": 1,
+      "min": 1,
+      "max": 2,
+      "class": "decoration",
+      "note": "the lit supply plate"
+    },
+    "scanlines": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "scanlines inside the bezel"
+    }
+  },
+  "slots": {
+    "label": {
+      "kind": "text",
+      "default": "蓄压剩余",
+      "maxChars": 6,
+      "font": "head",
+      "title": true
+    },
+    "label_latin": {
+      "kind": "text",
+      "default": "RESERVE PRESSURE REMAINING",
+      "maxChars": 30,
+      "font": "grot",
+      "note": "Latin only"
+    },
+    "clock": {
+      "kind": "lettering",
+      "default": "04:59:58",
+      "maxChars": 8,
+      "note": "hh:mm:ss, drawn capsule digits"
+    },
+    "unit_h": {
+      "kind": "text",
+      "default": "时",
+      "maxChars": 1,
+      "font": "head"
+    },
+    "unit_m": {
+      "kind": "text",
+      "default": "分",
+      "maxChars": 1,
+      "font": "head"
+    },
+    "unit_s": {
+      "kind": "text",
+      "default": "秒",
+      "maxChars": 1,
+      "font": "head"
+    },
+    "t_label": {
+      "kind": "text",
+      "default": "T+ ELAPSED",
+      "maxChars": 12,
+      "font": "grot"
+    },
+    "elapsed": {
+      "kind": "lettering",
+      "default": "00:12:07.53",
+      "maxChars": 11,
+      "note": "hh:mm:ss.cc, slanted LCD digits"
+    },
+    "mode_1": {
+      "kind": "text",
+      "default": "HOLD",
+      "maxChars": 8,
+      "font": "grot"
+    },
+    "mode_2": {
+      "kind": "text",
+      "default": "LOW",
+      "maxChars": 8,
+      "font": "grot"
+    },
+    "mode_3": {
+      "kind": "text",
+      "default": "NORMAL",
+      "maxChars": 8,
+      "font": "grot"
+    },
+    "mode_4": {
+      "kind": "text",
+      "default": "SURGE",
+      "maxChars": 8,
+      "font": "grot"
+    },
+    "danger_1": {
+      "kind": "text",
+      "default": "DANGER",
+      "maxChars": 10,
+      "font": "grot"
+    },
+    "danger_2": {
+      "kind": "text",
+      "default": "EMERGENCY",
+      "maxChars": 10,
+      "font": "grot"
+    },
+    "plate_cjk_1": {
+      "kind": "text",
+      "default": "内蓄",
+      "maxChars": 2,
+      "font": "head"
+    },
+    "plate_latin_1": {
+      "kind": "text",
+      "default": "RESERVE",
+      "maxChars": 9,
+      "font": "grot"
+    },
+    "plate_cjk_2": {
+      "kind": "text",
+      "default": "外接",
+      "maxChars": 2,
+      "font": "head"
+    },
+    "plate_latin_2": {
+      "kind": "text",
+      "default": "LINKED",
+      "maxChars": 9,
+      "font": "grot"
+    }
+  },
+  "relations": [
+    "Units at 0.21 of the digit height, the label at 0.27 between vertical bracket bars.",
+    "The elapsed clock at 0.32 of the main clock, slanted 6 degrees.",
+    "Bezel corners cut at 45 degrees; one mode cell lit."
+  ],
+  "decoration": [
+    "Hazard stripes on the lit plate, the bezel's inner rule, scanlines and the mark are drawn and exempt."
+  ],
+  "provenance": {
+    "corpus": "tidemark case (潮位警报 TIDEMARK): our own original organisation terminal site, two app screens and UI kit in the crisis-command grammar",
+    "experiment": "styles/crisis-command/style.json provenance (reference frames measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "a reference film's clock (strip, middle third): digits 0.36 wide per digit with gap, units 0.21, label 0.27 in bracket bars; a reference countdown's mode row and danger cell; frame-by-frame red share of the danger cut",
+    "sampleIds": [
+      "tidemark/crisis-countdown"
+    ],
+    "measured": [
+      "Reference: hot 21-31%, weight centre (0.41-0.49, 0.50).",
+      "Case: 蓄压剩余 04:59:58 at 0 findings in both states."
+    ],
+    "summary": "tidemark countdown"
+  }
+}

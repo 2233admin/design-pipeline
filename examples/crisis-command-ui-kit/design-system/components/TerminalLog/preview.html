@@ -1,0 +1,10 @@
+<!-- @dsCard group="Data" height=520 -->
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Terminal log</title></head>
+<body class="cc-page">
+<section class="cc-demo"><p class="cc-demo__label">timestamped lines, an error line, the command field</p>
+<div style="width: 720px"><section class="cc-log " aria-labelledby="lg-h"><h3 class="cc-log__title" id="lg-h"><span class="cc-bi "><span class="cc-bi__zh">终端日志</span><span class="cc-bi__en">TERMINAL LOG</span></span></h3><ol class="cc-log__lines" data-log><li class="cc-log__line cc-log__line--sys"><time>23:40:52</time><b>SYS</b><span>第九排涝区水位 +4.21 m，越过一级红线</span></li><li class="cc-log__line cc-log__line--sys"><time>23:40:55</time><b>SYS</b><span>自动关闭东缘一至十一号闸：完成</span></li><li class="cc-log__line cc-log__line--err"><time>23:41:02</time><b>ERR</b><span>十二号闸无响应（电机正常，指令被表决否决）</span></li><li class="cc-log__line cc-log__line--ops"><time>23:41:07</time><b>OPS</b><span>值班长申请五席表决：强制开启十二号闸</span></li><li class="cc-log__line cc-log__line--sys"><time>23:41:09</time><b>SYS</b><span>表决中……第五席请求补充声呐数据</span></li></ol><form class="cc-field" data-cmd><label class="cc-field__label" for="lg-in"><span class="cc-mincho">指令</span> CMD</label><span class="cc-field__prompt" aria-hidden="true">&gt;</span><input class="cc-field__input" id="lg-in" name="cmd" autocomplete="off" spellcheck="false" placeholder="输入指令，例如 STATUS E-12" aria-describedby="lg-hint"><span class="cc-field__hint" id="lg-hint">回车执行 · ENTER TO RUN</span></form></section></div>
+</section>
+</body>
+</html>

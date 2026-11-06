@@ -1,0 +1,265 @@
+{
+ "schema": "crisis-command.layers.v1",
+ "note": "Paint order per slot, using the layer roles of the template bank's layer contract (#311): bg, ground, mid, char, fx, texture, type (type always last, live text).",
+ "integration": {
+  "mode": "painted",
+  "grade": "pull toward the slot's screen blue #18324A in the shadows and toward amber #F2A93B in the highlights; black point matched to the frame's void",
+  "rim": "amber #F2A93B from the work-lamp side",
+  "texture": "CRT scanlines 3px period at 10-14% over the whole slot (multiply)",
+  "never": "no sticker outline, no drop shadow, no drawn mecha or people in code"
+ },
+ "slots": {
+  "frame-01": {
+   "size": [
+    1200,
+    1600
+   ],
+   "where": "templates/site.html #s-frames .cc-frame [data-task=frame-01]",
+   "safe": "x 72–1128, y 96–1504；整机入画，头部不高于 y=110，脚底在 y≈1490",
+   "uiReserve": [
+    "x 0–1200, y 1300–1600：页面在框底叠 76px 高的名牌条（定澜闸甲 / FRAME DINGLAN），这里只放地面、水面反光和阴影",
+    "手机宽度下按 3:4 居中显示，不裁切"
+   ],
+   "stack": [
+    {
+     "role": "bg",
+     "source": "the slot's screen ground (#18324A with a 48px grid at 45% lattice)",
+     "drawn": true
+    },
+    {
+     "role": "ground",
+     "source": "materials/composite/frame-01/1200x1600-ground.png",
+     "note": "floor, water and shadow from the cut"
+    },
+    {
+     "role": "char",
+     "source": "materials/generated/frame-01.png",
+     "facing": "left",
+     "light": "主光从画面右上 50° 打下（冷白，约 6500K），左下来自地面积水的暖橙反光 #E8380D（很弱）；整体偏暗，背景是夜间闸室"
+    },
+    {
+     "role": "fx",
+     "source": "crosshair ring and lines (show mode only)",
+     "drawn": true
+    },
+    {
+     "role": "texture",
+     "blend": "multiply",
+     "source": "scanlines, 3px period"
+    },
+    {
+     "role": "type",
+     "source": "the slot caption bar (.cc-slot__cap): live text, never baked into the image"
+    }
+   ]
+  },
+  "frame-02": {
+   "size": [
+    1200,
+    1600
+   ],
+   "where": "templates/site.html #s-frames .cc-frame [data-task=frame-02]",
+   "safe": "x 72–1128, y 96–1504；整机入画",
+   "uiReserve": [
+    "x 0–1200, y 1300–1600：名牌条，只放地面与水花",
+    "手机宽度下按 3:4 居中显示"
+   ],
+   "stack": [
+    {
+     "role": "bg",
+     "source": "the slot's screen ground (#18324A with a 48px grid at 45% lattice)",
+     "drawn": true
+    },
+    {
+     "role": "ground",
+     "source": "materials/composite/frame-02/1200x1600-ground.png",
+     "note": "floor, water and shadow from the cut"
+    },
+    {
+     "role": "char",
+     "source": "materials/generated/frame-02.png",
+     "facing": "right",
+     "light": "主光从画面左上 45°（冷白），右侧有一道琥珀 #F2A93B 轮廓光（来自闸室作业灯），水花被暖光照亮"
+    },
+    {
+     "role": "fx",
+     "source": "crosshair ring and lines (show mode only)",
+     "drawn": true
+    },
+    {
+     "role": "texture",
+     "blend": "multiply",
+     "source": "scanlines, 3px period"
+    },
+    {
+     "role": "type",
+     "source": "the slot caption bar (.cc-slot__cap): live text, never baked into the image"
+    }
+   ]
+  },
+  "frame-04": {
+   "size": [
+    1200,
+    1600
+   ],
+   "where": "templates/site.html #s-frames .cc-frame [data-task=frame-04]",
+   "safe": "x 72–1128, y 96–1504；整机入画",
+   "uiReserve": [
+    "x 0–1200, y 1300–1600：名牌条，只放地面",
+    "手机宽度下按 3:4 居中显示"
+   ],
+   "stack": [
+    {
+     "role": "bg",
+     "source": "the slot's screen ground (#18324A with a 48px grid at 45% lattice)",
+     "drawn": true
+    },
+    {
+     "role": "ground",
+     "source": "materials/composite/frame-04/1200x1600-ground.png",
+     "note": "floor, water and shadow from the cut"
+    },
+    {
+     "role": "char",
+     "source": "materials/generated/frame-04.png",
+     "facing": "left",
+     "light": "顶光（冷白、很平），几乎没有轮廓光；整体低饱和，像封存仓库里的灯"
+    },
+    {
+     "role": "fx",
+     "source": "crosshair ring and lines (show mode only)",
+     "drawn": true
+    },
+    {
+     "role": "texture",
+     "blend": "multiply",
+     "source": "scanlines, 3px period"
+    },
+    {
+     "role": "type",
+     "source": "the slot caption bar (.cc-slot__cap): live text, never baked into the image"
+    }
+   ]
+  },
+  "operator-shen": {
+   "size": [
+    1200,
+    1600
+   ],
+   "where": "templates/sync.html .cc-sync__pilot [data-task=operator-shen]",
+   "safe": "x 144–1056, y 96–1504；头肩与双手入画，脸在 y 240–760 之间",
+   "uiReserve": [
+    "x 0–1200, y 1320–1600：页面叠名牌条（闸手 · 沈潮），这里只放衣服下摆",
+    "右侧 x 1056–1200 可能被面板压住，不放脸和手"
+   ],
+   "stack": [
+    {
+     "role": "bg",
+     "source": "the slot's screen ground (#18324A with a 48px grid at 45% lattice)",
+     "drawn": true
+    },
+    {
+     "role": "ground",
+     "source": "materials/composite/operator-shen/1200x1600-ground.png",
+     "note": "floor, water and shadow from the cut"
+    },
+    {
+     "role": "char",
+     "source": "materials/generated/operator-shen.png",
+     "facing": "left",
+     "light": "主光来自正前方的屏幕（冷蓝 #2B4F69 偏青），左后方一道琥珀 #F2A93B 的仪表灯轮廓光；背景纯暗"
+    },
+    {
+     "role": "fx",
+     "source": "crosshair ring and lines (show mode only)",
+     "drawn": true
+    },
+    {
+     "role": "texture",
+     "blend": "multiply",
+     "source": "scanlines, 3px period"
+    },
+    {
+     "role": "type",
+     "source": "the slot caption bar (.cc-slot__cap): live text, never baked into the image"
+    }
+   ]
+  },
+  "surge-feed": {
+   "size": [
+    1600,
+    900
+   ],
+   "where": "templates/site.html #s-alert .cc-s2__feed [data-task=surge-feed]",
+   "safe": "x 160–1440, y 72–828；主体在中央三分之一",
+   "uiReserve": [
+    "x 0–1600, y 760–900：页面在影像下沿叠信息条，这里只放暗部",
+    "中心 96×96 区域会叠一个十字准星，不要把主体的关键细节放在正中"
+   ],
+   "stack": [
+    {
+     "role": "bg",
+     "source": "the slot's screen ground (#18324A with a 48px grid at 45% lattice)",
+     "drawn": true
+    },
+    {
+     "role": "mid",
+     "source": "materials/generated/surge-feed.png",
+     "note": "full-bleed feed image"
+    },
+    {
+     "role": "fx",
+     "source": "crosshair ring and lines (show mode only)",
+     "drawn": true
+    },
+    {
+     "role": "texture",
+     "blend": "multiply",
+     "source": "scanlines, 3px period"
+    },
+    {
+     "role": "type",
+     "source": "the slot caption bar (.cc-slot__cap): live text, never baked into the image"
+    }
+   ]
+  },
+  "city-feed": {
+   "size": [
+    1600,
+    900
+   ],
+   "where": "templates/console.html .cc-console__feed [data-task=city-feed]",
+   "safe": "x 160–1440, y 72–828",
+   "uiReserve": [
+    "上方 x 0–1600, y 0–300 在操作台里被警报六边形压住时会裁切，重要内容放在下半部",
+    "中心 96×96 叠十字准星"
+   ],
+   "stack": [
+    {
+     "role": "bg",
+     "source": "the slot's screen ground (#18324A with a 48px grid at 45% lattice)",
+     "drawn": true
+    },
+    {
+     "role": "mid",
+     "source": "materials/generated/city-feed.png",
+     "note": "full-bleed feed image"
+    },
+    {
+     "role": "fx",
+     "source": "crosshair ring and lines (show mode only)",
+     "drawn": true
+    },
+    {
+     "role": "texture",
+     "blend": "multiply",
+     "source": "scanlines, 3px period"
+    },
+    {
+     "role": "type",
+     "source": "the slot caption bar (.cc-slot__cap): live text, never baked into the image"
+    }
+   ]
+  }
+ }
+}

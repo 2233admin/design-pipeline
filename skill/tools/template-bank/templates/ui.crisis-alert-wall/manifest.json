@@ -1,0 +1,155 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.crisis-alert-wall",
+  "family": "ui",
+  "style": "crisis-command",
+  "title": "Alarm wall: a red honeycomb of elongated hexagons over a blue screen with a 45-degree lattice; the main panel carries two stamps, two lines of compressed Mincho and two of English; side panels a WARNING and a level mark; the lower row two vote seats and a mode box",
+  "use": "Emergency and escalation screens, outage pages, the alert state of a dashboard.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "panel"
+    ],
+    "maxShare": 0.7
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "scanlines": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "CRT scanlines over the whole screen (3-unit period, 14%)"
+    }
+  },
+  "slots": {
+    "title_1": {
+      "kind": "text",
+      "default": "第九排涝区",
+      "maxChars": 7,
+      "font": "head",
+      "title": true
+    },
+    "title_2": {
+      "kind": "text",
+      "default": "转入防潮战备",
+      "maxChars": 7,
+      "font": "head",
+      "title": true
+    },
+    "latin_1": {
+      "kind": "text",
+      "default": "TRANSFER OF DRAINAGE ZONE 9",
+      "maxChars": 32,
+      "font": "grot",
+      "note": "Latin only"
+    },
+    "latin_2": {
+      "kind": "text",
+      "default": "TO FLOOD COMBAT READINESS",
+      "maxChars": 32,
+      "font": "grot",
+      "note": "Latin only"
+    },
+    "stamp_left": {
+      "kind": "text",
+      "default": "警报",
+      "maxChars": 2,
+      "font": "head"
+    },
+    "stamp_right": {
+      "kind": "text",
+      "default": "警报",
+      "maxChars": 2,
+      "font": "head"
+    },
+    "warning_left": {
+      "kind": "text",
+      "default": "WARNING",
+      "maxChars": 9,
+      "font": "grot"
+    },
+    "warning_right": {
+      "kind": "text",
+      "default": "WARNING",
+      "maxChars": 9,
+      "font": "grot"
+    },
+    "level_left": {
+      "kind": "text",
+      "default": "LEVEL 3",
+      "maxChars": 9,
+      "font": "grot"
+    },
+    "level_right": {
+      "kind": "text",
+      "default": "LEVEL 3",
+      "maxChars": 9,
+      "font": "grot"
+    },
+    "seat_cjk_1": {
+      "kind": "text",
+      "default": "表决席 · 一",
+      "maxChars": 7,
+      "font": "head"
+    },
+    "seat_latin_1": {
+      "kind": "text",
+      "default": "QUINTET 1",
+      "maxChars": 10,
+      "font": "grot"
+    },
+    "seat_cjk_2": {
+      "kind": "text",
+      "default": "表决席 · 四",
+      "maxChars": 7,
+      "font": "head"
+    },
+    "seat_latin_2": {
+      "kind": "text",
+      "default": "QUINTET 4",
+      "maxChars": 10,
+      "font": "grot"
+    },
+    "mode": {
+      "kind": "text",
+      "default": "MODE: CONTAIN",
+      "maxChars": 16,
+      "font": "grot"
+    }
+  },
+  "relations": [
+    "Hexagons 3.06:1 with 55-degree tips; the main one 1274 x 417 at the top centre, side ones behind it, a lower row of two.",
+    "Double rules 6 and 2 units, 12 apart; stamps 214 x 191.",
+    "Mincho on the panels at 0.85, English at up to 0.9, under the CJK."
+  ],
+  "decoration": [
+    "The lattice, rules and scanlines are drawn and exempt."
+  ],
+  "provenance": {
+    "corpus": "tidemark case (潮位警报 TIDEMARK): our own original organisation terminal site, two app screens and UI kit in the crisis-command grammar",
+    "experiment": "styles/crisis-command/style.json provenance (reference frames measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "a reference film's alarm wall (3834 x 695 strip, left third): hexagon 835 x 273 in the frame (3.06:1), tips 55 degrees, stamp 140 x 125, WARNING cap 40, red #BA0623 over blue #49688B",
+    "sampleIds": [
+      "tidemark/crisis-alert-wall"
+    ],
+    "measured": [
+      "Reference: hot 32%, dark 6%, weight centre (0.51, 0.44).",
+      "Case: 第九排涝区 / 转入防潮战备 at 0 findings."
+    ],
+    "summary": "tidemark alarm wall"
+  }
+}

@@ -1030,6 +1030,25 @@ roles were measured from a reference corpus; nothing from that corpus is bundled
   text beside it (`fonts/OFL-*.txt`). They are not renamed; none of the OFL texts declares a Reserved
   Font Name. Source URL, commit and checksum are in `tests/fixtures/lattice-dossier/provenance.csv`.
 
+## Template style packs: the crisis-command pack, its test fixtures and UI kit fonts (2026-11-07)
+
+- The `crisis-command` style pack (`skill/tools/template-bank/styles/crisis-command/`, `layouts-crisis.cjs`)
+  and the example `examples/crisis-command-ui-kit/` are project-owned: grammar, layouts, segment digits,
+  hexagons, the sluice mark and all copy were written for the original case 潮位警报 TIDEMARK. The grammar was
+  measured privately on frames and title cards of 1990s Japanese mecha anime
+  (reference only, not redistributed; no frame, name, logo, organisation, character, line or font of the work is
+  used). Two MIT-licensed fan projects (a title-card generator and a command-centre React component library)
+  were read for their rules; none of their code is copied.
+- Test fixtures (`tests/fixtures/crisis-command/`, not packaged): WOFF subsets of Noto Serif CJK SC Black
+  (Google / Adobe, SIL Open Font License 1.1; face 2 of `NotoSerifCJK-Black.ttc`) limited to the pack's
+  default copy and printable ASCII, and of Archivo (The Archivo Project Authors, SIL OFL 1.1) instanced at
+  weight 700, width 100 and limited to printable ASCII, each with its OFL text (`fonts/OFL-*.txt`). Source,
+  version and checksum are in `tests/fixtures/crisis-command/provenance.csv`.
+- UI kit fonts (`examples/crisis-command-ui-kit/fonts/`, shipped with the example, not with the skill): WOFF
+  subsets of the same Noto Serif CJK SC Black face (the characters the kit sets) and of variable Archivo
+  (ASCII plus a few symbols, both axes kept), each with its OFL text. Neither licence declares a Reserved Font
+  Name, so the subsets keep their family names.
+
 ## Megastructure-ink kit fonts and test fixtures (2026-11-07)
 
 - `examples/megastructure-ink-kit/design-system/fonts/` (example, not packaged) and

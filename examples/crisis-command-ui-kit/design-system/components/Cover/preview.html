@@ -1,0 +1,42 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Crisis Command</title>
+<style>
+  .cv { position: relative; width: 960px; height: 288px; background: var(--void); color: var(--ink); font-family: var(--font-sans); overflow: hidden; }
+  .cv-text { position: absolute; left: 40px; bottom: 36px; width: 420px; }
+  .cv-name { margin: 0; font-family: var(--font-mincho); font-size: 64px; line-height: 1; font-weight: 900; transform: scaleX(0.85); transform-origin: left; }
+  .cv-tag { margin: 12px 0 0; color: var(--ink-muted); font-size: 14px; line-height: 20px; }
+  .cv-art { position: absolute; left: 500px; top: 16px; }
+  .cv-alarm { fill: var(--alarm); }
+  .cv-rule { fill: none; stroke: var(--alarm-rule); stroke-width: 6px; }
+  .cv-alert { fill: var(--alert); }
+  .cv-amber { fill: var(--amber); }
+  .cv-ink { fill: var(--ink); }
+  .cv-void { fill: var(--void); }
+  .cv-paper { fill: var(--paper); }
+</style></head>
+<body style="margin: 0">
+<!-- Derivation: blocks from tokens — alarm (the largest: an elongated hexagon 3.06:1 with 55-degree tips,
+     252x82, ruled in alarm-rule at hex-rule 6), amber (a 168x40 clock bar of three capsule segments at the
+     digit proportions 0.42 wide), paper (a 120x90 4:3 card with a void L of one tall block and a long
+     bar, the title card's composition), alert (a 360x24 band filled with stripes at stripe 12, 45 degrees).
+     Pattern: hazard stripes from the warning band. Radii: radius-none everywhere. -->
+<div class="cv">
+  <div class="cv-text"><h1 class="cv-name">危机指挥终端</h1><p class="cv-tag">Crisis Command: heavy compressed Mincho on black, red hexagon alarms, amber segment clocks.</p></div>
+  <svg class="cv-art" width="420" height="256" viewBox="0 0 420 256" aria-hidden="true">
+    <polygon class="cv-alarm" points="0,57 29,16 223,16 252,57 223,98 29,98"/>
+    <polygon class="cv-rule" points="3,57 31,19 221,19 249,57 221,95 31,95"/>
+    <rect class="cv-paper" x="276" y="16" width="120" height="90"/>
+    <rect class="cv-void" x="286" y="26" width="26" height="36"/>
+    <rect class="cv-void" x="286" y="68" width="96" height="28"/>
+    <rect class="cv-amber" x="0" y="124" width="48" height="12"/><rect class="cv-amber" x="0" y="140" width="12" height="40"/><rect class="cv-amber" x="36" y="140" width="12" height="40"/>
+    <rect class="cv-amber" x="60" y="124" width="48" height="12"/><rect class="cv-amber" x="96" y="140" width="12" height="40"/><rect class="cv-amber" x="60" y="184" width="48" height="12"/>
+    <rect class="cv-amber" x="120" y="124" width="48" height="12"/><rect class="cv-amber" x="156" y="140" width="12" height="56"/>
+    <rect class="cv-alert" x="0" y="220" width="400" height="24"/>
+    <polygon class="cv-void" points="12,244 24,220 36,220 24,244"/><polygon class="cv-void" points="36,244 48,220 60,220 48,244"/><polygon class="cv-void" points="60,244 72,220 84,220 72,244"/><polygon class="cv-void" points="84,244 96,220 108,220 96,244"/><polygon class="cv-void" points="108,244 120,220 132,220 120,244"/><polygon class="cv-void" points="132,244 144,220 156,220 144,244"/><polygon class="cv-void" points="156,244 168,220 180,220 168,244"/><polygon class="cv-void" points="180,244 192,220 204,220 192,244"/><polygon class="cv-void" points="204,244 216,220 228,220 216,244"/><polygon class="cv-void" points="228,244 240,220 252,220 240,244"/><polygon class="cv-void" points="252,244 264,220 276,220 264,244"/><polygon class="cv-void" points="276,244 288,220 300,220 288,244"/><polygon class="cv-void" points="300,244 312,220 324,220 312,244"/><polygon class="cv-void" points="324,244 336,220 348,220 336,244"/><polygon class="cv-void" points="348,244 360,220 372,220 360,244"/><polygon class="cv-void" points="372,244 384,220 396,220 384,244"/><polygon class="cv-void" points="396,244 408,220 420,220 408,244"/><polygon class="cv-void" points="420,244 432,220 444,220 432,244"/>
+    <rect class="cv-void" x="400" y="216" width="20" height="32"/>
+  </svg>
+</div>
+</body>
+</html>

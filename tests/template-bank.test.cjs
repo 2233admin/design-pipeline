@@ -40,7 +40,7 @@ const rules = (report) => report.findings.map((finding) => `${finding.rule}:${fi
 
 test("every template renders at each listed size with its default slots and passes check", () => {
   const ids = bank.templateIds();
-  assert.equal(ids.length, 63);
+  assert.equal(ids.length, 68);
   for (const id of ids) {
     const manifest = bank.loadManifest(id);
     assert.ok(manifest.sizes.includes(`${manifest.canvas.width}x${manifest.canvas.height}`), `${id} lists its canvas size`);

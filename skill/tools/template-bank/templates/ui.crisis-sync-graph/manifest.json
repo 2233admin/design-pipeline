@@ -1,0 +1,201 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.crisis-sync-graph",
+  "family": "ui",
+  "style": "crisis-command",
+  "title": "Coupling board: a Mincho label over a capsule-digit ratio, the threshold line in red-orange, a gridded graph board with three traces and a dashed border, and a row of five vote stamps with one dissent",
+  "use": "Live metrics with a threshold, consensus or approval states, monitoring dashboards.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "alert"
+    ],
+    "maxShare": 0.06
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "dissent": {
+      "default": 4,
+      "min": 1,
+      "max": 5,
+      "class": "decoration",
+      "note": "the seat that votes no (red)"
+    },
+    "trace_seed": {
+      "default": 7,
+      "min": 1,
+      "max": 99,
+      "class": "decoration",
+      "note": "seed of the three traces"
+    },
+    "scanlines": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "scanlines over the board"
+    }
+  },
+  "slots": {
+    "label": {
+      "kind": "text",
+      "default": "耦合率",
+      "maxChars": 5,
+      "font": "head",
+      "title": true
+    },
+    "label_latin": {
+      "kind": "text",
+      "default": "COUPLING RATIO",
+      "maxChars": 20,
+      "font": "grot",
+      "note": "Latin only"
+    },
+    "ratio": {
+      "kind": "lettering",
+      "default": "41.3",
+      "maxChars": 5,
+      "note": "digits with one decimal, capsule digits"
+    },
+    "percent": {
+      "kind": "text",
+      "default": "%",
+      "maxChars": 1,
+      "font": "grot"
+    },
+    "threshold": {
+      "kind": "text",
+      "default": "阈值 30.0 · 低于即切断",
+      "maxChars": 16,
+      "font": "head"
+    },
+    "border_tag": {
+      "kind": "text",
+      "default": "BORDER 30.0%",
+      "maxChars": 14,
+      "font": "grot"
+    },
+    "axis": {
+      "kind": "text",
+      "default": "T-120 S   /   NOW",
+      "maxChars": 24,
+      "font": "grot"
+    },
+    "vote_label": {
+      "kind": "text",
+      "default": "五席表决",
+      "maxChars": 6,
+      "font": "head"
+    },
+    "vote_result": {
+      "kind": "text",
+      "default": "可决 4 · 否决 1",
+      "maxChars": 12,
+      "font": "head"
+    },
+    "seat_1": {
+      "kind": "text",
+      "default": "SEAT 1",
+      "maxChars": 8,
+      "font": "grot"
+    },
+    "seat_2": {
+      "kind": "text",
+      "default": "SEAT 2",
+      "maxChars": 8,
+      "font": "grot"
+    },
+    "seat_3": {
+      "kind": "text",
+      "default": "SEAT 3",
+      "maxChars": 8,
+      "font": "grot"
+    },
+    "seat_4": {
+      "kind": "text",
+      "default": "SEAT 4",
+      "maxChars": 8,
+      "font": "grot"
+    },
+    "seat_5": {
+      "kind": "text",
+      "default": "SEAT 5",
+      "maxChars": 8,
+      "font": "grot"
+    },
+    "verdict_1": {
+      "kind": "text",
+      "default": "可",
+      "maxChars": 1,
+      "font": "head",
+      "derived": true,
+      "note": "可, or 否 for the dissenting seat"
+    },
+    "verdict_2": {
+      "kind": "text",
+      "default": "可",
+      "maxChars": 1,
+      "font": "head",
+      "derived": true,
+      "note": "可, or 否 for the dissenting seat"
+    },
+    "verdict_3": {
+      "kind": "text",
+      "default": "可",
+      "maxChars": 1,
+      "font": "head",
+      "derived": true,
+      "note": "可, or 否 for the dissenting seat"
+    },
+    "verdict_4": {
+      "kind": "text",
+      "default": "可",
+      "maxChars": 1,
+      "font": "head",
+      "derived": true,
+      "note": "可, or 否 for the dissenting seat"
+    },
+    "verdict_5": {
+      "kind": "text",
+      "default": "可",
+      "maxChars": 1,
+      "font": "head",
+      "derived": true,
+      "note": "可, or 否 for the dissenting seat"
+    }
+  },
+  "relations": [
+    "The ratio's capsule digits at 250 units over a 22-unit Latin caption (about 1:11).",
+    "A heavier grid line every 5 cells; the main trace 3 units, the others 1.5.",
+    "Five equal stamps; only the dissent is red."
+  ],
+  "decoration": [
+    "Grid, traces, the dashed border and the stamps' frames are drawn and exempt."
+  ],
+  "provenance": {
+    "corpus": "tidemark case (潮位警报 TIDEMARK): our own original organisation terminal site, two app screens and UI kit in the crisis-command grammar",
+    "experiment": "styles/crisis-command/style.json provenance (reference frames measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "a reference film's analysis HUD and a reference series' command graphs: thin grids with a heavier line every 5 cells, one bright trace over dim ones, labels hung on the right end of a threshold",
+    "sampleIds": [
+      "tidemark/crisis-sync-graph"
+    ],
+    "measured": [
+      "Reference: dark 40%, hot 3%, weight centre (0.52, 0.52).",
+      "Case: 耦合率 41.3% with one dissent at 0 findings."
+    ],
+    "summary": "tidemark coupling board"
+  }
+}
