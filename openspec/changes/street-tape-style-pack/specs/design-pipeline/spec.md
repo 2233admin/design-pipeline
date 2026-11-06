@@ -32,3 +32,8 @@ The `ui.tape-topbar`, `card.tape-section-title`, `ui.tape-pager`, `kv.tape-cut-c
 
 - **WHEN** `card.tape-section-title` gets `--set number=四`, `ui.tape-pager` gets `--set current=A`, or `kv.tape-cut-carousel` gets `--set date=11月5日`
 - **THEN** the render SHALL exit 1 with `OPTION_VALUE_INVALID` and a fix.
+
+#### Scenario: The number is sized in the family that renders
+
+- **WHEN** `card.tape-section-title` renders without `--font-dir`, or with a `--font-dir` that holds Oswald, Anton or Noto Sans SC
+- **THEN** the number SHALL be pinned to the first `num` family `--font-dir` supplies, or to Noto Sans SC with a `fontSwitches` reason when none is supplied, and with the faces supplied its measured ink SHALL be 2.6-2.9 times the CJK title's.

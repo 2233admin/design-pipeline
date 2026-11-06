@@ -15,3 +15,9 @@
 - [x] 3.1 `skill/references/template-bank.md`, `package-resources.json`, `CHANGELOG.md` [Unreleased].
 - [x] 3.2 `tests/template-street-tape.test.cjs` (registered in `scripts/test-manifest.json`); counts in `tests/template-bank.test.cjs` and `tests/template-style-pack.test.cjs`.
 - [x] 3.3 Focused tests (template bank, style packs, game packs, street-tape), then `npm test`.
+
+## 4. Fix: the number's size without Oswald installed
+
+- [x] 4.1 Reproduce main's CI failure locally by hiding Oswald from fontconfig (`Oswald number : CJK ink 2.38`; CI 2.33).
+- [x] 4.2 `layouts-street.cjs`: size and pin the number from the first `num` family `--font-dir` supplies, else Noto Sans SC; `bank.cjs` pin reason says when the pinned family is not embedded either.
+- [x] 4.3 `tests/fixtures/street-tape/fonts/`: OFL Oswald subset with its licence and provenance; the ratio test supplies its faces; focused tests with Oswald hidden and visible, `npm run specs:check`, then `npm test`.

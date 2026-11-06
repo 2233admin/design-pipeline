@@ -75,7 +75,7 @@ test("template list --style shows a style pack and its templates", (t) => {
   assert.ok(summary.grammar.length >= 5 && summary.materials.collage.length && summary.motion.fps === 30);
   assert.ok(summary.checks.browser.includes("collage-cover"));
   const all = cli(root, "template", "list");
-  assert.deepEqual(all.payload.styles.map((s) => [s.id, s.templates]), [["acid-print-hud", 1], ["arknights-endfield", 9], ["cassandre-litho", 7], ["citypop-sleeve", 3], ["cyanotype-specimen", 2], ["frontier-survey", 5], ["shinbo", 11], ["street-tape", 5], ["woodblock-pixel", 2], ["xerox-flyer", 3]]);
+  assert.deepEqual(all.payload.styles.map((s) => [s.id, s.templates]), [["acid-print-hud", 1], ["arknights-endfield", 9], ["cassandre-litho", 7], ["citypop-sleeve", 3], ["cyanotype-specimen", 2], ["frontier-survey", 5], ["shinbo", 11], ["street-tape", 6], ["woodblock-pixel", 2], ["xerox-flyer", 3]]);
 });
 
 test("shinbo templates pass the static check at every size and for 100 seeds", () => {

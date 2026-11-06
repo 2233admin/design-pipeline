@@ -1417,6 +1417,7 @@
     "tools/template-bank/templates/ui.tape-pager/template.svg",
     "tools/template-bank/templates/ui.tape-topbar/manifest.json",
     "tools/template-bank/templates/ui.tape-topbar/template.svg",
+    "scripts/template-sample.cjs",
     "tools/template-bank/layouts-survey.cjs",
     "tools/template-bank/styles/frontier-survey/style.json",
     "tools/template-bank/templates/banner.survey-timeline/manifest.json",
@@ -1429,6 +1430,11 @@
     "tools/template-bank/templates/kv.survey-album/template.svg",
     "tools/template-bank/templates/ui.survey-rail/manifest.json",
     "tools/template-bank/templates/ui.survey-rail/template.svg",
-    "scripts/template-sample.cjs"
+    "tools/art-motion/raster.cjs",
+    "tools/art-motion/matte.cjs",
+    "tools/art-motion/composite.cjs",
+    "tools/template-bank/layers.cjs",
+    "tools/template-bank/templates/kv.tape-hero/manifest.json",
+    "tools/template-bank/templates/kv.tape-hero/template.svg"
   ]
 }

@@ -11,6 +11,8 @@ const { pathToFileURL } = require("node:url");
 const lettering = require("./lettering.cjs");
 const measure = require("./measure.cjs");
 const coverage = require("./coverage.cjs");
+const layerContract = require("./layers.cjs");
+const compositor = require("../art-motion/composite.cjs");
 const LAYOUTS = Object.assign({}, ...["layouts.cjs", "layouts-shinbo.cjs", "layouts-citypop.cjs", "layouts-xerox.cjs", "layouts-litho.cjs", "layouts-pixel.cjs", "layouts-hud.cjs", "layouts-cyanotype.cjs", "layouts-street.cjs", "layouts-survey.cjs"]
   .filter((file) => fs.existsSync(path.join(__dirname, file))).map((file) => require(`./${file}`).LAYOUTS));
 
@@ -59,6 +61,11 @@ function validateStyle(style, id) {
   for (const [feature, t] of Object.entries(style.checks.measured || {})) {
     if (!["max", "min", "band"].includes(t?.kind) || !["measured", "thin", "gap"].includes(t.support) || typeof t.basis !== "string") throw new BankError(`style ${id} checks.measured.${feature} needs kind (max|min|band), support (measured|thin|gap) and basis`);
   }
+  // integration: how a generated character joins this style's scenes (sticker or painted), #311
+  if (style.integration !== undefined) {
+    const palette = Object.fromEntries(Object.entries(style.palette || {}).map(([role, spec]) => [role, spec.value]));
+    try { compositor.validateIntegration(style.integration, { id, palette }); } catch (error) { throw new BankError(error.message); }
+  }
   return style;
 }
 
@@ -72,6 +79,11 @@ function loadManifest(id) {
   const style = loadStyle(manifest.style);
   if (!manifest.palette) manifest.palette = style.palette;
   if (!manifest.palette) throw new BankError(`template ${id} has no palette and its style ${manifest.style} declares none`);
+  if (manifest.layers !== undefined) {
+    const palette = Object.fromEntries(Object.entries(manifest.palette).map(([role, spec]) => [role, spec.value]));
+    try { layerContract.validateContract(manifest.layers, { id, palette }); } catch (error) { throw new BankError(error.message); }
+    for (const [slot, spec] of Object.entries(manifest.slots)) if (spec.layer !== undefined && (spec.kind !== "image" || !layerContract.ROLES.includes(spec.layer))) throw new BankError(`${id} slot ${slot}: layer is for image slots and names a contract role (${layerContract.ROLES.join(", ")})`);
+  }
   return manifest;
 }
 
@@ -248,7 +260,8 @@ class Doc {
     const at = spec.stack.indexOf(family);
     if (at < 0) throw new BankError(`layout ${this.m.id} pins font role ${roleName} to ${family}, which its stack (${spec.stack.join(" > ")}) does not name`);
     if (at === 0) return { css: this.families[roleName] };
-    this.fontSwitches.push({ role: roleName, text: "", missing: "", from: spec.stack[0], to: family, reason: `${spec.stack[0]} is not in --font-dir; sized from ${family}` });
+    const embedded = this.faces.some((face) => face.family === family);
+    this.fontSwitches.push({ role: roleName, text: "", missing: "", from: spec.stack[0], to: family, reason: `${spec.stack[0]} is not in --font-dir; sized from ${family}${embedded ? "" : `, which is not in --font-dir either and renders as sized only where it is installed (Fix: give --font-dir the role's fonts to embed them)`}` });
     return { css: this.stackCss(spec.stack.slice(at), spec.generic), switched: `${spec.stack[0]}>${family}` };
   }
 
@@ -308,7 +321,9 @@ class Doc {
       return;
     }
     const box = [x, y, w, h];
-    const open = `<g ${this.slotAttrs(name, spec, { box })} data-ground="${ground}">`;
+    // A slot declared as a contract layer says so in the render: a ground layer is the text's
+    // ground (sampled for contrast, never collage over the copy); other layers stay collage.
+    const open = `<g ${this.slotAttrs(name, spec, { box })} data-ground="${ground}"${spec.layer ? ` data-layer="${esc(spec.layer)}"` : ""}>`;
     if (hasImage) {
       this.body.push(`${open}<image href="${esc(text)}" x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="${f1(h)}" preserveAspectRatio="${spec.fit === "contain" ? "xMidYMid meet" : "xMidYMid slice"}"/></g>`);
       return;
@@ -508,7 +523,7 @@ function fontFacesIn(dir, style) {
 }
 
 // ---- render --------------------------------------------------------------------------------
-function render(id, { set = {}, params: overrides = {}, size = null, seed = null, fontDir = null } = {}) {
+function render(id, { set = {}, params: overrides = {}, size = null, seed = null, fontDir = null, layerSources = null } = {}) {
   const manifest = loadManifest(id);
   const { W, H } = parseSize(manifest, size);
   for (const [name, value] of Object.entries(set)) {
@@ -531,6 +546,9 @@ function render(id, { set = {}, params: overrides = {}, size = null, seed = null
   if (unknownSet.length) throw new BankError(`slot ${unknownSet.join(", ")} is not drawn with the current parameters (for example a count parameter is lower). Fix: raise the count or drop the --set`, "OPTION_VALUE_INVALID");
   const values = Object.fromEntries(Object.entries(set).map(([name, value]) => [name, String(value).startsWith("data:") ? `${String(value).slice(0, 32)}…` : value]));
   const meta = { template: id, style: manifest.style, canvas: [W, H], params, palette, slots: values, ...(seed === null || seed === undefined ? {} : { seed: Number(seed), varied }), ...(doc.fontSwitches.length ? { fontSwitches: doc.fontSwitches } : {}), ...(faces.length ? { fontFaces: faces.map((f) => path.basename(f.file)) } : {}), provenance: manifest.provenance.summary };
+  // composite receipts behind image slots (materials composite): the browser check reads their
+  // measurements and the character's face and hand boxes from there
+  if (layerSources && Object.keys(layerSources).length) meta.layerSources = layerSources;
   return { svg: doc.svg(meta), template: id, style: manifest.style, size: `${W}x${H}`, params, palette, varied, fontSwitches: doc.fontSwitches, fontFaces: faces, ...(doc.edl ? { edl: doc.edl } : {}) };
 }
 

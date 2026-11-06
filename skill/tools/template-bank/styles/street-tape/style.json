@@ -72,7 +72,7 @@
     ],
     "recipes": [
       "A slab picture with print grain: materials generate --generator halftone --params '{\"periodPx\":15,\"angleDeg\":45,\"coverage\":0.35}' --seed 1, laid at 35-55% over a placeholder or a picture (the case's video and gacha frames).",
-      "Characters and key art come from an image-generation task sheet (#311): one sheet per frame with its size, safe box, the boxes left for UI, light from the upper left with an acid rim light, the palette and 'original characters only'; until then the frame shows its size and a drawn silhouette, and a cut-out goes in with materials cut --mode none --finish cut."
+      "Characters and key art come from an image-generation task sheet (#311): materials request --template kv.tape-hero writes one from the template's layer contract (figure at least 2x its largest slot, transparent or a plain keyed backdrop, light from the upper left with a near-white rim, the palette, references by name, original characters only); the result is recorded with materials add --kind generated, cut with materials cut --mode grabcut and joined with materials composite (integration: sticker by default)."
     ],
     "collage": [
       "Pictures sit only inside slabs or rounded cards; nothing small is written on a picture without a dark caption bar under it."
@@ -88,6 +88,20 @@
       "The sticker CTA rotates 3 degrees toward level and scales 1.04 on hover; nothing else tilts."
     ],
     "flashLimit": "No flashing; the news carousel advances every 6.5 s and pauses on hover."
+  },
+  "integration": {
+    "mode": "sticker",
+    "note": "How a generated character joins street-tape scenes (#311). Sticker is the default: in a flat inked grammar a photographic or painterly figure still reads as pasted after a painted grade (prototype: mean dE 21.5 -> 13.6, yet visibly a photo in an illustration), while the die-cut edge turns any figure into the site's sticker vocabulary. Pixel values are for a 1080 px short side.",
+    "hueRole": "acid",
+    "figure": {
+      "rendering": "flat cel shading with two shadow steps and black ink outlines of varying weight (main line 6-8 px at 2048 px wide), street-fashion clothing (technical jacket, loose workwear, platform shoes, headphones), a few halftone and sticker accents",
+      "references": ["Y2K street-fashion photo stories (poses)", "1990s Japanese city-pop LP sleeves (colour relations)", "Shibuya and Mong Kok night signage density (props)"]
+    },
+    "modes": {
+      "sticker": { "grade": { "bw": 0.5, "meanvar": 0.15, "chroma": 0.2, "huePull": 0 }, "wrap": null, "rim": null, "shadow": { "contact": 0.35, "ao": 0.15, "cast": 0 }, "occluder": true, "outline": { "white": 12, "black": 4, "smooth": 6, "offset": [12, 12], "plate": "ink" }, "haze": 0 },
+      "painted": { "grade": { "bw": 0.6, "meanvar": 0.3, "chroma": 0.45, "huePull": 0.2 }, "wrap": { "radius": 6, "strength": 0.35 }, "rim": { "width": 4, "strength": 0.85 }, "shadow": { "contact": 0.6, "ao": 0.3, "cast": 0.28 }, "occluder": true, "outline": null, "haze": 0.05 }
+    },
+    "texture": { "multiply": { "opacity": 0.35, "tilePx": 512 }, "dots": { "opacity": 0.05, "tilePx": 360 } }
   },
   "checks": {
     "static": ["text-overflow", "text-length", "type-size", "contrast", "accent-budget"],
