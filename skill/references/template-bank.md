@@ -25,7 +25,7 @@ grammar + check rules; its templates are the parameterised layouts of that gramm
 | `woodblock-pixel` | 2 (title screen, inventory) | Road-station woodblock on a 480 x 270 grid: bokashi dither bands, ink one pixel out of register, paper panels on dark-red plates, a vertical vermilion cartouche |
 | `acid-print-hud` | 1 (combat HUD) | One acid ink on black slabs, giant chamfered numerals with a misregistered plate, the scene as a cold halftone |
 | `cyanotype-specimen` | 2 (card frame in four rarities, pack opening) | Cyanotype specimen sheets: one Prussian blue, hand-brushed fields, white-line specimens, rarity by process not colour |
-| `street-tape` | 5 (site top bar, section title block, vertical pager, cut container with carousel, sticker CTA) | Japanese street-fashion city game site: light grey, one acid yellow-green, black fine stripes, rounded slabs with one 49-degree cut, a film strip, numbered three-line section titles |
+| `street-tape` | 6 (site top bar, section title block, vertical pager, cut container with carousel, sticker CTA, first screen as layers) | Japanese street-fashion city game site: light grey, one acid yellow-green, black fine stripes, rounded slabs with one 49-degree cut, a film strip, numbered three-line section titles |
 
 The six game packs come from owner-approved cases, and `street-tape` from a reference board the owner supplied (kept private, measured, never shipped) and an original site built on it (each pack's `provenance` names the case, its lineage and
 the rule *borrow grammar, never assets*); `examples` in each pack lists the case screens that stayed example
@@ -142,6 +142,8 @@ sees layers injected after rendering, hand-written SVG and HTML pages:
 | `page-error` | Uncaught exceptions and console errors (other than failed loads, which are `asset-missing`) | None |
 | `no-text-measured` | No visible text on the page; a text-free page declares `data-no-text` on its root | At least one text |
 | `glyph-coverage` | Characters missing from the first font of a run's stack (the page's `@font-face` files, or a registered provider) | Every character |
+| `safe-area-type` | Ink of each text unit over the face and hand boxes of a composited character (from its `materials composite` receipt, scaled to the image's rendered box) | 12 px of ink |
+| receipt checks | `composite-upscale` and `safe-area-occluder` from the receipt fail; `composite-black-point`, `composite-colour-mismatch` and `matte-halo` are warn bands and go to the notes | See *Generated characters and layers* |
 
 A drawn numeral or word (paths, no text) is measured as lettering when it is a lettering slot or
 carries `data-chk` (give `data-cap` for its cap height): overlap, off-canvas and contrast, the colour
@@ -152,7 +154,10 @@ is hidden with it and never taken as its ground.
 Mark your own layers so they group and exempt correctly: `data-chk="<id>"` names a text unit (an
 element holding marked children is a container), `data-grp="<group>/<n>"` makes a lock-up whose
 parts may touch, `data-deco` exempts decoration from overlap and contrast, `data-bleed` from the
-canvas edge, `data-collage` marks a cut-out drawn in SVG.
+canvas edge, `data-collage` marks a cut-out drawn in SVG. An image inside `data-layer="ground"`
+(a template image slot declared `"layer": "ground"`, or your own page) is the text's ground: it is
+sampled for contrast and never counted as collage. So is an image whose file is listed as a ground
+output in the `composite.json` beside it.
 Do not put `data-chk` on decorative paths: a marked element is measured as text (overlap, off-canvas and
 contrast), even when it holds only paths; use `data-deco` for decoration. Path data is read in full
 (arc flags may be glued to the next number, as svgo writes them); a `d` that cannot be read is
@@ -160,6 +165,49 @@ reported as `unsupported-geometry` (unmeasured) with a fix, never measured in pa
 contrast replaces the static estimate.
 Without it, the static check samples the rendered pixels under text on a real image slot (or
 takes a declared `--tone`).
+
+## Generated characters and layers (#311)
+
+Showcase renders stay character-free; characters come from an external image model and join the
+scene as layers. A template declares its **layer contract** in `manifest.layers`
+(`design-pipeline.layer-contract.v1`; `kv.tape-hero` is the first):
+
+- `stack`, in paint order, roles `bg`, `ground`, `ghost-type`, `mid` (behind), one `char`, `fx`, `fg`
+  (in front), `texture` (`blend: multiply|dots`) and `type` (always last: titles and UI stay live text).
+  `plate: true` marks a full design-space plate (`design: [w, h]`); other layers are sprites.
+- `char`: key and rim light directions (vectors from the light, y down), `rimColour` (a palette role),
+  key temperature, facing, cast shadow direction and length, safe parts (`face`, `hands`).
+- `sizes["WxH"]`: `frame.rect` (and an optional `clip` polygon), the plate `crop` in design units,
+  `char.foot` and `char.height` in output px, `char.frameBreak` edges, sprite `boxes`, the axis-aligned
+  outer `type` boxes (rotate first), `pxScale` for the integration's pixel values.
+
+The style pack's `integration` says how a character joins: `mode` `sticker` (die-cut white edge, black
+line, offset plate) or `painted` (light wrap, rim, haze, cast shadow), each with its grade (OKLab: `bw`
+black and white point, `meanvar`, `chroma`, `huePull` toward `hueRole`, a highlight shoulder), shadows,
+occluder and outline in px at a 1080 px short side; `texture` per blend; `figure.rendering` and
+`figure.references` (names, not adjectives) for the task sheet.
+
+1. `materials request --template <id> [--subject ...]`: the task sheet (`materials/requests/<name>.md`
+   with a prompt block, and `.json`). Figure height at least 2x the largest slot; transparent PNG or a
+   flat backdrop chosen far from the palette; light and rim; palette; regions of the figure that the
+   type or the occluder cover at some size (keep face and hands out); no text; original characters only.
+   A subject that asks for fan art, cosplay or an existing work's character is refused (exit 2).
+2. `materials add --kind generated --tool <tool> --prompt materials/requests/<name>.md --landmarks '{...}'`:
+   the output with its sheet's hashes and the returned foot, head, face and hand boxes. `materials check`
+   fails when the sheet is gone or changed.
+3. `materials cut --mode grabcut --finish cut[,outline]`: colour models and graph cut (for gradients,
+   vignettes and shadows the border and paper references cannot separate), a guided-filter edge and
+   defringe; the cut records the halo before and after.
+4. `materials composite --template <id> --set <layer>=materials/<file>.png ... [--mode] [--size]`: every
+   declared size into `materials/composite/<name>/<WxH>{,-ground,-upper,-mask}.png` plus `composite.json`
+   (inputs and hashes, parameters, per-size steps and measurements, the command to redo it). Measured
+   per size: upscale (above 1.5x fails), black-point difference (warn above 0.03 L), mean colour
+   difference (warn above 25; a residual of 10-20 on flat light grounds is expected, never pull it to
+   0), halo at the use size (warn above 1 px), face and hands under a declared type box or the occluder
+   (fail). Outputs are recorded; `materials check` marks them stale when an input changes.
+5. `template render <id> --set scene=<WxH-ground.png> --set figure=<WxH-upper.png>` (or `<img>` in a page):
+   the browser check measures contrast on the composited pixels, takes the ground as ground, and checks
+   the measured ink against the character's face and hands.
 
 ## Variation knobs: so outputs do not all look the same
 

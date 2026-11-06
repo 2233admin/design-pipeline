@@ -17,7 +17,7 @@ const { CUT } = require("../skill/tools/template-bank/layouts-street.cjs");
 
 const CLI = path.join(__dirname, "..", "skill", "scripts", "designer-pipeline.cjs");
 const CATALOG = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "skill", "references", "fonts", "catalog.json"), "utf8"));
-const IDS = ["banner.tape-sticker-cta", "card.tape-section-title", "kv.tape-cut-carousel", "ui.tape-pager", "ui.tape-topbar"];
+const IDS = ["banner.tape-sticker-cta", "card.tape-section-title", "kv.tape-cut-carousel", "kv.tape-hero", "ui.tape-pager", "ui.tape-topbar"];
 
 const messages = (report) => JSON.stringify(report.findings.map((f) => `${f.rule}:${f.slot}: ${f.message}`));
 function cli(root, ...args) {

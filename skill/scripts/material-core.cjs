@@ -18,6 +18,9 @@ const { decodePng, encodePng } = require("./png-core.cjs");
 const { cutCollage } = require("../tools/art-motion/assets.cjs");
 const procedural = require("../tools/art-motion/procedural.cjs");
 const textureStats = require("../tools/art-motion/texture-stats.cjs");
+const raster = require("../tools/art-motion/raster.cjs");
+const compositor = require("../tools/art-motion/composite.cjs");
+const layerContract = require("../tools/template-bank/layers.cjs");
 
 const SCOPE = "materials";
 const REGISTRY = path.resolve(__dirname, "../references/material-sources.json");
@@ -25,7 +28,9 @@ const MATERIALS_DIR = "materials";
 const RECORDS = "licenses.json";
 const USER_AGENT = "design-pipeline-materials/1.0 (https://github.com/2233admin/design-pipeline; low volume)";
 const OPEN_LICENSES = new Set(["CC0", "PDM", "public-domain"]);
-const KINDS = new Set(["image", "font", "scan", "photo", "texture", "other"]);
+const KINDS = new Set(["image", "font", "scan", "photo", "texture", "generated", "other"]);
+const REQUESTS_DIR = "requests";
+const COMPOSITE_DIR = "composite";
 const MATERIAL_FILE = /\.(png|jpe?g|webp|gif|tiff?|svg|otf|ttf|woff2?|ttc)$/i;
 const PROVENANCE_FIELDS = ["source", "sourceUrl", "author", "retrieved"];
 
@@ -107,21 +112,72 @@ function addMaterial(project, options) {
   if (!KINDS.has(kind)) fail(SCOPE, `--kind must be one of ${[...KINDS].join(", ")}`, { code: "OPTION_VALUE_INVALID" });
   const rel = relativeMaterial(project, options.file), dir = materialsDir(project), records = readRecords(dir);
   if (records[rel] && !options.replace) fail(SCOPE, `${rel} is already recorded. Fix: pass --replace to overwrite its record`, { code: "OUTPUT_EXISTS" });
+  const facts = fileFacts(path.join(dir, rel));
+  const generated = kind === "generated" ? generatedProvenance(project, options) : null;
+  if (kind !== "generated" && (options.tool || options.prompt)) fail(SCOPE, "--tool and --prompt record an image model's output; pass --kind generated", { code: "OPTION_VALUE_INVALID" });
+  const landmarks = options.landmarks === undefined ? null : parseLandmarks(options.landmarks, facts);
   const record = {
     license: options.license,
     commercialUse: options.commercialUse ?? isOpenLicense(options.license),
     kind,
-    source: options.source || "owner-supplied",
-    sourceUrl: options.sourceUrl || "owner-supplied",
+    source: options.source || (generated ? `image-model:${generated.tool}` : "owner-supplied"),
+    sourceUrl: options.sourceUrl || (generated ? `generated:${generated.tool}` : "owner-supplied"),
     author: options.author,
     retrieved: options.retrieved || today(),
     ...(options.title ? { title: options.title } : {}),
     ...(options.use ? { use: options.use } : {}),
-    ...fileFacts(path.join(dir, rel)),
+    ...(generated ? { generatedBy: generated } : {}),
+    ...(landmarks ? { landmarks } : {}),
+    ...facts,
   };
   records[rel] = record;
   writeRecords(dir, records);
-  return { status: "recorded", file: `${MATERIALS_DIR}/${rel}`, record, next: [nextCut(project, rel)] };
+  return { status: "recorded", file: `${MATERIALS_DIR}/${rel}`, record, next: [generated ? `materials cut --project-root ${project} --file ${MATERIALS_DIR}/${rel} --mode grabcut --finish cut (or --mode none for a transparent PNG with --finish cut)` : nextCut(project, rel)] };
+}
+
+// An image model's output is recorded against the task sheet it was made from: the tool, the
+// sheet's prompt and structured twin (hashes), the template and layer it was asked for.
+function generatedProvenance(project, options) {
+  if (!options.tool || !/^[A-Za-z0-9][\w .:+-]{0,63}$/.test(String(options.tool))) fail(SCOPE, "--kind generated needs --tool <name> (the image model or app that made it, e.g. codex, gpt-image-1)", { code: "OPTION_REQUIRED" });
+  if (!options.prompt) fail(SCOPE, "--kind generated needs --prompt materials/requests/<name>.md (the task sheet written by materials request)", { code: "OPTION_REQUIRED" });
+  const promptRel = relativeMaterial(project, options.prompt);
+  if (!promptRel.startsWith(`${REQUESTS_DIR}/`) || !promptRel.endsWith(".md")) fail(SCOPE, `--prompt must be a task sheet under ${MATERIALS_DIR}/${REQUESTS_DIR}/ (.md); write one with materials request --template <id>`, { code: "TASK_SHEET_MISSING" });
+  const taskRel = promptRel.replace(/\.md$/, ".json"), taskFile = path.join(materialsDir(project), taskRel);
+  if (!fs.existsSync(taskFile)) fail(SCOPE, `${MATERIALS_DIR}/${taskRel} is missing: a prompt without its task sheet cannot be checked. Fix: write the sheet with materials request --template <id> --name ${path.basename(promptRel, ".md")}`, { code: "TASK_SHEET_MISSING" });
+  const task = readJson(taskFile, "generation task");
+  if (task.schema !== layerContract.TASK_SCHEMA) fail(SCOPE, `${MATERIALS_DIR}/${taskRel} is not a generation task (schema ${layerContract.TASK_SCHEMA})`, { code: "TASK_SHEET_MISSING" });
+  return {
+    tool: String(options.tool),
+    prompt: { file: promptRel, sha256: sha256(fs.readFileSync(path.join(materialsDir(project), promptRel))) },
+    task: { file: taskRel, sha256: sha256(fs.readFileSync(taskFile)), template: task.template, layer: task.layer },
+  };
+}
+
+// Landmarks returned with a generated figure (or annotated on a stand-in), in the file's pixels.
+function parseLandmarks(raw, facts) {
+  let value = raw;
+  if (typeof raw === "string") { try { value = JSON.parse(raw); } catch (error) { fail(SCOPE, `--landmarks is not JSON: ${error.message}`, { code: "OPTION_VALUE_INVALID" }); } }
+  const W = facts.width ?? Infinity, H = facts.height ?? Infinity;
+  const box = (b, label) => {
+    if (!Array.isArray(b) || b.length !== 4 || b.some((v) => !Number.isFinite(v)) || b[0] >= b[2] || b[1] >= b[3] || b[0] < 0 || b[1] < 0 || b[2] > W || b[3] > H) fail(SCOPE, `landmarks.${label} must be [x0, y0, x1, y1] inside the ${W}x${H} image`, { code: "OPTION_VALUE_INVALID" });
+    return b;
+  };
+  if (!value || typeof value !== "object" || Array.isArray(value)) fail(SCOPE, "--landmarks must be an object {foot, headTop, face, hands}", { code: "OPTION_VALUE_INVALID" });
+  for (const key of Object.keys(value)) if (!["foot", "headTop", "face", "hands"].includes(key)) fail(SCOPE, `unknown landmark ${key}; known: foot, headTop, face, hands`, { code: "OPTION_VALUE_INVALID" });
+  const out = {};
+  if (value.foot !== undefined) { if (!Array.isArray(value.foot) || value.foot.length !== 2 || value.foot.some((v) => !Number.isFinite(v))) fail(SCOPE, "landmarks.foot must be [x, y]", { code: "OPTION_VALUE_INVALID" }); out.foot = value.foot; }
+  if (value.headTop !== undefined) { if (!Number.isFinite(value.headTop) || (out.foot && value.headTop >= out.foot[1])) fail(SCOPE, "landmarks.headTop must be a y above the foot", { code: "OPTION_VALUE_INVALID" }); out.headTop = value.headTop; }
+  if ((out.foot === undefined) !== (out.headTop === undefined)) fail(SCOPE, "give landmarks.foot and landmarks.headTop together (they set the figure's scale)", { code: "OPTION_VALUE_INVALID" });
+  if (value.face !== undefined) out.face = box(value.face, "face");
+  if (value.hands !== undefined) { if (!Array.isArray(value.hands)) fail(SCOPE, "landmarks.hands is a list of boxes", { code: "OPTION_VALUE_INVALID" }); out.hands = value.hands.map((b, i) => box(b, `hands[${i}]`)); }
+  return out;
+}
+
+// Landmarks in a cut piece's pixels: the source's minus the piece's placement.
+function shiftLandmarks(landmarks, dx, dy) {
+  if (!landmarks) return null;
+  const b = (v) => [v[0] - dx, v[1] - dy, v[2] - dx, v[3] - dy];
+  return { ...(landmarks.foot ? { foot: [landmarks.foot[0] - dx, landmarks.foot[1] - dy], headTop: landmarks.headTop - dy } : {}), ...(landmarks.face ? { face: b(landmarks.face) } : {}), ...(landmarks.hands ? { hands: landmarks.hands.map(b) } : {}) };
 }
 
 function today() {
@@ -174,8 +230,10 @@ function cutMaterial(project, options) {
       retrieved: parent.retrieved,
       ...(parent.title ? { title: parent.title } : {}),
       ...(options.use || parent.use ? { use: options.use || parent.use } : {}),
+      ...(parent.generatedBy ? { generatedBy: parent.generatedBy } : {}),
+      ...(parent.landmarks && output.finish === "cut" ? { landmarks: shiftLandmarks(parent.landmarks, output.placement.x, output.placement.y) } : {}),
       sha256: sha256(bytes), width: output.image.width, height: output.image.height,
-      derivedFrom: { file: rel, sha256: result.input.sha256, finish: output.finish, ...(output.piece !== undefined ? { piece: output.piece } : {}), placement: output.placement, ...operation },
+      derivedFrom: { file: rel, sha256: result.input.sha256, finish: output.finish, ...(output.piece !== undefined ? { piece: output.piece } : {}), placement: output.placement, ...operation, ...(result.measurements.edge ? { matte: result.measurements.edge.after || result.measurements.edge.before } : {}) },
     };
     return { file: `${MATERIALS_DIR}/${key}`, finish: output.finish, width: output.image.width, height: output.image.height };
   });
@@ -373,6 +431,149 @@ function processMaterial(project, options) {
   return { status: "processed", source: `${MATERIALS_DIR}/${rel}`, file: `${MATERIALS_DIR}/${outRel}`, record: records[outRel], creativeAcceptance: "not-assessed", next: ["Look at it at 100% where it will be used; the effect is reproducible from the record, its look is not assessed."] };
 }
 
+// ---- generation task sheets and compositing (#311) -------------------------------------------
+
+function templateBank() { return require("../tools/template-bank/bank.cjs"); }
+function contractOf(templateId) {
+  const bank = templateBank();
+  let manifest, style;
+  try { manifest = bank.loadManifest(templateId); style = bank.loadStyle(manifest.style); } catch (error) { fail(SCOPE, error.message, { code: error.code || "TEMPLATE_INVALID" }); }
+  if (!manifest.layers) {
+    const withLayers = bank.templateIds().filter((id) => bank.loadManifest(id).layers);
+    fail(SCOPE, `${templateId} declares no layer contract. Fix: use a template with one (${withLayers.join(", ") || "none yet"}) or add manifest.layers`, { code: "OPTION_VALUE_INVALID" });
+  }
+  return { manifest, style };
+}
+
+// `materials request`: a task sheet (prompt .md + structured .json) for an external image model,
+// derived from a template's layer contract and its style pack.
+function requestMaterial(project, options) {
+  if (!options.template) fail(SCOPE, "--template <id> is required (the template whose layer contract the figure must fit)", { code: "OPTION_REQUIRED" });
+  const { manifest, style } = contractOf(options.template);
+  const subject = options.subject ? String(options.subject).trim() : "";
+  const screen = layerContract.screenSubject(subject);
+  if (screen.refused) {
+    return { status: "refused", template: manifest.id, subject, matched: screen.matched, message: `the subject asks for an existing work's character or a derivative of it ("${screen.matched}")`, fix: "Describe an original character: role, age, build, clothing, pose and props in the style pack's grammar, without naming any existing work, character or person" };
+  }
+  const layerId = options.layer || null;
+  const name = slug(options.name || `${manifest.id}-${layerId || "char"}`);
+  let sheet;
+  try { sheet = layerContract.taskSheet({ manifest, style, layerId, subject, tool: options.tool || null, name, srgbToOklab: raster.srgbToOklab }); } catch (error) { fail(SCOPE, error.message, { code: error.code || "OPTION_VALUE_INVALID" }); }
+  const dir = path.join(materialsDir(project), REQUESTS_DIR), md = path.join(dir, `${name}.md`), json = path.join(dir, `${name}.json`);
+  if ((fs.existsSync(md) || fs.existsSync(json)) && !options.replace) fail(SCOPE, `${MATERIALS_DIR}/${REQUESTS_DIR}/${name}.md exists. Fix: pass --replace or --name <other>`, { code: "OUTPUT_EXISTS" });
+  const record = { ...sheet, written: today() }, markdown = layerContract.sheetMarkdown(sheet);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(json, `${JSON.stringify(record, null, 2)}\n`);
+  fs.writeFileSync(md, markdown);
+  return {
+    status: "requested",
+    prompt: `${MATERIALS_DIR}/${REQUESTS_DIR}/${name}.md`,
+    task: `${MATERIALS_DIR}/${REQUESTS_DIR}/${name}.json`,
+    sheet: { template: sheet.template, layer: sheet.layer, minFigureHeightPx: sheet.output.minFigureHeightPx, suggestedCanvas: sheet.output.suggestedCanvas, background: sheet.output.background, light: sheet.light, sizes: sheet.sizes },
+    next: [`Run the prompt in ${options.tool || "the image model"}; save the result as ${sheet.return.file}; then ${sheet.return.intake}`],
+  };
+}
+
+const COMPOSITE_PARAMS = ["landmarks", ...compositor.MODE_KEYS];
+
+function recordedInput(project, records, file, label) {
+  const rel = relativeMaterial(project, file), record = records[rel];
+  if (!record) fail(SCOPE, `${label} ${rel} has no licence record. Fix: record it with materials fetch, add, generate or cut first`, { code: "LICENSE_UNRECORDED" });
+  if (!/\.png$/i.test(rel)) fail(SCOPE, `${label} ${rel} is not a PNG`, { code: "OPTION_VALUE_INVALID" });
+  const bytes = fs.readFileSync(path.join(materialsDir(project), rel));
+  if (record.sha256 && record.sha256 !== sha256(bytes)) fail(SCOPE, `${label} ${rel} changed since it was recorded. Fix: re-record or re-make it before compositing`, { code: "SOURCE_CHANGED" });
+  return { rel, record, bytes, sha: sha256(bytes) };
+}
+
+// `materials composite`: every declared size of a template's layer contract from one set of layers.
+function compositeMaterial(project, options) {
+  if (!options.template) fail(SCOPE, "--template <id> is required", { code: "OPTION_REQUIRED" });
+  const { manifest, style } = contractOf(options.template), contract = manifest.layers;
+  const palette = Object.fromEntries(Object.entries(manifest.palette).map(([role, spec]) => [role, spec.value]));
+  const integration = style.integration;
+  if (!integration) fail(SCOPE, `style ${style.id} declares no integration (sticker or painted). Fix: add integration to styles/${style.id}/style.json`, { code: "OPTION_VALUE_INVALID" });
+  const mode = options.mode || integration.mode;
+  if (!compositor.MODES.includes(mode) || !integration.modes[mode]) fail(SCOPE, `--mode must be one of ${Object.keys(integration.modes).join(", ")} (style ${style.id} default: ${integration.mode})`, { code: "OPTION_VALUE_INVALID" });
+  const params = parseParams(options.params);
+  for (const key of Object.keys(params)) if (!COMPOSITE_PARAMS.includes(key)) fail(SCOPE, `unknown composite param ${key}; known: ${COMPOSITE_PARAMS.join(", ")}`, { code: "OPTION_VALUE_INVALID" });
+  const modeSpec = { ...integration.modes[mode] };
+  for (const key of compositor.MODE_KEYS) if (params[key] !== undefined) modeSpec[key] = params[key] && typeof params[key] === "object" && modeSpec[key] && typeof modeSpec[key] === "object" ? { ...modeSpec[key], ...params[key] } : params[key];
+  const allSizes = Object.keys(contract.sizes);
+  const sizes = options.size ? String(options.size).split(",").map((v) => v.trim()).filter(Boolean) : allSizes;
+  for (const key of sizes) if (!contract.sizes[key]) fail(SCOPE, `--size ${key} is not declared by ${manifest.id}; declared: ${allSizes.join(", ")}`, { code: "OPTION_VALUE_INVALID" });
+  const set = options.set || {}, dir = materialsDir(project), records = readRecords(dir);
+  const known = contract.stack.filter((l) => l.role !== "type").map((l) => l.id);
+  for (const key of Object.keys(set)) if (!known.includes(key)) fail(SCOPE, `--set ${key}: ${manifest.id} has no layer ${key}; layers: ${known.join(", ")}`, { code: "OPTION_VALUE_INVALID" });
+  const inputs = {}, layers = {};
+  for (const layer of contract.stack) {
+    if (layer.role === "type") continue;
+    const needed = layer.role === "char" || layer.plate || (layer.role !== "texture" && sizes.some((key) => contract.sizes[key].boxes?.[layer.id]));
+    if (!set[layer.id]) { if (needed) fail(SCOPE, `--set ${layer.id}=materials/<file>.png is required (${layer.role} layer of ${manifest.id})`, { code: "OPTION_REQUIRED" }); continue; }
+    const input = recordedInput(project, records, set[layer.id], `--set ${layer.id}`);
+    inputs[layer.id] = input;
+    layers[layer.id] = raster.planesOf(decodePng(input.bytes, input.rel));
+  }
+  const charLayer = contract.stack.find((l) => l.role === "char").id, charInput = inputs[charLayer], char = layers[charLayer];
+  let opaque = 0;
+  for (let i = 0; i < char.A.length; i += 1) if (char.A[i] < 0.99) opaque += 1;
+  if (opaque < char.A.length * 0.02) fail(SCOPE, `the ${charLayer} layer ${charInput.rel} has no transparency: it is not cut out. Fix: materials cut --project-root ${project} --file ${MATERIALS_DIR}/${charInput.record.derivedFrom?.file || charInput.rel} --mode grabcut --finish cut, and set the piece`, { code: "OPTION_VALUE_INVALID" });
+  const fromAlpha = compositor.alphaLandmarks(char);
+  const given = params.landmarks ? parseLandmarks(params.landmarks, { width: char.width, height: char.height }) : charInput.record.landmarks || null;
+  const landmarks = { ...fromAlpha, ...(given || {}), from: params.landmarks ? "params" : charInput.record.landmarks ? (charInput.record.generatedBy ? "task-sheet return" : "intake") : "alpha" };
+  const name = slug(options.name || `${manifest.id}-${mode}`), outRel = `${COMPOSITE_DIR}/${name}`, outDir = path.join(dir, outRel);
+  if (fs.existsSync(outDir)) {
+    if (!options.replace) fail(SCOPE, `${MATERIALS_DIR}/${outRel} exists. Fix: pass --replace to composite again`, { code: "OUTPUT_EXISTS" });
+    for (const key of Object.keys(records)) if (key.startsWith(`${outRel}/`)) delete records[key];
+    fs.rmSync(outDir, { recursive: true, force: true });
+  }
+  fs.mkdirSync(outDir, { recursive: true });
+  const hueRole = integration.hueRole || contract.char.light.rimColour;
+  const inputList = Object.entries(inputs).map(([layer, input]) => ({ layer, file: input.rel, sha256: input.sha, license: input.record.license }));
+  const licenses = [...new Set(inputList.map((i) => i.license))].sort();
+  const commercialUse = Object.values(inputs).every((i) => i.record.commercialUse === true);
+  const command = `materials composite --project-root ${project} --template ${manifest.id} ${Object.entries(set).map(([k, v]) => `--set ${k}=${v}`).join(" ")} --mode ${mode}${options.size ? ` --size ${sizes.join(",")}` : ""}${options.params ? ` --params '${JSON.stringify(params)}'` : ""} --name ${name} --replace`;
+  const out = {}, findings = [];
+  for (const key of sizes) {
+    const r = compositor.compositeSize({ contract, key, size: contract.sizes[key], layers, char, landmarks, mode, modeSpec, texture: integration.texture, palette, hueHex: palette[hueRole], charEdge: charInput.record.derivedFrom?.matte || null });
+    const files = {};
+    for (const [output, image] of [["final", raster.imageOf({ width: r.width, height: r.height, ...r.final })], ["ground", raster.imageOf({ width: r.width, height: r.height, ...r.ground })], ["upper", raster.imageOf({ width: r.width, height: r.height, ...r.upper })], ["mask", raster.greyImage(r.mask, r.width, r.height)]]) {
+      const file = `${key}${output === "final" ? "" : `-${output}`}.png`, bytes = encodePng(image), keyRel = `${outRel}/${file}`;
+      fs.writeFileSync(path.join(outDir, file), bytes);
+      files[output] = file;
+      records[keyRel] = {
+        license: licenses.join(" + "), commercialUse, kind: "image", source: "composite", sourceUrl: `design-pipeline:composite/${manifest.id}`,
+        author: [...new Set(Object.values(inputs).map((i) => i.record.author).filter(Boolean))].join("; ") || "unknown", retrieved: today(),
+        use: `${manifest.id} ${key} ${output}`, sha256: sha256(bytes), width: r.width, height: r.height,
+        derivedFrom: { file: charInput.rel, sha256: charInput.sha, operation: "composite", template: manifest.id, mode, size: key, output, layer: output === "ground" ? "ground" : output === "upper" ? "char" : output, inputs: inputList },
+      };
+    }
+    out[key] = { files, measurements: r.measurements, boxes: r.boxes, steps: r.steps, findings: r.findings };
+    findings.push(...r.findings.map((f) => ({ ...f, file: `${MATERIALS_DIR}/${outRel}/${files.final}` })));
+  }
+  const receipt = {
+    schema: "design-pipeline.composite.v1",
+    template: manifest.id, style: style.id, contractSha256: sha256(Buffer.from(JSON.stringify(contract))), mode, modeSpec, hueRole, landmarks,
+    inputs: inputList, command, made: today(),
+    outputs: Object.fromEntries(Object.entries(out).flatMap(([key, v]) => Object.entries(v.files).map(([output, file]) => [file, { size: key, output, layer: output === "ground" ? "ground" : output === "upper" ? "char" : output }]))),
+    sizes: out,
+    limits: compositor.LIMITS,
+  };
+  fs.writeFileSync(path.join(outDir, "composite.json"), `${JSON.stringify(receipt, null, 2)}\n`);
+  writeRecords(dir, records);
+  const failed = findings.some((f) => f.severity === "error");
+  return {
+    status: failed ? "failed" : "composited",
+    template: manifest.id, mode, receipt: `${MATERIALS_DIR}/${outRel}/composite.json`,
+    sizes: Object.fromEntries(Object.entries(out).map(([key, v]) => [key, { files: Object.fromEntries(Object.entries(v.files).map(([o, f]) => [o, `${MATERIALS_DIR}/${outRel}/${f}`])), measurements: v.measurements, boxes: v.boxes }])),
+    findings,
+    creativeAcceptance: "not-assessed",
+    next: [
+      `Put the ground image under the type as the text ground and the upper image above it: template render ${manifest.id} --set ${manifest.layers.groundSlot || "scene"}=${MATERIALS_DIR}/${outRel}/<WxH>-ground.png --set ${manifest.layers.charSlot || "figure"}=${MATERIALS_DIR}/${outRel}/<WxH>-upper.png -o <out.svg> (or <img data-layer="ground"> in a page), then template check --browser.`,
+      "Look at every size at 100%: the measurements bound the matte, grade and safe areas; they do not judge the look.",
+    ],
+  };
+}
+
 // Measure a texture; compare it with a calibration profile; or save it as a project profile.
 function measureMaterial(project, options) {
   if (!options.file) fail(SCOPE, "--file is required", { code: "OPTION_REQUIRED" });
@@ -480,6 +681,25 @@ function checkMaterials(project) {
       findings.push({ code: "material-calibration-stale", severity: "error", file: rel, message: `${rel} was made from calibration profile ${used.id}, which ${now ? "has changed" : "is gone"}`, fix: now ? `Regenerate with the current profile: ${again}` : `Restore ${used.file}, or ${again} with another profile` });
     }
     if (record.sha256 && hashOf(rel) !== record.sha256 && !record.derivedFrom) findings.push({ code: "material-changed", severity: "error", file: rel, message: `${rel} no longer matches its recorded hash`, fix: `If the edit is intended, re-record it with materials add --project-root ${project} --replace; then re-cut its pieces` });
+    if (record.kind === "generated" && !record.derivedFrom) {
+      const g = record.generatedBy, task = g?.task, prompt = g?.prompt;
+      const taskFile = task ? path.join(dir, task.file) : null, promptFile = prompt ? path.join(dir, prompt.file) : null;
+      if (!g || !task || !prompt || !fs.existsSync(taskFile) || !fs.existsSync(promptFile)) findings.push({ code: "material-task-missing", severity: "error", file: rel, message: `${rel} is a generated image without its task sheet${task ? ` (${task.file} or ${prompt?.file} is gone)` : ""}`, fix: `Restore the sheet, or write one with materials request --project-root ${project} --template <id> and re-record: materials add --project-root ${project} --file ${MATERIALS_DIR}/${rel} --kind generated --tool <tool> --prompt ${MATERIALS_DIR}/${REQUESTS_DIR}/<name>.md --license <terms> --by <who> --replace` });
+      else if (sha256(fs.readFileSync(taskFile)) !== task.sha256 || sha256(fs.readFileSync(promptFile)) !== prompt.sha256) findings.push({ code: "material-task-changed", severity: "error", file: rel, message: `the task sheet ${prompt.file} changed after ${rel} was recorded against it`, fix: `If the image was made from the new sheet, re-record it with materials add --replace; otherwise restore the sheet the image was made from` });
+    }
+    if (record.derivedFrom?.operation === "composite") {
+      const stale = [], gone = [];
+      for (const input of record.derivedFrom.inputs || []) {
+        const now = hashOf(input.file);
+        if (!now || !records[input.file]) gone.push(input.file); else if (now !== input.sha256) stale.push(input.file);
+      }
+      const receipt = path.join(path.dirname(path.join(dir, rel)), "composite.json");
+      const again = fs.existsSync(receipt) ? readJson(receipt, "composite receipt").command : `materials composite --project-root ${project} --template ${record.derivedFrom.template} --replace`;
+      if (gone.length) findings.push({ code: "material-derived-orphan", severity: "error", file: rel, message: `${rel} was composited from ${gone.join(", ")}, which ${gone.length > 1 ? "are" : "is"} gone or unrecorded`, fix: `Restore and record ${gone.join(", ")}, or composite again with other layers` });
+      else if (stale.length) findings.push({ code: "material-derived-stale", severity: "error", file: rel, message: `${rel} was composited from earlier versions of ${stale.join(", ")}`, fix: `Composite again: ${again}` });
+      if (record.sha256 && hashOf(rel) !== record.sha256) findings.push({ code: "material-changed", severity: "warn", file: rel, message: `${rel} was edited after compositing`, fix: `Composite again (${again}) instead of retouching an output; retouch a layer and re-record it` });
+      continue;
+    }
     if (record.derivedFrom) {
       const parent = records[record.derivedFrom.file];
       const parentHash = hashOf(record.derivedFrom.file);
@@ -840,5 +1060,5 @@ async function probeSources({ http = httpClient(), sources } = {}) {
 
 module.exports = {
   ADAPTERS, MATERIALS_DIR, OPEN_LICENSES, SourceError, summarize,
-  addMaterial, checkMaterials, classify, cutMaterial, fetchMaterial, generateMaterial, httpClient, isOpenLicense, licenseOf, listProfiles, listSources, loadRegistry, measureMaterial, probeSources, processMaterial, readRecords, replayMaterial, searchSources, writeRecords,
+  addMaterial, checkMaterials, classify, compositeMaterial, cutMaterial, fetchMaterial, generateMaterial, httpClient, isOpenLicense, licenseOf, listProfiles, listSources, loadRegistry, measureMaterial, probeSources, processMaterial, readRecords, requestMaterial, replayMaterial, searchSources, writeRecords,
 };

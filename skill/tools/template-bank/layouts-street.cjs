@@ -259,6 +259,37 @@ const LAYOUTS = {
     d.raw("</g>");
     d.text("platforms", 60 * s, H - 34 * s, 20 * s, { role: "ink", family: "body", box: [56 * s, H - 58 * s, 420 * s, 32 * s] });
   },
+
+  // ---- first screen as layers: 1920 x 1080 ----------------------------------------------------
+  // The scene and the character are composited layers (materials composite: <WxH>-ground.png is
+  // the text ground, <WxH>-upper.png the character, fx and foreground); the type is live and last.
+  "kv.tape-hero"(d) {
+    const { W, H, p } = d; const s = W / 1920;
+    d.rect(0, 0, W, H, "grey");
+    if (p.stripes) stripeBand(d, [[1640 * s, 66 * s], [W + 10 * s, 66 * s], [W + 10 * s, H + 10 * s], [1640 * s, H + 10 * s]], s);
+    const filled = (name) => String(d.values[name] || "").startsWith("data:image/");
+    if (filled("scene")) d.image("scene", 0, 0, W, H);
+    else d.image("scene", 200 * s, 66 * s, 1440 * s, 1014 * s, "ground layer", { labelAt: [0.8, 0.6] });
+    if (filled("figure")) d.image("figure", 0, 0, W, H);
+    else d.image("figure", 480 * s, 110 * s, 440 * s, 880 * s, "char layer", { labelAt: [0.5, 0.5] });
+    // brand sticker: black rounded plate, cassette mark, CJK name, Latin name
+    const bx = 236 * s; const by = 96 * s; const bw = 236 * s; const bh = 212 * s;
+    d.raw(`<path d="${rp([[bx + 4 * s, by + 6 * s], [bx + bw, by], [bx + bw - 2 * s, by + bh], [bx, by + bh - 2 * s]], 26 * s)}" fill="${d.pal.ink}" stroke="${d.pal.white}" stroke-width="${f1(6 * s)}" data-role="ink"/>`);
+    d.raw(`<g data-deco="1">${cassette(bx + 58 * s, by + 22 * s, 120 * s, 64 * s, d.pal.white, d.pal.ink, d.pal.acid)}</g>`);
+    d.text("brand_cjk", bx + bw / 2, by + 150 * s, 50 * s, { role: "white", family: "head", anchor: "middle", box: [bx + 10 * s, by + 100 * s, bw - 20 * s, 62 * s] });
+    d.text("brand_latin", bx + bw / 2, by + 192 * s, 26 * s, { role: "acid", family: "num", anchor: "middle", box: [bx + 10 * s, by + 166 * s, bw - 20 * s, 36 * s] });
+    // download sticker: white plate with a heavy outline and an offset ink plate, acid flash tab
+    const cx = 1236 * s; const cy = 150 * s; const cw = 380 * s; const ch = 190 * s;
+    const quad = [[cx + 10 * s, cy + 12 * s], [cx + cw - 8 * s, cy], [cx + cw, cy + ch - 14 * s], [cx, cy + ch]];
+    d.raw(`<path d="${rp(quad, 30 * s)}" fill="${d.pal.ink}" transform="translate(${f1(9 * s)} ${f1(11 * s)})" data-role="ink"/>`);
+    d.raw(`<path d="${rp(quad, 30 * s)}" fill="${d.pal.white}" stroke="${d.pal.ink}" stroke-width="${f1(10 * s)}" data-role="white"/>`);
+    d.text("cta", cx + cw / 2, cy + 116 * s, 82 * s, { role: "ink", family: "head", anchor: "middle", box: [cx + 16 * s, cy + 36 * s, cw - 32 * s, 96 * s] });
+    d.raw(pseudoGlyphs(cx + 52 * s, cy + 136 * s, 9, 24 * s, d.pal.ink));
+    const fx = cx + cw - 104 * s; const fy = cy - 18 * s;
+    d.raw(`<path d="${rp([[fx, fy + 4 * s], [fx + 100 * s, fy - 2 * s], [fx + 98 * s, fy + 40 * s], [fx + 3 * s, fy + 44 * s]], 9 * s)}" fill="${d.pal.acid}" stroke="${d.pal.ink}" stroke-width="${f1(4 * s)}" data-role="acid"/>`);
+    d.text("flash", fx + 50 * s, fy + 30 * s, 22 * s, { role: "ink", family: "head", anchor: "middle", box: [fx + 6 * s, fy + 4 * s, 88 * s, 32 * s] });
+    d.text("platforms", 440 * s, 1052 * s, 20 * s, { role: "ink", family: "body", box: [436 * s, 1026 * s, 600 * s, 36 * s] });
+  },
 };
 
 module.exports = { LAYOUTS, CUT, rp };
