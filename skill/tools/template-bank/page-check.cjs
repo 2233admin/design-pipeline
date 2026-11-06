@@ -63,9 +63,9 @@ const PAGE_RULES = Object.freeze({
 
 const STYLE = `
 *,*::before,*::after{transition:none!important;animation:none!important;caret-color:transparent!important}
-[data-tc-off],[data-tc-off] *{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;fill:transparent!important;stroke:transparent!important;text-decoration-color:transparent!important}
-[data-tc-key="0"],[data-tc-key="0"] *{color:#000!important;-webkit-text-fill-color:#000!important;fill:#000!important;stroke:transparent!important;text-shadow:none!important;opacity:1!important}
-[data-tc-key="1"],[data-tc-key="1"] *{color:#fff!important;-webkit-text-fill-color:#fff!important;fill:#fff!important;stroke:transparent!important;text-shadow:none!important;opacity:1!important}
+[data-tc-off],[data-tc-off] *{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;-webkit-text-stroke:0!important;fill:transparent!important;stroke:transparent!important;text-decoration-color:transparent!important}
+[data-tc-key="0"],[data-tc-key="0"] *{color:#000!important;-webkit-text-fill-color:#000!important;-webkit-text-stroke-color:#000!important;fill:#000!important;stroke:transparent!important;text-shadow:none!important;opacity:1!important}
+[data-tc-key="1"],[data-tc-key="1"] *{color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke-color:#fff!important;fill:#fff!important;stroke:transparent!important;text-shadow:none!important;opacity:1!important}
 [data-tc-key="0"] [fill="none"],[data-tc-key="0"] [fill="none"] *{fill:transparent!important;stroke:#000!important}
 [data-tc-key="1"] [fill="none"],[data-tc-key="1"] [fill="none"] *{fill:transparent!important;stroke:#fff!important}
 [data-tc-hide]:not([data-tc-bg]){visibility:hidden!important}
@@ -153,8 +153,12 @@ function discover() {
       if (!text) continue;
       const parentStyle = getComputedStyle(node.parentElement || element);
       // each run's own paint: an SVG <text> inside a marked <g> paints with its own fill, a span with its own colour
-      const painted = node.parentElement instanceof SVGElement ? parentStyle.fill : parentStyle.color;
-      runs.push({ text, family: parentStyle.fontFamily, weight: Number(parentStyle.fontWeight) || 400, color: painted });
+      // an HTML run paints with -webkit-text-fill-color (it computes to color when unset); a text
+      // outline (-webkit-text-stroke) is recorded so a transparent fill is measured by its stroke
+      const svgRun = node.parentElement instanceof SVGElement;
+      const painted = svgRun ? parentStyle.fill : parentStyle.webkitTextFillColor || parentStyle.color;
+      const outline = !svgRun && parseFloat(parentStyle.webkitTextStrokeWidth) > 0 ? parentStyle.webkitTextStrokeColor : null;
+      runs.push({ text, family: parentStyle.fontFamily, weight: Number(parentStyle.fontWeight) || 400, color: painted, ...(outline ? { outline } : {}) });
     }
     const id = element.getAttribute("data-chk") || element.getAttribute("data-slot") || element.getAttribute("data-id") || `${element.localName}:${(element.textContent || "").trim().slice(0, 12)}`;
     const group = element.getAttribute("data-grp") || element.getAttribute("data-chk") || element.getAttribute("data-slot") || `u${index}`;
@@ -587,7 +591,8 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
       measured.push(row);
       if (unit.deco) continue;
       // every colour the unit's text runs paint (mixed-colour spans: the worst wins); lettering has no runs
-      const colours = [...new Set((unit.runs.length && !unit.lettering ? unit.runs.map((r) => r.color) : [unit.color]))];
+      // a run with a transparent fill and a painted outline is measured by its outline colour
+      const colours = [...new Set((unit.runs.length && !unit.lettering ? unit.runs.map((r) => (!parseCss(r.color) && r.outline ? r.outline : r.color)) : [unit.color]))];
       const paints = colours.map((c) => ({ css: c, paint: parseCss(c) })).filter((c) => c.paint);
       if (!paints.length) { notes.push(`${unit.id}: text colour ${colours.join(", ")} is not a colour; contrast not measured`); continue; }
       const base = unit.inkBox || unit.layout;

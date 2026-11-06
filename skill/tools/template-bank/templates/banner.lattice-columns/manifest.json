@@ -1,0 +1,95 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "banner.lattice-columns",
+  "family": "banner",
+  "style": "lattice-dossier",
+  "title": "More content: four full-height columns, each with an icon, a 50-unit CJK title, a wide Latin sign, VIEW MORE and a short white rule",
+  "use": "The last screen of a dark site (modes, media, comics) or a four-way hub; each column's picture goes in col_N.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "cyan"
+    ],
+    "maxShare": 0.05
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "icons": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "the line icon before each title"
+    }
+  },
+  "slots": {
+    "col_{i}": {
+      "kind": "image",
+      "ground": "bg",
+      "note": "column art 960 x 2160"
+    },
+    "col_zh_{i}": {
+      "kind": "text",
+      "default": [
+        "航标日志",
+        "雾中航线",
+        "灯塔营建",
+        "动画短片"
+      ],
+      "maxChars": 5,
+      "font": "head",
+      "title": true
+    },
+    "col_en_{i}": {
+      "kind": "text",
+      "default": [
+        "LOGBOOK",
+        "FOG ROUTE",
+        "BEACON WORKS",
+        "ANIMATION"
+      ],
+      "maxChars": 14,
+      "font": "wide",
+      "note": "Latin caps only"
+    },
+    "view_{i}": {
+      "kind": "text",
+      "default": "VIEW MORE >",
+      "maxChars": 12,
+      "font": "mono"
+    }
+  },
+  "relations": [
+    "Four equal columns; title block at column x + 134, CJK baseline y 762, Latin 820, VIEW MORE 840, rule 856.",
+    "The lower part of each column is a dark plate under its title."
+  ],
+  "decoration": [
+    "Icons and hairlines: drawn."
+  ],
+  "provenance": {
+    "corpus": "fogwake case (雾航信标 FOGWAKE): our own original game site and two in-game screens in the lattice-dossier grammar",
+    "experiment": "styles/lattice-dossier/style.json provenance (official site captured and measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "computed style of the reference's last screen: four 480-wide columns, CJK 54 px at x+134 y 701, Latin 16, VIEW MORE 12, a 108-unit rule",
+    "sampleIds": [
+      "fogwake/more"
+    ],
+    "measured": [
+      "Reference: titles y 701-780, rule y 856.",
+      "Case: four code-drawn column scenes, 0 findings."
+    ],
+    "summary": "fogwake four columns"
+  }
+}
