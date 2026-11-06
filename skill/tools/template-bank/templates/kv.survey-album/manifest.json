@@ -1,0 +1,133 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "kv.survey-album",
+  "family": "kv",
+  "style": "frontier-survey",
+  "title": "Album screen: the big wordmark, the section title, a picture with a yellow (or grey) side band and its vertical wide label, the pager capsule and the caption",
+  "use": "A gameplay or feature section; side=right with band=grey is the mirrored companion screen (the band moves left, the title right, no wordmark).",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "yellow"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "side": {
+      "type": "enum",
+      "values": [
+        "left",
+        "right"
+      ],
+      "default": "left",
+      "class": "decoration",
+      "note": "band side; right mirrors the album"
+    },
+    "band": {
+      "type": "enum",
+      "values": [
+        "yellow",
+        "grey"
+      ],
+      "default": "yellow",
+      "class": "decoration",
+      "note": "side band colour"
+    },
+    "wordmark": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "the wordmark row above (off pulls the album up)"
+    }
+  },
+  "slots": {
+    "mark_latin": {
+      "kind": "text",
+      "default": "TRAVERSE",
+      "maxChars": 8,
+      "font": "wide",
+      "note": "Latin caps and digits: the game's wordmark"
+    },
+    "title_cjk": {
+      "kind": "text",
+      "default": "玩法介绍",
+      "maxChars": 6,
+      "font": "head",
+      "title": true
+    },
+    "title_latin": {
+      "kind": "text",
+      "default": "GAMEPLAY",
+      "maxChars": 12,
+      "font": "wide",
+      "note": "Latin caps, digits and & : . / - only"
+    },
+    "media": {
+      "kind": "image",
+      "ground": "ink",
+      "note": "the slide's scene, 2218 x 1306"
+    },
+    "band_latin": {
+      "kind": "text",
+      "default": "GAMEPLAY",
+      "maxChars": 10,
+      "font": "wide",
+      "note": "vertical label on the band"
+    },
+    "index": {
+      "kind": "text",
+      "default": "1/4",
+      "maxChars": 5,
+      "font": "geo",
+      "note": "digits and / only"
+    },
+    "caption": {
+      "kind": "text",
+      "default": "沿线探索",
+      "maxChars": 12,
+      "font": "body"
+    },
+    "desc": {
+      "kind": "text",
+      "default": "勘察晨昏带，立起界桩，把导线一段段延伸到地图之外。",
+      "maxChars": 50,
+      "font": "body",
+      "lines": 2
+    }
+  },
+  "relations": [
+    "Picture 1109 x 653 plus a 229-unit band on the far side; a 27-unit white rule and the vertical label on the band.",
+    "Pager capsule on the picture's bottom-left corner; caption 40 units under the album on the picture's left edge."
+  ],
+  "decoration": [
+    "The datum mark, the decoration group, the pager buttons, the grey icon tile: drawn."
+  ],
+  "provenance": {
+    "corpus": "traverse case (远垦导线 TRAVERSE): our own original one-page game site and two in-game screens in the frontier-survey grammar",
+    "experiment": "styles/frontier-survey/style.json provenance (reference site measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "The case's gameplay and workline sections (site/index.html #gameplay, #workline) as one parametric screen; numbers from the reference's DOM.",
+    "sampleIds": [
+      "traverse/section-06",
+      "traverse/section-07"
+    ],
+    "measured": [
+      "Reference: GameplayAlbum 1338 x 653 = 1109 picture + 228 band (#FFFA00, or #EDEDED mirrored), band title 54 px wide face vertical, line 27 x 618 white, pagination 164 x 63 r 31.5 with 56 px buttons.",
+      "Case: the wide label is about 1.0 em per capital in Michroma (measured), so the band label is budgeted at 10 characters."
+    ],
+    "summary": "traverse section-06"
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.survey-rail",
+  "family": "ui",
+  "style": "frontier-survey",
+  "title": "Left rail, open: the mark, seven nav items every 60 units with the current plate, a tool capsule, the dark go block and the share row",
+  "use": "The fixed left navigation of a site in this grammar, drawn open (270 wide; it is 90 wide closed). current moves the plate.",
+  "canvas": {
+    "width": 270,
+    "height": 1080
+  },
+  "sizes": [
+    "270x1080",
+    "540x2160"
+  ],
+  "aspect": "1:4",
+  "accent": {
+    "roles": [
+      "yellow"
+    ],
+    "maxShare": 0.05
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "current": {
+      "type": "integer",
+      "default": 1,
+      "min": 1,
+      "max": 7,
+      "class": "decoration",
+      "note": "current nav item"
+    }
+  },
+  "slots": {
+    "nav_1": {
+      "kind": "text",
+      "default": "首页",
+      "maxChars": 11,
+      "font": "body"
+    },
+    "nav_2": {
+      "kind": "text",
+      "default": "队员档案",
+      "maxChars": 11,
+      "font": "body"
+    },
+    "nav_3": {
+      "kind": "text",
+      "default": "世界观",
+      "maxChars": 11,
+      "font": "body"
+    },
+    "nav_4": {
+      "kind": "text",
+      "default": "影像资料",
+      "maxChars": 11,
+      "font": "body"
+    },
+    "nav_5": {
+      "kind": "text",
+      "default": "版本日历",
+      "maxChars": 11,
+      "font": "body"
+    },
+    "nav_6": {
+      "kind": "text",
+      "default": "玩法 & 工段规划",
+      "maxChars": 11,
+      "font": "body"
+    },
+    "nav_7": {
+      "kind": "text",
+      "default": "公告",
+      "maxChars": 11,
+      "font": "body"
+    },
+    "tool_1": {
+      "kind": "text",
+      "default": "账户",
+      "maxChars": 6,
+      "font": "body"
+    },
+    "tool_2": {
+      "kind": "text",
+      "default": "充值中心",
+      "maxChars": 6,
+      "font": "body"
+    },
+    "tool_3": {
+      "kind": "text",
+      "default": "声音:关闭",
+      "maxChars": 6,
+      "font": "body"
+    },
+    "go": {
+      "kind": "text",
+      "default": "前往测绘",
+      "maxChars": 6,
+      "font": "body"
+    }
+  },
+  "relations": [
+    "Items every 60 units from y 152; the current plate 252 x 60 (78 closed) with a 9-unit ink bar.",
+    "Tool capsule at y 680, go block at y 848, share row at y 912: the bottom group is fixed, not spaced to fit."
+  ],
+  "decoration": [
+    "The datum mark, item icons, tool icons, share dots: drawn."
+  ],
+  "provenance": {
+    "corpus": "traverse case (远垦导线 TRAVERSE): our own original one-page game site and two in-game screens in the frontier-survey grammar",
+    "experiment": "styles/frontier-survey/style.json provenance (reference site measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "The case's rail (site/index.html .rail) in its open state; positions from the reference's DOM at 1920.",
+    "sampleIds": [
+      "traverse/rail"
+    ],
+    "measured": [
+      "Reference: rail 90 wide (270 open), items at y 152 + 60 n, current plate 78 x 60 #E6E6E6 with a 9 px #191919 left border, tool capsule 45 x 139 r 22.5 at y 680, go block 54 x 117 r 4 at y 848.",
+      "Case first pass: the open rail's labels measured clean; the closed drawer of the mobile header (a different part) ran off the canvas."
+    ],
+    "summary": "traverse rail"
+  }
+}

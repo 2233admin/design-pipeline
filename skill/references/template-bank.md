@@ -26,8 +26,9 @@ grammar + check rules; its templates are the parameterised layouts of that gramm
 | `acid-print-hud` | 1 (combat HUD) | One acid ink on black slabs, giant chamfered numerals with a misregistered plate, the scene as a cold halftone |
 | `cyanotype-specimen` | 2 (card frame in four rarities, pack opening) | Cyanotype specimen sheets: one Prussian blue, hand-brushed fields, white-line specimens, rarity by process not colour |
 | `street-tape` | 6 (site top bar, section title block, vertical pager, cut container with carousel, sticker CTA, first screen as layers) | Japanese street-fashion city game site: light grey, one acid yellow-green, black fine stripes, rounded slabs with one 49-degree cut, a film strip, numbered three-line section titles |
+| `frontier-survey` | 5 (left rail, section opener, crew dossier, album screen, version timeline) | Industrial sci-fi frontier game site: a white page with a fixed left rail, one signal yellow as tall columns and side bands, four-layer section titles, hatched ghost lettering, contours and data marks (objects come from image slots) |
 
-The six game packs come from owner-approved cases, and `street-tape` from a reference board the owner supplied (kept private, measured, never shipped) and an original site built on it (each pack's `provenance` names the case, its lineage and
+The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `frontier-survey` from a reference site captured for the owner (both kept private, measured, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
 the rule *borrow grammar, never assets*); `examples` in each pack lists the case screens that stayed example
 renders because their structure was a one-off.
 
@@ -304,6 +305,14 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
   the size cannot rely on it). Pass `--font-dir` with Anton for the board's look. `side=right`
   mirrors the slabs and the title edge; `kv.tape-cut-carousel --param control=dots` swaps the thumb track
   for dots. Pictures go in `media`; characters come from an image-generation task sheet (#311).
+
+- **frontier-survey**: wide Latin slots (`title_latin`, `mark_latin`, `band_latin`) take Latin caps and
+  digits (Michroma is about 1.0 em a capital and is named, not bundled; without it the Latin falls back to
+  Noto Sans SC); indexes take digits and `/`, timeline dates `MM.DD`. Mixed CJK and Latin copy goes in
+  `head` or `body`. Yellow is the one accent and stays in columns and bands (`col_x` moves the column);
+  `kv.survey-album --param side=right --param band=grey --param wordmark=false` is the mirrored companion
+  screen. Figures go in `card.survey-dossier`'s `portrait` (transparent, from an image-generation task
+  sheet, #311); a showcase without characters puts an instrument drawing there.
 
 Layout helpers for new packs: `layout-kit.cjs` (`rbox` for a tilted slot's box, `tilt`, `ngon`,
 `discStripes`, a seeded `rng`); `d.text(..., { italic, filter })`, `d.lettering(..., { shadow: { dx, dy,
