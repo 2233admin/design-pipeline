@@ -84,10 +84,10 @@ SKILLS_DOWNLOAD_MAX_BYTES=104857600 SKILLS_EXTRACT_MAX_BYTES=268435456 SKILLS_EX
 模板声明一份图层契约（背景、地面、幽灵字、中景、角色、特效、前景、纹理、文字，以及每个尺寸的画框、角色落脚点和高度、文字框、光向和轮廓光），风格包声明怎么融入（`sticker` 贴纸式或 `painted` 绘入式）。流程是：
 
 1. `materials request --template kv.tape-hero` 从契约写出图任务单：不低于最大槽位 2 倍、透明或远离色板的纯色底、光向和轮廓光、不写字、只要原创角色；主题像同人或现有作品角色时退出码 2。
-2. 用任意生图模型出图，`materials add --kind generated --tool <工具> --prompt <任务单>` 登记。
-3. `materials cut --mode grabcut` 抠图（颜色模型加图割、去溢色边、量光晕），需要贴纸边时加 `--finish outline`。
-4. `materials composite --template kv.tape-hero --set char=<文件>` 按契约出每个尺寸：OKLab 调色到黑白场、光包裹、轮廓光、接触阴影、前景遮挡、统一纸纹和网点，并写 `composite.json` 收据。
-5. 检查：放大超过 1.5 倍失败，黑场差和平均色差超出范围记警告，光晕过宽、文字或前景压住脸和手时失败；`materials check` 在输入、契约或融入参数变了时把成品标为过期，浏览器检查不再把声明为地面层的图算作压字的拼贴。
+2. 用任意生图模型出图，`materials add --kind generated --tool <工具> --prompt <任务单> --landmarks <脚点、头顶、脸和手的框>` 登记；不给脸和手的框，合成只报警告，不查这两处安全区。
+3. `materials cut --mode grabcut` 抠图（颜色模型加图割、去溢色边、量光晕）。贴纸边在合成时用 `--mode sticker` 加，不要拿 `--finish outline` 的产物去合成，它不带 landmarks。
+4. `materials composite --template kv.tape-hero --set char=<抠好的角色> --set bg=... --set mid=...` 按契约出每个尺寸（契约里的角色、底板和各尺寸摆放到的中景、特效、前景层都要用 `--set` 给齐，纸纹和网点这类材质层可省，缺必需层直接报错）：OKLab 调色到黑白场、光包裹、轮廓光、接触阴影、前景遮挡、统一纸纹和网点，并写 `composite.json` 收据。
+5. 检查：放大超过 1.5 倍失败，黑场差、平均色差超出范围或光晕过宽记警告，文字或前景压住脸和手时失败；`materials check` 在输入、契约或融入参数变了时把成品标为过期，浏览器检查不再把声明为地面层的图算作压字的拼贴。
 
 用这张替身重跑：1920×1080 的黑场差从 +0.063 降到 +0.018（sticker）/ 0.000（painted），平均色差从 21.5 降到 16.9 / 13.9，六个验收页面的浏览器检查是 0。局限：任务单和生成图的对应关系是自报的，哈希只证明任务单没被改过，不证明图就是照它出的；同人检测只是关键词启发，真正把关的是你看图。
 

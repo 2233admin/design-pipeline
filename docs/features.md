@@ -364,13 +364,13 @@ node skill/scripts/designer-pipeline.cjs materials fetch --project-root . --sour
 node skill/scripts/designer-pipeline.cjs materials cut --project-root . --file materials/raw/<stem>.png --mode paper --finish sticker,ink
 node skill/scripts/designer-pipeline.cjs materials generate --project-root . --generator paper --seed 1
 node skill/scripts/designer-pipeline.cjs materials request --project-root . --template kv.tape-hero
-node skill/scripts/designer-pipeline.cjs materials composite --project-root . --template kv.tape-hero --set char=materials/cut/<stem>.png
+node skill/scripts/designer-pipeline.cjs materials composite --project-root . --template kv.tape-hero --set char=materials/cut/<stem>.png --set bg=<...> --set ghost=<...> --set mid=<...>   # 角色、底板和摆放到的图层都要给
 node skill/scripts/designer-pipeline.cjs materials check --project-root .
 ```
 
 - **取图**：`search` / `fetch` 只下载 CC0 和公有领域的记录，其他许可连同证据一起拒绝。克利夫兰、大都会、Rijksmuseum 可以自动查和取；Wikimedia Commons 按确切的 `File:` 名取；需要密钥或被拦截的来源会说明原因和替代做法（`materials sources`、`probe` 重新测可达性）。你自己的字体、扫描和照片用 `materials add` 登记。
 - **切图**：`cut` 把图切成贴纸、墨层（黑色加透明度，即墨色密度）、剪纸白边和手剪版画块，并提示渐变背景、碰到画框的物件和可能的投影。背景是渐变、暗角或带投影时用 `--mode grabcut`（颜色模型加图割，去溢色边，记录光晕宽度）；`--finish outline` 加贴纸描边（模切白边、黑线、偏移底板）。
-- **生成角色与合成**：展示一律无角色；角色由外部生图模型出。`materials request --template kv.tape-hero` 按模板的图层契约写出图任务单（不低于槽位 2 倍、透明或纯色底、光向和轮廓光、色板、参考名、不写字、只要原创角色）；`materials add --kind generated --tool <工具> --prompt <任务单>` 登记生成图；`materials composite` 用同一套图层出模板声明的每个尺寸（OKLab 调色、光包裹、轮廓光、阴影、贴纸描边、前景遮挡、统一材质），量放大倍数（超过 1.5 倍失败）、黑场差、均值色差、光晕和脸手安全区，写出 `composite.json` 收据（输出哈希和可重放的命令）；输入、图层契约或风格包的融入参数一变，`check` 把成品标为过期。任务单和生成图的对应是自报的，同人检测只是关键词启发，最终由你看图把关。
+- **生成角色与合成**：展示一律无角色；角色由外部生图模型出。`materials request --template kv.tape-hero` 按模板的图层契约写出图任务单（不低于槽位 2 倍、透明或纯色底、光向和轮廓光、色板、参考名、不写字、只要原创角色）；`materials add --kind generated --tool <工具> --prompt <任务单> --landmarks '{"foot":[x,y],"headTop":y,"face":[...],"hands":[[...]]}'` 登记生成图（不给脸和手的框时，合成只报警告、不查这两处安全区；也可以在 `composite --params` 里给）；`materials composite` 用 `--set` 给齐图层契约里的角色、底板和各尺寸摆放到的图层（纸纹和网点这类材质层可省，缺必需层就报错），用同一套图层出模板声明的每个尺寸（OKLab 调色、光包裹、轮廓光、阴影、贴纸描边、前景遮挡、统一材质），量放大倍数（超过 1.5 倍失败）、黑场差、均值色差和光晕（警告）以及脸手安全区（失败），写出 `composite.json` 收据（输出哈希和可重放的命令）；输入、图层契约或风格包的融入参数一变，`check` 把成品标为过期。任务单和生成图的对应是自报的，同人检测只是关键词启发，最终由你看图把关。
 - **自制**：`generate` 用固定种子生成纸纹、网点、油墨平涂、建筑线稿（走廊、拱廊、楼梯、窗墙、棋盘地）和纹样，`process` 把任何已登记的图做成木刻、网点、剪纸、复印或双色效果；同一记录可以原样重放。`measure` 把纹理和真实扫描的校准档比较，量它像不像真的。
 - **账目**：所有文件的出处、许可、作者、取用日期、哈希和派生关系写在 `materials/licenses.json`；`check` 拒绝没有记录的文件、出处不全的记录，以及来源已经变了的切图和派生图。采集纸张和网点扫描的方法见 [`material-capture.md`](../skill/references/material-capture.md)。
 
