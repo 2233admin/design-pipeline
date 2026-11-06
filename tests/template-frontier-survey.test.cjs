@@ -100,6 +100,7 @@ test("structural slots reject copy they cannot draw, with a fix", () => {
   bad("card.survey-section-title", { title_latin: "世界观" }, /Latin caps/);
   bad("kv.survey-album", { mark_latin: "Traverse" }, /Latin caps and digits only/);
   bad("kv.survey-album", { index: "第一张" }, /digits and \/ only/);
+  bad("kv.survey-album", { index: "12/12" }, /one digit each side/);
   bad("card.survey-dossier", { index: "一/五" }, /digits and \/ only/);
   bad("banner.survey-timeline", { date_1: "11月20日" }, /digits and \. only/);
   const long = bank.check(bank.render("card.survey-dossier", { set: { name: "一个很长很长的名字" } }).svg);

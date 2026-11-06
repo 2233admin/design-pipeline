@@ -1013,3 +1013,11 @@ roles were measured from a reference corpus; nothing from that corpus is bundled
   by the Cleveland Museum of Art Open Access (Piranesi, Hollar, Redouté, De Gouy, scissors) and The
   Met Open Access (keys, padlock, watch movement); generated paper textures. Every file's source
   URL, licence and author are in `tests/fixtures/style-pack-shinbo/provenance.csv`.
+
+## Template style packs: the street-tape test fixture (2026-11-06)
+
+- Test fixture only (`tests/fixtures/street-tape/`, not packaged): a WOFF subset of Oswald (The
+  Oswald Project Authors, SIL Open Font License 1.1) limited to printable ASCII, with the variable
+  weight axis kept, and the font's OFL text beside it (`fonts/OFL-Oswald.txt`). It is not renamed;
+  the OFL declares no Reserved Font Name. Source URL, commit and checksum are in
+  `tests/fixtures/street-tape/provenance.csv`.
