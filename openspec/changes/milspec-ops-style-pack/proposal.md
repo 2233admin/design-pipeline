@@ -8,7 +8,8 @@ build an original site and in-game screens on it, ship the grammar under a gener
 site (screens, computed styles, motion keyframes, interaction states; private, never shipped), built an
 original one-page site (寂原行动 STILLFIELD: six full screens, a 390-wide page, a slot mode for generated
 art) and three in-game screens (gunsmith, extraction pre-match inventory, match HUD), and brought
-`template check --browser` to 0 findings from 29 on the first pass. The grammar (dark slate full screens,
+`template check --browser` to 0 findings from 29 on the first pass (and from 6 again after a rework that
+replaced code-drawn scenery with data grounds). The grammar (dark slate full screens,
 one signal green at the hot spots, amber for the selected item, hairline frames with corner ticks, a
 selection rail, a right detail column, part callouts on a pegboard, a docked bottom nav with a raised CTA)
 is in none of the bank's packs; the nearest, `acid-print-hud`, is acid yellow-green on black slabs with

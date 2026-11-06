@@ -34,8 +34,10 @@
 - Case: first pass 29 findings over 10 pages (17 off-canvas: a horizontally scrolling phone rail and scene
   markers cropped by a slice-scaled scene; 8 contrast: waypoint labels on fog, a dark title on a mid-grey
   sky; 3 glyph-coverage: CJK values in Rajdhani; 1 text-occluded: a fixed phone CTA over the footer in a
-  full-page capture); second pass 1, final 0, slot-mode pages 0. `fonts query` covers every character
-  of the copy with Noto Sans SC.
+  full-page capture); then 1, then 0. After the no-pseudo-illustration rework a new first pass found 6
+  (a waypoint under the right column, a phone arrow over a stat, two labels on the grain); final 0, and 0
+  on the seven slot-mode pages. `fonts query`: Noto Sans SC covers 813 of 816 characters; the other 3 are
+  the Korean language label, set in Noto Sans CJK KR.
 - Templates: every default render, each listed size and 50 seeds pass the static check; the variants pass;
   every default render passes the browser check on the first render.
 
