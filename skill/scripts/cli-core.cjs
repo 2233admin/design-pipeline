@@ -178,6 +178,7 @@ const KNOWN_OPTIONS = new Set([
   "--use", "--name", "--license", "--finish",
   "--generator", "--seed", "--reference",
   "--text", "--text-file", "--weight", "--contrast",
+  "--tool", "--prompt", "--landmarks", "--layer", "--subject",
 ]);
 function parseArgs(argv) {
   const positionals = [];
@@ -438,7 +439,7 @@ function publicHelp() {
     "  template list [--family kv|cover|card|banner|ui|motion|broadcast|poster|steam|pixel|hud] [--style <id>]   (template bank: parameterised SVG layouts with slots, knobs and provenance; --style shows a style pack: font roles, layout grammar, materials, motion grammar, checks)",
     "  template render <id> [--set slot=value ...] [--param name=value ...] [--seed <n>] [--size WxH] [--tone <image-slot>=#RRGGBB ...] -o <out.svg> [--png <out.png>] [--font-dir <dir>] [--browser] [--chrome <exe>] [--puppeteer-module <path>]   (renders and audits the output; image slots take a file path; --seed varies the rhythm knobs; --font-dir reads the style's fonts for whole-string glyph coverage; --browser, or a style that asks for it, adds the browser check; exit 2 when a check fails)",
     "  template distill <provenance.csv> --images <dir> -o <out-dir> [--annotations <annotations.csv|labels.jsonl>] [--category A,B] [--id <style-id>] [--compare <style-id>] [--ablate] [--ffmpeg <exe>] [--chrome <exe>] [--puppeteer-module <path>]   (reference board -> style pack draft: thresholds from the reference distribution, layout archetypes with the nearest template or a skeleton, font roles from stroke contrast, report of supported rules and gaps; --compare diffs a hand-made pack; --ablate renders with and without each rule; images are never copied)",
-    "  template check <file.svg|file.html> [--tone <image-slot>=#RRGGBB ...] [--browser] [--size WxH] [--chrome <exe>] [--puppeteer-module <path>]   (measured: text fit, minimum size, contrast, figure and crop zones, accent budget, alignment, rhythm; in the browser also ink overlap, off-canvas, collage over text, contrast with the text hidden and glyph coverage, for injected layers and hand-written SVG or HTML too; every finding has a fix; 0 pass, 2 fail)",
+    "  template check <file.svg|file.html> [--tone <image-slot>=#RRGGBB ...] [--browser] [--size WxH] [--chrome <exe>] [--puppeteer-module <path>]   (measured: text fit, minimum size, contrast, figure and crop zones, accent budget, alignment, rhythm; in the browser also ink overlap, off-canvas, collage over text, contrast with the text hidden and glyph coverage, for injected layers and hand-written SVG or HTML too; images in [data-layer=ground] or listed as ground in a materials composite receipt are text ground, not collage; receipt-linked composites add their checks and the character's face and hands against the text ink (safe-area-type); every finding has a fix; 0 pass, 2 fail)",
     "  doctor [--json]   (readable install and tool report; --json for machine output) | status --change-root <dir>",
     "  plan --manifest <file> --output <file>",
     "  run --plan <file> --to <phase>",
@@ -501,8 +502,10 @@ function publicHelp() {
     "  materials sources | probe [--source <id>]   (public-domain/CC0 image sources with measured reachability; probe re-measures now, exit 2 on drift)",
     "  materials search --query <term[,term]> [--source cleveland|met|rijksmuseum] [--limit 5]   (candidates with their licence field; blocked sources say why)",
     "  materials fetch --project-root <dir> --source <id> --id <object id|File:name> [--use <purpose>] [--name <stem>] [--width 1200] [--params '{\"region\":[x,y,w,h]}'] [--replace]   (CC0/public domain only; writes materials/raw/<stem>.png and its record in materials/licenses.json; exit 2 blocked or refused)",
-    "  materials add --project-root <dir> --file materials/<path> --license <licence> --by <author> [--url <source page>] [--kind image|font|scan|photo|texture] [--title <t>] [--use <purpose>] [--commercial-use] [--replace]   (owner-supplied material)",
-    "  materials cut --project-root <dir> --file materials/raw/<x>.png --mode border|paper|white-matte|none [--finish cut,sticker,ink,plate] [--params '{\"threshold\":14,\"keep\":2,\"roi\":[x0,y0,x1,y1]}'] [--replace]",
+    "  materials add --project-root <dir> --file materials/<path> --license <licence> --by <author> [--url <source page>] [--kind image|font|scan|photo|texture|generated] [--title <t>] [--use <purpose>] [--commercial-use] [--landmarks '{\"foot\":[x,y],\"headTop\":y,\"face\":[x0,y0,x1,y1],\"hands\":[[...]]}'] [--replace]   (owner-supplied material; --kind generated also needs --tool <image model> --prompt materials/requests/<name>.md)",
+    "  materials request --project-root <dir> --template <id> [--layer char] [--subject '<original character>'] [--tool <image model>] [--name <stem>] [--replace]   (generation task sheet from the template's layer contract: size >= 2x the largest slot, transparent or plain backdrop, light and rim, palette, references by name, no text, original characters only; writes materials/requests/<stem>.md and .json; exit 2 when the subject names an existing work's character)",
+    "  materials cut --project-root <dir> --file materials/raw/<x>.png --mode border|paper|white-matte|grabcut|none [--finish cut,sticker,outline,ink,plate] [--params '{\"threshold\":14,\"keep\":2,\"roi\":[x0,y0,x1,y1]}'] [--replace]   (grabcut: colour models + graph cut for gradient or shadowed backdrops, defringed, halo measured; outline: die-cut white edge, black line, offset plate)",
+    "  materials composite --project-root <dir> --template <id> --set <layer>=materials/<file>.png ... [--mode sticker|painted] [--size WxH[,WxH]] [--params '{\"landmarks\":{...},\"grade\":{...}}'] [--name <stem>] [--replace]   (every declared size from one set of layers: grade in OKLab, light wrap, rim, shadows, outline, occluder, texture; writes materials/composite/<stem>/<WxH>{,-ground,-upper,-mask}.png and composite.json; exit 2 on a safe-area or upscale finding)",
     "  materials check --project-root <dir>   (every file recorded with licence and provenance; cut/processed pieces match their source hash; generated files carry generator, version, params and seed; exit 2 on findings)",
     "  materials generate --project-root <dir> --generator paper|halftone|print|architecture|motif [--params <json>] [--seed 1] [--name <stem>] [--reference <profile>] [--replace]   (seeded; writes materials/generated/<stem>.png|svg with generator, version, params, seed and, for textures, its measured distance to a real scan)",
     "  materials generate --project-root <dir> --file materials/generated/<x>   (replay from the record; exit 2 if the bytes differ)",
@@ -1682,8 +1685,25 @@ function materialsCommand(parsed, root, action) {
       file: requireOption(parsed, "--file"), license: requireOption(parsed, "--license"), author: requireOption(parsed, "--by"), sourceUrl: option(parsed, "--url") || undefined,
       source: option(parsed, "--source") || undefined, kind: option(parsed, "--kind") || undefined, title: option(parsed, "--title") || undefined, use: option(parsed, "--use") || undefined,
       commercialUse: option(parsed, "--commercial-use") === true ? true : undefined, replace: option(parsed, "--replace") === true,
+      tool: option(parsed, "--tool") || undefined, prompt: option(parsed, "--prompt") || undefined, landmarks: option(parsed, "--landmarks") ?? undefined,
     });
     return { result, exitCode: 0 };
+  }
+  if (action === "request") {
+    const result = materials.requestMaterial(project, { template: requireOption(parsed, "--template"), layer: option(parsed, "--layer") || undefined, subject: option(parsed, "--subject") || undefined, tool: option(parsed, "--tool") || undefined, name: option(parsed, "--name") || undefined, replace: option(parsed, "--replace") === true });
+    return { result, exitCode: result.status === "requested" ? 0 : 2 };
+  }
+  if (action === "composite") {
+    const set = {};
+    for (const raw of optionList(parsed, "--set")) {
+      const index = String(raw).indexOf("=");
+      if (index <= 0) fail("cli", `--set takes layer=materials/<file>.png, got ${raw}`, { code: "OPTION_VALUE_INVALID" });
+      const layer = raw.slice(0, index);
+      if (Object.hasOwn(set, layer)) fail("cli", `--set ${layer} is given twice`, { code: "DUPLICATE_OPTION" });
+      set[layer] = raw.slice(index + 1);
+    }
+    const result = materials.compositeMaterial(project, { template: requireOption(parsed, "--template"), set, mode: option(parsed, "--mode") || undefined, size: option(parsed, "--size") || undefined, params: option(parsed, "--params") || undefined, name: option(parsed, "--name") || undefined, replace: option(parsed, "--replace") === true });
+    return { result, exitCode: result.status === "failed" ? 2 : 0 };
   }
   if (action === "generate") {
     const result = materials.generateMaterial(project, { generator: option(parsed, "--generator") || undefined, params: option(parsed, "--params") || undefined, seed: option(parsed, "--seed") ?? undefined, name: option(parsed, "--name") || undefined, use: option(parsed, "--use") || undefined, reference: option(parsed, "--reference") || undefined, file: option(parsed, "--file") || undefined, replace: option(parsed, "--replace") === true });
@@ -2595,7 +2615,9 @@ function mergeTemplateReports(staticReport, browser, extra = {}) {
     fail("template", `browser check failed: ${browser.crashed}. The result is unverified. Fix: open the file in a browser and resolve the error, then check again`, { code: "KERNEL_FAILED", status: "unverified", ...extra });
   }
   const page = browser.report;
-  const kept = (staticReport?.findings || []).filter((finding) => finding.rule !== "contrast" && !(finding.rule === "glyph-coverage" && page.findings.some((other) => other.rule === "glyph-coverage" && other.slot === finding.slot)));
+  // the browser measured contrast on the rendered pixels, image grounds included: the static
+  // estimate and its "not sampled" finding both give way
+  const kept = (staticReport?.findings || []).filter((finding) => finding.rule !== "contrast" && finding.rule !== "contrast-unverified" && !(finding.rule === "glyph-coverage" && page.findings.some((other) => other.rule === "glyph-coverage" && other.slot === finding.slot)));
   const findings = [...kept, ...page.findings];
   const notes = [...(staticReport?.notes || []).filter((note) => !/recheck contrast on the real image/.test(note)), ...page.notes];
   if (staticReport) notes.push("contrast measured in the browser (ground rendered with the text hidden, 10th percentile under each text's ink) replaces the static estimate");
@@ -2604,7 +2626,7 @@ function mergeTemplateReports(staticReport, browser, extra = {}) {
     status: findings.length ? "failed" : "passed",
     summary: { ...(staticReport?.summary || {}), findings: findings.length, browser: page.summary },
     findings, notes: [...new Set(notes)],
-    browser: { status: page.status, canvas: page.canvas, measured: page.measured, collage: page.collage, errors: page.errors, rules: page.rules },
+    browser: { status: page.status, canvas: page.canvas, measured: page.measured, collage: page.collage, ...(page.grounds?.length ? { grounds: page.grounds } : {}), ...(page.composites?.length ? { composites: page.composites } : {}), errors: page.errors, rules: page.rules },
     scope: "Technical conformance only: measured on the rendered file and, in the browser, on its pixels. It does not grant visual or creative acceptance.",
   };
 }
@@ -2654,6 +2676,8 @@ function templateBankCommand(parsed, root, action, operand) {
   for (const [slot] of Object.entries(keyValues(parsed, "--tone"))) {
     if (templateBank.slotSpec(manifest, slot)?.spec.kind !== "image") fail("template", `--tone ${slot}: not an image slot of ${operand}`, { code: "OPTION_VALUE_INVALID" });
   }
+  const output = contained(root, outRaw, "-o", false);
+  const layerSources = {};
   for (const [name, value] of Object.entries(set)) {
     const found = templateBank.slotSpec(manifest, name);
     if (found?.spec.kind !== "image") continue;
@@ -2661,10 +2685,16 @@ function templateBankCommand(parsed, root, action, operand) {
     const type = TEMPLATE_IMAGE_TYPES[path.extname(image).toLowerCase()];
     if (!type) fail("template", `--set ${name} must be a ${Object.keys(TEMPLATE_IMAGE_TYPES).join(", ")} file, got ${value}`, { code: "OPTION_VALUE_INVALID" });
     set[name] = `data:${type};base64,${fs.readFileSync(image).toString("base64")}`;
+    // a materials composite output: the browser check reads its receipt (measurements, face and hands)
+    const receipt = path.join(path.dirname(image), "composite.json");
+    if (fs.existsSync(receipt)) {
+      let outputs = null;
+      try { outputs = JSON.parse(fs.readFileSync(receipt, "utf8")).outputs; } catch { outputs = null; }
+      if (outputs?.[path.basename(image)]) layerSources[name] = { receipt: path.relative(path.dirname(output), receipt).split(path.sep).join("/"), file: path.basename(image) };
+    }
   }
   const fontDir = option(parsed, "--font-dir") === null ? null : contained(root, option(parsed, "--font-dir"), "--font-dir");
-  const rendered = templateBankCall(() => templateBank.render(operand, { set, params: keyValues(parsed, "--param"), size: option(parsed, "--size"), seed: seedRaw === null ? null : Number(seedRaw), fontDir }));
-  const output = contained(root, outRaw, "-o", false);
+  const rendered = templateBankCall(() => templateBank.render(operand, { set, params: keyValues(parsed, "--param"), size: option(parsed, "--size"), seed: seedRaw === null ? null : Number(seedRaw), fontDir, layerSources }));
   fs.mkdirSync(path.dirname(output), { recursive: true });
   fs.writeFileSync(output, rendered.svg);
   const wantBrowser = browserFlag || templateBank.loadStyle(rendered.style).checks.browserOnRender === true;
@@ -3293,7 +3323,7 @@ const COMMANDS = {
     }])),
   },
   materials: {
-    actions: Object.fromEntries(["sources", "profiles", "probe", "search", "fetch", "add", "generate", "process", "measure", "cut", "check"].map((name) => [name, { run: ({ parsed, root }) => materialsCommand(parsed, root, name) }])),
+    actions: Object.fromEntries(["sources", "profiles", "probe", "search", "fetch", "add", "request", "generate", "process", "measure", "cut", "composite", "check"].map((name) => [name, { run: ({ parsed, root }) => materialsCommand(parsed, root, name) }])),
   },
   "film-eval": {
     actions: {

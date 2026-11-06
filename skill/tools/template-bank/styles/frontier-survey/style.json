@@ -1,0 +1,261 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "frontier-survey",
+  "title": "Frontier survey: an industrial sci-fi frontier game's official-site grammar - white page, a fixed left rail, one signal yellow in tall columns and side bands, hatched ghost lettering, topographic contours and data marks",
+  "summary": "A white page with a fixed 90-unit left rail; one signal yellow used as tall columns, side bands and the current item (0-6% of a section with key art, 15-30% without); two mid sections turn fully dark (66-74%); a four-layer section title (micro path, a grey 78 x 24 arrow block with wide Latin caps, CJK below); hatched ghost lettering at -45 degrees; topographic contours; round #FAFAFA arrow buttons in capsule tracks; label / value chips; a three-colour code rule.",
+  "provenance": {
+    "case": "traverse (远垦导线 TRAVERSE): an original one-page official site (home, crew, lore, media, calendar, gameplay, workline, notice; 1920 and 390 wide) and two in-game screens (workline planner, fabrication) built on the grammar. The showcase has no characters and no drawn pseudo-illustration: type, frames, data slides, a field-kit stat card and generated paper and halftone textures carry each screen; ?slot=1 swaps every picture for a sized placeholder frame with an image-generation task sheet.",
+    "lineage": "The official-site grammar of industrial sci-fi frontier games (2020s): a white page with a side rail, one signal yellow, hatched ghost type, isometric technical drawings, contour lines and dark lore / media sections. Read and measured on a reference site whose screenshots stay private and are not shipped. Borrowed: the grammar and the measured proportions. Never borrowed: any name, logo, wordmark, character, organisation, slogan, picture or the reference's own mark shapes.",
+    "borrow": "Borrow grammar, never assets. Every name, mark, headline and picture in the case and the templates is our own (远垦导线, 第七导线队, 缓行站, 盐镜回声); the brand is a survey datum mark; figures are image slots fed by an image-generation task sheet (#311).",
+    "rounds": "One round, iterated by eye before the first check. template check --browser first pass: 68 findings over 11 pages (8 sections at 1920 x 1080, the 390-wide page, two in-game screens): 33 on the mobile page (a closed drawer's links above the canvas, drawn labels outside a cropped key art, notice cards beyond the edge), 18 contrast (grey micro labels 3.36:1 on white; capsule buttons measured with their own plate hidden, 1:1), 13 glyph coverage (a datum sign and CJK in Latin-only faces), 2 text overlap, 2 off-canvas; final 0. fonts query --style gothic --weight 700 covers all 616 CJK characters of the copy.",
+    "measured": [
+      "Design unit: root 12 px and every size a multiple of 1.5 (13.5, 16.5, 18.75, 22.5, 27, 36, 58.5): a 1280 design shown at 1.5x.",
+      "Signal yellow #FFFA00 on the reference (37 CSS uses); the case and the pack use #FFEE00. Ink #191919 (the most used colour), greys #F2F2F2 / #E6E6E6 / #D9D9D9 / #383838, footer #252726.",
+      "Area per section (480 x 270 sampling): white 35-69%, the two dark sections 66-74% dark; yellow 0-6% with key art. Without characters the case keeps the yellow columns whole: about 18% on the home screen, 30% on the crew screen.",
+      "Left rail 90 wide; icons every 60 units from y 152; the current item a 78 x 60 #E6E6E6 plate with a 9-unit ink bar; it opens to 270 on hover (0.3 s).",
+      "Section title: arrow block 78 x 24 #D9D9D9, wide Latin caps at 27 (line 24), CJK 36 bold, 6 units between; left edge 119 units into the content (6.5%).",
+      "Crew screen: yellow column 656 x 1043; hatched ghost word at 366 units, letter-spacing -0.08 em, 60%; avatars 102 every 147; name 58.5 with 40.5 grey brackets; chips 90 + 165 x 24.",
+      "Album: picture 1109 x 653 + a 229-wide side band (yellow, or #EDEDED on the mirrored screen) with a 54-unit vertical wide label on a 27-unit white rule; pager track 164 x 63 with 56-unit #FAFAFA buttons.",
+      "Motion: hover 0.2 s; rail, switches 0.3 s ease-in-out; cards 0.4 s; background video 0.6 s; title block 0.5 s ease-out then 0.2 s after 0.3 s; decoration groups flicker three times then hold (1 s keyframes at 10/11, 20/21, 40/41%).",
+      "64 px: with the marks masked the eight sections read as the reference's structure (white rail, yellow columns, dark middle pair, big wordmark, album band) and apart from street-tape (grey ground, black stripes, 49-degree cuts) and the six earlier game cases."
+    ],
+    "accessed": "2026-11-06"
+  },
+  "palette": {
+    "yellow": {
+      "value": "#FFEE00",
+      "use": "the one strong colour: columns, side bands, the current item, voice chips, the play key"
+    },
+    "yellow_dk": {
+      "value": "#D9CB00",
+      "use": "shaded faces of yellow parts in the line art; contours on yellow"
+    },
+    "ink": {
+      "value": "#1A1A1A",
+      "use": "text, label chips, the rail's current bar, date chips"
+    },
+    "white": {
+      "value": "#FFFFFF",
+      "use": "the page ground, text on ink"
+    },
+    "grey1": {
+      "value": "#F2F2F2",
+      "use": "value chips, the tool capsule, the avatar column"
+    },
+    "grey2": {
+      "value": "#E6E6E6",
+      "use": "the rail's current plate, the date rail, light pager tracks"
+    },
+    "grey3": {
+      "value": "#D9D9D9",
+      "use": "the title arrow block, the code bar, tape rules"
+    },
+    "grey4": {
+      "value": "#8C8C8C",
+      "use": "inactive rail icons, micro squares (decoration only)"
+    },
+    "grey5": {
+      "value": "#6B6B6B",
+      "use": "tool icons"
+    },
+    "mute": {
+      "value": "#6B6B6B",
+      "use": "micro labels and brackets on white (4.5:1)"
+    },
+    "mute_dark": {
+      "value": "#8C93A3",
+      "use": "micro labels on navy"
+    },
+    "line": {
+      "value": "#E4E4E4",
+      "use": "topographic contours on white (decoration)"
+    },
+    "line_dark": {
+      "value": "#2A3142",
+      "use": "contours on navy and on ink (decoration)"
+    },
+    "navy": {
+      "value": "#0B0E15",
+      "use": "the dark lore / media sections"
+    },
+    "ghost_dark": {
+      "value": "#3A4256",
+      "use": "hatched ghost lettering on navy"
+    },
+    "btn_light": {
+      "value": "#FAFAFA",
+      "use": "round arrow buttons"
+    },
+    "track_dark": {
+      "value": "#2A2A2A",
+      "use": "the dark pager track (rgba(30,30,30,.8) on the site)"
+    },
+    "band_grey": {
+      "value": "#EDEDED",
+      "use": "the mirrored album's side band"
+    },
+    "lane_hatch": {
+      "value": "#ECECEC",
+      "use": "hatched empty calendar lanes"
+    },
+    "red": {
+      "value": "#FF4A1C",
+      "use": "the three-colour code rule only"
+    },
+    "cyan": {
+      "value": "#00C8FF",
+      "use": "the three-colour code rule only"
+    }
+  },
+  "fonts": {
+    "roles": {
+      "head": {
+        "stack": [
+          "Noto Sans SC",
+          "Noto Sans CJK SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 700,
+        "use": "section titles, names, event titles"
+      },
+      "body": {
+        "stack": [
+          "Noto Sans SC",
+          "Noto Sans CJK SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 500,
+        "use": "nav labels, chips, quotes, captions and any mixed CJK and Latin copy"
+      },
+      "wide": {
+        "stack": [
+          "Michroma",
+          "Noto Sans SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 400,
+        "use": "wide Latin caps: section names, the wordmark, side-band labels, ghost words; Latin and digits only"
+      },
+      "geo": {
+        "stack": [
+          "Poppins",
+          "Noto Sans SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 500,
+        "use": "dates, indexes, codes; Latin and digits only"
+      }
+    },
+    "faces": [
+      {
+        "family": "Noto Sans SC",
+        "weight": 700,
+        "file": "NotoSansSC[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/notosanssc",
+        "licence": "SIL OFL 1.1",
+        "author": "Google"
+      },
+      {
+        "family": "Michroma",
+        "weight": 400,
+        "file": "Michroma-Regular.ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/michroma",
+        "licence": "SIL OFL 1.1",
+        "author": "Vernon Adams"
+      },
+      {
+        "family": "Poppins",
+        "weight": 500,
+        "file": "Poppins-Medium.ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/poppins",
+        "licence": "SIL OFL 1.1",
+        "author": "Indian Type Foundry"
+      }
+    ],
+    "resolve": "fonts query --text-file <all copy> --style gothic --weight 700 resolves Noto Sans SC (the case: 616 characters, none missing; Noto Sans CJK SC 500/700/900 measured with fonts measure, none missing). Michroma and Poppins are Latin only: mixed CJK and Latin strings go to head or body, never wide or geo (13 of the case's first-pass findings were exactly that, or a sign such as the datum circle-cross that Michroma lacks).",
+    "licence": "All roles use SIL OFL 1.1 fonts.",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. Michroma is about 1.0 em per capital (measured from its hmtx), so wide slots are budgeted at 1.04 em a character; without it the Latin falls back to Noto Sans SC and reads narrower. --font-dir <dir> reads coverage and embeds the faces."
+  },
+  "layout": {
+    "grammar": [
+      "White page (#FFFFFF), not grey; a fixed left rail 90 units wide holds the mark, seven icons every 60 units, a tool capsule, a dark go block and share; the current item is a 78 x 60 #E6E6E6 plate with a 9-unit ink bar.",
+      "One signal yellow as tall vertical columns (the crew column 656 x 1043, the notice column 99 x 848), the album side band (229 wide) and the current item; never a diagonal and never a ground. Blocks are square-cornered; only buttons are round.",
+      "Every section opens with the same four-layer title on its edge: a micro path line, a grey 78 x 24 arrow block with the wide Latin name, the CJK name in bold below (27 : 36), with a decoration group (cross box, two micro lines, six squares, the three-colour stub) under it.",
+      "Two middle sections turn fully dark (navy, 66-74%): a point-cloud object in a tick-ring on one, a blurred moving picture with a three-card coverflow (centre 405 x 228, sides x0.8) on the other.",
+      "Hatched ghost lettering: a wide Latin word set huge with a -45 degree stripe fill at about 60%, behind the content and the figure, never carrying information.",
+      "The reference draws isometric line art for machines; without its art, keep code-drawn objects minimal and abstract (rulers, datum marks, contours, the traverse with its bearings and distances, data slides) and carry each screen with type, frames, data and real textures from the materials tools; figures, scenes and props come from image slots.",
+      "Controls: round #FAFAFA arrow buttons (54-56) paired in a capsule track (164 x 63); dark 240 x 54 'more' buttons with a 4 x 30 yellow bar; a yellow 54-unit square play key; label / value chips 90 + 165 x 24 (voice rows yellow); names in grey square brackets."
+    ]
+  },
+  "materials": {
+    "procedural": [
+      "Data marks: a survey ruler and datum mark (ruler in card.survey-section-title), the traverse (stations, bearings, distances) and data slides (an elevation profile, a process chart, a load chart, a lot plan) in the case; no drawn objects or scenes.",
+      "Topographic contours (closed wobbling rings in the pack; value noise and marching squares in the case), -45 degree hatches, the datum mark, the three-colour code rule, the decoration group."
+    ],
+    "recipes": [
+      "Real texture: materials generate --generator paper --seed 3 multiplied at 20% over the white sections, and --generator halftone --params '{\"periodPx\":9,\"angleDeg\":45,\"coverage\":0.25}' screened at 8% over the dark ones (the case's materials check passes with three generated files).",
+      "Figures and key art come from an image-generation task sheet (#311): one sheet per frame with its output size (2x the frame), the safe box, the boxes left for UI, a low cold key light from the upper left with a yellow edge reflection, the palette and 'original characters only'; until then the slot shows its size, and the case's showcase uses an isometric instrument instead. Composite painted-in (colour match, light wrap, contact and long cast shadow), not as stickers; cut-outs go in with materials cut --mode none --finish cut."
+    ],
+    "collage": [
+      "Pictures sit in square-cornered frames (album 1109 x 653, cards with 6-unit corners); text never sits on a picture without a dark band or a solid chip under it."
+    ],
+    "sources": "Everything is drawn; pictures are your own art in the image slots.",
+    "budget": {
+      "inks": 1,
+      "effectsMax": 2,
+      "tiltedElements": 0
+    }
+  },
+  "motion": {
+    "fps": 60,
+    "grammar": [
+      "Hover and state colours 0.2 s; the rail opens to 270 in 0.3 s and its current plate slides in 0.3 s; switchers 0.3 s ease-in-out; notice cards 0.4 s ease-in-out; background video cross-fades in 0.6 s.",
+      "Section titles: the arrow block slides in from the left in 0.5 s ease-out, its arrow follows after 0.3 s in 0.2 s.",
+      "Decoration groups flicker on: opacity 0, 0.5, 0, 0.5, 0, 0.5, 0, then 1 over 1 s (keyframes at 10/11, 20/21, 40/41%), once per entry.",
+      "Crew switch: the yellow column narrows and reopens while the figure fades in moving 40 units, about 0.45 s; the ghost word stays put. Point clouds assemble sparse-to-dense in about 0.9 s and the ring turns once a minute."
+    ],
+    "flashLimit": "The flicker runs once per section entry (three 1 % blinks inside 1 s); nothing flashes on a loop."
+  },
+  "checks": {
+    "static": [
+      "text-overflow",
+      "text-length",
+      "type-size",
+      "contrast",
+      "accent-budget"
+    ],
+    "browser": [
+      "text-overlap",
+      "off-canvas",
+      "collage-cover",
+      "contrast",
+      "text-occluded",
+      "glyph-coverage"
+    ],
+    "browserOnRender": true,
+    "guidance": [
+      "64 px distinctiveness (guidance): shrink each screen to 64 px tall with the mark masked; the white page, the rail, the yellow column or band and the dark middle pair should still read. A grey ground with black stripes and cuts reads as street-tape instead; a dark-led page as the acid-print HUD.",
+      "Never set a mixed CJK and Latin string, or a sign such as the circle-cross datum, in Michroma or Poppins: the browser fills the glyphs from another face (glyph-coverage); use head or body, or draw the sign.",
+      "Micro labels on white must be #6B6B6B or darker (the grey #8C8C8C of the icons measures 3.36:1).",
+      "A capsule button's label is its own unit (data-chk on a span inside the button); measured as the button the label's ground is the page, not the capsule.",
+      "Drawn SVG labels that sit in a cropped key art carry data-deco on the text element itself; on a group they are still measured (off-canvas)."
+    ],
+    "note": "The browser check runs on every render (hatched ghost type and the textures are measured in pixels)."
+  },
+  "examples": {
+    "note": "Renders of the case that stay examples (outside the repository, with the owner): the eight sections at 1920 x 1080, the full page, the 390-wide page, slot mode, and the two in-game screens.",
+    "renders": [
+      {
+        "screen": "official site, eight sections and the 390-wide page",
+        "file": "traverse case, shots/ (owner's copy, not in the repository)",
+        "why": "a one-page site with scripts, a point-cloud canvas and interaction, not a parametric layout; its parts are the five templates"
+      },
+      {
+        "screen": "in-game workline planner and fabrication",
+        "file": "traverse case, shots/game/ (owner's copy, not in the repository)",
+        "why": "screens built from the same parts (dark glass panels, yellow capsule actions, // path headers); their catalogue and stat rows are game-specific"
+      }
+    ]
+  }
+}

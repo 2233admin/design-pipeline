@@ -1,0 +1,149 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "banner.survey-timeline",
+  "family": "banner",
+  "style": "frontier-survey",
+  "title": "Version timeline: the date rail with black date chips (the current one yellow), category columns, hatched empty lanes and four event bars with kind chips",
+  "use": "A version calendar or schedule strip. current picks the highlighted date chip; event bars are drawn fills (pictures can be layered by the page).",
+  "canvas": {
+    "width": 1920,
+    "height": 640
+  },
+  "sizes": [
+    "1920x640"
+  ],
+  "aspect": "3:1",
+  "accent": {
+    "roles": [
+      "yellow"
+    ],
+    "maxShare": 0.24
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "current": {
+      "type": "integer",
+      "default": 1,
+      "min": 1,
+      "max": 3,
+      "class": "decoration",
+      "note": "current date chip"
+    },
+    "last_len": {
+      "default": 20,
+      "min": 14,
+      "max": 26,
+      "class": "rhythm",
+      "note": "length of the last event in days"
+    }
+  },
+  "slots": {
+    "date_1": {
+      "kind": "text",
+      "default": "11.20",
+      "maxChars": 5,
+      "font": "geo",
+      "note": "MM.DD"
+    },
+    "date_2": {
+      "kind": "text",
+      "default": "12.04",
+      "maxChars": 5,
+      "font": "geo",
+      "note": "MM.DD"
+    },
+    "date_3": {
+      "kind": "text",
+      "default": "12.18",
+      "maxChars": 5,
+      "font": "geo",
+      "note": "MM.DD"
+    },
+    "cat_1": {
+      "kind": "text",
+      "default": "招募",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "cat_2": {
+      "kind": "text",
+      "default": "活动",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "event_1": {
+      "kind": "text",
+      "default": "定向爆破",
+      "maxChars": 10,
+      "font": "head"
+    },
+    "event_2": {
+      "kind": "text",
+      "default": "视差",
+      "maxChars": 10,
+      "font": "head"
+    },
+    "event_3": {
+      "kind": "text",
+      "default": "越线测量",
+      "maxChars": 10,
+      "font": "head"
+    },
+    "event_4": {
+      "kind": "text",
+      "default": "盐原拾遗",
+      "maxChars": 10,
+      "font": "head"
+    },
+    "kind_1": {
+      "kind": "text",
+      "default": "限定招募",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "kind_2": {
+      "kind": "text",
+      "default": "限定招募",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "kind_3": {
+      "kind": "text",
+      "default": "限时活动",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "kind_4": {
+      "kind": "text",
+      "default": "限时活动",
+      "maxChars": 4,
+      "font": "body"
+    }
+  },
+  "relations": [
+    "44 days across the lanes; date chips sit on the rail at their day; events start and end on their days.",
+    "Lanes 104 units with 82-unit bars; categories own whole lanes; empty lane ground is hatched, never blank."
+  ],
+  "decoration": [
+    "Day ticks, contours inside bars, the tri-code rule, start-date tags: drawn."
+  ],
+  "provenance": {
+    "corpus": "traverse case (远垦导线 TRAVERSE): our own original one-page game site and two in-game screens in the frontier-survey grammar",
+    "experiment": "styles/frontier-survey/style.json provenance (reference site measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "The case's calendar section (site/index.html #calendar) as a parametric strip; layout from the reference's calendar.",
+    "sampleIds": [
+      "traverse/section-05"
+    ],
+    "measured": [
+      "Reference: timeline 1761 x 39 under a 1697 x 366 head; date chips about 148 x 37 with 30 px white digits; event banners in lanes with a category icon column and -45 degree hatched empty ground.",
+      "Case mobile first pass: an event's line-art object sat under its title on the narrow layout (1:1 ground); objects are dropped from event bars below 760 wide."
+    ],
+    "summary": "traverse section-05"
+  }
+}

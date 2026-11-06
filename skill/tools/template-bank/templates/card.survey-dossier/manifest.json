@@ -1,0 +1,164 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.survey-dossier",
+  "family": "card",
+  "style": "frontier-survey",
+  "title": "Crew dossier: REC head, code bar, rank marks, the hatched ghost word, the yellow column with the figure, the name in brackets, label / value chips, quote and bio",
+  "use": "A character or crew introduction screen. The portrait slot takes a transparent figure (2120 x 2120 from the task sheet), or an instrument drawing for a showcase without characters.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "yellow"
+    ],
+    "maxShare": 0.4
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "col_x": {
+      "default": 0.376,
+      "min": 0.36,
+      "max": 0.4,
+      "class": "rhythm",
+      "note": "yellow column x / W (656 units wide)"
+    },
+    "rank": {
+      "type": "integer",
+      "default": 6,
+      "min": 1,
+      "max": 6,
+      "class": "decoration",
+      "note": "filled rank marks"
+    }
+  },
+  "slots": {
+    "ghost_latin": {
+      "kind": "text",
+      "default": "TRAVERSE",
+      "maxChars": 10,
+      "font": "wide",
+      "decor": true,
+      "bleed": true,
+      "note": "ghost word, decoration"
+    },
+    "portrait": {
+      "kind": "image",
+      "ground": "white",
+      "note": "the figure, transparent, 2120 x 2120 (safe x 380-1660)"
+    },
+    "code": {
+      "kind": "text",
+      "default": "GNOMON",
+      "maxChars": 12,
+      "font": "geo",
+      "note": "Latin code name"
+    },
+    "index": {
+      "kind": "text",
+      "default": "1/5",
+      "maxChars": 5,
+      "font": "geo",
+      "note": "digits and / only"
+    },
+    "name": {
+      "kind": "text",
+      "default": "岑砚",
+      "maxChars": 4,
+      "font": "head",
+      "title": true
+    },
+    "label_1": {
+      "kind": "text",
+      "default": "编队",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "value_1": {
+      "kind": "text",
+      "default": "第七导线队",
+      "maxChars": 8,
+      "font": "body"
+    },
+    "label_2": {
+      "kind": "text",
+      "default": "出身",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "value_2": {
+      "kind": "text",
+      "default": "晨昏带",
+      "maxChars": 8,
+      "font": "body"
+    },
+    "label_3": {
+      "kind": "text",
+      "default": "声线·中",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "value_3": {
+      "kind": "text",
+      "default": "方屿",
+      "maxChars": 8,
+      "font": "body"
+    },
+    "label_4": {
+      "kind": "text",
+      "default": "声线·日",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "value_4": {
+      "kind": "text",
+      "default": "高槻凛",
+      "maxChars": 8,
+      "font": "body"
+    },
+    "quote": {
+      "kind": "text",
+      "default": "“偏差零点三度，重测。这条线要走一百年。”",
+      "maxChars": 28,
+      "font": "body"
+    },
+    "bio": {
+      "kind": "text",
+      "default": "岑砚是第七导线队的测绘组长，也是缓行站上资历最老的现役队员。她习惯在日出前把晷针插进冻土，用影子校准当天的第一条基线。",
+      "maxChars": 90,
+      "font": "body",
+      "lines": 3
+    }
+  },
+  "relations": [
+    "Column 656 x 1043 from the top; avatars 102 every 147 on a grey column; text column at x 367, 553 wide.",
+    "Name 58 bold between 40-unit grey brackets; chips 90 + 165 x 24 in two columns 285 apart, 48 between rows; voice rows yellow."
+  ],
+  "decoration": [
+    "The ghost word, avatar circles, rank marks, badges, tape rules and the tri-code rule: drawn."
+  ],
+  "provenance": {
+    "corpus": "traverse case (远垦导线 TRAVERSE): our own original one-page game site and two in-game screens in the frontier-survey grammar",
+    "experiment": "styles/frontier-survey/style.json provenance (reference site measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "The case's crew section (site/index.html #crew) as a parametric screen; numbers from the reference's DOM.",
+    "sampleIds": [
+      "traverse/section-02"
+    ],
+    "measured": [
+      "Reference: decoFlag clip 656 x 1043, hollow text 366 px at -0.08 em and 60% with a -45 degree stripe fill, switch items 102 every 147, title 58.5 px with 40.5 px brackets, label 90 x 24 and value 165 x 24 at 16.5 px.",
+      "Case first pass: the bracket glyphs in #8C8C8C measured 3.36:1; they are #6B6B6B."
+    ],
+    "summary": "traverse section-02"
+  }
+}
