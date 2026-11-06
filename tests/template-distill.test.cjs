@@ -212,8 +212,8 @@ test("distill: thresholds are the reference quartiles, archetype finds the left-
   assert.match(r.draft.palette.accent.value, /^#[0-9A-F]{6}$/);
   // Layout: every reference has its title on the left; nearest template is a left-title KV.
   assert.ok(r.archetypes[0].key.startsWith("landscape / title-left-middle"), r.archetypes[0].key);
-  // street-tape's section title card and section screen are left-title 16:9 layouts too (#312).
-  assert.ok(["kv.outfit-title-left", "kv.ef-narrative-lowerleft", "kv.operator-nameplate-ll", "card.tape-section-title", "kv.tape-cut-carousel"].includes(r.archetypes[0].nearest[0].id), JSON.stringify(r.archetypes[0].nearest));
+  // street-tape's section title card and section screen (#312) lattice-dossier's section heading and celestial-voyage's two section screens are left-title 16:9 layouts too.
+  assert.ok(["kv.outfit-title-left", "kv.ef-narrative-lowerleft", "kv.operator-nameplate-ll", "card.tape-section-title", "kv.tape-cut-carousel", "card.lattice-ghost-title", "kv.voyage-ticket-carousel", "kv.voyage-orbit-roster"].includes(r.archetypes[0].nearest[0].id), JSON.stringify(r.archetypes[0].nearest));
   assert.equal(r.archetypes[0].skeleton, undefined);
   assert.ok(r.draft.layout.grammar.some((line) => /Title on the left in 9\/9 annotated references \(a rule\)/.test(line)), r.draft.layout.grammar.join("\n"));
   // Type: the generated strokes are mincho-like.

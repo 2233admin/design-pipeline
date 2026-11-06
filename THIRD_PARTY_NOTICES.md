@@ -1021,3 +1021,11 @@ roles were measured from a reference corpus; nothing from that corpus is bundled
   weight axis kept, and the font's OFL text beside it (`fonts/OFL-Oswald.txt`). It is not renamed;
   the OFL declares no Reserved Font Name. Source URL, commit and checksum are in
   `tests/fixtures/street-tape/provenance.csv`.
+
+## Template style packs: the lattice-dossier test fixtures (2026-11-06)
+
+- Test fixtures only (`tests/fixtures/lattice-dossier/`, not packaged): WOFF subsets of Chakra Petch
+  Medium, Michroma and Oswald (The Chakra Petch, Michroma and Oswald Project Authors, SIL Open Font
+  License 1.1) limited to printable ASCII, with Oswald's variable weight axis kept, and each font's OFL
+  text beside it (`fonts/OFL-*.txt`). They are not renamed; none of the OFL texts declares a Reserved
+  Font Name. Source URL, commit and checksum are in `tests/fixtures/lattice-dossier/provenance.csv`.

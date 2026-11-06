@@ -48,7 +48,7 @@ const byRule = (report) => report.findings.map((f) => `${f.rule}:${f.slot}`).sor
 // ---- style packs ----------------------------------------------------------------------------
 
 test("every template belongs to a style pack with font roles, grammar, materials, motion and checks", () => {
-  assert.deepEqual(bank.styleIds(), ["acid-print-hud", "arknights-endfield", "cassandre-litho", "citypop-sleeve", "cyanotype-specimen", "frontier-survey", "shinbo", "street-tape", "woodblock-pixel", "xerox-flyer"]);
+  assert.deepEqual(bank.styleIds(), ["acid-print-hud", "arknights-endfield", "cassandre-litho", "celestial-voyage", "citypop-sleeve", "cyanotype-specimen", "frontier-survey", "lattice-dossier", "shinbo", "street-tape", "woodblock-pixel", "xerox-flyer"]);
   for (const id of bank.styleIds()) {
     const style = bank.loadStyle(id);
     for (const key of ["fonts", "layout", "materials", "checks"]) assert.ok(style[key], `${id} has ${key}`);
@@ -75,7 +75,7 @@ test("template list --style shows a style pack and its templates", (t) => {
   assert.ok(summary.grammar.length >= 5 && summary.materials.collage.length && summary.motion.fps === 30);
   assert.ok(summary.checks.browser.includes("collage-cover"));
   const all = cli(root, "template", "list");
-  assert.deepEqual(all.payload.styles.map((s) => [s.id, s.templates]), [["acid-print-hud", 1], ["arknights-endfield", 9], ["cassandre-litho", 7], ["citypop-sleeve", 3], ["cyanotype-specimen", 2], ["frontier-survey", 5], ["shinbo", 11], ["street-tape", 6], ["woodblock-pixel", 2], ["xerox-flyer", 3]]);
+  assert.deepEqual(all.payload.styles.map((s) => [s.id, s.templates]), [["acid-print-hud", 1], ["arknights-endfield", 9], ["cassandre-litho", 7], ["celestial-voyage", 4], ["citypop-sleeve", 3], ["cyanotype-specimen", 2], ["frontier-survey", 5], ["lattice-dossier", 5], ["shinbo", 11], ["street-tape", 6], ["woodblock-pixel", 2], ["xerox-flyer", 3]]);
 });
 
 test("shinbo templates pass the static check at every size and for 100 seeds", () => {
@@ -469,4 +469,40 @@ test("each text run's own colour is measured, page errors and empty pages are fi
   const away = cli(root, "template", "check", "away.html", "--chrome", BROWSER.chrome, "--puppeteer-module", BROWSER.puppeteerModule);
   assert.equal(away.status, 1, JSON.stringify(away.payload));
   assert.equal(away.payload.error.code, "KERNEL_FAILED");
+});
+
+// Text drawn with -webkit-text-stroke (hand-written HTML; template SVG uses the stroke attribute): #320.
+const STROKE_PAGE = (items) => `<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;width:1000px;height:600px;background:#101112;overflow:hidden}
+.t{position:absolute;white-space:nowrap;line-height:1;font-family:'Noto Sans CJK SC','Noto Sans SC',sans-serif;font-weight:900;font-size:90px}
+</style></head><body>${items}</body></html>`;
+
+test("stroked text is measured: an invisible outline fails, a visible one passes, the stroke counts as ink", { skip: BROWSER.skip, timeout: 300000 }, async (t) => {
+  const root = tempRoot(t);
+  const stroke = (id, left, top, fill, strokeCss, extra = "", word = "HOLD") => `<div class="t" data-chk="${id}" style="left:${left}px;top:${top}px;color:${fill};-webkit-text-stroke:${strokeCss};${extra}">${word}</div>`;
+  const page = STROKE_PAGE([
+    stroke("ghost", 40, 40, "transparent", "3px #101112"), // fill transparent, stroke the ground's colour: unseen
+    stroke("lowstroke", 400, 40, "transparent", "3px #1C1D1F"), // low-contrast stroke
+    stroke("white", 40, 200, "transparent", "3px #FFFFFF"), // visible outline text
+    stroke("same", 400, 200, "#101112", "3px #101112"), // everything the ground's colour
+    stroke("fillgone", 40, 360, "red", "0", "-webkit-text-fill-color:transparent"), // transparent fill, no stroke: really no paint
+    stroke("a", 400, 360, "transparent", "10px #FFFFFF", "", "H"), // fills 17px apart, 10px strokes reach to 7px
+    stroke("b", 466, 360, "transparent", "10px #FFFFFF", "", "H"),
+  ].join("\n"));
+  fs.writeFileSync(path.join(root, "stroke.html"), page);
+  const report = await pageCheck.checkPage({ file: path.join(root, "stroke.html"), puppeteerModule: BROWSER.puppeteerModule, chrome: BROWSER.chrome });
+  const contrast = (slot) => report.findings.find((f) => f.rule === "contrast" && f.slot === slot);
+  const ghost = contrast("ghost");
+  assert.ok(ghost && ghost.measured.ratio < 1.5 && ghost.measured.text === "#101112" && /Change the text colour|solid plate/.test(ghost.fix), JSON.stringify(report.findings.map((f) => `${f.rule}:${f.slot}`)));
+  assert.ok(contrast("lowstroke") && contrast("lowstroke").measured.ratio < 1.5);
+  assert.ok(!contrast("white"), "a white outline on a dark ground passes");
+  assert.ok(!report.notes.some((n) => /^(ghost|lowstroke|white|same):.*not a colour/.test(n)), report.notes.join(" | "));
+  // fill and stroke both the ground's colour: 1:1, measured against the ground without the stroke
+  const same = contrast("same");
+  assert.ok(same && same.measured.ratio < 1.5, JSON.stringify(same));
+  // a transparent fill with no stroke has no paint to measure: still a note, not a finding
+  assert.ok(!contrast("fillgone") && report.notes.some((n) => /^fillgone:.*not a colour/.test(n)), report.notes.join(" | "));
+  // two outline words whose strokes touch but whose fills do not: the stroke is ink
+  assert.ok(report.findings.some((f) => f.rule === "text-overlap" && f.slot === "a"), JSON.stringify(report.findings.map((f) => `${f.rule}:${f.slot}`)));
+  assert.deepEqual(byRule(report).filter((r) => !r.startsWith("contrast:")), ["text-overlap:a"]);
 });

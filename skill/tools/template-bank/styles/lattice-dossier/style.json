@@ -1,0 +1,246 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "lattice-dossier",
+  "title": "Lattice dossier: an industrial dossier-terminal game site grammar - near-black ground, a 172-unit lattice crossed by both diagonals, three frame hairlines, one signal cyan for state only, a half-cut rail numeral, ghost words under the base line",
+  "summary": "A near-black terminal (never pure black) ruled by three hairlines that frame every screen (y 152, y 900, x 1683: top band, stage, base band; main area and a 237-unit right rail), a 172-unit square lattice with both diagonals at 12 levels above the ground, one signal cyan used only for state, a right-rail pager whose giant wide two-digit numeral is cut to its top 55%, Latin set as a sign above or beside the CJK (wide caps over a 60-unit CJK title), a 230 x 6 cyan bar under section titles, a 112-unit ghost word sitting on the y900 line, full-screen paging with a horizontal push. No rounded corners.",
+  "provenance": {
+    "case": "fogwake (雾航信标 FOGWAKE): an original official site in this grammar - six full screens (index, bulletin, pilots, atlas, archive, more), a news list page, a 390-wide page, a no-figure show mode and a ?slot=1 placeholder mode with 15 image-generation task sheets - plus two in-game screens (lobby terminal, tower-defence battle HUD).",
+    "lineage": "The official-site grammar of dark industrial-fantasy squad games (2020s): a near-black dossier terminal with hairline frames, a lattice ground, one cool signal colour and numbered full-screen sections. Read and measured on a live official site captured with a headless browser (screens, interaction states, the news page, the 390-wide page; computed styles and pixel samples); the captures stay private and are not shipped. Borrowed: the grammar and the measured proportions. Never borrowed: any name, logo, wordmark, character, organisation, term, slogan or picture.",
+    "borrow": "Borrow grammar, never assets. Every name, mark, term, headline and picture in the case and the templates is our own (雾航信标, 信标局, 引航员, 岚汀, 潮雾); the case's pictures are code-drawn (a fog harbour with a lighthouse, an isometric chart table, particle emblems), characters are sized placeholder frames in ?slot=1 with a generation task sheet each.",
+    "rounds": "template check --browser on 10 pages (six screens at 1920 x 1080, the 390-wide page, two in-game screens, the news page): 144 findings first pass, 42, 8, final 0. The first pass was mostly off-screen sections whose current slide stayed visible (visibility: visible inside a hidden parent), white text over the cyan rail numeral, ghost words without data-deco, a stroked title (-webkit-text-stroke is not hidden by the check's ground pass), Latin faces given mixed CJK copy, and a mobile-only stack laid out on the desktop. fonts query --style gothic --weight 700 covers all 285 CJK characters of the copy; Michroma, Oswald and Chakra Petch cover all of their Latin copy (fonts measure, nothing missing).",
+    "measured": [
+      "Frame hairlines at y 152, y 900 (83.3%) and x 1683 (right rail 237 units, 12.3%), about rgba(255,255,255,.3) on the ground.",
+      "Lattice: squares of 172 units (vertical lines at x 137, 309, 481 ... 1512; rows 173, 345, 517) with both diagonals, line #1B1B1B on ground #0F0F0F (12 levels).",
+      "Signal cyan #18D1FF (progress segment y 902-909, computed style of nav and tags); the case uses #1FCFFF. Outside the first screen cyan covers under 3% of a screen; the first screen's cyan slab is x 0-840, y 108-1080.",
+      "Rail numeral: wide DemiBold 86.4 units in a 47.5-unit window (top 55% only), right edge 38 units in; '// 02 / 05' 18 units; screen name 18 units at 10% tracking; numeral : small line : name = 4.8 : 1 : 1.",
+      "Nav: Latin condensed 22 over CJK 14, gaps 80 units, current item both lines cyan. Section title: wide Latin 50 (or 20) over CJK 60, then a 230 x 6 cyan bar. Term rows: CJK 40 + wide Latin 20, 96-unit pitch.",
+      "Ghost word: condensed 112 units, -5% tracking, #242424, left edge 134-148, top on the y900 line.",
+      "Motion: the screen push is half done at 200 ms and complete by 350-400 ms; 18 of 20 computed transitions are 0.3 s (opacity, transform); the news carousel advances about every 5 s.",
+      "64 px: with logos masked, the six screens read as the reference's family (dark, hairline frame, one cyan) and apart from street-tape (grey and acid) and the six earlier game cases; acid-print-hud is the nearest dark pack but carries acid, not cyan, and no frame lines."
+    ],
+    "accessed": "2026-11-06"
+  },
+  "palette": {
+    "bg": {
+      "value": "#101112",
+      "use": "every screen's ground (never pure black) and the plate under the rail's small line"
+    },
+    "cyan": {
+      "value": "#1FCFFF",
+      "use": "the one strong colour, state only: current nav and tab, the rail numeral, tags, progress, the short title bar"
+    },
+    "cyan_dim": {
+      "value": "#1592B4",
+      "use": "the main button at rest (black text 5.6:1); it turns full cyan on hover"
+    },
+    "top": {
+      "value": "#050506",
+      "use": "the top band under the nav (the site fades black to clear; templates draw it solid)"
+    },
+    "black": {
+      "value": "#000000",
+      "use": "text on cyan"
+    },
+    "white": {
+      "value": "#FFFFFF",
+      "use": "titles, nav, rail text"
+    },
+    "t2": {
+      "value": "#D2D4D6",
+      "use": "list titles and dates"
+    },
+    "grid": {
+      "value": "#1C1D1F",
+      "use": "the 172-unit lattice and its diagonals (decoration)"
+    },
+    "line": {
+      "value": "#4A4C4F",
+      "use": "the three frame hairlines (y 152, y 900, x 1683)"
+    },
+    "ghost": {
+      "value": "#232527",
+      "use": "the ghost word under the y900 line (decoration only)"
+    },
+    "btn": {
+      "value": "#4E5054",
+      "use": "the grey READ MORE plate (#D2D4D6 text, 5.4:1)"
+    },
+    "track": {
+      "value": "#9B9EA1",
+      "use": "the progress track"
+    },
+    "plate": {
+      "value": "#0B0C0D",
+      "use": "the dark lower part of a column under its title"
+    }
+  },
+  "fonts": {
+    "roles": {
+      "head": {
+        "stack": [
+          "Noto Sans SC",
+          "Noto Sans CJK SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 700,
+        "use": "CJK titles, names, nav CJK, list titles, buttons"
+      },
+      "body": {
+        "stack": [
+          "Noto Sans SC",
+          "Noto Sans CJK SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 400,
+        "use": "paragraphs and notes; any mixed CJK and Latin copy"
+      },
+      "wide": {
+        "stack": [
+          "Michroma",
+          "Noto Sans SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 400,
+        "use": "Latin signs: the brand, section Latin, the rail numeral and screen name; Latin and digits only"
+      },
+      "narrow": {
+        "stack": [
+          "Oswald",
+          "Noto Sans SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 500,
+        "use": "nav Latin, small labels, ghost words; Latin and digits only"
+      },
+      "mono": {
+        "stack": [
+          "Chakra Petch",
+          "Oswald",
+          "Noto Sans SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 500,
+        "use": "dates in the dossier form 2026 // 11 / 06, counters, READ MORE; Latin and digits only"
+      }
+    },
+    "faces": [
+      {
+        "family": "Noto Sans SC",
+        "weight": 700,
+        "file": "NotoSansSC[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/notosanssc",
+        "licence": "SIL OFL 1.1",
+        "author": "Google"
+      },
+      {
+        "family": "Michroma",
+        "weight": 400,
+        "file": "Michroma-Regular.ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/michroma",
+        "licence": "SIL OFL 1.1",
+        "author": "The Michroma Project Authors"
+      },
+      {
+        "family": "Oswald",
+        "weight": 500,
+        "file": "Oswald[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/oswald",
+        "licence": "SIL OFL 1.1",
+        "author": "The Oswald Project Authors"
+      },
+      {
+        "family": "Chakra Petch",
+        "weight": 500,
+        "file": "ChakraPetch-Medium.ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/chakrapetch",
+        "licence": "SIL OFL 1.1",
+        "author": "The Chakra Petch Project Authors"
+      }
+    ],
+    "resolve": "fonts query --text-file <all CJK copy> --style gothic --weight 700 resolves Noto Sans SC (the case: 285 characters, none missing); Michroma, Oswald and Chakra Petch are Latin only (fonts measure --path), so mixed strings go to head or body, never wide, narrow or mono.",
+    "licence": "All roles use SIL OFL 1.1 fonts.",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. --font-dir <dir> reads coverage and embeds the faces. Michroma is very wide (about 0.95 em per cap): give its slots room."
+  },
+  "layout": {
+    "grammar": [
+      "Three hairlines frame every screen: y 152 (top band), y 900 (base band) and x 1683 (a 237-unit right rail); pictures and lists start on 152 and end on 900; the rail holds only the pager, downloads and class icons.",
+      "Ground is near-black #101112, never pure black, ruled by a 172-unit square lattice with both diagonals 12 levels above it; corner dot screens fade in from the lower corners.",
+      "One signal cyan, for state only: the current nav item and tab, the rail numeral, tags, the progress segment, a 230 x 6 bar under a section title; outside the first screen it covers under 3%. The first screen alone may carry one large cyan slab with knocked-out letters.",
+      "The rail pager: a giant wide two-digit numeral cut to its top 55%, '// 02 / 05' over its right half on a ground plate, then the screen name in wide caps at 10% tracking; numbers run from 00.",
+      "Latin is a sign: wide caps above or beside the CJK (20 or 50 over a 60-unit CJK title; terms CJK 40 + Latin 20 on one baseline); nav pairs are condensed Latin 22 over CJK 14 with 80-unit gaps.",
+      "A ghost word (condensed 112, -5%) sits on the y900 line and bleeds off the bottom; it names the screen and never carries information.",
+      "No rounded corners: tabs, buttons, thumbs and cards are square; dates read 2026 // 11 / 06."
+    ]
+  },
+  "materials": {
+    "procedural": [
+      "the lattice and the three frame hairlines (lattice() and hair() in layouts-lattice.cjs)",
+      "the half-cut rail numeral (railNumber())",
+      "the placeholder brand mark: lens rings crossed by one horizontal beam (no letter shapes)"
+    ],
+    "recipes": [
+      "Corner dot screens: materials generate --generator halftone --params '{\"periodPx\":8,\"angleDeg\":0,\"coverage\":0.18}' --seed 1, laid at 30-40% with a radial mask from a lower corner.",
+      "Characters and key art come from an image-generation task sheet (#311) with a painted-in blend (grade to the scene, fog wrap, a cyan rim from the brightest light); until then the slot shows its size, safe box and the boxes the UI covers, and a cut-out goes in with materials cut --mode none --finish cut."
+    ],
+    "collage": [
+      "Pictures fill whole stage areas (152 to 900) or full columns; text never sits on a picture without a ground plate or a dark fade under it."
+    ],
+    "sources": "Everything is drawn; pictures are your own art in the image slots.",
+    "budget": {
+      "inks": 1,
+      "effectsMax": 2,
+      "tiltedElements": 0
+    }
+  },
+  "motion": {
+    "fps": 60,
+    "grammar": [
+      "Paging is full-screen: wheel, keys, nav and the rail all move one screen; the next screen pushes in from the right over 400 ms (half way at 200 ms), the old one slides 30% left and dims.",
+      "After the push, the screen's content rises 18 units and fades in over 0.3 s, staggered by 0.1 s; all hovers are 0.3 s colour changes to cyan.",
+      "The bulletin carousel advances every 5 s with its progress segment; a term list morphs one particle figure into the next over 0.9 s."
+    ],
+    "flashLimit": "No flashing; the beacon beam sweeps 16 degrees over 7 s."
+  },
+  "checks": {
+    "static": [
+      "text-overflow",
+      "text-length",
+      "type-size",
+      "contrast",
+      "accent-budget"
+    ],
+    "browser": [
+      "text-overlap",
+      "off-canvas",
+      "collage-cover",
+      "contrast",
+      "text-occluded",
+      "glyph-coverage"
+    ],
+    "browserOnRender": true,
+    "guidance": [
+      "64 px distinctiveness (guidance): shrink each screen to 64 px tall with the logo masked beside street-tape and the six game packs; the dark ground, the frame lines and one small cyan state should still read. A cyan larger than a state (outside the first screen) reads as a generic tech landing page instead.",
+      "The rail numeral is decoration (data-deco / a decor slot): the small line repeats the number; put a ground plate under the small line where it crosses the numeral, or the check measures white on cyan.",
+      "Off-screen sections must hide their children too: visibility: visible on a current slide inside a hidden section stays visible to the check (off-canvas).",
+      "Do not stroke a title with -webkit-text-stroke: the check's ground pass hides fill, not stroke, and measures the title against itself; fake weight with text-shadow.",
+      "Never set mixed CJK and Latin in Michroma, Oswald or Chakra Petch (glyph-coverage); split the string or use head or body."
+    ],
+    "note": "The browser check runs on every render (the lattice, the clipped numeral and the fades are measured in pixels)."
+  },
+  "examples": {
+    "note": "Renders of the case that stay examples (outside the repository, with the owner).",
+    "renders": [
+      {
+        "screen": "official site, six screens, the news page and the 390-wide page",
+        "file": "fogwake case, shots/ (owner's copy, not in the repository)",
+        "why": "a paged site with scripts and interaction, not a parametric layout; its parts are the five templates"
+      },
+      {
+        "screen": "in-game lobby terminal and battle HUD",
+        "file": "fogwake case, shots/game-*.png (owner's copy)",
+        "why": "game screens built from the same parts; the tilted tile terminal and the isometric field are game-specific"
+      }
+    ]
+  }
+}

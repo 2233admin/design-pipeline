@@ -1,0 +1,264 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "celestial-voyage",
+  "title": "Celestial voyage: a star-voyage fantasy RPG's official-site grammar - deep navy star field, gold only as hairlines and the current state, a heavy CJK serif title over a hairline italic Latin ghost, gilt ticket cards and a faction orbit",
+  "summary": "A deep navy star field fills every screen; gold is the only accent and appears as hairlines, underlines, card rims and the current state (about 1-5% of a section). Section titles are a heavy CJK serif with a hairline italic Latin ghost overlapping their lower third. A 75-unit black bar carries a logo that hangs 62 units out of it and a cream download tab rounded only at the bottom left. Cards are gilt-rimmed rounded frames; the character section hangs faction medallions on a huge arc whose centre sits off the left of the screen.",
+  "provenance": {
+    "case": "vesperwake (长庚航志 VESPERWAKE): an original one-page official site (home, news, crew, world chart and footer; 1920 and 390 wide, a ?slot=1 placeholder mode) and two in-game screens (star chart, banner), every character position carried in the default (show) mode by type, frames, data and generated textures, with no figures and no drawn pseudo-illustration, and in slot mode by a sized placeholder frame with an image-generation task sheet and a layers.json.",
+    "lineage": "The official-site grammar of star-voyage fantasy RPGs (2020s): a deep navy star field, gold hairline UI, a heavy serif CJK title with a Latin ghost, a hanging logo and a cream download tab, fullpage sections, a faction orbit. Read and measured on the public reference site the owner named (screenshots, computed styles and timings with Playwright); the captures stay private and are not shipped. Borrowed: the grammar and the measured proportions. Never borrowed: any name, logo, wordmark, character, mascot, organisation, slogan, picture, vehicle silhouette or the reference's own glyph shapes.",
+    "borrow": "Borrow grammar, never assets. Every name, logo, character, headline and picture in the case and the templates is our own (长庚航志, 长庚号 the star-sail ship, 岑星澜, 守夜同盟, 琥珀港); in show mode every character position is carried by the grammar itself (type, frames, data, generated textures) with no figure and no code-drawn pseudo-illustration, and in slot mode by a sized placeholder frame waiting for original art from an image-generation task sheet and its layer contract.",
+    "rounds": "template check --browser on the case: first pass 39 findings over 7 pages (4 sections at 1920 x 1080, the 390-wide page, two in-game screens): 3 ghost-title overlaps (a designed overlap, now one data-grp block), 14 off-canvas (edge cards and chart ports that bleed by design; captions now hidden at the edges and off-screen ports faded), 9 contrast and 3 text-occluded on decorative boarding tickets (now data-deco), 4 mixed-colour currency units, 3 small labels on locked items, 3 more on the mobile page; final 0. Slot mode and the full page: 0.",
+    "measured": [
+      "Top bar 75 units high, rgba(0,0,0,.8); logo 244 x 129 at (71, 8), hanging 62 units below the bar; nav items 139 wide from x 353, 22.5 units #747474, the current 24 units #E1B066 with a full-width 3-unit underline.",
+      "Download tab 225 x 83 at the top right, top edge bleeding 2 units, only the bottom-left corner rounded (22.5); cream gradient #F7E8CC to #E7D1A9, text #1C1919 at 28.5 units 700.",
+      "Section title at (209, 163): CJK serif ink about 46 units; a hairline italic Latin ghost (stroke only, dark gold about #9C7D4E) about 40 units high overlaps the CJK's lower third.",
+      "News card 626 x 518, outer corners 37.5, picture inset 8 with 22.5 corners and a 1-unit #C99D66 rim; card pitch 673; caption bar 140 units with a 6 x 33 #E1B066 tick and 27/36-unit #CECECE text; round arrows 98 across with a #886C42 ring.",
+      "Character panel x 18-1531, y 313-915; name 52.5 units; story box 475 wide, rgba(0,0,0,.5), corners 10.5, 16.5/20.25 units #BFBFBF; avatars 87 square on a 100 pitch; faction medallions 120 across (current about 140, gold diamonds either side) on an arc of radius about 760 centred off the left, 13.7 degrees apart.",
+      "Area: dark pixels 52-94% of the news, character and world sections, gold 0.6-5%, light pixels 9-10% (all from the art); the home key visual is a bright version painting that changes every version.",
+      "Motion: a radial warp intro (16.7 s to the bar on first load, mostly asset loading); the bar slides in over 0.5 s ease-in-out; fullpage sections on the wheel; carousels 0.6 s; the orbit turns in 0.3 s linear; the PV ring turns once in 5 s.",
+      "64 px: with logos masked the case's sections read as this grammar beside the reference and apart from street-tape (light grey and acid) and the six earlier game packs (acid-print-hud is dark but acid and chamfered)."
+    ],
+    "accessed": "2026-11-06"
+  },
+  "palette": {
+    "navy": {
+      "value": "#0B1426",
+      "use": "the star-field ground of every screen"
+    },
+    "bar": {
+      "value": "#020306",
+      "use": "the top bar (black at 80% over navy) and card caption bars"
+    },
+    "panel": {
+      "value": "#151C2B",
+      "use": "the character panel and medallion discs"
+    },
+    "plate": {
+      "value": "#07090E",
+      "use": "story box, quote lines, tag capsules"
+    },
+    "frame": {
+      "value": "#15130F",
+      "use": "the outer frame of a news card and the round arrows"
+    },
+    "gold": {
+      "value": "#E1B066",
+      "use": "the one accent: current nav and underline, caption tick, active card rim, orbit arc, medallions"
+    },
+    "gold_line": {
+      "value": "#C99D66",
+      "use": "1-unit picture rims, dates, Latin sub-lines"
+    },
+    "gold_dim": {
+      "value": "#886C42",
+      "use": "capsule and arrow rings, inactive dots"
+    },
+    "cream": {
+      "value": "#EFDCBB",
+      "use": "the download tab, capsule labels, brand Latin"
+    },
+    "cream_hi": {
+      "value": "#F7E8CC",
+      "use": "bright stars"
+    },
+    "ink": {
+      "value": "#1C1919",
+      "use": "text on the cream tab"
+    },
+    "white": {
+      "value": "#F6F3EC",
+      "use": "titles, names, quotes"
+    },
+    "text": {
+      "value": "#CECECE",
+      "use": "card headlines"
+    },
+    "text2": {
+      "value": "#BFBFBF",
+      "use": "story text"
+    },
+    "cv": {
+      "value": "#D7D7D7",
+      "use": "voice-actor name"
+    },
+    "mute": {
+      "value": "#8C8C8C",
+      "use": "inactive nav, the rail line, login"
+    },
+    "ice": {
+      "value": "#A9C8EE",
+      "use": "cool stars, rim light in generated art"
+    },
+    "violet": {
+      "value": "#8A7CF0",
+      "use": "the social icon column"
+    },
+    "ghost": {
+      "value": "#9C7D4E",
+      "use": "the hairline Latin ghost under titles (stroke only, decoration)"
+    }
+  },
+  "fonts": {
+    "roles": {
+      "head": {
+        "stack": [
+          "Noto Serif SC",
+          "Noto Serif CJK SC"
+        ],
+        "generic": "serif",
+        "weight": 900,
+        "use": "section titles, names, the wordmark, quotes: a heavy CJK serif"
+      },
+      "body": {
+        "stack": [
+          "Noto Sans SC",
+          "Noto Sans CJK SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 500,
+        "use": "nav, headlines, story, capsules and any mixed CJK and Latin copy"
+      },
+      "label": {
+        "stack": [
+          "Cinzel",
+          "Cormorant Garamond",
+          "Noto Serif SC"
+        ],
+        "generic": "serif",
+        "weight": 700,
+        "use": "spaced Latin capitals: brand Latin, dates, romanised names; Latin and digits only"
+      },
+      "ghost": {
+        "stack": [
+          "Cormorant Garamond",
+          "Cinzel",
+          "Noto Serif SC"
+        ],
+        "generic": "serif",
+        "weight": 300,
+        "use": "the hairline italic Latin ghost under titles and the CV: mark; Latin only, stroke only"
+      }
+    },
+    "faces": [
+      {
+        "family": "Noto Serif SC",
+        "weight": 900,
+        "file": "NotoSerifSC[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/notoserifsc",
+        "licence": "SIL OFL 1.1",
+        "author": "Google"
+      },
+      {
+        "family": "Noto Sans SC",
+        "weight": 500,
+        "file": "NotoSansSC[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/notosanssc",
+        "licence": "SIL OFL 1.1",
+        "author": "Google"
+      },
+      {
+        "family": "Cinzel",
+        "weight": 700,
+        "file": "Cinzel[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/cinzel",
+        "licence": "SIL OFL 1.1",
+        "author": "Natanael Gama"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "weight": 300,
+        "file": "CormorantGaramond[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/cormorantgaramond",
+        "licence": "SIL OFL 1.1",
+        "author": "Christian Thalmann"
+      }
+    ],
+    "resolve": "fonts query --text-file <all copy> --style mincho --weight 900 resolves the CJK serif for head (the case's copy: Noto Serif CJK SC covers it); Cinzel and Cormorant Garamond are Latin only (fonts measure --path), so mixed CJK and Latin strings go to head or body, never label or ghost. Cormorant Garamond ships no italic file: the browser obliques it, which is the look the grammar wants for a hairline ghost.",
+    "licence": "All roles use SIL OFL 1.1 fonts.",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. --font-dir <dir> reads coverage and embeds the faces."
+  },
+  "layout": {
+    "grammar": [
+      "Deep navy star field everywhere (#0B1426 with nebula haze); gold #E1B066 is the only accent and appears only as hairlines, underlines, rims, ticks and the current state (1-5% of a section); bright areas belong to the art.",
+      "A 75-unit black bar at 80%: the logo hangs 62 units below it at the left, nav items sit on a 139-unit pitch from x 353, the current item turns gold with a full-width underline, and a cream download tab (225 x 83, rounded only bottom-left) closes the right end.",
+      "Section titles at (209, 163): a heavy CJK serif in white over a hairline italic Latin ghost (stroke only, dark gold) that overlaps the CJK's lower third and may run longer than it; the home screen has none.",
+      "A left rail: a 1-unit line at x 77 broken by a column of nine social icons, with CONTACT US set vertically above them; content passes under it.",
+      "News is a horizontal row of gilt-rimmed rounded cards (626 x 518, corners 37.5 / 22.5) on a 673 pitch, the current one rimmed in gold, each with a dark caption bar and a 6 x 33 gold tick; round dark arrows with a dark-gold ring sit on the gaps; a gold-outline 'more +' capsule closes the row.",
+      "The character section is a translucent panel with the figure breaking its top and bottom, an info column (name, sign, CV with a voice button, a story box, square avatars) on the left, a serif quote on dark plates over the figure, and faction medallions on a huge arc centred off the left of the screen.",
+      "The world section is a draggable chart: dotted gold orbits, ports labelled with a diamond, a hairline leader and a serif name."
+    ]
+  },
+  "materials": {
+    "procedural": [
+      "star dust (materials generate halftone, mode fm, cream ink at 2.5% coverage) and nebula haze, dotted gold orbits, medallions with a dotted inner ring and one serif character, four-point stars",
+      "ticket perforation: two half-circle bites and a dashed gold line across the top of a caption bar (the case's signature for news)",
+      "the placeholder logo mark: a gilt astrolabe ring with ticks, a tilted orbit and a four-point star (no crescent, no comet stroke)"
+    ],
+    "recipes": [
+      "A star field under a picture or a placeholder: materials generate --generator halftone --params '{\"mode\":\"fm\",\"periodPx\":6,\"coverage\":0.025,\"ink\":\"#F7E8CC\",\"paper\":\"none\"}' --seed 4, tiled at 512 and laid at 22% in screen mode over the navy sky (the case's star dust).",
+      "News covers and passes without art: a printed ink flat (materials generate --generator print --params '{\"ink\":\"#14213F\",\"paper\":\"laid-cream\",\"margin\":0}') under a big serif keyword and an issue number, and a paper stub (materials generate --generator paper --params '{\"profile\":\"laid-cream\"}') carrying the category: real texture, live type, no drawn picture.",
+      "Characters and key art come from an image-generation task sheet (#311): one sheet per frame with its size, safe box, the boxes left for UI, a warm lantern key with an ice rim, the palette and 'original characters only'; until then the frame shows its size and safe box, and a cut-out goes in with materials cut --mode none --finish cut, blended painted-in (grade, light wrap, a star-tide occluder) per composite/*.layers.json."
+    ],
+    "collage": [
+      "Pictures sit only inside gilt-rimmed rounded frames or behind the panel; text on a picture always sits on a dark caption bar or plate."
+    ],
+    "sources": "Everything is drawn; pictures are your own art in the image slots.",
+    "budget": {
+      "inks": 1,
+      "effectsMax": 2,
+      "tiltedElements": 0
+    }
+  },
+  "motion": {
+    "fps": 60,
+    "grammar": [
+      "A radial warp intro (streaks accelerating from the centre, gold and ice) before the first screen; keep it under 3 s and skippable (the reference waits on assets for up to 17 s).",
+      "The top bar slides down and fades in over 0.5 s ease-in-out after the intro; sections snap one screen per wheel step and the current nav item follows.",
+      "Carousels move in 0.6 s on cubic-bezier(.15,.59,.45,.89); the faction orbit turns in 0.3 s linear; the PV ring turns once every 5 s; key-art rings turn slowly (90-160 s) and lantern lights rise over 14 s."
+    ],
+    "flashLimit": "No flashing; the news row advances every 6.5 s and pauses on hover."
+  },
+  "checks": {
+    "static": [
+      "text-overflow",
+      "text-length",
+      "type-size",
+      "contrast",
+      "accent-budget"
+    ],
+    "browser": [
+      "text-overlap",
+      "off-canvas",
+      "collage-cover",
+      "contrast",
+      "text-occluded",
+      "glyph-coverage"
+    ],
+    "browserOnRender": true,
+    "guidance": [
+      "64 px distinctiveness (guidance): shrink each screen to 64 px tall beside street-tape and the six earlier game packs with the logo masked; the navy field, the gold hairline bar and the cream tab at top right, and the row of rimmed cards or the orbit arc should still read. A grey or acid page reads as street-tape or acid-print-hud instead.",
+      "Show mode without figures (guidance): carry each screen with the grammar - the serif title and its ghost, gilt frames, data (dates, routes, stats), live UI and textures from materials generate - and keep drawn objects abstract (orbit lines, ticks, four-point stars). Code-drawn pseudo-illustration (props, mascots, scenery) reads cheap next to a reference carried by painted art; leave that to generated art dropped in through the layer contract.",
+      "The Latin ghost overlaps its CJK title by design: give both one data-grp prefix (t-news/zh, t-news/en) and mark the ghost data-deco, or the browser check reports text-overlap.",
+      "Cards and ports that bleed off the screen edge are design, not error: hide their captions (opacity 0) at the edges and fade off-screen ports, or the browser check reports off-canvas.",
+      "A currency pill that holds an icon, a value and a plus is three units: wrap the value in its own element, or the check measures the plus's cream disc against the pill.",
+      "Never set a mixed CJK and Latin string in Cinzel or Cormorant Garamond: use head or body (glyph coverage)."
+    ],
+    "note": "The browser check runs on every render (the ghost, the bites and the orbit are measured in pixels)."
+  },
+  "examples": {
+    "note": "Renders of the case that stay examples (outside the repository, with the owner): the four sections at 1920 x 1080, the full page, the 390-wide page, slot mode and the two in-game screens.",
+    "renders": [
+      {
+        "screen": "official site, home key visual (the gilt astrolabe) and the world chart",
+        "file": "vesperwake case, shots/ (owner's copy, not in the repository)",
+        "why": "a one-page site with scripts, a canvas sky and a draggable chart, not a parametric layout; its bar, cards and roster are the templates"
+      },
+      {
+        "screen": "in-game star chart and banner",
+        "file": "vesperwake case, shots/game/ (owner's copy, not in the repository)",
+        "why": "screens built from the same parts; their port list and pull buttons are game-specific"
+      }
+    ]
+  }
+}
