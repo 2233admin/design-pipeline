@@ -27,8 +27,9 @@ grammar + check rules; its templates are the parameterised layouts of that gramm
 | `cyanotype-specimen` | 2 (card frame in four rarities, pack opening) | Cyanotype specimen sheets: one Prussian blue, hand-brushed fields, white-line specimens, rarity by process not colour |
 | `street-tape` | 6 (site top bar, section title block, vertical pager, cut container with carousel, sticker CTA, first screen as layers) | Japanese street-fashion city game site: light grey, one acid yellow-green, black fine stripes, rounded slabs with one 49-degree cut, a film strip, numbered three-line section titles |
 | `frontier-survey` | 5 (left rail, section opener, crew dossier, album screen, version timeline) | Industrial sci-fi frontier game site: a white page with a fixed left rail, one signal yellow as tall columns and side bands, four-layer section titles, hatched ghost lettering, contours and data marks (objects come from image slots) |
+| `lattice-dossier` | 5 (top frame, rail pager, section heading with ghost word, bulletin screen, four columns) | Industrial dossier-terminal game site: near-black ground, a 172-unit lattice with both diagonals, three frame hairlines (y 152, y 900, x 1683), one signal cyan for state only, a rail numeral cut to its top 55% |
 
-The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `frontier-survey` from a reference site captured for the owner (both kept private, measured, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
+The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `frontier-survey` from a reference site captured for the owner and `lattice-dossier` from a live official site captured and measured privately (all kept private, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
 the rule *borrow grammar, never assets*); `examples` in each pack lists the case screens that stayed example
 renders because their structure was a one-off.
 
@@ -313,6 +314,16 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
   `kv.survey-album --param side=right --param band=grey --param wordmark=false` is the mirrored companion
   screen. Figures go in `card.survey-dossier`'s `portrait` (transparent, from an image-generation task
   sheet, #311); a showcase without characters puts an instrument drawing there.
+
+- **lattice-dossier**: the frame is fixed (`FRAME` in `layouts-lattice.cjs`: hairlines at y 152, y 900, x 1683
+  of 1920; `GRID` 172). Cyan is for state only (current nav and tab, tags, progress, the rail numeral, a
+  short bar under a title): every default render keeps it under 3% of the canvas. The rail numeral is the
+  derived decor slot `numeral` drawn from `current`, cut to its top 55%; the readable number is the small
+  line on its ground plate. `current` and `total` take digits only; dates take the dossier form
+  `2026 // 11 / 06` (digits, spaces and `/`). Michroma, Oswald and Chakra Petch are Latin-only roles
+  (`wide`, `narrow`, `mono`); mixed copy goes in `head` or `body`. Michroma is very wide: give its slots
+  room. Art goes in `art`, `media` and `col_N`; characters come from an image-generation task sheet (#311)
+  with a painted-in blend (grade to the scene, fog wrap, a cyan rim), not a sticker outline.
 
 Layout helpers for new packs: `layout-kit.cjs` (`rbox` for a tilted slot's box, `tilt`, `ngon`,
 `discStripes`, a seeded `rng`); `d.text(..., { italic, filter })`, `d.lettering(..., { shadow: { dx, dy,
