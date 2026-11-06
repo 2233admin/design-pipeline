@@ -4,6 +4,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { assertKeys, fail, pngDimensions, resolveInside, sha256 } = require("../../scripts/contract-utils.cjs");
 const { decodePng, encodePng } = require("../../scripts/png-core.cjs");
+const matte = require("./matte.cjs");
+const raster = require("./raster.cjs");
 
 const SCOPE = "art-motion assets";
 const MAX_INPUTS = 200;
@@ -258,9 +260,13 @@ function inspectRegions(rootInput, frames, options) {
 // Ported from the SHAFT-style material study (numpy/OpenCV) to dependency-free typed-array code.
 // Inputs are PNG bytes like the keying route above; every operation is deterministic for a seed.
 
-const CUT_MODES = Object.freeze(["border", "paper", "white-matte", "none"]);
-const CUT_FINISHES = Object.freeze(["cut", "sticker", "ink", "plate"]);
-const CUT_PARAMS = Object.freeze(["threshold", "close", "open", "holeMax", "keep", "minFraction", "roi", "exclude", "box", "edgePx", "shadow", "seed", "jitter", "paper"]);
+const CUT_MODES = Object.freeze(["border", "paper", "white-matte", "grabcut", "none"]);
+const CUT_FINISHES = Object.freeze(["cut", "sticker", "outline", "ink", "plate"]);
+const CUT_PARAMS = Object.freeze(["threshold", "close", "open", "holeMax", "keep", "minFraction", "roi", "exclude", "box", "edgePx", "shadow", "seed", "jitter", "paper", "workPx", "iterations", "band", "rect", "defringe", "bgSigma", "chokePx", "outline"]);
+// Share of the edge band still closer to the local backdrop than to the figure above which a cut
+// piece is flagged (resolution-independent; the halo width in px is reported beside it and judged
+// at its use size by materials composite). #311 prototype: 0.43 raw, 0.17 after defringe.
+const HALO_LIMIT_SHARE = 0.25;
 
 function srgbToLinear(value) {
   const c = value / 255;
@@ -426,7 +432,7 @@ function cutParams(options) {
   if (!CUT_MODES.includes(options.mode)) fail(SCOPE, `mode must be one of ${CUT_MODES.join(", ")}`);
   const finishes = options.finishes ?? (options.mode === "none" ? ["ink", "plate"] : ["cut", "sticker"]);
   if (!Array.isArray(finishes) || !finishes.length || finishes.some((finish) => !CUT_FINISHES.includes(finish))) fail(SCOPE, `finishes must list ${CUT_FINISHES.join(", ")}`);
-  if (options.mode === "none" && finishes.some((finish) => finish === "cut" || finish === "sticker")) fail(SCOPE, "mode none has no matte; pick ink or plate, or a matte mode for cut/sticker");
+  if (options.mode === "none" && finishes.some((finish) => ["cut", "sticker", "outline"].includes(finish))) fail(SCOPE, "mode none has no matte; pick ink or plate, or a matte mode for cut/sticker/outline");
   const p = options.params ?? {};
   if (typeof p !== "object" || Array.isArray(p)) fail(SCOPE, "params must be an object");
   for (const key of Object.keys(p)) if (!CUT_PARAMS.includes(key)) fail(SCOPE, `unknown cut param ${key}; known: ${CUT_PARAMS.join(", ")}`);
@@ -447,6 +453,26 @@ function cutParams(options) {
   };
   if (!Array.isArray(params.shadow) || params.shadow.length !== 4 || params.shadow.some((v) => !Number.isFinite(v))) fail(SCOPE, "shadow must be [dx, dy, blurPx, opacity]");
   if (!Array.isArray(params.paper) || params.paper.length !== 3 || params.paper.some((v) => !Number.isInteger(v) || v < 0 || v > 255)) fail(SCOPE, "paper must be three integer channels");
+  if (options.mode === "grabcut") {
+    params.workPx = value("workPx", matte.GRABCUT_DEFAULTS.workPx, 64, 2048, true);
+    params.iterations = value("iterations", matte.GRABCUT_DEFAULTS.iterations, 1, 20, true);
+    params.band = value("band", matte.GRABCUT_DEFAULTS.band, 0.005, 0.3);
+    params.rect = p.rect === undefined ? [...matte.GRABCUT_DEFAULTS.rect] : normalizedRect(p.rect, "rect");
+    params.defringe = p.defringe ?? true;
+    if (typeof params.defringe !== "boolean") fail(SCOPE, "defringe must be true or false");
+    params.bgSigma = value("bgSigma", matte.DEFRINGE_DEFAULTS.bgSigma, 2, 120);
+    params.chokePx = value("chokePx", matte.DEFRINGE_DEFAULTS.chokePx, 0, 8, true);
+  } else {
+    for (const key of ["workPx", "iterations", "band", "rect", "defringe", "bgSigma", "chokePx"]) if (p[key] !== undefined) fail(SCOPE, `${key} applies to mode grabcut only`);
+  }
+  if (p.outline !== undefined) {
+    const o = p.outline;
+    if (!o || typeof o !== "object" || Array.isArray(o)) fail(SCOPE, "outline must be an object {white, black, smooth, offset} in fractions of the piece's long side");
+    for (const key of Object.keys(o)) if (!Object.hasOwn(matte.OUTLINE_DEFAULTS, key)) fail(SCOPE, `unknown outline key ${key}; known: ${Object.keys(matte.OUTLINE_DEFAULTS).join(", ")}`);
+    for (const key of ["white", "black", "smooth"]) if (o[key] !== undefined) finite(o[key], `outline.${key}`, 0, 0.1);
+    if (o.offset !== undefined && (!Array.isArray(o.offset) || o.offset.length !== 2 || o.offset.some((v) => !Number.isFinite(v) || Math.abs(v) > 0.1))) fail(SCOPE, "outline.offset must be [dx, dy] fractions of the long side, each within 0.1");
+  }
+  if (finishes.includes("outline") || p.outline !== undefined) params.outline = { ...matte.OUTLINE_DEFAULTS, ...(p.outline || {}) };
   return { mode: options.mode, finishes, params };
 }
 
@@ -633,6 +659,7 @@ function cutCollage(input, options) {
   const image = decodePng(input, "cut input"), lab = labPlanes(image), n = image.width * image.height;
   const outputs = [], findings = [], pieces = [];
   let measurements = { mode, width: image.width, height: image.height };
+  if (mode === "grabcut") return grabcutCollage(input, image, finishes, params);
   if (mode !== "none") {
     const { distance, backgroundSpread } = backgroundDistance(lab, mode, params.threshold);
     let mask = new Uint8Array(n);
@@ -714,6 +741,10 @@ function cutCollage(input, options) {
         const sticker = stickerImage(cut, { edgePx: params.edgePx ?? undefined, shadow: params.shadow, paper: params.paper });
         outputs.push({ name: `${id}-sticker.png`, finish: "sticker", piece: k, image: sticker, placement: rect, edgePx: sticker.edgePx });
       }
+      if (finishes.includes("outline")) {
+        const outline = matte.outlineImage(cut, params.outline);
+        outputs.push({ name: `${id}-outline.png`, finish: "outline", piece: k, image: outline.image, placement: rect, padPx: outline.padPx });
+      }
     });
   }
   if (pieces.length) measurements = { ...measurements, pieces };
@@ -730,4 +761,58 @@ function cutCollage(input, options) {
   return { input: { width: image.width, height: image.height, sha256: sha256(input) }, mode, finishes, params, measurements, findings, outputs };
 }
 
-module.exports = { CUT_FINISHES, CUT_MODES, cutCollage, gaussianBlur, inkImage, inspectRegions, keyFiles, keyedImage, labPlanes, percentile, plateImage, seededRandom, splitFile, splitSprites, stickerImage };
+// GrabCut route: for figures on gradient, vignetted or shadowed backdrops that the border and
+// paper references cannot separate (the #311 stand-in: border kept 85% of the frame, paper lost
+// the head). Colour GMMs + graph cut at workPx, guided-filter edge, defringe; each kept component
+// is a piece, measured for halo before and after defringe.
+function grabcutCollage(input, image, finishes, params) {
+  const planes = raster.planesOf(image), findings = [], outputs = [], pieces = [];
+  const run = matte.grabcutAlpha(planes, { workPx: params.workPx, iterations: params.iterations, band: params.band, rect: params.rect, keep: params.keep, seed: params.seed });
+  let colour = planes, alpha = run.alpha, edge;
+  if (params.defringe) {
+    const d = matte.defringe(planes, run.alpha, { bgSigma: params.bgSigma, chokePx: params.chokePx });
+    colour = { width: image.width, height: image.height, R: d.R, G: d.G, B: d.B }; alpha = d.A;
+    edge = { before: d.before, after: d.after, params: d.params };
+  } else {
+    const B = matte.backdropEstimate(planes, alpha, params.bgSigma ?? 25);
+    edge = { before: matte.edgeMetrics([planes.R, planes.G, planes.B], alpha, image.width, image.height, B) };
+  }
+  const { width, height } = image, n = width * height, hard = new Uint8Array(n);
+  for (let i = 0; i < n; i += 1) hard[i] = alpha[i] > 0.02 ? 1 : 0;
+  const comps = raster.components(hard, width, height);
+  const order = comps.sizes.map((size, i) => ({ size, label: i + 1 })).sort((a, b) => b.size - a.size).filter(({ size }) => size >= params.minFraction * n).slice(0, params.keep);
+  const measurements = { mode: "grabcut", width, height, ...run.measurements, edge };
+  if (!order.length) findings.push({ code: "matte-empty", severity: "error", message: "GrabCut kept no foreground component", fix: "Widen params.rect around the figure (fractions [x0,y0,x1,y1]) or narrow params.band; check that the figure differs from its backdrop" });
+  if (run.measurements.foregroundFraction > 0.7) findings.push({ code: "matte-uneven-background", severity: "warn", message: `GrabCut kept ${Math.round(run.measurements.foregroundFraction * 100)}% of the frame as foreground`, fix: "Tighten params.rect to the figure and raise params.band, or ask for a transparent PNG / flat plain-colour backdrop from the generator" });
+  const edgeNow = edge.after || edge.before;
+  if (edgeNow.contaminatedFractionOfBand > HALO_LIMIT_SHARE) findings.push({ code: "matte-halo", severity: "warn", message: `${Math.round(edgeNow.contaminatedFractionOfBand * 100)}% of the edge band still shows backdrop colour (${edgeNow.haloWidthPx} px along the contour; limit ${Math.round(HALO_LIMIT_SHARE * 100)}%)`, fix: params.defringe ? "Lower params.bgSigma to 12 so the local backdrop estimate follows the gradient, then cut again; for generated figures ask for a transparent PNG or a flat backdrop far from the figure's colours" : "Cut again with params.defringe true" });
+  const view = { width, height, R: colour.R, G: colour.G, B: colour.B, A: alpha };
+  order.forEach(({ label }, k) => {
+    let minX = width, minY = height, maxX = -1, maxY = -1;
+    for (let i = 0; i < n; i += 1) if (comps.labels[i] === label) { const x = i % width, y = (i - x) / width; if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
+    const pad = 4, rect = { x: Math.max(0, minX - pad), y: Math.max(0, minY - pad) };
+    rect.width = Math.min(width, maxX + 1 + pad) - rect.x; rect.height = Math.min(height, maxY + 1 + pad) - rect.y;
+    const piece = { width: rect.width, height: rect.height, R: new Float32Array(rect.width * rect.height), G: new Float32Array(rect.width * rect.height), B: new Float32Array(rect.width * rect.height), A: new Float32Array(rect.width * rect.height) };
+    for (let y = 0; y < rect.height; y += 1) for (let x = 0; x < rect.width; x += 1) {
+      const s = (rect.y + y) * width + rect.x + x, d = y * rect.width + x;
+      piece.R[d] = view.R[s]; piece.G[d] = view.G[s]; piece.B[d] = view.B[s]; piece.A[d] = comps.labels[s] === label ? view.A[s] : 0;
+    }
+    const touches = minX <= 1 || minY <= 1 || maxX >= width - 2 || maxY >= height - 2;
+    if (touches) findings.push({ code: "matte-touches-frame", severity: "warn", piece: k, message: `piece ${k} runs into the image edge`, fix: "If the figure is cropped in the source, ask for a full figure with margin; otherwise narrow params.rect and cut again" });
+    pieces.push({ piece: k, area: comps.sizes[label - 1], touchesFrame: touches });
+    const cut = raster.imageOf(piece), id = `piece-${k}`;
+    if (finishes.includes("cut")) outputs.push({ name: `${id}.png`, finish: "cut", piece: k, image: cut, placement: rect });
+    if (finishes.includes("sticker")) {
+      const sticker = stickerImage(cut, { edgePx: params.edgePx ?? undefined, shadow: params.shadow, paper: params.paper });
+      outputs.push({ name: `${id}-sticker.png`, finish: "sticker", piece: k, image: sticker, placement: rect, edgePx: sticker.edgePx });
+    }
+    if (finishes.includes("outline")) {
+      const outline = matte.outlineImage(cut, params.outline);
+      outputs.push({ name: `${id}-outline.png`, finish: "outline", piece: k, image: outline.image, placement: rect, padPx: outline.padPx });
+    }
+  });
+  if (finishes.includes("ink") || finishes.includes("plate")) findings.push({ code: "matte-finish-skipped", severity: "warn", message: "ink and plate finishes do not use a matte and are not made in grabcut mode", fix: "Cut again with --mode none --finish ink,plate for those pieces" });
+  return { input: { width, height, sha256: sha256(input) }, mode: "grabcut", finishes, params, measurements: { ...measurements, pieces }, findings, outputs };
+}
+
+module.exports = { CUT_FINISHES, CUT_MODES, HALO_LIMIT_SHARE, cutCollage, gaussianBlur, inkImage, inspectRegions, keyFiles, keyedImage, labPlanes, percentile, plateImage, seededRandom, splitFile, splitSprites, stickerImage };

@@ -11,7 +11,13 @@
 // template's data-decor) exempts a unit from overlap and contrast; data-bleed exempts it from the
 // canvas edge.
 //
-// Collage layers: <img>, SVG <image> and [data-collage] elements outside text units.
+// Collage layers: <img>, SVG <image> and [data-collage] elements outside text units. An image inside
+// [data-layer="ground"] (a template slot declared as a layer-contract ground, or a page's
+// composited scene) is the text's ground: it is sampled for contrast and never counted as collage.
+// The same holds for an image whose file is a ground output listed in a composite.json receipt
+// beside it (materials composite). Images tied to a receipt bring its measurements (halo, black
+// point, colour difference, upscale) and, for the character layer, its face and hand boxes, which
+// are checked against the measured text ink (safe-area-type).
 //
 // Measurements (all from screenshots of the page at 1 device pixel per CSS pixel):
 //   ink      every text unit painted alone in black and then in white with all other text and
@@ -28,6 +34,7 @@
 // the text colour against the ground inside the ink box), glyph-coverage (a string the browser
 // would set with per-glyph fallback).
 
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL, fileURLToPath } = require("node:url");
@@ -165,7 +172,10 @@ function discover() {
     });
     index += 1;
   }
+  let layerSources = null;
+  try { layerSources = JSON.parse(document.getElementById("template-params")?.textContent || "null")?.layerSources || null; } catch { layerSources = null; }
   const collage = [];
+  const images = [];
   let c = 0;
   // Collage layers: images, [data-collage], and elements painting a background image (url, normal
   // blend; multiply / screen texture overlays are paper and grain, not collage). A background layer
@@ -180,6 +190,18 @@ function discover() {
     if (element.parentElement && element.parentElement.closest("[data-collage]")) continue;
     const rect = element.getBoundingClientRect();
     if (rect.width < 1 || rect.height < 1 || effectiveOpacity(element) < 0.05) continue;
+    // A ground declaration is read at the slot level only: on the image itself, or on its own slot
+    // element ([data-slot][data-layer], the template's <g> around one <image>); never inherited from
+    // an arbitrary ancestor, so a wrapper cannot exempt the collage inside it.
+    const isImage = element.tagName === "IMG" || element.localName === "image";
+    const slotEl = element.parentElement && element.parentElement.matches && element.parentElement.matches("[data-slot][data-layer]") ? element.parentElement : null;
+    const layerRole = isImage ? (element.getAttribute("data-layer") || slotEl?.getAttribute("data-layer") || null) : null;
+    const slot = slotEl?.getAttribute("data-slot") || element.closest("[data-slot]")?.getAttribute("data-slot") || null;
+    const rawSrc = element.getAttribute("src") || element.getAttribute("href") || element.getAttribute("xlink:href") || "";
+    const absolute = rawSrc && !rawSrc.startsWith("data:") ? new URL(rawSrc, document.baseURI).href : null;
+    const dataUri = rawSrc.startsWith("data:") && slot && layerSources && layerSources[slot] ? rawSrc : null;
+    if (isImage) images.push({ slot, role: layerRole, src: absolute, dataUri, rect: { x0: rect.left, y0: rect.top, x1: rect.right, y1: rect.bottom }, collage: layerRole === "ground" ? null : c });
+    if (layerRole === "ground") continue;
     element.setAttribute("data-tc-collage", String(c));
     if (bgLayers.includes(element) && !["IMG", "image"].includes(element.tagName) && !element.hasAttribute("data-collage")) element.setAttribute("data-tc-bg", "");
     const bg = /url\(\s*["']?([^"')]+)/.exec(getComputedStyle(element).backgroundImage);
@@ -201,7 +223,7 @@ function discover() {
     }
   };
   for (const sheet of document.styleSheets) { try { collect(sheet.cssRules); } catch { /* cross-origin sheet */ } }
-  return { W, H, units, collage, faces, noText: document.documentElement.hasAttribute("data-no-text") };
+  return { W, H, units, collage, images, layerSources, faces, noText: document.documentElement.hasAttribute("data-no-text") };
 }
 
 // ---- pixel helpers -----------------------------------------------------------------------------
@@ -303,6 +325,35 @@ function separation(a, b, gap) {
   return moves[0] || { dir: "none", px: 0 };
 }
 
+// Images tied to a materials composite receipt: by file (composite.json beside the image) or, for a
+// template render whose images are embedded, by the render's layerSources (slot -> receipt).
+function linkReceipts(found, pageFile) {
+  const out = [], notes = [], cache = new Map();
+  const read = (file) => {
+    if (!cache.has(file)) { try { const r = JSON.parse(fs.readFileSync(file, "utf8")); cache.set(file, r?.schema === "design-pipeline.composite.v1" ? r : null); } catch { cache.set(file, null); } }
+    return cache.get(file);
+  };
+  for (const image of found.images || []) {
+    let receiptFile = null, name = null, bytes = null;
+    if (image.src && image.src.startsWith("file:")) {
+      try { const local = fileURLToPath(image.src); receiptFile = path.join(path.dirname(local), "composite.json"); name = path.basename(local); if (fs.existsSync(local)) bytes = fs.readFileSync(local); } catch { receiptFile = null; }
+    } else if (image.slot && found.layerSources?.[image.slot]) {
+      const source = found.layerSources[image.slot];
+      receiptFile = path.resolve(path.dirname(pageFile), source.receipt); name = source.file;
+      const m = /^data:[^;,]+;base64,(.*)$/s.exec(image.dataUri || "");
+      bytes = m ? Buffer.from(m[1], "base64") : null;
+    }
+    if (!receiptFile || !fs.existsSync(receiptFile)) continue;
+    const receipt = read(receiptFile), output = receipt?.outputs?.[name];
+    if (!output) continue;
+    // a receipt vouches only for the bytes it recorded: a copied or edited image is not linked
+    const actual = bytes ? crypto.createHash("sha256").update(bytes).digest("hex") : null;
+    if (!output.sha256 || actual !== output.sha256) { notes.push(`${image.slot || name}: ${path.basename(receiptFile)} lists ${name} but its sha256 does not match the image shown; the receipt is ignored (ground exemption and composite checks not applied). Fix: composite again, or use the recorded output unchanged`); continue; }
+    out.push({ image, receipt, receiptFile, file: name, output });
+  }
+  return { links: out, notes };
+}
+
 // ---- main ----------------------------------------------------------------------------------------
 async function launch({ file = null, chrome, puppeteerModule } = {}) {
   const { resolvePuppeteer } = require("../../scripts/film-capture-core.cjs");
@@ -353,7 +404,11 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
     await new Promise((resolve) => setTimeout(resolve, 120));
     const found = await page.evaluate(discover);
     const units = found.units;
-    const collage = found.collage;
+    // composite receipts behind the images: a ground output leaves the collage list
+    const { links: linked, notes: receiptNotes } = linkReceipts(found, absolute);
+    const grounds = new Set(linked.filter((l) => l.output.layer === "ground" && l.image.collage !== null).map((l) => l.image.collage));
+    if (grounds.size) await page.evaluate((drop) => { for (const el of document.querySelectorAll("[data-tc-collage]")) if (drop.includes(Number(el.getAttribute("data-tc-collage")))) el.removeAttribute("data-tc-collage"); }, [...grounds]);
+    const collage = found.collage.filter((layer) => !grounds.has(layer.index));
     const shot = async (region) => decodePng(Buffer.from(await page.screenshot({ type: "png", clip: region ? { x: region.x, y: region.y, width: region.w, height: region.h } : { x: 0, y: 0, width: W, height: H } })), "screenshot");
     const setState = (state) => page.evaluate((s) => {
       if (s.isolate) document.documentElement.setAttribute("data-tc-iso", ""); else document.documentElement.removeAttribute("data-tc-iso");
@@ -418,7 +473,11 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
     if (page.url() !== startUrl) throw new Error(`the page navigated away from ${path.basename(absolute)} to ${page.url()} during the check`);
     const findings = [];
     const measured = [];
-    const notes = [];
+    const notes = [...receiptNotes];
+    // a ground declared on the page without a matching receipt is taken at its word, and said so
+    for (const image of found.images.filter((i) => i.role === "ground" && !linked.some((l) => l.image === i && l.output.layer === "ground"))) {
+      notes.push(`self-declared ground: ${image.slot || (image.src ? image.src.split("/").pop() : "embedded image")} is exempt from collage-cover by its data-layer="ground" alone (no matching composite receipt); make sure it is the scene behind the text, not a cut-out`);
+    }
     for (const message of [...new Set(pageErrors)]) {
       findings.push({
         rule: "page-error", slot: "page", measuredBy: "browser", measured: { message: message.slice(0, 300) }, limit: { errors: 0 },
@@ -590,6 +649,43 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
         });
       }
     }
+    // 4b. composited layers: the receipt's measurements, and the character's face and hands against
+    //     the measured text ink of this page
+    const seenReceipts = new Set();
+    for (const link of linked) {
+      const key = `${link.receiptFile}#${link.output.size}`;
+      const sizeRecord = link.receipt.sizes?.[link.output.size];
+      if (!sizeRecord) continue;
+      if (!seenReceipts.has(key)) {
+        seenReceipts.add(key);
+        for (const f of sizeRecord.findings || []) {
+          if (f.code === "safe-area-type") continue; // declared type boxes: replaced by the measured ink below
+          // warn bands (black point, colour difference, halo) are notes; errors (upscale, occluder on a safe area) fail
+          if (f.severity === "error") findings.push({ rule: f.code, slot: link.image.slot || path.basename(link.receiptFile, ".json"), layer: path.basename(link.file), measuredBy: "composite-receipt", measured: f.measured || {}, limit: link.receipt.limits || {}, message: f.message, fix: f.fix });
+          else notes.push(`${f.code} (composite ${link.output.size}, warn band): ${f.message}. Fix: ${f.fix}`);
+        }
+      }
+      if (link.output.layer !== "char") continue;
+      const [OW, OH] = String(link.output.size).split("x").map(Number);
+      const sx = (link.image.rect.x1 - link.image.rect.x0) / OW, sy = (link.image.rect.y1 - link.image.rect.y0) / OH;
+      const toPage = (b) => ({ x0: link.image.rect.x0 + b[0] * sx, y0: link.image.rect.y0 + b[1] * sy, x1: link.image.rect.x0 + b[2] * sx, y1: link.image.rect.y0 + b[3] * sy });
+      const parts = [...(sizeRecord.boxes?.face ? [["face", sizeRecord.boxes.face]] : []), ...(sizeRecord.boxes?.hands || []).map((b, i) => [`hand ${i + 1}`, b])];
+      for (const [part, box] of parts) {
+        const pb = toPage(box);
+        for (const unit of units.filter((u) => !u.deco && u.inkBox && intersects(u.inkBox, pb))) {
+          let px = 0;
+          for (let y = Math.max(Math.floor(pb.y0), unit.ink.region.y); y < Math.min(Math.ceil(pb.y1), unit.ink.region.y + unit.ink.region.h); y += 1) for (let x = Math.max(Math.floor(pb.x0), unit.ink.region.x); x < Math.min(Math.ceil(pb.x1), unit.ink.region.x + unit.ink.region.w); x += 1) if (at(unit.ink, x, y)) px += 1;
+          if (px < rules.coverMinPx) continue;
+          const move = separation(pb, unit.inkBox, 8);
+          findings.push({
+            rule: "safe-area-type", slot: unit.id, layer: path.basename(link.file), measuredBy: "browser",
+            measured: { part, inkPxOnPart: px, partBox: box4(pb), inkBox: box4(unit.inkBox) }, limit: { inkPxOnPart: rules.coverMinPx },
+            message: `${unit.id} sets ${px} px of ink over the character's ${part} (${box4(pb).join(",")})`,
+            fix: `Move ${unit.id} ${move.dir} by ${Math.ceil(move.px)}px, or move the figure in the layer contract (sizes.${link.output.size}.char.foot / height) and composite again; titles and UI never cover the face or hands.`,
+          });
+        }
+      }
+    }
     // 5. glyph coverage: a run whose first family lacks characters falls back glyph by glyph
     const faces = [];
     for (const face of found.faces) {
@@ -634,6 +730,8 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
       summary: { textUnits: units.length, collageLayers: collage.length, findings: findings.length },
       findings, notes: [...new Set(notes)], measured,
       collage: collage.map((l) => ({ id: l.id, frame: box4(l.rect), visibleBox: l.visibleBox ? box4(l.visibleBox) : null })),
+      grounds: found.images.filter((i) => i.role === "ground" || (i.collage !== null && grounds.has(i.collage))).map((i) => ({ slot: i.slot, src: i.src ? i.src.split("/").pop() : "embedded", frame: box4(i.rect) })),
+      composites: [...seenReceipts],
       errors,
       rules,
     };

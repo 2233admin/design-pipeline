@@ -13,10 +13,24 @@
 - **The number is sized from the resolved family's digit height**, so 2.6-2.9 holds with or without Anton:
   a per-family table (digit 0 ink bbox in em, read from the font files: Anton 0.875, Oswald 0.826, Noto Sans
   SC 0.772) and the size is 2.6 x the CJK size / that height (Anton: 148 units at 1920). The family is the
-  first of the `num` stack that `--font-dir` supplies; with none supplied Anton (named, not bundled) counts
-  as absent and the number is pinned to Oswald 400 (the stack starts there, recorded in `fontSwitches`), so
-  the browser cannot substitute an installed Anton of another size. The test measures ink rows in the
-  rendered PNG, not the formula.
+  first of the `num` stack that `--font-dir` supplies (its `@font-face` is in the SVG, so it is what
+  renders); with none supplied no condensed face can be relied on, so the number is pinned to the stack's
+  last family, Noto Sans SC (the catalog-resolved family the case's copy is set in), sized from its digits
+  and recorded in `fontSwitches` with the reason that it renders as sized only where it is installed. The
+  test measures ink rows in the rendered PNG, not the formula, and only with the measured faces supplied
+  through `--font-dir`.
+- **Why not Oswald without `--font-dir` (fix after #313 turned main's CI red)**: the first version pinned
+  the unsupplied case to Oswald and sized for Oswald's 0.826 em digits. On a machine with Oswald installed
+  that held (ratio about 2.75); on the ubuntu runner, which has no Oswald, the stack fell through to the
+  runner's own sans-serif and the measured ratio was 2.33 (2.38 locally with Oswald hidden from
+  fontconfig). A size computed from a font that is not loaded is a guess, so the layout now sizes from a
+  family only when `--font-dir` embeds it, and otherwise from Noto Sans SC, the one `num` family the pack
+  already depends on for its CJK copy. The test supplies its fonts: an OFL subset of Oswald (printable
+  ASCII, `tests/fixtures/street-tape/fonts/`, licence beside it), the skill's bundled Anton and
+  Noto Sans SC 900 from `skill/tools/art-motion/fonts/`, so each ratio is measured in the family it was
+  sized for on any machine. Bundling Anton for the pack (the package already ships `Anton-400.woff`) would
+  make the condensed number the default everywhere; it changes the pack's "named, not bundled" contract
+  and is left for its own change.
 - **Stripes the static check can read**: a band is a flat `#222122` path (the ground the static check
   sees) with the 49-degree lines as a clipped, stroked decoration group; clip ids count per render so
   `template.svg` stays byte-stable. Thumbs lean as parallelograms instead of `skewX` (the static check does

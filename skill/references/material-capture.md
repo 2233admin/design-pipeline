@@ -22,6 +22,12 @@ designer-pipeline materials add --project-root . --file materials/owner/brass-ke
 designer-pipeline materials cut --project-root . --file materials/owner/brass-key.png --mode border --finish cut,sticker
 ```
 
+When the backdrop is a gradient, a vignette or carries a cast shadow (a museum photograph, a figure
+from an image model on a grey ground), cut with `--mode grabcut`: colour models and a graph cut
+separate the figure, a guided filter refines the edge and defringe removes the backdrop colour from
+it (`measurements.edge` gives the halo before and after). `--finish outline` adds the sticker edge: a
+die-cut white edge, a black line and an offset ink plate.
+
 `commercialUse` stays false for a licence that is not CC0 / public domain unless you pass
 `--commercial-use`; pass it for your own photos of objects you may show.
 

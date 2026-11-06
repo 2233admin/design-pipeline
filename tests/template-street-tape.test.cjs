@@ -17,7 +17,7 @@ const { CUT } = require("../skill/tools/template-bank/layouts-street.cjs");
 
 const CLI = path.join(__dirname, "..", "skill", "scripts", "designer-pipeline.cjs");
 const CATALOG = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "skill", "references", "fonts", "catalog.json"), "utf8"));
-const IDS = ["banner.tape-sticker-cta", "card.tape-section-title", "kv.tape-cut-carousel", "ui.tape-pager", "ui.tape-topbar"];
+const IDS = ["banner.tape-sticker-cta", "card.tape-section-title", "kv.tape-cut-carousel", "kv.tape-hero", "ui.tape-pager", "ui.tape-topbar"];
 
 const messages = (report) => JSON.stringify(report.findings.map((f) => `${f.rule}:${f.slot}: ${f.message}`));
 function cli(root, ...args) {
@@ -112,7 +112,9 @@ test("every street-tape default render passes the browser check too", { skip: BR
   }
 });
 
-// Ink rows of a slot in the rendered PNG: dark-ink pixels inside the slot's data-box (canvas = PNG pixels).
+// Ink rows of a slot in the rendered PNG: dark-ink pixels inside the slot's data-box (canvas = PNG pixels),
+// the first run from the top (gaps of up to 2 rows allowed): a wider number's box can reach the black slab
+// below its digits, which is not the number's ink.
 function inkRows(svg, png, slot) {
   const tag = new RegExp(`<text data-slot="${slot}"[^>]*>`).exec(svg)[0];
   const [bx, by, bw, bh] = /data-box="([^"]+)"/.exec(tag)[1].split(",").map(Number);
@@ -126,7 +128,9 @@ function inkRows(svg, png, slot) {
     if (hit) rows.push(y);
   }
   assert.ok(rows.length, `${slot}: no ink in its box`);
-  return rows[rows.length - 1] - rows[0] + 1;
+  let end = 0;
+  while (end + 1 < rows.length && rows[end + 1] - rows[end] <= 3) end += 1;
+  return rows[end] - rows[0] + 1;
 }
 function renderMeasured(root, id, name, ...args) {
   const result = cli(root, "template", "render", id, "-o", `${name}.svg`, "--png", `${name}.png`, "--chrome", BROWSER.chrome, "--puppeteer-module", BROWSER.puppeteerModule, ...args);
@@ -137,21 +141,39 @@ function renderMeasured(root, id, name, ...args) {
   return { result, svg, ratio: inkRows(svg, png, "number") / inkRows(svg, png, "title_cjk") };
 }
 
-test("the section number's measured ink is 2.6-2.9 times the CJK title's, with or without Anton", { skip: BROWSER.skip, timeout: 600000 }, (t) => {
+test("the section number is sized in the family that renders: Noto Sans SC without --font-dir, the supplied face with it", { skip: BROWSER.skip, timeout: 600000 }, (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "street-tape-ratio-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  // No --font-dir: Anton is not shipped, the num role resolves to its Oswald fallback and the stack says so.
-  const bare = renderMeasured(root, "card.tape-section-title", "bare");
-  assert.deepEqual(bare.result.payload.fontSwitches.filter((f) => f.role === "num").map((f) => `${f.from}>${f.to}`), ["Anton>Oswald"]);
-  assert.match(bare.svg, /data-slot="number"[^>]*font-family="'Oswald'/);
-  assert.ok(bare.ratio > 2.6 && bare.ratio < 2.9, `Oswald number : CJK ink ${bare.ratio.toFixed(2)}`);
-  const right = renderMeasured(root, "card.tape-section-title", "right", "--param", "side=right", "--set", "number=03");
+  const BUNDLED = path.join(__dirname, "..", "skill", "tools", "art-motion", "fonts");
+  const fontDir = (name, faces) => {
+    const dir = path.join(root, name);
+    fs.mkdirSync(dir);
+    for (const [from, to] of faces) fs.copyFileSync(from, path.join(dir, to));
+    return dir;
+  };
+  // Noto Sans SC 900 (bundled with the skill) under the pack's face name: the CJK title is measured in it on any machine.
+  const NOTO = [path.join(BUNDLED, "NotoSansSC-900.woff"), "NotoSansSC[wght].woff"];
+  // No --font-dir: neither condensed face is embedded, so an installed Oswald is not relied on; the
+  // number is pinned to Noto Sans SC and the switch says it is not embedded either. (No ratio here:
+  // what renders depends on the machine's fonts.)
+  const bare = bank.render("card.tape-section-title");
+  assert.deepEqual(bare.fontSwitches.filter((f) => f.role === "num").map((f) => `${f.from}>${f.to}`), ["Anton>Noto Sans SC"]);
+  assert.match(bare.fontSwitches.find((f) => f.role === "num").reason, /not in --font-dir either.*Fix:/);
+  assert.match(bare.svg, /data-slot="number"[^>]*font-family="'Noto Sans SC',sans-serif"/);
+  // Noto Sans SC supplied: the bare pin, now embedded, sized from Noto's digit height.
+  const noto = renderMeasured(root, "card.tape-section-title", "noto", "--font-dir", fontDir("noto", [NOTO]));
+  assert.deepEqual(noto.result.payload.fontSwitches.filter((f) => f.role === "num").map((f) => `${f.from}>${f.to}`), ["Anton>Noto Sans SC"]);
+  assert.ok(noto.ratio > 2.6 && noto.ratio < 2.9, `Noto Sans SC number : CJK ink ${noto.ratio.toFixed(2)}`);
+  // Oswald supplied (the OFL subset fixture), Anton not: the number is Oswald, sized from Oswald's digits.
+  const oswaldDir = fontDir("oswald", [NOTO, [path.join(__dirname, "fixtures", "street-tape", "fonts", "Oswald[wght].woff"), "Oswald[wght].woff"]]);
+  const oswald = renderMeasured(root, "card.tape-section-title", "oswald", "--font-dir", oswaldDir);
+  assert.deepEqual(oswald.result.payload.fontSwitches.filter((f) => f.role === "num").map((f) => `${f.from}>${f.to}`), ["Anton>Oswald"]);
+  assert.match(oswald.svg, /data-slot="number"[^>]*font-family="'Oswald'/);
+  assert.ok(oswald.ratio > 2.6 && oswald.ratio < 2.9, `Oswald number : CJK ink ${oswald.ratio.toFixed(2)}`);
+  const right = renderMeasured(root, "card.tape-section-title", "right", "--font-dir", oswaldDir, "--param", "side=right", "--set", "number=03");
   assert.ok(right.ratio > 2.6 && right.ratio < 2.9, `right-aligned number : CJK ink ${right.ratio.toFixed(2)}`);
   // With Anton in --font-dir the number is Anton, sized from Anton's digit height, and the ratio holds too.
-  const fonts = path.join(root, "fonts");
-  fs.mkdirSync(fonts);
-  fs.copyFileSync(path.join(__dirname, "..", "skill", "tools", "art-motion", "fonts", "Anton-400.woff"), path.join(fonts, "Anton-Regular.woff"));
-  const anton = renderMeasured(root, "card.tape-section-title", "anton", "--font-dir", fonts);
+  const anton = renderMeasured(root, "card.tape-section-title", "anton", "--font-dir", fontDir("anton", [NOTO, [path.join(BUNDLED, "Anton-400.woff"), "Anton-Regular.woff"]]));
   assert.equal((anton.result.payload.fontSwitches || []).filter((f) => f.role === "num").length, 0);
   assert.match(anton.svg, /data-slot="number"[^>]*font-family="'Anton'/);
   assert.ok(anton.ratio > 2.6 && anton.ratio < 2.9, `Anton number : CJK ink ${anton.ratio.toFixed(2)}`);

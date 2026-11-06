@@ -73,18 +73,21 @@ function morePill(d, name, x, y, s) {
 // Ink height of the digit 0 (bbox, overshoot included) in em, read from the font files with fontTools
 // (Anton-Regular, Oswald[wght] at 400, Noto Sans SC at 900: the stack families of the "num" role).
 const DIGIT_EM = { Anton: 0.875, Oswald: 0.826, "Noto Sans SC": 0.772 };
-// The family the number is drawn and sized in: the first stack family whose face --font-dir supplies;
-// with none supplied, Anton (named, not bundled) is taken as absent and the next family is used.
+// The family the number is drawn and sized in: the first stack family whose face --font-dir supplies
+// (its @font-face is in the SVG, so it is what renders). With none supplied, no condensed family can
+// be relied on (Anton and Oswald are named, not bundled, and a runner without them silently falls
+// back to its own sans-serif), so the number is pinned to the stack's last family, Noto Sans SC, the
+// catalog-resolved family the case's copy is set in, and sized from its digits.
 function numFamily(d) {
   const stack = d.roles.num.stack.filter((f) => DIGIT_EM[f]);
-  const shipped = stack.find((f) => d.faces.some((face) => face.family === f));
-  return shipped || stack[1] || stack[0];
+  const supplied = stack.find((f) => d.faces.some((face) => face.family === f));
+  return supplied || stack[stack.length - 1];
 }
 // Three-line section title: CJK (head 900) / Latin caps (label) / giant number (num), on one edge.
 function titleBlock(d, x, y, s, { right = false } = {}) {
   const anchor = right ? "end" : "start";
   const zh = 50 * s; const en = 25 * s;
-  // number ink = 2.75 x CJK ink (measured on the rendered PNG; CJK ink is ~0.85 em of its size): the size follows the resolved family's digit height, so it holds without Anton
+  // number ink = 2.75 x CJK ink (measured on the rendered PNG; CJK ink is ~0.85 em of its size): the size follows the digit height of the family that renders (numFamily), so it holds without Anton
   const numFam = numFamily(d); const dh = DIGIT_EM[numFam]; const no = (zh * 2.6) / dh;
   const span = (n) => (right ? [x - n, 0] : [x, 0]);
   const { text: cjk } = d.value("title_cjk"); const { text: lat } = d.value("title_latin");
@@ -94,8 +97,11 @@ function titleBlock(d, x, y, s, { right = false } = {}) {
   d.text("title_latin", x, ey + en * 0.8, en, { role: "ink", family: "label", anchor, box: [span(ew)[0] - 4 * s, ey - 4 * s, ew + 8 * s, en * 1.2] });
   digits(d, "number");
   const ny = ey + en + 18 * s;
-  d.text("number", x, ny + no * dh, no, { role: "ink", family: "num", resolved: numFam, anchor, box: [span(nw)[0] - 6 * s, ny - no * 0.08, nw + 12 * s, no * 1.12] });
-  return { bottom: ny + no * (dh + 0.03) };
+  // The static check estimates the extent from a generic 0.88 em ascent, so a family with digits shorter
+  // than Oswald's (Noto Sans SC) keeps Oswald's baseline offset and its ink sits that much lower.
+  const bl = Math.max(dh, DIGIT_EM.Oswald);
+  d.text("number", x, ny + no * bl, no, { role: "ink", family: "num", resolved: numFam, anchor, box: [span(nw)[0] - 6 * s, ny - no * 0.08, nw + 12 * s, no * 1.12] });
+  return { bottom: ny + no * (bl + 0.03) };
 }
 // Cassette mark of the placeholder brand sticker (two reels, a tape bar, rewind triangles).
 function cassette(x, y, w, h, fg, bg, acid) {
@@ -258,6 +264,37 @@ const LAYOUTS = {
     d.text("flash", fx + 57 * s, fy + 32 * s, 24 * s, { role: "ink", family: "head", anchor: "middle", box: rbox([fx + 6 * s, fy + 4 * s, 102 * s, 36 * s], rot, [ccx, ccy], 3 * s) });
     d.raw("</g>");
     d.text("platforms", 60 * s, H - 34 * s, 20 * s, { role: "ink", family: "body", box: [56 * s, H - 58 * s, 420 * s, 32 * s] });
+  },
+
+  // ---- first screen as layers: 1920 x 1080 ----------------------------------------------------
+  // The scene and the character are composited layers (materials composite: <WxH>-ground.png is
+  // the text ground, <WxH>-upper.png the character, fx and foreground); the type is live and last.
+  "kv.tape-hero"(d) {
+    const { W, H, p } = d; const s = W / 1920;
+    d.rect(0, 0, W, H, "grey");
+    if (p.stripes) stripeBand(d, [[1640 * s, 66 * s], [W + 10 * s, 66 * s], [W + 10 * s, H + 10 * s], [1640 * s, H + 10 * s]], s);
+    const filled = (name) => String(d.values[name] || "").startsWith("data:image/");
+    if (filled("scene")) d.image("scene", 0, 0, W, H);
+    else d.image("scene", 200 * s, 66 * s, 1440 * s, 1014 * s, "ground layer", { labelAt: [0.8, 0.6] });
+    if (filled("figure")) d.image("figure", 0, 0, W, H);
+    else d.image("figure", 480 * s, 110 * s, 440 * s, 880 * s, "char layer", { labelAt: [0.5, 0.5] });
+    // brand sticker: black rounded plate, cassette mark, CJK name, Latin name
+    const bx = 236 * s; const by = 96 * s; const bw = 236 * s; const bh = 212 * s;
+    d.raw(`<path d="${rp([[bx + 4 * s, by + 6 * s], [bx + bw, by], [bx + bw - 2 * s, by + bh], [bx, by + bh - 2 * s]], 26 * s)}" fill="${d.pal.ink}" stroke="${d.pal.white}" stroke-width="${f1(6 * s)}" data-role="ink"/>`);
+    d.raw(`<g data-deco="1">${cassette(bx + 58 * s, by + 22 * s, 120 * s, 64 * s, d.pal.white, d.pal.ink, d.pal.acid)}</g>`);
+    d.text("brand_cjk", bx + bw / 2, by + 150 * s, 50 * s, { role: "white", family: "head", anchor: "middle", box: [bx + 10 * s, by + 100 * s, bw - 20 * s, 62 * s] });
+    d.text("brand_latin", bx + bw / 2, by + 192 * s, 26 * s, { role: "acid", family: "num", anchor: "middle", box: [bx + 10 * s, by + 166 * s, bw - 20 * s, 36 * s] });
+    // download sticker: white plate with a heavy outline and an offset ink plate, acid flash tab
+    const cx = 1236 * s; const cy = 150 * s; const cw = 380 * s; const ch = 190 * s;
+    const quad = [[cx + 10 * s, cy + 12 * s], [cx + cw - 8 * s, cy], [cx + cw, cy + ch - 14 * s], [cx, cy + ch]];
+    d.raw(`<path d="${rp(quad, 30 * s)}" fill="${d.pal.ink}" transform="translate(${f1(9 * s)} ${f1(11 * s)})" data-role="ink"/>`);
+    d.raw(`<path d="${rp(quad, 30 * s)}" fill="${d.pal.white}" stroke="${d.pal.ink}" stroke-width="${f1(10 * s)}" data-role="white"/>`);
+    d.text("cta", cx + cw / 2, cy + 116 * s, 82 * s, { role: "ink", family: "head", anchor: "middle", box: [cx + 16 * s, cy + 36 * s, cw - 32 * s, 96 * s] });
+    d.raw(pseudoGlyphs(cx + 52 * s, cy + 136 * s, 9, 24 * s, d.pal.ink));
+    const fx = cx + cw - 104 * s; const fy = cy - 18 * s;
+    d.raw(`<path d="${rp([[fx, fy + 4 * s], [fx + 100 * s, fy - 2 * s], [fx + 98 * s, fy + 40 * s], [fx + 3 * s, fy + 44 * s]], 9 * s)}" fill="${d.pal.acid}" stroke="${d.pal.ink}" stroke-width="${f1(4 * s)}" data-role="acid"/>`);
+    d.text("flash", fx + 50 * s, fy + 30 * s, 22 * s, { role: "ink", family: "head", anchor: "middle", box: [fx + 6 * s, fy + 4 * s, 88 * s, 32 * s] });
+    d.text("platforms", 440 * s, 1052 * s, 20 * s, { role: "ink", family: "body", box: [436 * s, 1026 * s, 600 * s, 36 * s] });
   },
 };
 
