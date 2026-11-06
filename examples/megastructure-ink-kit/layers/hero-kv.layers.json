@@ -1,0 +1,171 @@
+{
+ "schema": "design-pipeline.layer-contract.v1",
+ "design": [
+  3840,
+  2160
+ ],
+ "note": "Hero key visual of site.html (#top). Plates are full design-space images; boxes and feet are output px. The person is tiny on purpose: the structure is the subject, the figure is the scale.",
+ "stack": [
+  {
+   "id": "bg",
+   "role": "bg",
+   "plate": true,
+   "note": "the shaft: one-point perspective down a rectangular well, walls, beams, cables, screentone; the far core black with one thin light slit"
+  },
+  {
+   "id": "mid",
+   "role": "mid",
+   "plate": true,
+   "note": "the near walkway beam crossing the frame at about 62% height"
+  },
+  {
+   "id": "char",
+   "role": "char"
+  },
+  {
+   "id": "fg-cables",
+   "role": "fg",
+   "note": "two cable bundles hanging across the top third, in front of the figure's depth"
+  },
+  {
+   "id": "tone",
+   "role": "texture",
+   "blend": "dots"
+  },
+  {
+   "id": "type",
+   "role": "type",
+   "note": "kicker, name, tagline, actions, readouts, the scale marker: live HTML, always last"
+  }
+ ],
+ "char": {
+  "use": "one small standing original person on the walkway, seen from behind or in profile, no face detail needed",
+  "facing": "profile, walking toward frame right",
+  "light": {
+   "key": [
+    0.3,
+    -0.9
+   ],
+   "keyTemp": "cold 7000 K light from far above",
+   "rim": [
+    -0.8,
+    0.2
+   ],
+   "rimColour": "signal"
+  },
+  "shadow": {
+   "castToward": [
+    -0.4,
+    1
+   ],
+   "castLength": 0.15
+  },
+  "safe": [
+   "face"
+  ]
+ },
+ "sizes": {
+  "1920x1080": {
+   "frame": {
+    "rect": [
+     0,
+     0,
+     1920,
+     1080
+    ]
+   },
+   "crop": [
+    0,
+    0,
+    3840,
+    2160
+   ],
+   "char": {
+    "foot": [
+     1180,
+     650
+    ],
+    "height": 92,
+    "frameBreak": []
+   },
+   "boxes": {
+    "fg-cables": {
+     "box": [
+      0,
+      120,
+      1920,
+      300
+     ]
+    }
+   },
+   "type": {
+    "hero-text": [
+     64,
+     680,
+     640,
+     352
+    ],
+    "hero-meta": [
+     1236,
+     930,
+     560,
+     90
+    ],
+    "scale": [
+     880,
+     368,
+     460,
+     70
+    ]
+   }
+  },
+  "390x844": {
+   "frame": {
+    "rect": [
+     0,
+     0,
+     390,
+     844
+    ]
+   },
+   "crop": [
+    1500,
+    0,
+    1560,
+    3376
+   ],
+   "char": {
+    "foot": [
+     250,
+     300
+    ],
+    "height": 40,
+    "frameBreak": []
+   },
+   "boxes": {
+    "fg-cables": {
+     "box": [
+      0,
+      40,
+      390,
+      120
+     ]
+    }
+   },
+   "type": {
+    "hero-text": [
+     16,
+     420,
+     358,
+     392
+    ],
+    "scale": [
+     16,
+     72,
+     358,
+     70
+    ]
+   }
+  }
+ }
+}

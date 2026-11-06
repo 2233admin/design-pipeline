@@ -1048,3 +1048,16 @@ roles were measured from a reference corpus; nothing from that corpus is bundled
   subsets of the same Noto Serif CJK SC Black face (the characters the kit sets) and of variable Archivo
   (ASCII plus a few symbols, both axes kept), each with its OFL text. Neither licence declares a Reserved Font
   Name, so the subsets keep their family names.
+
+## Megastructure-ink kit fonts and test fixtures (2026-11-07)
+
+- `examples/megastructure-ink-kit/design-system/fonts/` (example, not packaged) and
+  `tests/fixtures/megastructure-ink/fonts/` (test fixture, not packaged): byte-identical WOFF subsets of
+  Michroma Regular and Chakra Petch Medium (The Michroma and Chakra Petch Project Authors, SIL Open Font
+  License 1.1) limited to printable ASCII plus ° · × – — − ← → (where the face has them), each with the
+  font's OFL text beside it. They are not renamed; neither OFL text declares a Reserved Font Name. Source
+  URL, commit and checksum are in `tests/fixtures/megastructure-ink/provenance.csv`.
+- `examples/megastructure-ink-kit/design-system/fonts/NotoSansSC-500.woff` and `NotoSansSC-900.woff` (example,
+  not packaged): byte-identical copies of the GB2312 subsets in `skill/tools/art-motion/fonts/` (Noto Sans SC,
+  © 2014-2021 Adobe, SIL Open Font License 1.1, Reserved Font Name "Source"), with `OFL-NotoSansSC.txt` beside
+  them. Not renamed.

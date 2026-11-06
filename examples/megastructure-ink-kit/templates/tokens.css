@@ -1,0 +1,71 @@
+/* Megastructure Ink — generated from tokens.json */
+:root, [data-theme="deep"] {
+  --void: #040505;
+  --ground: #0a0b0c;
+  --panel: #101214;
+  --panel-raised: #16191b;
+  --panel-hover: #1d2124;
+  --rule: #262b2e;
+  --rule-strong: #3a4044;
+  --line: #cdd5d7;
+  --text: #e8ecec;
+  --text-muted: #a2abae;
+  --text-faint: #7e888c;
+  --signal: #7fe6ea;
+  --primary: var(--signal);
+  --signal-strong: #b4f4f6;
+  --signal-dim: #2e6e73;
+  --on-signal: #031113;
+  --screen: #072a2f;
+  --screen-line: #0f4a51;
+  --alarm: #ff5547;
+  --alarm-dim: #4a1210;
+  --on-alarm: #120201;
+  --paper: #e4e6e5;
+  --on-paper: #0a0b0b;
+  --focus-ring: #7fe6ea;
+  --scrim: #040505cc;
+}
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-none: 0px;
+  --radius-dot: 9999px;
+  --hairline: 1px;
+  --stroke: 2px;
+  --bar-h: 56px;
+  --corner: 14px;
+  --tick: 8px;
+  --rail-w: 72px;
+  --control-h: 40px;
+  --scan-pitch: 3px;
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-reveal: 640ms;
+  --dur-type: 28ms;
+  --dur-blink: 1060ms;
+  --dur-scan: 4200ms;
+  --dur-alarm: 880ms;
+  --ease-standard: cubic-bezier(.2, 0, 0, 1);
+  --ease-trace: cubic-bezier(.65, 0, .35, 1);
+  --ease-step: steps(1, end);
+  --font-sans: "Noto Sans SC", "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-wide: "Michroma", "Noto Sans SC", "Noto Sans CJK SC", sans-serif;
+  --font-data: "Chakra Petch", "Noto Sans SC", "Noto Sans CJK SC", sans-serif;
+}
+.display-title { font-family: var(--font-sans); font-size: 128px; line-height: 1; font-weight: 900; letter-spacing: 0.02em; }
+.display-depth { font-family: var(--font-data); font-size: 96px; line-height: 1; font-weight: 500; letter-spacing: -0.01em; }
+.title-section { font-family: var(--font-sans); font-size: 40px; line-height: 1.2; font-weight: 300; letter-spacing: 0.24em; }
+.title-block { font-family: var(--font-sans); font-size: 22px; line-height: 1.4; font-weight: 400; letter-spacing: 0.08em; }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 1.85; font-weight: 300; letter-spacing: 0.04em; }
+.body-sm { font-family: var(--font-sans); font-size: 13px; line-height: 1.7; font-weight: 400; letter-spacing: 0.04em; }
+.label { font-family: var(--font-sans); font-size: 12px; line-height: 1.4; font-weight: 400; letter-spacing: 0.2em; }
+.caps { font-family: var(--font-wide); font-size: 10px; line-height: 1.6; font-weight: 400; letter-spacing: 0.22em; }
+.readout { font-family: var(--font-data); font-size: 28px; line-height: 1.1; font-weight: 500; letter-spacing: 0.02em; }
+.data-sm { font-family: var(--font-data); font-size: 12px; line-height: 1.5; font-weight: 500; letter-spacing: 0.08em; }

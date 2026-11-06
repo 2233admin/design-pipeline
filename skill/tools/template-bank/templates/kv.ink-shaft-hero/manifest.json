@@ -1,0 +1,184 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "kv.ink-shaft-hero",
+  "family": "kv",
+  "style": "megastructure-ink",
+  "title": "Key visual: an abstract ink shaft over the top 70%, a scale marker stating the person-to-structure ratio, a compressed name, a tagline, one signal button and three readouts on a black floor",
+  "use": "The first screen of a game site or a key visual. plate=drawn draws the abstract structure plate (no figure); plate=slot leaves an image slot for generated art.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "signal",
+      "alarm"
+    ],
+    "maxShare": 0.04
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "plate": {
+      "type": "enum",
+      "values": [
+        "drawn",
+        "slot"
+      ],
+      "default": "drawn",
+      "class": "decoration",
+      "note": "draw the abstract plate or leave the image slot"
+    },
+    "seed_plate": {
+      "default": 11,
+      "min": 1,
+      "max": 999,
+      "class": "rhythm",
+      "note": "seed of the structure plate"
+    }
+  },
+  "slots": {
+    "plate": {
+      "kind": "image",
+      "ground": "void",
+      "layer": "bg",
+      "note": "structure plate 3840 x 2160, no figure"
+    },
+    "kicker": {
+      "kind": "text",
+      "default": "第 4,112 层 · 深 41,200 m",
+      "maxChars": 22,
+      "font": "body"
+    },
+    "title_cjk": {
+      "kind": "text",
+      "default": "穹井",
+      "maxChars": 4,
+      "font": "head",
+      "title": true
+    },
+    "title_latin": {
+      "kind": "text",
+      "default": "VAULTWELL",
+      "maxChars": 14,
+      "font": "wide",
+      "note": "Latin caps only"
+    },
+    "tagline": {
+      "kind": "text",
+      "default": "向下，没有尽头。",
+      "maxChars": 16,
+      "font": "body"
+    },
+    "cta": {
+      "kind": "text",
+      "default": "开始下潜",
+      "maxChars": 5,
+      "font": "body"
+    },
+    "scale_small": {
+      "kind": "text",
+      "default": "1.7 m",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "scale_large": {
+      "kind": "text",
+      "default": "3,400 m",
+      "maxChars": 10,
+      "font": "data"
+    },
+    "scale_ratio": {
+      "kind": "text",
+      "default": "1 : 2,000",
+      "maxChars": 11,
+      "font": "data"
+    },
+    "label_1": {
+      "kind": "text",
+      "default": "当前深度",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "label_en_1": {
+      "kind": "text",
+      "default": "DEPTH",
+      "maxChars": 10,
+      "font": "wide"
+    },
+    "value_1": {
+      "kind": "text",
+      "default": "−41,200",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "label_2": {
+      "kind": "text",
+      "default": "已测层",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "label_en_2": {
+      "kind": "text",
+      "default": "SOUNDED",
+      "maxChars": 10,
+      "font": "wide"
+    },
+    "value_2": {
+      "kind": "text",
+      "default": "4,112",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "label_3": {
+      "kind": "text",
+      "default": "回声",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "label_en_3": {
+      "kind": "text",
+      "default": "ECHO",
+      "maxChars": 10,
+      "font": "wide"
+    },
+    "value_3": {
+      "kind": "text",
+      "default": "3.2",
+      "maxChars": 8,
+      "font": "data"
+    }
+  },
+  "relations": [
+    "The plate fills y 0-70%; a void floor starts at 66% with a hairline seam; every line of type stands on the floor or on the scale marker's scrim.",
+    "The name is 128 units at 900 compressed to 78% (scale 0.78 1); labels are 12 units: 10.7 : 1.",
+    "The scale marker is a 10-unit tick beside a 420-unit bracket at (900, 360) with the ratio in signal."
+  ],
+  "decoration": [
+    "Structure plate (frames, screentone, seams, ribs, a beam, cables, light slit), the seam: drawn.",
+    "The kicker's rail script spells title_latin in lowercase (decoration beside the kicker)."
+  ],
+  "provenance": {
+    "corpus": "megastructure-ink-kit (《穹井》 VAULTWELL): the original kit in examples/megastructure-ink-kit",
+    "experiment": "styles/megastructure-ink/style.json provenance (reference images measured privately; never shipped)",
+    "accessed": "2026-11-07",
+    "method": "The case's first screen at 1920 with the plate parameters of its hero slot.",
+    "sampleIds": [
+      "megastructure-ink-kit/hero"
+    ],
+    "measured": [
+      "Reference manga pages: structure covers 67-79% of the frame; figure height 8.2-8.8% of the frame.",
+      "Case: plate texture over 54% of the screen, signal 0.54%."
+    ],
+    "summary": "megastructure-ink-kit hero"
+  }
+}

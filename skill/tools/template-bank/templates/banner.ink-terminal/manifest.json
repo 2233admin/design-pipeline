@@ -1,0 +1,239 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "banner.ink-terminal",
+  "family": "banner",
+  "style": "megastructure-ink",
+  "title": "Switchboard terminal: a cyan monitor with scanlines and timestamped lines, a four-step handshake (ending refused), a signal send button and a rail-script stream",
+  "use": "A terminal or network-access panel. state=idle|fail; lines 3-5.",
+  "canvas": {
+    "width": 1920,
+    "height": 640
+  },
+  "sizes": [
+    "1920x640",
+    "2880x960"
+  ],
+  "aspect": "3:1",
+  "accent": {
+    "roles": [
+      "signal",
+      "alarm"
+    ],
+    "maxShare": 0.1
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "state": {
+      "type": "enum",
+      "values": [
+        "idle",
+        "fail"
+      ],
+      "default": "fail",
+      "class": "decoration",
+      "note": "handshake state"
+    },
+    "lines": {
+      "default": 5,
+      "min": 3,
+      "max": 5,
+      "class": "decoration",
+      "note": "terminal lines"
+    }
+  },
+  "slots": {
+    "title": {
+      "kind": "text",
+      "default": "接线台 7 号",
+      "maxChars": 7,
+      "font": "body"
+    },
+    "title_en": {
+      "kind": "text",
+      "default": "SWITCHBOARD 07",
+      "maxChars": 16,
+      "font": "wide"
+    },
+    "line_id": {
+      "kind": "text",
+      "default": "LINE 0412",
+      "maxChars": 10,
+      "font": "data"
+    },
+    "message": {
+      "kind": "text",
+      "default": "接入被拒绝：缺少回声钥。",
+      "maxChars": 20,
+      "font": "body"
+    },
+    "send": {
+      "kind": "text",
+      "default": "发送握手",
+      "maxChars": 5,
+      "font": "body"
+    },
+    "time_1": {
+      "kind": "text",
+      "default": "03:12:40",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "kind_1": {
+      "kind": "text",
+      "default": "SYS",
+      "maxChars": 3,
+      "font": "data"
+    },
+    "line_1": {
+      "kind": "text",
+      "default": "接线台 7 号 唤醒",
+      "maxChars": 24,
+      "font": "body"
+    },
+    "time_2": {
+      "kind": "text",
+      "default": "03:12:41",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "kind_2": {
+      "kind": "text",
+      "default": "SYS",
+      "maxChars": 3,
+      "font": "data"
+    },
+    "line_2": {
+      "kind": "text",
+      "default": "线路 0412 · 0413 · 0419 在线",
+      "maxChars": 24,
+      "font": "body"
+    },
+    "time_3": {
+      "kind": "text",
+      "default": "03:12:44",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "kind_3": {
+      "kind": "text",
+      "default": "REQ",
+      "maxChars": 3,
+      "font": "data"
+    },
+    "line_3": {
+      "kind": "text",
+      "default": "发送握手 / 层号 4,112",
+      "maxChars": 24,
+      "font": "body"
+    },
+    "time_4": {
+      "kind": "text",
+      "default": "03:12:47",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "kind_4": {
+      "kind": "text",
+      "default": "ACK",
+      "maxChars": 3,
+      "font": "data"
+    },
+    "line_4": {
+      "kind": "text",
+      "default": "总台应答：识别码未登记",
+      "maxChars": 24,
+      "font": "body"
+    },
+    "time_5": {
+      "kind": "text",
+      "default": "03:12:47",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "kind_5": {
+      "kind": "text",
+      "default": "ERR",
+      "maxChars": 3,
+      "font": "data"
+    },
+    "line_5": {
+      "kind": "text",
+      "default": "接入被拒绝：缺少回声钥",
+      "maxChars": 24,
+      "font": "body"
+    },
+    "step_1": {
+      "kind": "text",
+      "default": "唤醒",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "step_en_1": {
+      "kind": "text",
+      "default": "WAKE",
+      "maxChars": 10,
+      "font": "wide"
+    },
+    "step_2": {
+      "kind": "text",
+      "default": "握手",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "step_en_2": {
+      "kind": "text",
+      "default": "HANDSHAKE",
+      "maxChars": 10,
+      "font": "wide"
+    },
+    "step_3": {
+      "kind": "text",
+      "default": "鉴权",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "step_en_3": {
+      "kind": "text",
+      "default": "VERIFY",
+      "maxChars": 10,
+      "font": "wide"
+    },
+    "step_4": {
+      "kind": "text",
+      "default": "接入",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "step_en_4": {
+      "kind": "text",
+      "default": "CONNECT",
+      "maxChars": 10,
+      "font": "wide"
+    }
+  },
+  "relations": [
+    "Monitor 1000 x 512 with 3-unit scanlines; lines 40 units apart; a refused last line carries a 2-unit alarm edge.",
+    "Four steps of 172 x 96: done steps have a line top edge, the refused step alarm_dim with an alarm edge."
+  ],
+  "decoration": [
+    "Scanlines, cursor, step numbers, rail-script stream: drawn."
+  ],
+  "provenance": {
+    "corpus": "megastructure-ink-kit (《穹井》 VAULTWELL): the original kit in examples/megastructure-ink-kit",
+    "experiment": "styles/megastructure-ink/style.json provenance (reference images measured privately; never shipped)",
+    "accessed": "2026-11-07",
+    "method": "The case's switchboard screen (terminal log and handshake).",
+    "sampleIds": [
+      "megastructure-ink-kit/switchboard"
+    ],
+    "measured": [
+      "Reference monitors: cyan face, thin labels, scanlines about 4 units at 1920 (3 in the pack)."
+    ],
+    "summary": "megastructure-ink-kit switchboard"
+  }
+}
