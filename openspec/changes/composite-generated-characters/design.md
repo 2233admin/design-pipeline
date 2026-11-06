@@ -14,10 +14,19 @@
   joined (`CC0 + generated + owner-original`), `commercialUse` only when every input allows it. The
   per-size measurements and the redo command go in `composite.json` beside the outputs; it is the only
   place the browser check reads them from.
-- **Ground is a role, not a guess**: the fix for the collage false positive is declared, never inferred
-  from pixels: `data-layer="ground"` on the element (template slots declare `"layer": "ground"`) or the
-  receipt beside the file. Character, fx and fg outputs stay collage, so a title over the figure is
-  still caught.
+- **Ground is a role, not a guess, and narrow** (review of #317): declared, never inferred from pixels,
+  and only at the slot level: `data-layer="ground"` on the image itself or on its own `[data-slot]`
+  element (the template's `<g>` around one `<image>`), never inherited from an arbitrary ancestor, so a
+  wrapper cannot exempt the collage inside it. A page's own declaration without a matching receipt is
+  exempt but noted "self-declared ground". A `composite.json` exempts only when the image's sha256
+  equals the output it recorded (a copied or edited image keeps the receipt from applying). Character,
+  fx and fg outputs stay collage, so a title over the figure is still caught.
+- **Staleness covers the recipe, not only the files**: composite records carry `contractSha256` (the
+  template's `layers`) and `integrationSha256` (the style's mode spec, texture and hue role);
+  `materials check` recomputes both and reports `material-derived-stale` with the recorded command.
+  The command is shell-quoted so paths with spaces paste as is.
+- **Generated lineage is self-reported**: the sheet's hashes prove the sheet did not change after
+  intake, not that the image came from it; the owner states that at intake.
 - **Pure JavaScript, deterministic**: the runtime has no OpenCV. GrabCut is the published algorithm
   (5-component colour GMMs, 8-neighbour graph, Boykov-Kolmogorov max-flow) at a 640 px working size,
   seeded k-means++ start; the edge is refined by a colour-guided filter (radius 0.36% of the long side,
@@ -38,9 +47,12 @@
   direction and the sheet asks for them; rim and cast shadow are drawn from the declaration.
 - **Type boxes are axis-aligned outer boxes**: a rotated sticker declares its rotated bounds (the
   prototype's vertical wordmark only touched the face after rotation).
-- **Refusing derivative subjects** is a heuristic on the subject text (fan art, cosplay, 同人, "character
-  from ..."); every sheet also carries the negative constraint "original characters only - never an
-  existing work's character", and the owner reviews the result.
+- **Refusing derivative subjects is a heuristic**, not a gate: a short list of Latin and CJK cues (fan
+  art, cosplay, 同人, 二创, "character from ...", parody, look-alike); it does not know every franchise or
+  name and does not pretend to. The subject is folded to one line, capped at 200 characters and quoted
+  as data in the prompt, always followed by the fixed constraint "original characters only - never an
+  existing work's character; a named franchise's style only as general grammar". The owner's review of
+  the image is the real gate.
 - **Backdrop for models without alpha**: the candidate (green, blue, magenta, cyan, orange) farthest in
   OKLab from every palette colour (street-tape: `#FF00FF`).
 - **Showcases stay character-free**: the template's default render shows hatched placeholders for the

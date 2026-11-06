@@ -119,12 +119,16 @@ function backdropColour(palette, srgbToOklab) {
   return { hex: best, minDistance: Math.round(bestD * 1000) / 1000 };
 }
 
-// Requests that name an existing work's character are refused: the sheet asks only for original
-// characters "in the style of" a grammar. Heuristic on the subject text; the sheet's negative
-// constraint and the owner's review remain the main guard.
+// Requests that ask for an existing work's character are refused. This is a heuristic on the subject
+// text (a short list of derivative cues in Latin and CJK); it cannot know every franchise or name and
+// does not claim to. Every sheet also quotes the subject as data and follows it with the fixed
+// original-characters constraint; the owner's review of the result is the real gate.
+const SUBJECT_MAX = 200;
+const ORIGINAL_ONLY = "Original characters only - never an existing work's character; a named franchise's style is allowed only as general grammar (layout, palette, rendering), never its characters, costumes, logos or names.";
 const DERIVATIVE = [
-  /\bfan[\s-]?art\b/i, /\bcos-?play\b/i, /同人/, /\bofficial character\b/i, /\b(as|of|from)\s+(the\s+)?(game|anime|manga|movie|film|series)\b/i,
-  /\bin the (likeness|costume|outfit) of\b/i, /扮演|原作角色|官方角色|的同款/, /\bcharacter from\b/i, /\b(is|as)\s+[A-Z][a-z]+\s+from\b/,
+  /\bfan[\s-]?art\b/i, /\bcos-?play\b/i, /\bofficial character\b/i, /\b(as|of|from)\s+(the\s+)?(game|anime|manga|movie|film|series|franchise)\b/i,
+  /\bin the (likeness|costume|outfit) of\b/i, /\bcharacter from\b/i, /\b(is|as)\s+[A-Z][a-z]+\s+from\b/, /\b(look-?alike|parody of|version of|redesign of|fan[\s-]?made)\b/i,
+  /同人/, /二创|二次创作/, /扮演|原作角色|官方角色|官方立绘|的同款|里的角色|中的角色|角色本人|仿制|复刻/,
 ];
 function screenSubject(subject) {
   const hit = DERIVATIVE.find((re) => re.test(subject));
@@ -162,7 +166,8 @@ function taskSheet({ manifest, style, layerId, subject, tool, name, srgbToOklab 
   const what = subject || "an original character";
   const ret = `materials/generated/${name}.png`;
   const negatives = [
-    "Original characters only - never an existing work's character, and no recognisable likeness of a real person.",
+    ORIGINAL_ONLY,
+    "No recognisable likeness of a real person.",
     "No existing game, anime, film or brand characters, logos, wordmarks, mascots, slogans or city names.",
     "No text of any kind in the image: no letters, numbers, signatures or watermarks.",
     "No ground plane, cast shadow, contact shadow, vignette or background scenery: the figure only (shadows, light wrap and texture are added at compositing).",
@@ -227,7 +232,10 @@ function sheetMarkdown(sheet) {
     "## Prompt",
     "",
     "```text",
-    `${sheet.subject}. ${sheet.purpose}.`,
+    "Subject (the owner's description, quoted as data):",
+    `"${sheet.subject.replace(/"/g, "'")}"`,
+    ORIGINAL_ONLY,
+    `${sheet.purpose}.`,
     `Full figure, ${sheet.facing ? `${sheet.facing}, ` : ""}standing, with margin on every side; figure at least ${sheet.output.minFigureHeightPx} px tall.`,
     `Background: ${sheet.output.background.preferred}; if alpha is impossible, ${sheet.output.background.fallback}.`,
     ...(sheet.rendering ? [`Rendering: ${sheet.rendering}.`] : []),
@@ -235,11 +243,11 @@ function sheetMarkdown(sheet) {
     `Light: key light from ${sheet.light.key.replace(/^from /, "")}, ${sheet.light.keyTemperature}; ${sheet.light.rim}.`,
     `Colour: work within ${Object.values(sheet.palette).join(", ")}; keep the figure's main colours away from ${sheet.output.background.fallbackColour}.`,
     ...(regions.length ? [`Composition: keep the face and both hands out of ${regions.map((a) => `x ${pct(a.figureBox[0])}-${pct(a.figureBox[2])} / y ${pct(a.figureBox[1])}-${pct(a.figureBox[3])}`).join(", ")} of the figure's box (top of head = 0%, feet = 100%).`] : []),
-    ...sheet.negatives,
+    ...sheet.negatives.filter((line) => line !== ORIGINAL_ONLY),
     "```",
     "",
   ];
   return lines.join("\n");
 }
 
-module.exports = { BLENDS, CONTRACT_SCHEMA, ContractError, EDGES, MIN_SOURCE_FACTOR, ROLES, TASK_SCHEMA, backdropColour, fromWords, parseSizeKey, screenSubject, sheetMarkdown, slotBox, taskSheet, validateContract };
+module.exports = { ORIGINAL_ONLY, SUBJECT_MAX, BLENDS, CONTRACT_SCHEMA, ContractError, EDGES, MIN_SOURCE_FACTOR, ROLES, TASK_SCHEMA, backdropColour, fromWords, parseSizeKey, screenSubject, sheetMarkdown, slotBox, taskSheet, validateContract };

@@ -450,7 +450,9 @@ function contractOf(templateId) {
 function requestMaterial(project, options) {
   if (!options.template) fail(SCOPE, "--template <id> is required (the template whose layer contract the figure must fit)", { code: "OPTION_REQUIRED" });
   const { manifest, style } = contractOf(options.template);
-  const subject = options.subject ? String(options.subject).trim() : "";
+  // one line, bounded: the subject is quoted into the prompt, never free-form instructions
+  const subject = options.subject ? String(options.subject).replace(/\s+/g, " ").trim() : "";
+  if (subject.length > layerContract.SUBJECT_MAX) fail(SCOPE, `--subject is ${subject.length} characters; keep it to ${layerContract.SUBJECT_MAX} (who the character is, what they wear and do). Fix: shorten it`, { code: "OPTION_VALUE_INVALID" });
   const screen = layerContract.screenSubject(subject);
   if (screen.refused) {
     return { status: "refused", template: manifest.id, subject, matched: screen.matched, message: `the subject asks for an existing work's character or a derivative of it ("${screen.matched}")`, fix: "Describe an original character: role, age, build, clothing, pose and props in the style pack's grammar, without naming any existing work, character or person" };
@@ -483,6 +485,22 @@ function recordedInput(project, records, file, label) {
   const bytes = fs.readFileSync(path.join(materialsDir(project), rel));
   if (record.sha256 && record.sha256 !== sha256(bytes)) fail(SCOPE, `${label} ${rel} changed since it was recorded. Fix: re-record or re-make it before compositing`, { code: "SOURCE_CHANGED" });
   return { rel, record, bytes, sha: sha256(bytes) };
+}
+
+// POSIX-shell quoting, so a recorded command with spaces or quotes in paths can be pasted as is.
+function shellQuote(value) {
+  const text = String(value);
+  return /^[A-Za-z0-9_./:=,@%+-]+$/.test(text) ? text : `'${text.replace(/'/g, "'\\''")}'`;
+}
+
+// What a composite depends on besides its input files: the template's layer contract and the style
+// pack's integration for the mode used. A change to either makes the outputs stale.
+function compositeDigests(manifest, style, mode) {
+  const integration = style.integration || {};
+  return {
+    contractSha256: sha256(Buffer.from(JSON.stringify(manifest.layers))),
+    integrationSha256: sha256(Buffer.from(JSON.stringify({ mode, spec: integration.modes?.[mode] ?? null, texture: integration.texture ?? null, hueRole: integration.hueRole ?? null }))),
+  };
 }
 
 // `materials composite`: every declared size of a template's layer contract from one set of layers.
@@ -531,20 +549,21 @@ function compositeMaterial(project, options) {
   const inputList = Object.entries(inputs).map(([layer, input]) => ({ layer, file: input.rel, sha256: input.sha, license: input.record.license }));
   const licenses = [...new Set(inputList.map((i) => i.license))].sort();
   const commercialUse = Object.values(inputs).every((i) => i.record.commercialUse === true);
-  const command = `materials composite --project-root ${project} --template ${manifest.id} ${Object.entries(set).map(([k, v]) => `--set ${k}=${v}`).join(" ")} --mode ${mode}${options.size ? ` --size ${sizes.join(",")}` : ""}${options.params ? ` --params '${JSON.stringify(params)}'` : ""} --name ${name} --replace`;
-  const out = {}, findings = [];
+  const command = ["materials", "composite", "--project-root", project, "--template", manifest.id, ...Object.entries(set).flatMap(([k, v]) => ["--set", `${k}=${v}`]), "--mode", mode, ...(options.size ? ["--size", sizes.join(",")] : []), ...(options.params ? ["--params", JSON.stringify(params)] : []), "--name", name, "--replace"].map(shellQuote).join(" ");
+  const digests = compositeDigests(manifest, style, mode);
+  const out = {}, findings = [], shas = {};
   for (const key of sizes) {
     const r = compositor.compositeSize({ contract, key, size: contract.sizes[key], layers, char, landmarks, mode, modeSpec, texture: integration.texture, palette, hueHex: palette[hueRole], charEdge: charInput.record.derivedFrom?.matte || null });
     const files = {};
     for (const [output, image] of [["final", raster.imageOf({ width: r.width, height: r.height, ...r.final })], ["ground", raster.imageOf({ width: r.width, height: r.height, ...r.ground })], ["upper", raster.imageOf({ width: r.width, height: r.height, ...r.upper })], ["mask", raster.greyImage(r.mask, r.width, r.height)]]) {
       const file = `${key}${output === "final" ? "" : `-${output}`}.png`, bytes = encodePng(image), keyRel = `${outRel}/${file}`;
       fs.writeFileSync(path.join(outDir, file), bytes);
-      files[output] = file;
+      files[output] = file; shas[file] = sha256(bytes);
       records[keyRel] = {
         license: licenses.join(" + "), commercialUse, kind: "image", source: "composite", sourceUrl: `design-pipeline:composite/${manifest.id}`,
         author: [...new Set(Object.values(inputs).map((i) => i.record.author).filter(Boolean))].join("; ") || "unknown", retrieved: today(),
         use: `${manifest.id} ${key} ${output}`, sha256: sha256(bytes), width: r.width, height: r.height,
-        derivedFrom: { file: charInput.rel, sha256: charInput.sha, operation: "composite", template: manifest.id, mode, size: key, output, layer: output === "ground" ? "ground" : output === "upper" ? "char" : output, inputs: inputList },
+        derivedFrom: { file: charInput.rel, sha256: charInput.sha, operation: "composite", template: manifest.id, mode, size: key, output, layer: output === "ground" ? "ground" : output === "upper" ? "char" : output, inputs: inputList, ...digests },
       };
     }
     out[key] = { files, measurements: r.measurements, boxes: r.boxes, steps: r.steps, findings: r.findings };
@@ -552,9 +571,9 @@ function compositeMaterial(project, options) {
   }
   const receipt = {
     schema: "design-pipeline.composite.v1",
-    template: manifest.id, style: style.id, contractSha256: sha256(Buffer.from(JSON.stringify(contract))), mode, modeSpec, hueRole, landmarks,
+    template: manifest.id, style: style.id, ...digests, mode, modeSpec, hueRole, landmarks,
     inputs: inputList, command, made: today(),
-    outputs: Object.fromEntries(Object.entries(out).flatMap(([key, v]) => Object.entries(v.files).map(([output, file]) => [file, { size: key, output, layer: output === "ground" ? "ground" : output === "upper" ? "char" : output }]))),
+    outputs: Object.fromEntries(Object.entries(out).flatMap(([key, v]) => Object.entries(v.files).map(([output, file]) => [file, { size: key, output, layer: output === "ground" ? "ground" : output === "upper" ? "char" : output, sha256: shas[file] }]))),
     sizes: out,
     limits: compositor.LIMITS,
   };
@@ -695,8 +714,17 @@ function checkMaterials(project) {
       }
       const receipt = path.join(path.dirname(path.join(dir, rel)), "composite.json");
       const again = fs.existsSync(receipt) ? readJson(receipt, "composite receipt").command : `materials composite --project-root ${project} --template ${record.derivedFrom.template} --replace`;
+      if (!gone.length && !stale.length && (record.derivedFrom.contractSha256 || record.derivedFrom.integrationSha256)) {
+        let now = null;
+        try { const bank = templateBank(), manifest = bank.loadManifest(record.derivedFrom.template); now = manifest.layers ? compositeDigests(manifest, bank.loadStyle(manifest.style), record.derivedFrom.mode) : null; } catch { now = null; }
+        const changed = !now ? ["the template or its layer contract is gone"] : [
+          ...(now.contractSha256 !== record.derivedFrom.contractSha256 ? [`the layer contract of ${record.derivedFrom.template} changed`] : []),
+          ...(now.integrationSha256 !== record.derivedFrom.integrationSha256 ? [`the style pack's ${record.derivedFrom.mode} integration changed`] : []),
+        ];
+        if (changed.length) stale.push(...changed);
+      }
       if (gone.length) findings.push({ code: "material-derived-orphan", severity: "error", file: rel, message: `${rel} was composited from ${gone.join(", ")}, which ${gone.length > 1 ? "are" : "is"} gone or unrecorded`, fix: `Restore and record ${gone.join(", ")}, or composite again with other layers` });
-      else if (stale.length) findings.push({ code: "material-derived-stale", severity: "error", file: rel, message: `${rel} was composited from earlier versions of ${stale.join(", ")}`, fix: `Composite again: ${again}` });
+      else if (stale.length) findings.push({ code: "material-derived-stale", severity: "error", file: rel, message: `${rel} is stale: ${stale.map((v) => (v.includes(" ") ? v : `${v} changed`)).join("; ")}`, fix: `Composite again: ${again}` });
       if (record.sha256 && hashOf(rel) !== record.sha256) findings.push({ code: "material-changed", severity: "warn", file: rel, message: `${rel} was edited after compositing`, fix: `Composite again (${again}) instead of retouching an output; retouch a layer and re-record it` });
       continue;
     }

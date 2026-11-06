@@ -34,6 +34,7 @@
 // the text colour against the ground inside the ink box), glyph-coverage (a string the browser
 // would set with per-glyph fallback).
 
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL, fileURLToPath } = require("node:url");
@@ -167,6 +168,8 @@ function discover() {
     });
     index += 1;
   }
+  let layerSources = null;
+  try { layerSources = JSON.parse(document.getElementById("template-params")?.textContent || "null")?.layerSources || null; } catch { layerSources = null; }
   const collage = [];
   const images = [];
   let c = 0;
@@ -183,11 +186,17 @@ function discover() {
     if (element.parentElement && element.parentElement.closest("[data-collage]")) continue;
     const rect = element.getBoundingClientRect();
     if (rect.width < 1 || rect.height < 1 || effectiveOpacity(element) < 0.05) continue;
-    const layerRole = element.closest("[data-layer]")?.getAttribute("data-layer") || null;
-    const slot = element.closest("[data-slot]")?.getAttribute("data-slot") || null;
+    // A ground declaration is read at the slot level only: on the image itself, or on its own slot
+    // element ([data-slot][data-layer], the template's <g> around one <image>); never inherited from
+    // an arbitrary ancestor, so a wrapper cannot exempt the collage inside it.
+    const isImage = element.tagName === "IMG" || element.localName === "image";
+    const slotEl = element.parentElement && element.parentElement.matches && element.parentElement.matches("[data-slot][data-layer]") ? element.parentElement : null;
+    const layerRole = isImage ? (element.getAttribute("data-layer") || slotEl?.getAttribute("data-layer") || null) : null;
+    const slot = slotEl?.getAttribute("data-slot") || element.closest("[data-slot]")?.getAttribute("data-slot") || null;
     const rawSrc = element.getAttribute("src") || element.getAttribute("href") || element.getAttribute("xlink:href") || "";
     const absolute = rawSrc && !rawSrc.startsWith("data:") ? new URL(rawSrc, document.baseURI).href : null;
-    if (["IMG", "image"].includes(element.tagName) || element.localName === "image") images.push({ slot, role: layerRole, src: absolute, rect: { x0: rect.left, y0: rect.top, x1: rect.right, y1: rect.bottom }, collage: layerRole === "ground" ? null : c });
+    const dataUri = rawSrc.startsWith("data:") && slot && layerSources && layerSources[slot] ? rawSrc : null;
+    if (isImage) images.push({ slot, role: layerRole, src: absolute, dataUri, rect: { x0: rect.left, y0: rect.top, x1: rect.right, y1: rect.bottom }, collage: layerRole === "ground" ? null : c });
     if (layerRole === "ground") continue;
     element.setAttribute("data-tc-collage", String(c));
     if (bgLayers.includes(element) && !["IMG", "image"].includes(element.tagName) && !element.hasAttribute("data-collage")) element.setAttribute("data-tc-bg", "");
@@ -210,8 +219,6 @@ function discover() {
     }
   };
   for (const sheet of document.styleSheets) { try { collect(sheet.cssRules); } catch { /* cross-origin sheet */ } }
-  let layerSources = null;
-  try { layerSources = JSON.parse(document.getElementById("template-params")?.textContent || "null")?.layerSources || null; } catch { layerSources = null; }
   return { W, H, units, collage, images, layerSources, faces, noText: document.documentElement.hasAttribute("data-no-text") };
 }
 
@@ -317,24 +324,30 @@ function separation(a, b, gap) {
 // Images tied to a materials composite receipt: by file (composite.json beside the image) or, for a
 // template render whose images are embedded, by the render's layerSources (slot -> receipt).
 function linkReceipts(found, pageFile) {
-  const out = [], cache = new Map();
+  const out = [], notes = [], cache = new Map();
   const read = (file) => {
     if (!cache.has(file)) { try { const r = JSON.parse(fs.readFileSync(file, "utf8")); cache.set(file, r?.schema === "design-pipeline.composite.v1" ? r : null); } catch { cache.set(file, null); } }
     return cache.get(file);
   };
   for (const image of found.images || []) {
-    let receiptFile = null, name = null;
+    let receiptFile = null, name = null, bytes = null;
     if (image.src && image.src.startsWith("file:")) {
-      try { const local = fileURLToPath(image.src); receiptFile = path.join(path.dirname(local), "composite.json"); name = path.basename(local); } catch { receiptFile = null; }
+      try { const local = fileURLToPath(image.src); receiptFile = path.join(path.dirname(local), "composite.json"); name = path.basename(local); if (fs.existsSync(local)) bytes = fs.readFileSync(local); } catch { receiptFile = null; }
     } else if (image.slot && found.layerSources?.[image.slot]) {
       const source = found.layerSources[image.slot];
       receiptFile = path.resolve(path.dirname(pageFile), source.receipt); name = source.file;
+      const m = /^data:[^;,]+;base64,(.*)$/s.exec(image.dataUri || "");
+      bytes = m ? Buffer.from(m[1], "base64") : null;
     }
     if (!receiptFile || !fs.existsSync(receiptFile)) continue;
     const receipt = read(receiptFile), output = receipt?.outputs?.[name];
-    if (output) out.push({ image, receipt, receiptFile, file: name, output });
+    if (!output) continue;
+    // a receipt vouches only for the bytes it recorded: a copied or edited image is not linked
+    const actual = bytes ? crypto.createHash("sha256").update(bytes).digest("hex") : null;
+    if (!output.sha256 || actual !== output.sha256) { notes.push(`${image.slot || name}: ${path.basename(receiptFile)} lists ${name} but its sha256 does not match the image shown; the receipt is ignored (ground exemption and composite checks not applied). Fix: composite again, or use the recorded output unchanged`); continue; }
+    out.push({ image, receipt, receiptFile, file: name, output });
   }
-  return out;
+  return { links: out, notes };
 }
 
 // ---- main ----------------------------------------------------------------------------------------
@@ -388,7 +401,7 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
     const found = await page.evaluate(discover);
     const units = found.units;
     // composite receipts behind the images: a ground output leaves the collage list
-    const linked = linkReceipts(found, absolute);
+    const { links: linked, notes: receiptNotes } = linkReceipts(found, absolute);
     const grounds = new Set(linked.filter((l) => l.output.layer === "ground" && l.image.collage !== null).map((l) => l.image.collage));
     if (grounds.size) await page.evaluate((drop) => { for (const el of document.querySelectorAll("[data-tc-collage]")) if (drop.includes(Number(el.getAttribute("data-tc-collage")))) el.removeAttribute("data-tc-collage"); }, [...grounds]);
     const collage = found.collage.filter((layer) => !grounds.has(layer.index));
@@ -456,7 +469,11 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
     if (page.url() !== startUrl) throw new Error(`the page navigated away from ${path.basename(absolute)} to ${page.url()} during the check`);
     const findings = [];
     const measured = [];
-    const notes = [];
+    const notes = [...receiptNotes];
+    // a ground declared on the page without a matching receipt is taken at its word, and said so
+    for (const image of found.images.filter((i) => i.role === "ground" && !linked.some((l) => l.image === i && l.output.layer === "ground"))) {
+      notes.push(`self-declared ground: ${image.slot || (image.src ? image.src.split("/").pop() : "embedded image")} is exempt from collage-cover by its data-layer="ground" alone (no matching composite receipt); make sure it is the scene behind the text, not a cut-out`);
+    }
     for (const message of [...new Set(pageErrors)]) {
       findings.push({
         rule: "page-error", slot: "page", measuredBy: "browser", measured: { message: message.slice(0, 300) }, limit: { errors: 0 },

@@ -154,10 +154,12 @@ is hidden with it and never taken as its ground.
 Mark your own layers so they group and exempt correctly: `data-chk="<id>"` names a text unit (an
 element holding marked children is a container), `data-grp="<group>/<n>"` makes a lock-up whose
 parts may touch, `data-deco` exempts decoration from overlap and contrast, `data-bleed` from the
-canvas edge, `data-collage` marks a cut-out drawn in SVG. An image inside `data-layer="ground"`
-(a template image slot declared `"layer": "ground"`, or your own page) is the text's ground: it is
-sampled for contrast and never counted as collage. So is an image whose file is listed as a ground
-output in the `composite.json` beside it.
+canvas edge, `data-collage` marks a cut-out drawn in SVG. An image that carries `data-layer="ground"`
+itself, or whose own slot element does (`[data-slot][data-layer="ground"]`, as template image slots
+declared `"layer": "ground"` render), is the text's ground: sampled for contrast, never counted as
+collage; without a matching receipt the report notes it as self-declared. An ancestor wrapper does not
+count. An image listed as a ground output in the `composite.json` beside it is ground too, but only when
+its sha256 matches the receipt.
 Do not put `data-chk` on decorative paths: a marked element is measured as text (overlap, off-canvas and
 contrast), even when it holds only paths; use `data-deco` for decoration. Path data is read in full
 (arc flags may be glued to the next number, as svgo writes them); a `d` that cannot be read is
@@ -191,10 +193,14 @@ occluder and outline in px at a 1080 px short side; `texture` per blend; `figure
    with a prompt block, and `.json`). Figure height at least 2x the largest slot; transparent PNG or a
    flat backdrop chosen far from the palette; light and rim; palette; regions of the figure that the
    type or the occluder cover at some size (keep face and hands out); no text; original characters only.
-   A subject that asks for fan art, cosplay or an existing work's character is refused (exit 2).
+   A subject that matches a derivative cue (fan art, cosplay, 同人, a character from an existing work) is
+   refused (exit 2). That list is a heuristic, not a gate: the subject is folded to one line, capped at
+   200 characters and quoted as data with the fixed original-characters constraint after it, and your
+   review of the image is what actually decides.
 2. `materials add --kind generated --tool <tool> --prompt materials/requests/<name>.md --landmarks '{...}'`:
    the output with its sheet's hashes and the returned foot, head, face and hand boxes. `materials check`
-   fails when the sheet is gone or changed.
+   fails when the sheet is gone or changed. The lineage is self-reported: the hashes prove the sheet was
+   not changed afterwards, not that the image came from it.
 3. `materials cut --mode grabcut --finish cut[,outline]`: colour models and graph cut (for gradients,
    vignettes and shadows the border and paper references cannot separate), a guided-filter edge and
    defringe; the cut records the halo before and after.
@@ -204,7 +210,8 @@ occluder and outline in px at a 1080 px short side; `texture` per blend; `figure
    per size: upscale (above 1.5x fails), black-point difference (warn above 0.03 L), mean colour
    difference (warn above 25; a residual of 10-20 on flat light grounds is expected, never pull it to
    0), halo at the use size (warn above 1 px), face and hands under a declared type box or the occluder
-   (fail). Outputs are recorded; `materials check` marks them stale when an input changes.
+   (fail). Outputs are recorded; `materials check` marks them stale when an input, the template's layer
+   contract or the style's integration changes, with the recorded (shell-quoted) command as the fix.
 5. `template render <id> --set scene=<WxH-ground.png> --set figure=<WxH-upper.png>` (or `<img>` in a page):
    the browser check measures contrast on the composited pixels, takes the ground as ground, and checks
    the measured ink against the character's face and hands.
