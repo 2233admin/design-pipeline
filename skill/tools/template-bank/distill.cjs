@@ -151,7 +151,7 @@ function measureEntry(entry, tools = {}) {
   const aspect = W / H;
   return {
     id: entry.id, category: entry.category, source: entry.source, sha256: sha256(entry.file), size: [W, H],
-    aspect: aspect > 1.15 ? "landscape" : aspect < 0.87 ? "portrait" : "square",
+    aspect: aspectClass(aspect),
     letterbox: pixels.letterbox, features: { ...pixels.features, ...boxes }, notes: pixels.notes, palette: pixels.palette, type,
   };
 }
@@ -261,7 +261,7 @@ function templateFacts(id) {
   const text = report.measured.filter((m) => (m.kind === "text" || m.kind === "lettering") && m.extent && !manifest.slots[m.slot]?.decor);
   let titles = text.filter((m) => titleSlots.has(m.slot) || [...titleSlots].some((n) => m.slot.startsWith(n)));
   if (!titles.length && text.length) titles = [text.reduce((a, b) => ((b.sizePx || 0) > (a.sizePx || 0) ? b : a))];
-  const facts = { id, style: manifest.style, family: manifest.family, aspect: W / H > 1.15 ? "landscape" : W / H < 0.87 ? "portrait" : "square" };
+  const facts = { id, style: manifest.style, family: manifest.family, aspect: aspectClass(W / H) };
   if (titles.length) {
     const x0 = Math.min(...titles.map((m) => m.extent[0])), y0 = Math.min(...titles.map((m) => m.extent[1]));
     const x1 = Math.max(...titles.map((m) => m.extent[0] + m.extent[2])), y1 = Math.max(...titles.map((m) => m.extent[1] + m.extent[3]));
@@ -280,6 +280,10 @@ function templateFacts(id) {
   for (const k of Object.keys(facts)) if (typeof facts[k] === "number") facts[k] = measure.round(facts[k], 3);
   return facts;
 }
+
+// Aspect class shared by references and templates. A strip wider than 4:1 (a site bar, a ticker) is its
+// own class, so a page bar is never the nearest layout of a 16:9 key visual.
+function aspectClass(ratio) { return ratio > 4 ? "strip" : ratio > 1.15 ? "landscape" : ratio < 0.87 ? "portrait" : "square"; }
 
 function vectorDistance(a, b) {
   let s = 0, n = 0;

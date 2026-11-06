@@ -28,8 +28,9 @@ grammar + check rules; its templates are the parameterised layouts of that gramm
 | `street-tape` | 6 (site top bar, section title block, vertical pager, cut container with carousel, sticker CTA, first screen as layers) | Japanese street-fashion city game site: light grey, one acid yellow-green, black fine stripes, rounded slabs with one 49-degree cut, a film strip, numbered three-line section titles |
 | `frontier-survey` | 5 (left rail, section opener, crew dossier, album screen, version timeline) | Industrial sci-fi frontier game site: a white page with a fixed left rail, one signal yellow as tall columns and side bands, four-layer section titles, hatched ghost lettering, contours and data marks (objects come from image slots) |
 | `lattice-dossier` | 5 (top frame, rail pager, section heading with ghost word, bulletin screen, four columns) | Industrial dossier-terminal game site: near-black ground, a 172-unit lattice with both diagonals, three frame hairlines (y 152, y 900, x 1683), one signal cyan for state only, a rail numeral cut to its top 55% |
+| `celestial-voyage` | 4 (site top bar with hanging logo and cream tab, gilt news ticket, news section, character section with faction orbit) | Star-voyage fantasy RPG site: deep navy star field, gold only as hairlines and the current state, a heavy CJK serif title over a hairline italic Latin ghost, gilt-rimmed rounded cards, faction medallions on an arc centred off-screen |
 
-The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `frontier-survey` from a reference site captured for the owner and `lattice-dossier` from a live official site captured and measured privately (all kept private, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
+The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `frontier-survey` from a reference site captured for the owner, `lattice-dossier` from a live official site captured and measured privately and `celestial-voyage` from a public reference site the owner named (all kept private, measured, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
 the rule *borrow grammar, never assets*); `examples` in each pack lists the case screens that stayed example
 renders because their structure was a one-off.
 
@@ -324,6 +325,15 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
   (`wide`, `narrow`, `mono`); mixed copy goes in `head` or `body`. Michroma is very wide: give its slots
   room. Art goes in `art`, `media` and `col_N`; characters come from an image-generation task sheet (#311)
   with a painted-in blend (grade to the scene, fog wrap, a cyan rim), not a sticker outline.
+
+- **celestial-voyage**: gold is the only accent and stays a line (rims, ticks, underlines, the orbit):
+  keep fills navy, panel or plate. `title_latin` is the stroke-only ghost under the CJK title (Latin
+  capitals, digits, space `& . ' -`; `data-deco`, so it is exempt from overlap and contrast); dates take
+  digits and `/ . -`. The faction orbit is a circle of radius 760 centred at (1005, 540) in 1920 units with
+  medallions 13.7 degrees apart (`ORBIT` in `layouts-voyage.cjs`); the current one carries the first
+  character of `faction`. Cinzel and Cormorant Garamond are Latin-only roles (`label`, `ghost`). In show
+  mode, carry a screen with type, frames, data and `materials generate` textures (an ink flat, a paper
+  stub, FM star dust), not drawn pseudo-illustration; figures go in `art` / `cover*` from a task sheet.
 
 Layout helpers for new packs: `layout-kit.cjs` (`rbox` for a tilted slot's box, `tilt`, `ngon`,
 `discStripes`, a seeded `rng`); `d.text(..., { italic, filter })`, `d.lettering(..., { shadow: { dx, dy,
