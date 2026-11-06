@@ -313,7 +313,15 @@ node skill/scripts/evaluate-website-clone.cjs \
 
 ### 模板库与风格包
 
-模板是带参数的 SVG 版式：KV、视频封面、卡片、活动横幅、UI 面板和字幕卡快切。每个模板有槽位（带字数和行数预算）、在实测范围内可调的参数、配色角色和出处。模板属于风格包；风格包把字体角色、版式语法、素材、动效节奏和检查规则放在一起。现有两个风格包、20 个模板：`arknights-endfield`（9 个，从官方宣传图的版式研究里量出来，只作参考，不附带任何图片、描摹、logo 或官方文字）和 `shinbo`（11 个，来自《夜想回廊》实验）。
+模板是带参数的 SVG 版式：KV、视频封面、卡片、活动横幅、UI 面板和字幕卡快切。每个模板有槽位（带字数和行数预算）、在实测范围内可调的参数、配色角色和出处。模板属于风格包；风格包把字体角色、版式语法、素材、动效节奏和检查规则放在一起。现有 14 个风格包、68 个模板：
+
+| 来源 | 风格包（模板数） |
+| --- | --- |
+| 游戏官网与世界观语法，各配一个原创案例：官网多屏、390 宽手机页、游戏内界面、`?slot=1` 占位模式和出图任务单 | `street-tape`（6，《回放街区》）、`lattice-dossier`（5，《雾航信标》）、`frontier-survey`（5，《远垦导线》）、`celestial-voyage`（4，《长庚航志》）、`megastructure-ink`（5，《穹井》）、`crisis-command`（5，《潮位警报》） |
+| README 的六个游戏案例 | `cyanotype-specimen`（2，卡牌）、`xerox-flyer`（3，电竞直播）、`cassandre-litho`（7，Steam 素材）、`citypop-sleeve`（3，抽卡活动）、`acid-print-hud`（1，HUD）、`woodblock-pixel`（2，像素 RPG） |
+| 早期研究 | `shinbo`（11，来自《夜想回廊》实验）、`arknights-endfield`（9，从官方宣传图的版式研究里量出来，只作参考，不附带任何图片、描摹、logo 或官方文字） |
+
+新风格包都量自参考截图或实测（参考只留在本地，不进仓库），只带走数字和规则：借语法，不借素材。展示模式一律不放角色，也不用代码画假插画；角色和场景按任务单交给生图模型，再用下面的「生成角色与合成」放进模板。槽位有字符规则（例如页码只收数字、日期只收指定格式），不合规时退出码 1 并给修法。
 
 ```bash
 node skill/scripts/designer-pipeline.cjs template list --style shinbo
@@ -322,6 +330,12 @@ node skill/scripts/designer-pipeline.cjs template check page.html --browser --si
 ```
 
 `render` 写出文件后马上检查：文字放不放得下、最小字号、对比度、主体区与裁切区、强调色面积、对齐线。`check --browser` 也能查手写的 SVG 和 HTML：按墨迹算文字重叠、出画、拼贴压字、隐藏文字后看底图算对比度、被遮挡、资源缺失和缺字。每条发现都带修法；退出码 0 通过，2 未通过，需要浏览器却没有浏览器时是 1（`TOOL_MISSING`），不会当作通过。
+
+组件库示例：三套 design-system 包加静态页面模板，结构与 `design-system check`、`foundation check` 一致，页面和预览由各自的 `build/build.cjs` 从同一份组件标记生成（`--check` 报漂移），每个美术位都有出图任务单。
+
+- [`examples/archive-terminal-wiki-kit/`](../examples/archive-terminal-wiki-kit/)：游戏资料站 wiki，亮暗两套主题、22 个组件、七个页面模板（首页、条目、带筛选的列表、物品、活动文章、最近更改、搜索），390 宽可用，键盘操作 47 项通过。
+- [`examples/megastructure-ink-kit/`](../examples/megastructure-ink-kit/)：巨构墨线，26 个组件、七屏官网、下潜 HUD、测绘终端，主视觉和立绘带图层契约。
+- [`examples/crisis-command-ui-kit/`](../examples/crisis-command-ui-kit/)：危机指挥终端，26 个组件、六屏组织终端站、操作台和同步监视，附 OFL 字体子集。
 
 模板是起点，不是成品：没有合适的模板时不要硬套，手写版式后照样用 `template check` 检查。README 里的卡牌、HUD、Steam 案例就是这样做的。说明见 [模板库指南](../skill/references/template-bank.md)。
 
@@ -349,12 +363,14 @@ node skill/scripts/designer-pipeline.cjs materials search --query "key,pocket wa
 node skill/scripts/designer-pipeline.cjs materials fetch --project-root . --source cleveland --id <object id> --name <stem>
 node skill/scripts/designer-pipeline.cjs materials cut --project-root . --file materials/raw/<stem>.png --mode paper --finish sticker,ink
 node skill/scripts/designer-pipeline.cjs materials generate --project-root . --generator paper --seed 1
+node skill/scripts/designer-pipeline.cjs materials request --project-root . --template kv.tape-hero
+node skill/scripts/designer-pipeline.cjs materials composite --project-root . --template kv.tape-hero --set char=materials/cut/<stem>.png --set bg=<...> --set ghost=<...> --set mid=<...>   # 角色、底板和摆放到的图层都要给
 node skill/scripts/designer-pipeline.cjs materials check --project-root .
 ```
 
 - **取图**：`search` / `fetch` 只下载 CC0 和公有领域的记录，其他许可连同证据一起拒绝。克利夫兰、大都会、Rijksmuseum 可以自动查和取；Wikimedia Commons 按确切的 `File:` 名取；需要密钥或被拦截的来源会说明原因和替代做法（`materials sources`、`probe` 重新测可达性）。你自己的字体、扫描和照片用 `materials add` 登记。
 - **切图**：`cut` 把图切成贴纸、墨层（黑色加透明度，即墨色密度）、剪纸白边和手剪版画块，并提示渐变背景、碰到画框的物件和可能的投影。背景是渐变、暗角或带投影时用 `--mode grabcut`（颜色模型加图割，去溢色边，记录光晕宽度）；`--finish outline` 加贴纸描边（模切白边、黑线、偏移底板）。
-- **生成角色与合成**：展示一律无角色；角色由外部生图模型出。`materials request --template kv.tape-hero` 按模板的图层契约写出图任务单（不低于槽位 2 倍、透明或纯色底、光向和轮廓光、色板、参考名、不写字、只要原创角色）；`materials add --kind generated --tool <工具> --prompt <任务单>` 登记生成图；`materials composite` 用同一套图层出模板声明的每个尺寸（OKLab 调色、光包裹、轮廓光、阴影、贴纸描边、前景遮挡、统一材质），量放大倍数、黑场差、均值色差、光晕和脸手安全区，并记下血缘。
+- **生成角色与合成**：展示一律无角色；角色由外部生图模型出。`materials request --template kv.tape-hero` 按模板的图层契约写出图任务单（不低于槽位 2 倍、透明或纯色底、光向和轮廓光、色板、参考名、不写字、只要原创角色）；`materials add --kind generated --tool <工具> --prompt <任务单> --landmarks '{"foot":[x,y],"headTop":y,"face":[...],"hands":[[...]]}'` 登记生成图（不给脸和手的框时，合成只报警告、不查这两处安全区；也可以在 `composite --params` 里给）；`materials composite` 用 `--set` 给齐图层契约里的角色、底板和各尺寸摆放到的图层（纸纹和网点这类材质层可省，缺必需层就报错），用同一套图层出模板声明的每个尺寸（OKLab 调色、光包裹、轮廓光、阴影、贴纸描边、前景遮挡、统一材质），量放大倍数（超过 1.5 倍失败）、黑场差、均值色差和光晕（警告）以及脸手安全区（失败），写出 `composite.json` 收据（输出哈希和可重放的命令）；输入、图层契约或风格包的融入参数一变，`check` 把成品标为过期。任务单和生成图的对应是自报的，同人检测只是关键词启发，最终由你看图把关。
 - **自制**：`generate` 用固定种子生成纸纹、网点、油墨平涂、建筑线稿（走廊、拱廊、楼梯、窗墙、棋盘地）和纹样，`process` 把任何已登记的图做成木刻、网点、剪纸、复印或双色效果；同一记录可以原样重放。`measure` 把纹理和真实扫描的校准档比较，量它像不像真的。
 - **账目**：所有文件的出处、许可、作者、取用日期、哈希和派生关系写在 `materials/licenses.json`；`check` 拒绝没有记录的文件、出处不全的记录，以及来源已经变了的切图和派生图。采集纸张和网点扫描的方法见 [`material-capture.md`](../skill/references/material-capture.md)。
 
