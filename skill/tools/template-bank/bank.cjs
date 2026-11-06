@@ -260,7 +260,8 @@ class Doc {
     const at = spec.stack.indexOf(family);
     if (at < 0) throw new BankError(`layout ${this.m.id} pins font role ${roleName} to ${family}, which its stack (${spec.stack.join(" > ")}) does not name`);
     if (at === 0) return { css: this.families[roleName] };
-    this.fontSwitches.push({ role: roleName, text: "", missing: "", from: spec.stack[0], to: family, reason: `${spec.stack[0]} is not in --font-dir; sized from ${family}` });
+    const embedded = this.faces.some((face) => face.family === family);
+    this.fontSwitches.push({ role: roleName, text: "", missing: "", from: spec.stack[0], to: family, reason: `${spec.stack[0]} is not in --font-dir; sized from ${family}${embedded ? "" : `, which is not in --font-dir either and renders as sized only where it is installed (Fix: give --font-dir the role's fonts to embed them)`}` });
     return { css: this.stackCss(spec.stack.slice(at), spec.generic), switched: `${spec.stack[0]}>${family}` };
   }
 
