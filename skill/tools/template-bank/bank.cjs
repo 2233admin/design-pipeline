@@ -384,7 +384,8 @@ class Doc {
     const font = { serif: roleName === "serif", weight };
     // a face embedded from --font-dir with a registered advance table is measured at its own width
     const lead = String(family).split(",")[0].replace(/['"]/g, "").trim();
-    if (this.faces.some((face) => face.family === lead && Number(face.weight || 400) === Number(weight) && !/\.ttc$/i.test(face.file))) font.face = measure.faceAdvances(lead, weight);
+    const embeddedFace = this.faces.find((face) => face.family === lead && Number(face.weight || 400) === Number(weight) && !/\.ttc$/i.test(face.file));
+    if (embeddedFace) font.face = measure.faceAdvancesFromFile(lead, weight, embeddedFace.file);
     const lines = spec.lines > 1 ? measure.wrapText(text, size, box[2], spacing, font) : [String(text)];
     const content = lines.length > 1
       ? lines.map((line, index) => `<tspan x="${f1(x)}" dy="${index === 0 ? "0" : f1(size * lineHeight)}">${esc(line)}</tspan>`).join("")

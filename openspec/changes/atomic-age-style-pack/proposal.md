@@ -24,10 +24,11 @@ The static check measures every `<text>` with that model, so a condensed title e
   `poster.atomic-orbit-plate`, `card.atomic-credential`, `poster.atomic-solar-print` (new family `doc`).
   Logos, insignia and emblems are image slots with a size and clear-space rule; rockets and satellites are flat
   glyph silhouettes; scenes are image slots.
-- **Embedded-face widths in the static check**: `measure.registerFaceAdvances(family, weight, table)`; text
-  whose first family is a registered face at that weight, embedded in the same file by `@font-face`, is
-  measured with the face's advances; any other text keeps the calibrated model. `Doc.text` wraps with the
-  same table when the face comes from `--font-dir`.
+- **Embedded-face widths in the static check**: `measure.registerMeasuredFace(family, weight)` opts a face in;
+  text whose first family is such a face at that weight, embedded in the same file by `@font-face`, is
+  measured with the advances read from that embedded font file (`coverage.readFontAdvances`: cmap, hmtx);
+  any other text keeps the calibrated model. `Doc.text` wraps with the same file when the face comes from
+  `--font-dir`.
 - **Example `examples/atomic-age-kit/`**: a print-set sheet filling all ten templates (original world plus
   real history as text), a landing page at 1440 and 390 wide with a `?slot=1` placeholder mode, NASA period
   imagery (1964-1975, public domain) processed through `materials process`, generated papers and printed
@@ -47,10 +48,10 @@ The static check measures every `<text>` with that model, so a condensed title e
 
 ## Impact
 
-- New: `tools/template-bank/layouts-atomic.cjs`, `atomic-advances.json`, `styles/atomic-age/style.json`, ten
+- New: `tools/template-bank/layouts-atomic.cjs`, `styles/atomic-age/style.json`, ten
   template folders, `examples/atomic-age-kit/`, `tests/template-atomic-age.test.cjs`,
   `tests/atomic-age-kit.test.cjs`, `tests/fixtures/atomic-age/`.
-- Changed: `measure.cjs` (face advance registry, `@font-face` reading in `readSlots`), `bank.cjs` (layout
+- Changed: `measure.cjs` (measured-face opt-in, `@font-face` file reading in `readSlots`), `coverage.cjs` (`readFontAdvances`), `bank.cjs` (layout
   registry, wrapping with an embedded face), `cli-core.cjs` help (`doc` family), `references/template-bank.md`,
   `package-resources.json`, `scripts/test-manifest.json`, `CHANGELOG.md`, `THIRD_PARTY_NOTICES.md`; the pack
   lists in `tests/template-style-pack.test.cjs` and the template count in `tests/template-bank.test.cjs`.

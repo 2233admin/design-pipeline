@@ -131,13 +131,14 @@ weight the layouts use, the model is at least Chrome's width; that test skips wh
 fonts are missing. Nothing more is promised: another font, or a fallback font the browser picks for a
 glyph the named fonts lack, can be wider. Render `--png` and look when the copy is unusual.
 
-**Embedded faces.** A style pack may register the advance widths of its own faces
-(`measure.registerFaceAdvances(family, weight, table)`, read from the font's hmtx plus 1%). Text whose first
-family is such a face at that weight, in a file that embeds the face with `@font-face` (a render with
-`--font-dir`), is measured with the face's own widths, so a condensed title is no longer measured as twice its
-width; `Doc.text` wraps with the same table. A face that is only named, or embedded at another weight, keeps
-the model above: the browser could render a wider fallback. `atomic-age` is the first pack that registers its
-faces.
+**Embedded faces.** A style pack may opt its own faces in to being measured at their width
+(`measure.registerMeasuredFace(family, weight)`). Text whose first family is such a face at that weight, in a
+file that embeds the face with `@font-face` (a render with `--font-dir`), is measured with the advances read
+from that embedded font file (cmap, hmtx, plus 1%; `coverage.readFontAdvances`), so a condensed title is no
+longer measured as twice its width, and a different build of the family brings its own widths; `Doc.text`
+wraps with the same file. A face that is only named, embedded at another weight, or whose file cannot be read
+at check time keeps the model above: the browser could render a wider fallback. `atomic-age` is the first pack
+that opts in.
 
 ### The browser half
 

@@ -1464,7 +1464,6 @@
     "tools/template-bank/templates/ui.crisis-sync-graph/manifest.json",
     "tools/template-bank/templates/ui.crisis-sync-graph/template.svg",
     "tools/template-bank/layouts-atomic.cjs",
-    "tools/template-bank/atomic-advances.json",
     "tools/template-bank/styles/atomic-age/style.json",
     "tools/template-bank/templates/banner.atomic-ad-panel/manifest.json",
     "tools/template-bank/templates/banner.atomic-ad-panel/template.svg",

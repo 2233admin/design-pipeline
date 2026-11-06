@@ -7,8 +7,8 @@
 
 ## 2. Pack, templates and face widths
 
-- [x] 2.1 `styles/atomic-age/style.json`, `layouts-atomic.cjs`, `atomic-advances.json`, ten template folders; `bank.cjs` registry.
-- [x] 2.2 `measure.registerFaceAdvances`, `@font-face` reading in `readSlots`; `Doc.text` wraps with an embedded face.
+- [x] 2.1 `styles/atomic-age/style.json`, `layouts-atomic.cjs`, ten template folders; `bank.cjs` registry.
+- [x] 2.2 `measure.registerMeasuredFace`, `coverage.readFontAdvances`, `@font-face` file reading in `readSlots`; `Doc.text` wraps with an embedded face.
 - [x] 2.3 OFL subset fixtures and provenance under `tests/fixtures/atomic-age/`.
 
 ## 3. Example kit

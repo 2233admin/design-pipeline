@@ -4,7 +4,8 @@
 // poster; mission documents), measured privately on an owner-supplied mood board and proven on the
 // example kit. Ten templates. Marks are image slots and are never drawn; rockets and satellites are flat
 // glyphs; titles are sized from the face that renders, and a face embedded in the file is measured with
-// its own advance table (measure.registerFaceAdvances), never a face that is only named.
+// the advances of that embedded file (measure.registerMeasuredFace, coverage.readFontAdvances), never a face
+// that is only named or a table borrowed by another build of the family.
 
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
@@ -157,7 +158,7 @@ test("a face embedded in the file is measured at its own width; a face that is o
   const slot = (svg, name) => measure.readSlots(measure.parseXml(svg)).find((s) => s.slot === name);
   const embedded = slot(withFaces.svg, "masthead_a");
   const size = Number(withFaces.svg.match(/data-slot="masthead_a"[^>]*font-size="([\d.]+)"/)[1]);
-  const table = measure.faceAdvances("League Gothic", 400);
+  const table = require("../skill/tools/template-bank/coverage.cjs").readFontAdvances(path.join(FONTS, "LeagueGothic-Regular.woff"));
   const expected = [..."orbit"].reduce((w, ch) => w + table.get(ch) * size, 0) + (-10 / 1000) * size * 4;
   assert.ok(Math.abs(embedded.extent[2] - expected) < 1, `measured ${embedded.extent[2]} against the face's ${expected}`);
   // strip the @font-face rules: the same text is measured with the calibrated sans model again, and the
@@ -171,8 +172,23 @@ test("a face embedded in the file is measured at its own width; a face that is o
   const bare = bank.render("cover.atomic-magazine");
   assert.ok(bare.fontSwitches.some((f) => f.role === "display" && f.from === "League Gothic" && f.to === "Noto Sans SC"));
   assert.match(bare.svg, /data-slot="masthead_a"[^>]*font-family="'Noto Sans SC',sans-serif"/);
-  // a face at another weight than the registered one keeps the model
-  assert.equal(measure.faceAdvances("League Gothic", 700), null);
+  // a face at another weight than the opted-in one keeps the model
+  assert.equal(measure.faceAdvancesFromFile("League Gothic", 700, path.join(FONTS, "LeagueGothic-Regular.woff")), null);
+  // another build under the face's file name (here Jost Bold's bytes) is measured as itself, not as League Gothic
+  const impostor = fs.mkdtempSync(path.join(os.tmpdir(), "atomic-impostor-"));
+  try {
+    for (const file of fs.readdirSync(FONTS)) fs.copyFileSync(path.join(FONTS, file), path.join(impostor, file));
+    fs.copyFileSync(path.join(FONTS, "Jost-Bold.woff"), path.join(impostor, "LeagueGothic-Regular.woff"));
+    const other = bank.render("cover.atomic-magazine", { fontDir: impostor });
+    const otherSize = Number(other.svg.match(/data-slot="masthead_a"[^>]*font-size="([\d.]+)"/)[1]);
+    const jost = require("../skill/tools/template-bank/coverage.cjs").readFontAdvances(path.join(FONTS, "Jost-Bold.woff"));
+    const otherWidth = [..."orbit"].reduce((w, ch) => w + jost.get(ch) * otherSize, 0) + (-10 / 1000) * otherSize * 4;
+    assert.ok(Math.abs(slot(other.svg, "masthead_a").extent[2] - otherWidth) < 1, "measured with the supplied file's own advances");
+    assert.equal(bank.check(other.svg).status, "passed", "and sized to fit by them");
+    // delete the file after rendering: the check cannot read the face and falls back to the model
+    fs.rmSync(path.join(impostor, "LeagueGothic-Regular.woff"));
+    assert.ok(Math.abs(slot(other.svg, "masthead_a").extent[2] - otherWidth) > 1);
+  } finally { fs.rmSync(impostor, { recursive: true, force: true }); }
 });
 
 test("every atomic-age default render passes the browser check with the OFL fixtures", { skip: BROWSER.skip || CI_SKIP, timeout: 1800000 }, (t) => {

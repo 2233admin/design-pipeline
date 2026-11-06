@@ -1069,8 +1069,6 @@ roles were measured from a reference corpus; nothing from that corpus is bundled
   (Halcyon Orbital Lines, the Orbitville Gazette, Meridian 88) were written for this pack. The grammar was
   measured privately on an owner-supplied mood board of mid-century Space-Age print (reference only, not
   redistributed; no picture, mark, logo or font from it is used).
-- `skill/tools/template-bank/atomic-advances.json` (packaged): advance widths read from League Gothic, Jost,
-  Courier Prime and Caveat (SIL Open Font License 1.1); numbers only, no font data.
 - Kit fonts (`examples/atomic-age-kit/fonts/`, shipped with the example, not with the skill) and test fixtures
   (`tests/fixtures/atomic-age/fonts/`, not packaged): byte-identical WOFF subsets of League Gothic (The League
   Gothic Project Authors), Jost 500 and 700 (The Jost Project Authors), Courier Prime 400 and 700 (The Courier

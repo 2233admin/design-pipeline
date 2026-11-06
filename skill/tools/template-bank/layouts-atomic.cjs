@@ -21,10 +21,8 @@ const { f1, invalid, rng, rbox, ngon } = require("./layout-kit.cjs");
 const measure = require("./measure.cjs");
 
 // ---- faces --------------------------------------------------------------------------------------
-// Advance widths (em, hmtx / unitsPerEm + 1%, rounded up) of the pack's OFL faces, read with fontTools
-// from the instances named in style.json (google/fonts bbda7253). Registered with the measure so that
-// text in an embedded face is measured at its own width (measure.cjs registerFaceAdvances).
-const ADV = require("./atomic-advances.json");
+// The pack's OFL faces. They opt in to being measured at their own width: when --font-dir supplies one, the
+// layout and the check read its advances from that font file (measure.registerMeasuredFace).
 const FACES = {
   display: ["League Gothic", 400, "LeagueGothic-Regular"],
   geo: ["Jost", 700, "Jost-Bold"],
@@ -33,7 +31,7 @@ const FACES = {
   monob: ["Courier Prime", 700, "CourierPrime-Bold"],
   hand: ["Caveat", 600, "Caveat-SemiBold"],
 };
-for (const [family, weight, file] of Object.values(FACES)) measure.registerFaceAdvances(family, weight, ADV[file]);
+for (const [family, weight] of Object.values(FACES)) measure.registerMeasuredFace(family, weight);
 
 // The measured board, as numbers the layouts use (see GRAMMAR in the example kit).
 const GRAMMAR = {
@@ -52,10 +50,11 @@ const GRAMMAR = {
 // table), else the role is pinned to Noto Sans SC and sized from the calibrated model (#323).
 function face(d, role) {
   const [family, weight] = FACES[role];
-  const supplied = d.faces.some((f) => f.family === family && Number(f.weight || 400) === weight && !/\.ttc$/i.test(f.file));
-  const table = supplied ? measure.faceAdvances(family, weight) : null;
+  const file = d.faces.find((f) => f.family === family && Number(f.weight || 400) === weight && !/\.ttc$/i.test(f.file));
+  const table = file ? measure.faceAdvancesFromFile(family, weight, file.file) : null;
+  const supplied = Boolean(table);
   return {
-    family: role, resolved: supplied ? family : "Noto Sans SC", weight, supplied,
+    family: role, resolved: supplied ? family : "Noto Sans SC", weight, supplied, table,
     width: (t, size, tracking = 0) => measure.textWidth(String(t), size, (tracking / 1000) * size, { serif: false, weight, face: table }),
   };
 }
@@ -101,7 +100,7 @@ function block(d, name, role, x, y, size, w, o = {}) {
   // shrink until the copy wraps inside its line budget at this face's width (never below 0.6 of the size)
   const text = String(d.value(name).text);
   const spacing = (sz) => ((o.tracking || 0) / 1000) * sz;
-  const fits = (sz) => { const fnt = { serif: false, weight: f.weight, face: f.supplied ? measure.faceAdvances(FACES[role][0], f.weight) : null }; const wrapped = measure.wrapText(text, sz, w, spacing(sz), fnt); return wrapped.length <= lines && wrapped.every((ln) => measure.textWidth(ln, sz, spacing(sz), fnt) <= w); };
+  const fits = (sz) => { const fnt = { serif: false, weight: f.weight, face: f.table }; const wrapped = measure.wrapText(text, sz, w, spacing(sz), fnt); return wrapped.length <= lines && wrapped.every((ln) => measure.textWidth(ln, sz, spacing(sz), fnt) <= w); };
   const min = size * 0.6;
   while (size > min && !fits(size)) size *= 0.95;
   d.text(name, x, y, size, { role: o.role || "ink", family: role, resolved: f.resolved, tracking: o.tracking || 0, lineHeight: lh, box: [x, y - 0.96 * size, w, size * (1.22 + (lines - 1) * lh)] });
@@ -434,6 +433,7 @@ const LAYOUTS = {
     const r1 = 0.37 * W; const r2 = 0.395 * W; const r3 = 0.42 * W;
     d.raw(`<g data-deco="1" stroke="${d.pal.ink}" fill="none" stroke-width="${f1(2.2 * s)}"><path d="M${f1(r1)} ${f1(top)}V${f1(bot)}M${f1(r1 - 8 * s)} ${f1(top)}h${f1(16 * s)}M${f1(r1 - 8 * s)} ${f1(bot)}h${f1(16 * s)}"/><path d="M${f1(r3)} ${f1(top)}V${f1(bot)}" stroke-width="${f1(7 * s)}" stroke-dasharray="${f1(2 * s)} ${f1(3 * s)}"/></g>`);
     d.raw(`<path data-deco="1" d="M${f1(r2)} ${f1(top)}V${f1(top + 0.42 * H)}M${f1(r2)} ${f1(top + 0.58 * H)}V${f1(bot)}" stroke="${d.pal.ink}" stroke-width="${f1(2.2 * s)}"/>`);
+    asciiOnly(d, "net");
     d.text("net", r2, top + 0.43 * H, 0.016 * H, { role: "ink", family: "mono", resolved: face(d, "mono").resolved, vertical: true, anchor: "start", box: [r2 - 0.012 * H, top + 0.425 * H, 0.024 * H, 0.15 * H] });
     // the activity column: a long period with its label, events at their minutes
     const ax = 0.44 * W;

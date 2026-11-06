@@ -16,9 +16,11 @@
   (#C84927) is darkened to #B03D1C so 12-14 px labels pass 4.5:1.
 - **Embedded-face widths, not a looser model.** Condensed titles in League Gothic are about half the sans
   model's width. Options: widen boxes (titles then sit far too small or misalign), compress Noto (a different
-  face), or measure the face. We register each face's hmtx advances (+1%, from the instances named in
-  style.json) and use them only when the file embeds that face with `@font-face` at that weight, so the
-  browser cannot fall back to a wider face behind the check's back. Without `--font-dir` the layouts pin the
+  face), or measure the face. A pack opts its faces in; the layout and the check read the advances (+1%) from
+  the embedded font file itself (cmap and hmtx), and only when the file embeds that face with `@font-face` at
+  that weight, so the browser cannot fall back to a wider face behind the check's back, and another build of
+  the family is measured as itself (a first version kept a static table per family and weight; review pointed
+  out a different file of the same name would have borrowed it). Without `--font-dir` the layouts pin the
   role to Noto Sans SC and size from the model (#323). A test strips the `@font-face` rules from a render and
   sees the masthead fail `text-overflow` again.
 - **Marks are slots.** Every template that carries a mark has an image slot (`logo`, `emblem`,

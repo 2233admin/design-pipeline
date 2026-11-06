@@ -25,12 +25,17 @@ Every atomic-age template that carries a mark SHALL expose it as an image slot w
 
 ### Requirement: Embedded faces are measured at their own width
 
-The static check SHALL measure text with a registered face's advance table only when the text's first family is that face at the registered weight and the same file embeds it with `@font-face`; all other text SHALL keep the calibrated model.
+The static check SHALL measure text with advances read from the embedded font file only when the text's first family is a face its pack opted in at that weight and the same file embeds it with `@font-face`; all other text, and a face whose file cannot be read, SHALL keep the calibrated model.
 
 #### Scenario: A condensed masthead
 
 - **WHEN** `cover.atomic-magazine` renders with `--font-dir` holding League Gothic
-- **THEN** the masthead's measured width SHALL equal the face's advances and the check SHALL pass.
+- **THEN** the masthead's measured width SHALL equal the advances in that font file and the check SHALL pass.
+
+#### Scenario: Another build of the face
+
+- **WHEN** a font file of the same family name with other advances is supplied
+- **THEN** the masthead SHALL be measured with that file's advances, not the pack's own face.
 
 #### Scenario: The face is removed from the file
 

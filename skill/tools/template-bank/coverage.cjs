@@ -68,7 +68,7 @@ function fontTables(buffer, index = 0) {
   throw new Error("not a font file (TTF, OTF, TTC or WOFF)");
 }
 
-function cmapCodePoints(cmap) {
+function cmapCodePoints(cmap, glyphs = null) {
   const codes = new Set();
   const count = cmap.readUInt16BE(2);
   const subtables = [];
@@ -98,7 +98,7 @@ function cmapCodePoints(cmap) {
             glyph = at + 1 < cmap.length ? cmap.readUInt16BE(at) : 0;
             if (glyph) glyph = (glyph + delta) & 0xffff;
           }
-          if (glyph) codes.add(c);
+          if (glyph) { codes.add(c); if (glyphs) glyphs.set(c, glyph); }
         }
       }
     } else if (format === 12) {
@@ -108,10 +108,10 @@ function cmapCodePoints(cmap) {
         const start = cmap.readUInt32BE(at);
         const end = cmap.readUInt32BE(at + 4);
         const glyph = cmap.readUInt32BE(at + 8);
-        for (let c = start; c <= end; c += 1) if (glyph + (c - start)) codes.add(c);
+        for (let c = start; c <= end; c += 1) if (glyph + (c - start)) { codes.add(c); if (glyphs) glyphs.set(c, glyph + (c - start)); }
       }
     } else if (format === 0) {
-      for (let c = 0; c < 256; c += 1) if (cmap[offset + 6 + c]) codes.add(c);
+      for (let c = 0; c < 256; c += 1) if (cmap[offset + 6 + c]) { codes.add(c); if (glyphs) glyphs.set(c, cmap[offset + 6 + c]); }
     }
   }
   return codes;
@@ -126,6 +126,29 @@ function readFontCoverage(file, index = 0) {
     fileCache.set(key, cmapCodePoints(cmap));
   }
   return fileCache.get(key);
+}
+
+// Advance widths in em of every mapped character, read from the file's own cmap, hhea, hmtx and head, plus
+// 1 percent (rounded up to 0.001 em): the widths the browser lays the face out with, before kerning, which
+// only narrows. Bound to the file's bytes: another build of the same family gives its own widths.
+const advanceCache = new Map();
+function readFontAdvances(file, index = 0) {
+  const stat = fs.statSync(file);
+  const key = `${file}#${index}#${stat.size}#${stat.mtimeMs}`;
+  if (!advanceCache.has(key)) {
+    const tables = fontTables(fs.readFileSync(file), index);
+    const [cmap, hhea, hmtx, head] = ["cmap", "hhea", "hmtx", "head"].map((tag) => tables.get(tag));
+    if (!cmap || !hhea || !hmtx || !head) throw new Error(`${file} lacks cmap, hhea, hmtx or head`);
+    const glyphs = new Map();
+    cmapCodePoints(cmap, glyphs);
+    const unitsPerEm = head.readUInt16BE(18);
+    const metrics = hhea.readUInt16BE(34);
+    const advance = (glyph) => hmtx.readUInt16BE(4 * Math.min(glyph, metrics - 1));
+    const out = new Map();
+    for (const [code, glyph] of glyphs) out.set(String.fromCodePoint(code), Math.ceil((advance(glyph) / unitsPerEm) * 1.01 * 1000) / 1000);
+    advanceCache.set(key, out);
+  }
+  return advanceCache.get(key);
 }
 
 // ---- queries ---------------------------------------------------------------------------------
@@ -165,4 +188,4 @@ function chooseFamily(stack, text, options = {}) {
   return { family: null, tried };
 }
 
-module.exports = { registerProvider, readFontCoverage, cmapCodePoints, coverageOf, missingGlyphs, chooseFamily };
+module.exports = { registerProvider, readFontCoverage, readFontAdvances, cmapCodePoints, coverageOf, missingGlyphs, chooseFamily };

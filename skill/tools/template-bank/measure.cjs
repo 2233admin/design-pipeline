@@ -59,17 +59,20 @@ function advanceEm(ch, font = {}) {
   return value;
 }
 
-// Advance tables of faces a style pack embeds (read from the font's hmtx, plus 1 percent). They apply
-// only to text whose first family is one of these faces at the registered weight and whose file is
-// embedded in the same SVG (@font-face), so the browser cannot substitute a wider face; any other text,
-// and any character the table lacks, keeps the calibrated model above. A condensed display face is
-// then measured at its own width instead of the sans model's (about twice as wide).
-const FACE_ADVANCES = new Map();
+// Faces a style pack measures at their own width (opt-in, by family and weight). Text whose first family is
+// such a face at that weight, in a file that embeds the face with @font-face (a render with --font-dir), is
+// measured with the advances read from that very font file (coverage.readFontAdvances), so the table cannot
+// come from another build of the family. Any other text, a face whose file cannot be read, and any character
+// the file lacks keep the calibrated model above. A condensed display face is then measured at its own
+// width instead of the sans model's (about twice as wide).
+const MEASURED_FACES = new Set();
 const faceKey = (family, weight) => `${String(family).toLowerCase()}|${Number(weight)}`;
-function registerFaceAdvances(family, weight, table) {
-  FACE_ADVANCES.set(faceKey(family, weight), new Map(Object.entries(table).map(([ch, em]) => [ch, Number(em)])));
+function registerMeasuredFace(family, weight) { MEASURED_FACES.add(faceKey(family, weight)); }
+// The advance table of an opted-in face from its font file, or null (not opted in, unreadable).
+function faceAdvancesFromFile(family, weight, file) {
+  if (!MEASURED_FACES.has(faceKey(family, weight)) || !file) return null;
+  try { return require("./coverage.cjs").readFontAdvances(file); } catch { return null; }
 }
-function faceAdvances(family, weight) { return FACE_ADVANCES.get(faceKey(family, weight)) || null; }
 
 function textWidth(text, size, letterSpacing = 0, font = {}) {
   const chars = [...String(text)];
@@ -556,15 +559,18 @@ function isSerifFamily(value) {
 // Smallest horizontal compression, relative to the vertical scale, that still counts as type.
 const MIN_SQUEEZE = 0.30;
 
-// Families with an @font-face rule in the file's own <style> (a face the renderer embedded).
+// Families with an @font-face rule in the file's own <style> (a face the renderer embedded): key -> font file.
 function embeddedFamilies(tree) {
-  const families = new Set();
+  const families = new Map();
   for (const node of walk(tree)) {
     if (node.name !== "style") continue;
     for (const [, body] of textContent(node).matchAll(/@font-face\s*\{([^}]*)\}/g)) {
       const family = /font-family:\s*['"]?([^'";]+)/.exec(body);
       const weight = /font-weight:\s*(\d+)/.exec(body);
-      if (family) families.add(faceKey(family[1].trim(), weight ? weight[1] : 400));
+      const src = /url\(\s*["']?(file:[^"')]+)/.exec(body);
+      let file = null;
+      if (src) { try { file = require("node:url").fileURLToPath(src[1]); } catch { file = null; } }
+      if (family) families.set(faceKey(family[1].trim(), weight ? weight[1] : 400), file);
     }
   }
   return families;
@@ -582,8 +588,9 @@ function textExtent(textNode, embedded = null) {
   const m = ctm(textNode);
   const lines = textLines(textNode);
   const font = { serif: isSerifFamily(a["font-family"] || attr(textNode, "font-family")), weight: Number(a["font-weight"] || attr(textNode, "font-weight") || 400) };
-  const key = faceKey(firstFamily(a["font-family"] || attr(textNode, "font-family")), font.weight);
-  if (embedded?.has(key) && FACE_ADVANCES.has(key)) font.face = FACE_ADVANCES.get(key);
+  const lead = firstFamily(a["font-family"] || attr(textNode, "font-family"));
+  const key = faceKey(lead, font.weight);
+  if (embedded?.has(key)) font.face = faceAdvancesFromFile(lead, font.weight, embedded.get(key));
   const measured = [];
   let offset = 0;
   for (const line of lines) {
@@ -667,7 +674,7 @@ function readSlots(tree) {
 
 module.exports = {
   ASCENT, DESCENT, TEXT_INK_FACTOR, MIN_SQUEEZE,
-  advanceEm, isCjk, textWidth, wrapText, registerFaceAdvances, faceAdvances, embeddedFamilies,
+  advanceEm, isCjk, textWidth, wrapText, registerMeasuredFace, faceAdvancesFromFile, embeddedFamilies,
   parseXml, walk, textContent, ctm, apply, bounds, polygonArea, clipToBox,
   parseColor, hex, luminance, contrastRatio, mix,
   gradients, paints, paintArea, groundAt, samplePoints, unsupportedGeometry, readSlots, round, roundBox, parsePath, pathSubpaths,
