@@ -1075,7 +1075,7 @@ roles were measured from a reference corpus; nothing from that corpus is bundled
   (`tests/fixtures/atomic-age/fonts/`, not packaged): byte-identical WOFF subsets of League Gothic (The League
   Gothic Project Authors), Jost 500 and 700 (The Jost Project Authors), Courier Prime 400 and 700 (The Courier
   Prime Project Authors) and Caveat 600 (The Caveat Project Authors), all SIL OFL 1.1, from google/fonts at
-  86aced91, instanced where variable and limited to printable ASCII plus – — ‘ ’ “ ” • · ° × … ©, each with its
+  bbda7253, instanced where variable and limited to printable ASCII plus – — ‘ ’ “ ” • · ° × … ©, each with its
   OFL text. None declares a Reserved Font Name; the subsets keep their names. Source, commit and checksums are
   in `tests/fixtures/atomic-age/provenance.csv`.
 - NASA imagery in `examples/atomic-age-kit/art/` (example only, not packaged): ARC-1975-AC75-1086 (NASA Ames,

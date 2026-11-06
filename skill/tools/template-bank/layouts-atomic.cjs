@@ -22,7 +22,7 @@ const measure = require("./measure.cjs");
 
 // ---- faces --------------------------------------------------------------------------------------
 // Advance widths (em, hmtx / unitsPerEm + 1%, rounded up) of the pack's OFL faces, read with fontTools
-// from the instances named in style.json (google/fonts 86aced91). Registered with the measure so that
+// from the instances named in style.json (google/fonts bbda7253). Registered with the measure so that
 // text in an embedded face is measured at its own width (measure.cjs registerFaceAdvances).
 const ADV = require("./atomic-advances.json");
 const FACES = {

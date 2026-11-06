@@ -168,7 +168,7 @@
         "family": "League Gothic",
         "weight": 400,
         "file": "LeagueGothic-Regular.ttf",
-        "source": "https://github.com/google/fonts/tree/86aced91de05cd4f96a06838124cca45be337b2b/ofl/leaguegothic",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/leaguegothic",
         "licence": "SIL OFL 1.1",
         "author": "The League Gothic Project Authors",
         "instance": "LeagueGothic[wdth].ttf at wdth 100"
@@ -177,7 +177,7 @@
         "family": "Jost",
         "weight": 700,
         "file": "Jost-Bold.ttf",
-        "source": "https://github.com/google/fonts/tree/86aced91de05cd4f96a06838124cca45be337b2b/ofl/jost",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/jost",
         "licence": "SIL OFL 1.1",
         "author": "The Jost Project Authors",
         "instance": "Jost[wght].ttf at wght 700"
@@ -186,7 +186,7 @@
         "family": "Jost",
         "weight": 500,
         "file": "Jost-Medium.ttf",
-        "source": "https://github.com/google/fonts/tree/86aced91de05cd4f96a06838124cca45be337b2b/ofl/jost",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/jost",
         "licence": "SIL OFL 1.1",
         "author": "The Jost Project Authors",
         "instance": "Jost[wght].ttf at wght 500"
@@ -195,7 +195,7 @@
         "family": "Courier Prime",
         "weight": 400,
         "file": "CourierPrime-Regular.ttf",
-        "source": "https://github.com/google/fonts/tree/86aced91de05cd4f96a06838124cca45be337b2b/ofl/courierprime",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/courierprime",
         "licence": "SIL OFL 1.1",
         "author": "The Courier Prime Project Authors"
       },
@@ -203,7 +203,7 @@
         "family": "Courier Prime",
         "weight": 700,
         "file": "CourierPrime-Bold.ttf",
-        "source": "https://github.com/google/fonts/tree/86aced91de05cd4f96a06838124cca45be337b2b/ofl/courierprime",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/courierprime",
         "licence": "SIL OFL 1.1",
         "author": "The Courier Prime Project Authors"
       },
@@ -211,7 +211,7 @@
         "family": "Caveat",
         "weight": 600,
         "file": "Caveat-SemiBold.ttf",
-        "source": "https://github.com/google/fonts/tree/86aced91de05cd4f96a06838124cca45be337b2b/ofl/caveat",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/caveat",
         "licence": "SIL OFL 1.1",
         "author": "The Caveat Project Authors",
         "instance": "Caveat[wght].ttf at wght 600"
@@ -220,7 +220,7 @@
         "family": "Noto Sans SC",
         "weight": 700,
         "file": "NotoSansSC[wght].ttf",
-        "source": "https://github.com/google/fonts/tree/86aced91de05cd4f96a06838124cca45be337b2b/ofl/notosanssc",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/notosanssc",
         "licence": "SIL OFL 1.1",
         "author": "Google"
       }
