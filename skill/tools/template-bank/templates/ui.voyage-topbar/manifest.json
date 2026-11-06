@@ -1,0 +1,135 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.voyage-topbar",
+  "family": "ui",
+  "style": "celestial-voyage",
+  "title": "Top bar with a hanging logo and a cream download tab: a 75-unit black bar, nav on a 139-unit pitch with a gold current item and underline, a logo mark hanging 62 units below the bar",
+  "use": "The fixed top bar of a game's official site. current picks the highlighted nav item (1-7).",
+  "canvas": {
+    "width": 1920,
+    "height": 140
+  },
+  "sizes": [
+    "1920x140",
+    "2880x210"
+  ],
+  "aspect": "96:7",
+  "accent": {
+    "roles": [
+      "gold",
+      "cream"
+    ],
+    "maxShare": 0.1
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "current": {
+      "default": 2,
+      "min": 1,
+      "max": 7,
+      "class": "decoration",
+      "note": "highlighted nav item"
+    },
+    "login": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "the login label and avatar"
+    }
+  },
+  "slots": {
+    "brand_cjk": {
+      "kind": "text",
+      "default": "长庚航志",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "brand_latin": {
+      "kind": "text",
+      "default": "VESPERWAKE",
+      "maxChars": 12,
+      "font": "label",
+      "note": "Latin capitals only"
+    },
+    "nav_1": {
+      "kind": "text",
+      "default": "首页",
+      "maxChars": 5,
+      "font": "body"
+    },
+    "nav_2": {
+      "kind": "text",
+      "default": "新闻",
+      "maxChars": 5,
+      "font": "body"
+    },
+    "nav_3": {
+      "kind": "text",
+      "default": "角色",
+      "maxChars": 5,
+      "font": "body"
+    },
+    "nav_4": {
+      "kind": "text",
+      "default": "世界",
+      "maxChars": 5,
+      "font": "body"
+    },
+    "nav_5": {
+      "kind": "text",
+      "default": "社区",
+      "maxChars": 5,
+      "font": "body"
+    },
+    "nav_6": {
+      "kind": "text",
+      "default": "充值中心",
+      "maxChars": 5,
+      "font": "body"
+    },
+    "nav_7": {
+      "kind": "text",
+      "default": "家长关护",
+      "maxChars": 5,
+      "font": "body"
+    },
+    "login": {
+      "kind": "text",
+      "default": "登录",
+      "maxChars": 3,
+      "font": "body"
+    },
+    "cta": {
+      "kind": "text",
+      "default": "下载游戏",
+      "maxChars": 5,
+      "font": "body"
+    }
+  },
+  "relations": [
+    "Bar 75 units; the logo hangs 62 units below it; nav items 139 wide from x 353; the current item is gold at 24 units with a full-width 3-unit underline.",
+    "The download tab is 225 x 81 visible, top edge at the canvas top, only the bottom-left corner rounded (22.5); it is taller than the bar."
+  ],
+  "decoration": [
+    "Logo ring mark, music button, divider, avatar, star dust: drawn."
+  ],
+  "provenance": {
+    "corpus": "vesperwake case (长庚航志 VESPERWAKE): our own original one-page game site and two in-game screens in the celestial-voyage grammar",
+    "experiment": "styles/celestial-voyage/style.json provenance (reference site measured privately; captures never shipped)",
+    "accessed": "2026-11-06",
+    "method": "The case's top bar at 1920 with the reference's measured positions (computed styles of the bar, nav items and tab).",
+    "sampleIds": [
+      "vesperwake/topbar"
+    ],
+    "measured": [
+      "Reference: bar 75 high rgba(0,0,0,.8); nav 139 wide from x 353, 22.5 units #747474, current 24 units #E1B066; tab 225 x 83 at (1695, -2), bottom-left radius 22.5, text 28.5 units 700 #1C1919.",
+      "Case: nav grey raised to #8C8C8C so it reads 4.5:1 on the bar."
+    ],
+    "summary": "vesperwake top bar"
+  }
+}

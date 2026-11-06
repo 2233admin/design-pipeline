@@ -26,8 +26,9 @@ grammar + check rules; its templates are the parameterised layouts of that gramm
 | `acid-print-hud` | 1 (combat HUD) | One acid ink on black slabs, giant chamfered numerals with a misregistered plate, the scene as a cold halftone |
 | `cyanotype-specimen` | 2 (card frame in four rarities, pack opening) | Cyanotype specimen sheets: one Prussian blue, hand-brushed fields, white-line specimens, rarity by process not colour |
 | `street-tape` | 6 (site top bar, section title block, vertical pager, cut container with carousel, sticker CTA, first screen as layers) | Japanese street-fashion city game site: light grey, one acid yellow-green, black fine stripes, rounded slabs with one 49-degree cut, a film strip, numbered three-line section titles |
+| `celestial-voyage` | 4 (site top bar with hanging logo and cream tab, gilt news ticket, news section, character section with faction orbit) | Star-voyage fantasy RPG site: deep navy star field, gold only as hairlines and the current state, a heavy CJK serif title over a hairline italic Latin ghost, gilt-rimmed rounded cards, faction medallions on an arc centred off-screen |
 
-The six game packs come from owner-approved cases, and `street-tape` from a reference board the owner supplied (kept private, measured, never shipped) and an original site built on it (each pack's `provenance` names the case, its lineage and
+The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `celestial-voyage` from a reference site the owner named (both kept private, measured, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
 the rule *borrow grammar, never assets*); `examples` in each pack lists the case screens that stayed example
 renders because their structure was a one-off.
 
@@ -304,6 +305,15 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
   the size cannot rely on it). Pass `--font-dir` with Anton for the board's look. `side=right`
   mirrors the slabs and the title edge; `kv.tape-cut-carousel --param control=dots` swaps the thumb track
   for dots. Pictures go in `media`; characters come from an image-generation task sheet (#311).
+
+- **celestial-voyage**: gold is the only accent and stays a line (rims, ticks, underlines, the orbit):
+  keep fills navy, panel or plate. `title_latin` is the stroke-only ghost under the CJK title (Latin
+  capitals, digits, space `& . ' -`; `data-deco`, so it is exempt from overlap and contrast); dates take
+  digits and `/ . -`. The faction orbit is a circle of radius 760 centred at (1005, 540) in 1920 units with
+  medallions 13.7 degrees apart (`ORBIT` in `layouts-voyage.cjs`); the current one carries the first
+  character of `faction`. Cinzel and Cormorant Garamond are Latin-only roles (`label`, `ghost`). In show
+  mode, carry a screen with type, frames, data and `materials generate` textures (an ink flat, a paper
+  stub, FM star dust), not drawn pseudo-illustration; figures go in `art` / `cover*` from a task sheet.
 
 Layout helpers for new packs: `layout-kit.cjs` (`rbox` for a tilted slot's box, `tilt`, `ngon`,
 `discStripes`, a seeded `rng`); `d.text(..., { italic, filter })`, `d.lettering(..., { shadow: { dx, dy,
