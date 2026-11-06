@@ -8,9 +8,9 @@
 
 | 任务 | 用途 | 尺寸 |
 | --- | --- | --- |
-| [frame-01](frame-01.md) | 闸甲档案：闸甲壹号（SLUICE FRAME 01）全身立绘 | 1200×1600 px |
-| [frame-02](frame-02.md) | 闸甲档案：闸甲弍号（SLUICE FRAME 02）全身立绘（出动状态） | 1200×1600 px |
-| [frame-04](frame-04.md) | 闸甲档案：闸甲肆号（SLUICE FRAME 04）全身立绘（封存状态） | 1200×1600 px |
+| [frame-01](frame-01.md) | 闸甲档案：定澜闸甲（FRAME DINGLAN）全身立绘 | 1200×1600 px |
+| [frame-02](frame-02.md) | 闸甲档案：回澜闸甲（FRAME HUILAN）全身立绘（出动状态） | 1200×1600 px |
+| [frame-04](frame-04.md) | 闸甲档案：镇水闸甲（FRAME ZHENSHUI）全身立绘（封存状态） | 1200×1600 px |
 | [operator-shen](operator-shen.md) | 出动耦合监视：闸手 沈潮（OPERATOR SHEN CHAO）半身像 | 1200×1600 px |
 | [surge-feed](surge-feed.md) | 警报墙右侧实时影像：声呐影像中的涌体 | 1600×900 px |
 | [city-feed](city-feed.md) | 操作台中央影像：第九排涝区俯瞰 | 1600×900 px |

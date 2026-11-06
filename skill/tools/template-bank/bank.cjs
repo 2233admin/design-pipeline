@@ -386,11 +386,11 @@ class Doc {
     const content = lines.length > 1
       ? lines.map((line, index) => `<tspan x="${f1(x)}" dy="${index === 0 ? "0" : f1(size * lineHeight)}">${esc(line)}</tspan>`).join("")
       : esc(lines[0]);
-    // o.compress: mechanical horizontal compression (0 < c <= 2) about the anchor x, as a scale-only matrix
+    // o.compress: mechanical horizontal compression (0.30 <= c <= 2) about the anchor x, as a scale-only matrix
     // on a wrapping group; the check reads the compressed extent through the transform and keeps the
-    // type size from the vertical axis.
+    // type size from the vertical axis. Below 0.30 the line stops being type, so the check reports it as type-size.
     const c = o.compress && o.compress !== 1 ? o.compress : null;
-    if (c !== null && !(c > 0 && c <= 2)) throw new BankError(`layout ${this.m.id} compresses slot ${name} by ${c}; the factor must be in (0, 2]`);
+    if (c !== null && !(c >= 0.30 && c <= 2)) throw new BankError(`layout ${this.m.id} compresses slot ${name} by ${c}; the factor must be in [0.30, 2]. Fix: pass compress between 0.30 and 2, or shorten the line instead of squeezing it`, "OPTION_VALUE_INVALID");
     let markup = `<text ${attrs.join(" ")}>${content}</text>`;
     if (c !== null) markup = `<g transform="matrix(${Number(c.toFixed(4))} 0 0 1 ${f1(x * (1 - c))} 0)">${markup}</g>`;
     this.body.push(o.transform ? `<g transform="${o.transform}">${markup}</g>` : markup);
@@ -781,6 +781,14 @@ function check(svgText, options = {}) {
         });
       }
     }
+    // 2b. mechanical compression: a horizontal scale under 0.30 of the vertical one is not legible type at any size.
+    if (!slot.decor && slot.squeeze !== undefined && slot.squeeze + 1e-6 < measure.MIN_SQUEEZE) {
+      add({
+        rule: "type-size", slot: slot.slot, measured: { horizontalScale: measure.round(slot.squeeze) }, limit: { minHorizontalScale: measure.MIN_SQUEEZE },
+        message: `${slot.slot} is compressed to ${measure.round(slot.squeeze)} of its height, below the ${measure.MIN_SQUEEZE} minimum`,
+        fix: `Compress ${slot.slot} by no more than ${measure.MIN_SQUEEZE} (a transform scale of ${measure.MIN_SQUEEZE} or more across), or shorten the copy and keep the type at its natural width.`,
+      });
+    }
     // 3. contrast of the text against its ground, judged at 27 points over the measured extent.
     if (!slot.decor && slot.fill) {
       const fg = measure.parseColor(slot.fill);
@@ -957,4 +965,4 @@ function check(svgText, options = {}) {
   };
 }
 
-module.exports = { BankError, MANIFEST_SCHEMA, STYLE_SCHEMA, CHECK_SCHEMA, PARAM_CLASSES, RULES, TEMPLATES_ROOT, STYLES_ROOT, check, checkRhythm, imageAspect, listTemplates, loadManifest, loadStyle, parseSize, render, resolveParams, slotSpec, styleIds, templateIds, pixelRequests, validateStyle };
+module.exports = { Doc, BankError, MANIFEST_SCHEMA, STYLE_SCHEMA, CHECK_SCHEMA, PARAM_CLASSES, RULES, TEMPLATES_ROOT, STYLES_ROOT, check, checkRhythm, imageAspect, listTemplates, loadManifest, loadStyle, parseSize, render, resolveParams, slotSpec, styleIds, templateIds, pixelRequests, validateStyle };

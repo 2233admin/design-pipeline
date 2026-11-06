@@ -5,11 +5,11 @@
 - **Name.** `crisis-command` (pack) and `crisis-command-ui-kit` (example): generic, no work, organisation or
   character name anywhere in the repository; tests grep for the reference's names.
 - **Measure the whole screen first (#301).** Type cards: 79-97% dark, type 16-19% (3-9% on film titles),
-  weight centre (0.38, 0.60) on the broadcast card. Alarm screens: 14-32% hot colour, centre near the middle.
+  weight centre (0.38, 0.60) on the reference card. Alarm screens: 14-32% hot colour, centre near the middle.
   Our renders: title card 83% dark / 15% type / (0.42, 0.61); film title 93% dark / 6% red; alarm wall
   screen 28% hot / (0.41, 0.45).
-- **Compression steps from glyph ink boxes.** Uncompressed Mincho reads 1.0 (483 / 474 on the broadcast
-  card); captions 0.85, credits 0.64-0.70, film titles 0.35 in all three films. The open substitute's
+- **Compression steps from glyph ink boxes.** Uncompressed Mincho reads 1.0 (483 / 474 on the reference
+  card); captions 0.85, credits 0.64-0.70, film titles 0.35 in every reference film. The open substitute's
   horizontals thin out under 0.4, so the film template stops at 0.40 (range 0.30-0.50).
 - **Compressed text in the bank.** `compress` wraps the `<text>` in `matrix(c 0 0 1 x(1-c) 0)`: scale-only,
   so the existing transform-aware extent measures it, and the browser renders it as written. Type size now

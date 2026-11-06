@@ -140,9 +140,9 @@
   ],
   "provenance": {
     "corpus": "tidemark case (潮位警报 TIDEMARK): our own original organisation terminal site, two app screens and UI kit in the crisis-command grammar",
-    "experiment": "styles/crisis-command/style.json provenance (broadcast and film frames measured privately; never shipped)",
+    "experiment": "styles/crisis-command/style.json provenance (reference frames measured privately; never shipped)",
     "accessed": "2026-11-06",
-    "method": "the film remake's alarm wall (3834 x 695 strip, left third): hexagon 835 x 273 in the frame (3.06:1), tips 55 degrees, stamp 140 x 125, WARNING cap 40, red #BA0623 over blue #49688B",
+    "method": "a reference film's alarm wall (3834 x 695 strip, left third): hexagon 835 x 273 in the frame (3.06:1), tips 55 degrees, stamp 140 x 125, WARNING cap 40, red #BA0623 over blue #49688B",
     "sampleIds": [
       "tidemark/crisis-alert-wall"
     ],

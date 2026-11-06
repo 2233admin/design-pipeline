@@ -540,6 +540,9 @@ function isSerifFamily(value) {
   return (/serif/i.test(first) && !/sans/i.test(first));
 }
 
+// Smallest horizontal compression, relative to the vertical scale, that still counts as type.
+const MIN_SQUEEZE = 0.30;
+
 function textExtent(textNode) {
   const a = textNode.attrs;
   const size = Number(a["font-size"] || 16);
@@ -573,7 +576,10 @@ function textExtent(textNode) {
   // The type size follows the vertical axis, so mechanically compressed (scaleX) text keeps its size;
   // for rotations and uniform scales both axes agree.
   const scale = Math.hypot(m[2], m[3]);
-  return { box: bounds(all), lines: measured, size: size * scale, spacing, vertical, fill: a.fill || attr(textNode, "fill"), weight: Number(a["font-weight"] || attr(textNode, "font-weight") || 400) };
+  // Horizontal scale relative to the vertical one; only reported when text is squeezed, so uncompressed
+  // slots carry no extra field.
+  const squeeze = scale > 0 ? Math.hypot(m[0], m[1]) / scale : 0;
+  return { box: bounds(all), lines: measured, size: size * scale, ...(vertical || squeeze >= MIN_SQUEEZE ? {} : { squeeze }), spacing, vertical, fill: a.fill || attr(textNode, "fill"), weight: Number(a["font-weight"] || attr(textNode, "font-weight") || 400) };
 }
 
 function readSlots(tree) {
@@ -596,13 +602,13 @@ function readSlots(tree) {
       if (!textNode) continue;
       const extent = textExtent(textNode);
       const content = extent.lines.map((line) => line.text).join("");
-      slots.push({ ...base, text: content, extent: extent.box, lines: extent.lines, size: extent.size, weight: extent.weight, fill: extent.fill, vertical: extent.vertical, textNode, capHeight: null });
+      slots.push({ ...base, squeeze: extent.squeeze, text: content, extent: extent.box, lines: extent.lines, size: extent.size, weight: extent.weight, fill: extent.fill, vertical: extent.vertical, textNode, capHeight: null });
     } else if (kind === "lettering") {
       const group = [...walk(node)].find((child) => child.attrs?.class === "lettering");
       const fallback = [...walk(node)].find((child) => child.name === "text");
       if (fallback && !group) {
         const extent = textExtent(fallback);
-        slots.push({ ...base, kind: "lettering", fallback: true, text: extent.lines.map((line) => line.text).join(""), extent: extent.box, lines: extent.lines, size: extent.size, weight: extent.weight, fill: extent.fill, textNode: fallback });
+        slots.push({ ...base, kind: "lettering", fallback: true, squeeze: extent.squeeze, text: extent.lines.map((line) => line.text).join(""), extent: extent.box, lines: extent.lines, size: extent.size, weight: extent.weight, fill: extent.fill, textNode: fallback });
         continue;
       }
       if (!group) continue;
@@ -629,7 +635,7 @@ function readSlots(tree) {
 }
 
 module.exports = {
-  ASCENT, DESCENT, TEXT_INK_FACTOR,
+  ASCENT, DESCENT, TEXT_INK_FACTOR, MIN_SQUEEZE,
   advanceEm, isCjk, textWidth, wrapText,
   parseXml, walk, textContent, ctm, apply, bounds, polygonArea, clipToBox,
   parseColor, hex, luminance, contrastRatio, mix,

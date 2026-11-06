@@ -186,9 +186,9 @@
   ],
   "provenance": {
     "corpus": "tidemark case (潮位警报 TIDEMARK): our own original organisation terminal site, two app screens and UI kit in the crisis-command grammar",
-    "experiment": "styles/crisis-command/style.json provenance (broadcast and film frames measured privately; never shipped)",
+    "experiment": "styles/crisis-command/style.json provenance (reference frames measured privately; never shipped)",
     "accessed": "2026-11-06",
-    "method": "the film remake's analysis HUD and the broadcast's command graphs: thin grids with a heavier line every 5 cells, one bright trace over dim ones, labels hung on the right end of a threshold",
+    "method": "a reference film's analysis HUD and a reference series' command graphs: thin grids with a heavier line every 5 cells, one bright trace over dim ones, labels hung on the right end of a threshold",
     "sampleIds": [
       "tidemark/crisis-sync-graph"
     ],

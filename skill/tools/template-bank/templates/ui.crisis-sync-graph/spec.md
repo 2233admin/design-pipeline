@@ -6,7 +6,7 @@ Style: `crisis-command` (`styles/crisis-command/style.json`). Live metrics with 
 
 ## Where it comes from
 
-the film remake's analysis HUD and the broadcast's command graphs: thin grids with a heavier line every 5 cells, one bright trace over dim ones, labels hung on the right end of a threshold. Borrow grammar, never assets. The frames of the reference are private and nothing from them is shipped; all copy is the case's own original fiction (潮位警报 TIDEMARK).
+a reference film's analysis HUD and a reference series' command graphs: thin grids with a heavier line every 5 cells, one bright trace over dim ones, labels hung on the right end of a threshold. Borrow grammar, never assets. The frames of the reference are private and nothing from them is shipped; all copy is the case's own original fiction (潮位警报 TIDEMARK).
 
 Samples: tidemark/crisis-sync-graph.
 

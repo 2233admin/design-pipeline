@@ -6,7 +6,7 @@ Style: `crisis-command` (`styles/crisis-command/style.json`). Emergency and esca
 
 ## Where it comes from
 
-the film remake's alarm wall (3834 x 695 strip, left third): hexagon 835 x 273 in the frame (3.06:1), tips 55 degrees, stamp 140 x 125, WARNING cap 40, red #BA0623 over blue #49688B. Borrow grammar, never assets. The frames of the reference are private and nothing from them is shipped; all copy is the case's own original fiction (潮位警报 TIDEMARK).
+a reference film's alarm wall (3834 x 695 strip, left third): hexagon 835 x 273 in the frame (3.06:1), tips 55 degrees, stamp 140 x 125, WARNING cap 40, red #BA0623 over blue #49688B. Borrow grammar, never assets. The frames of the reference are private and nothing from them is shipped; all copy is the case's own original fiction (潮位警报 TIDEMARK).
 
 Samples: tidemark/crisis-alert-wall.
 

@@ -11,7 +11,7 @@ per-glyph ink boxes on three film title cards (1920 x 1080, 1400 x 788, 1920 x 8
 Samples: tidemark/crisis-film-title.
 
 - Reference: dark 91-97%, red 3-9%.
-- Case: 潮位警报重编版：初 at 0 findings.
+- Case: 潮位警报东缘闸：封 at 0 findings.
 
 ## Relations to keep
 
@@ -22,9 +22,9 @@ Samples: tidemark/crisis-film-title.
 
 | Slot | Kind | Budget | Font role | Default (original placeholder copy) |
 | --- | --- | --- | --- | --- |
-| `title` | text | 9 | head | 潮位警报重编版 |
-| `mark` | text | 2 | head | 初 |
-| `caption` | text | 36 | grot | TIDEMARK RECAST 1.0 FIRST TIDE |
+| `title` | text | 9 | head | 潮位警报东缘闸 |
+| `mark` | text | 2 | head | 封 |
+| `caption` | text | 36 | grot | TIDEMARK EAST GATE SEALED |
 
 ## Parameters
 

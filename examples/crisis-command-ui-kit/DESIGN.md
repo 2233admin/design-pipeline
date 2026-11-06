@@ -100,7 +100,7 @@ phone layout for the site. The demo content is an original fiction, 《潮位警
 Authority (环海闸务局) keeps a city built in a sinking basin.
 
 ## Overview
-The crisis-terminal grammar of a 1990s giant-robot anime and its film remakes, measured privately and rebuilt from
+The crisis-terminal grammar of 1990s Japanese mecha anime, measured privately and rebuilt from
 open parts: type cards in heavy Mincho compressed by a transform on black, red elongated-hexagon alarm walls over a
 blue lattice screen, amber segment-digit clocks, coupling graphs with a dashed threshold, and our own five-seat vote.
 Rules for agents live in `design-system/README.md`; the measured grammar is in `GRAMMAR.md`.
@@ -139,7 +139,7 @@ screen and cut state changes hard. Don't draw mecha, weapons or people in code (
 put scanlines on a type card, don't blink a whole band, and don't use a lighthouse or any mark of the reference.
 
 ## Source Decisions
-- Adopted: the grammar measured privately on broadcast and film frames (glyph ink boxes for the compression steps,
+- Adopted: the grammar measured privately on reference frames (glyph ink boxes for the compression steps,
   palettes, light and colour shares of whole screens, frame-by-frame luminance of the countdown states). Values were
   re-entered as our tokens; no frame, logo, organisation, character, line or font of the reference is used.
 - Changed: the film-title red lifted from #66041a (fails 3:1) to `alert-deep`; the screen blue darkened so panels read;

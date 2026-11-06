@@ -25,12 +25,17 @@ The five templates SHALL render from parameters with original copy, keep the mea
 
 ### Requirement: Compressed text keeps its type size
 
-`Doc.text` SHALL accept a horizontal compression factor and draw it as a scale-only transform about the anchor; `template check` SHALL measure the compressed extent through the transform and read the type size from the vertical axis.
+`Doc.text` SHALL accept a horizontal compression factor and draw it as a scale-only transform about the anchor; `template check` SHALL measure the compressed extent through the transform and read the type size from the vertical axis. Compression SHALL NOT dodge the minimum type size: `Doc.text` SHALL refuse a factor outside 0.30 to 2 with a Fix, and `template check` SHALL report text whose horizontal scale is under 0.30 of its vertical scale under the existing `type-size` rule with a fix.
 
 #### Scenario: A compressed film title
 
 - **WHEN** `banner.crisis-film-title` renders a 120 px title compressed to 0.4
 - **THEN** the measured type size SHALL be 120 px and the measured width 0.4 of the uncompressed width.
+
+#### Scenario: A squeezed caption
+
+- **WHEN** a caption is compressed to 0.1, 0.05 or 0.005 by `compress` or a hand-written matrix
+- **THEN** `Doc.text` SHALL refuse the factor, and `template check` SHALL report `type-size` for a matrix below 0.30 while 0.35 and 0.40 pass.
 
 ### Requirement: Examples ship the crisis-command UI kit
 

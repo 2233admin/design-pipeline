@@ -4,7 +4,7 @@
  "integration": {
   "mode": "painted",
   "grade": "pull toward the slot's screen blue #18324A in the shadows and toward amber #F2A93B in the highlights; black point matched to the frame's void",
-  "rim": "red-orange #E8380D from the alarm side",
+  "rim": "amber #F2A93B from the work-lamp side",
   "texture": "CRT scanlines 3px period at 10-14% over the whole slot (multiply)",
   "never": "no sticker outline, no drop shadow, no drawn mecha or people in code"
  },
@@ -17,7 +17,7 @@
    "where": "templates/site.html #s-frames .cc-frame [data-task=frame-01]",
    "safe": "x 72–1128, y 96–1504；整机入画，头部不高于 y=110，脚底在 y≈1490",
    "uiReserve": [
-    "x 0–1200, y 1300–1600：页面在框底叠 76px 高的名牌条（闸甲壹号 / SLUICE FRAME 01），这里只放地面、水面反光和阴影",
+    "x 0–1200, y 1300–1600：页面在框底叠 76px 高的名牌条（定澜闸甲 / FRAME DINGLAN），这里只放地面、水面反光和阴影",
     "手机宽度下按 3:4 居中显示，不裁切"
    ],
    "stack": [
@@ -79,7 +79,7 @@
      "role": "char",
      "source": "materials/generated/frame-02.png",
      "facing": "right",
-     "light": "主光从画面左上 45°（冷白），右侧有一道强红橙 #E8380D 轮廓光（来自警报灯），水花被红光照亮"
+     "light": "主光从画面左上 45°（冷白），右侧有一道琥珀 #F2A93B 轮廓光（来自闸室作业灯），水花被暖光照亮"
     },
     {
      "role": "fx",

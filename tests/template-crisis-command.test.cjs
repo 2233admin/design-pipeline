@@ -1,7 +1,7 @@
 "use strict";
 
 // The crisis-command style pack: a crisis-terminal and title-card grammar measured privately on frames of a
-// 1990s giant-robot anime and its film remakes, proven on the original case 潮位警报 TIDEMARK. Five templates:
+// 1990s Japanese mecha anime, proven on the original case 潮位警报 TIDEMARK. Five templates:
 // the title card, the film title line, the alarm wall, the countdown bezel and the coupling board. Heavy
 // Mincho is compressed with a scale-only transform in the measured steps; digits are drawn segments.
 
@@ -125,8 +125,34 @@ test("compressed text keeps its type size and is measured through the transform"
   const slot = measure.readSlots(measure.parseXml(svg)).find((s) => s.slot === "title");
   const size = Number(svg.match(/data-slot="title"[^>]*font-size="([\d.]+)"/)[1]);
   assert.ok(Math.abs(slot.size - size) < 0.01, `type size ${slot.size} keeps the vertical size ${size}`);
-  const uncompressed = measure.textWidth("潮位警报重编版", size, (-10 / 1000) * size, { serif: true, weight: 900 });
+  const uncompressed = measure.textWidth("潮位警报东缘闸", size, (-10 / 1000) * size, { serif: true, weight: 900 });
   assert.ok(Math.abs(slot.extent[2] - uncompressed * 0.4) < 2, `extent ${slot.extent[2]} is 0.4 of ${uncompressed}`);
+});
+
+test("compress cannot be used to dodge the minimum type size", () => {
+  const id = "banner.crisis-film-title";
+  const manifest = bank.loadManifest(id);
+  const { params, palette } = bank.resolveParams(manifest, {});
+  const draw = (compress) => {
+    const doc = new bank.Doc(manifest, manifest.canvas.width, manifest.canvas.height, params, palette, {}, []);
+    return doc.text("title", 100, 300, 200, { role: "ink", family: "head", compress, box: [90, 100, 1500, 240] });
+  };
+  // the builder refuses factors outside [0.30, 2] with a Fix
+  for (const c of [0.1, 0.05, 0.005, 0.29, 2.5]) {
+    assert.throws(() => draw(c), (error) => error instanceof bank.BankError && error.code === "OPTION_VALUE_INVALID" && /Fix:/.test(error.message), `compress ${c}`);
+  }
+  for (const c of [0.30, 0.35, 0.40, 2]) assert.doesNotThrow(() => draw(c), `compress ${c}`);
+  // a hand-edited matrix on a caption is caught by the check under the existing type-size rule
+  const svg = bank.render("card.crisis-title-card").svg;
+  const caption = svg.match(/<text data-slot="head_1"[^>]*>[^<]*<\/text>/)[0];
+  const squeezed = (c) => bank.check(svg.replace(caption, `<g transform="matrix(${c} 0 0 1 0 0)">${caption}</g>`));
+  for (const c of [0.1, 0.05, 0.005]) {
+    const report = squeezed(c);
+    assert.equal(report.status, "failed", `matrix ${c}`);
+    const finding = report.findings.find((f) => f.rule === "type-size" && f.slot === "head_1");
+    assert.ok(finding && /Fix|Compress/.test(finding.fix), `matrix ${c}: ${messages(report)}`);
+  }
+  for (const c of [0.35, 0.40]) assert.equal(squeezed(c).findings.filter((f) => f.rule === "type-size").length, 0, `matrix ${c} passes the size rule`);
 });
 
 test("segment digits are drawn (no font): capsule and LCD, only digits and separators", () => {

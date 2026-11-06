@@ -180,9 +180,9 @@
   ],
   "provenance": {
     "corpus": "tidemark case (潮位警报 TIDEMARK): our own original organisation terminal site, two app screens and UI kit in the crisis-command grammar",
-    "experiment": "styles/crisis-command/style.json provenance (broadcast and film frames measured privately; never shipped)",
+    "experiment": "styles/crisis-command/style.json provenance (reference frames measured privately; never shipped)",
     "accessed": "2026-11-06",
-    "method": "the film remake's clock (strip, middle third): digits 0.36 wide per digit with gap, units 0.21, label 0.27 in bracket bars; the broadcast countdown's mode row and danger cell; frame-by-frame red share of the danger cut",
+    "method": "a reference film's clock (strip, middle third): digits 0.36 wide per digit with gap, units 0.21, label 0.27 in bracket bars; a reference countdown's mode row and danger cell; frame-by-frame red share of the danger cut",
     "sampleIds": [
       "tidemark/crisis-countdown"
     ],

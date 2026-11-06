@@ -6,7 +6,7 @@ Style: `crisis-command` (`styles/crisis-command/style.json`). Chapter, episode o
 
 ## Where it comes from
 
-glyph ink boxes on the 2048 x 1536 broadcast card (number 240 x 237, title 483 x 474, comma 154 wide, lines at 405 and 930), composition share and weight centre. Borrow grammar, never assets. The frames of the reference are private and nothing from them is shipped; all copy is the case's own original fiction (潮位警报 TIDEMARK).
+glyph ink boxes on the 2048 x 1536 reference card (number 240 x 237, title 483 x 474, comma 154 wide, lines at 405 and 930), composition share and weight centre. Borrow grammar, never assets. The frames of the reference are private and nothing from them is shipped; all copy is the case's own original fiction (潮位警报 TIDEMARK).
 
 Samples: tidemark/crisis-title-card.
 

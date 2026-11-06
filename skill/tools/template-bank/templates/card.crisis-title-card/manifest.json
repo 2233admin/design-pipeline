@@ -107,9 +107,9 @@
   ],
   "provenance": {
     "corpus": "tidemark case (潮位警报 TIDEMARK): our own original organisation terminal site, two app screens and UI kit in the crisis-command grammar",
-    "experiment": "styles/crisis-command/style.json provenance (broadcast and film frames measured privately; never shipped)",
+    "experiment": "styles/crisis-command/style.json provenance (reference frames measured privately; never shipped)",
     "accessed": "2026-11-06",
-    "method": "glyph ink boxes on the 2048 x 1536 broadcast card (number 240 x 237, title 483 x 474, comma 154 wide, lines at 405 and 930), composition share and weight centre",
+    "method": "glyph ink boxes on the 2048 x 1536 reference card (number 240 x 237, title 483 x 474, comma 154 wide, lines at 405 and 930), composition share and weight centre",
     "sampleIds": [
       "tidemark/crisis-title-card"
     ],

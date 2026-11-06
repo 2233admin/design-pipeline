@@ -1035,7 +1035,7 @@ roles were measured from a reference corpus; nothing from that corpus is bundled
 - The `crisis-command` style pack (`skill/tools/template-bank/styles/crisis-command/`, `layouts-crisis.cjs`)
   and the example `examples/crisis-command-ui-kit/` are project-owned: grammar, layouts, segment digits,
   hexagons, the sluice mark and all copy were written for the original case 潮位警报 TIDEMARK. The grammar was
-  measured privately on frames and title cards of a 1990s giant-robot television anime and its film remakes
+  measured privately on frames and title cards of 1990s Japanese mecha anime
   (reference only, not redistributed; no frame, name, logo, organisation, character, line or font of the work is
   used). Two MIT-licensed fan projects (a title-card generator and a command-centre React component library)
   were read for their rules; none of their code is copied.

@@ -4,7 +4,7 @@
 // sinking basin; "surge bodies" rise from under the basin. Every name, term and line here is original.
 
 const ORG = { zh: "环海闸务局", en: "RING-SEA SLUICE AUTHORITY", code: "RSA", post: "第九排涝区指挥终端", postEn: "DRAINAGE ZONE 9 COMMAND" };
-const WORK = { zh: "潮位警报", en: "TIDEMARK", film: "潮位警报重编版", mark: "初", caption: "TIDEMARK RECAST 1.0 FIRST TIDE" };
+const WORK = { zh: "潮位警报", en: "TIDEMARK", film: "潮位警报东缘闸", mark: "封", caption: "TIDEMARK EAST GATE SEALED" };
 
 const NAV = [
   { id: "s-alert", zh: "警报", en: "ALERT" },
@@ -39,9 +39,9 @@ const REPORTS = [
 const ALERT = { title1: "第九排涝区", title2: "转入防潮战备", latin1: "TRANSFER OF DRAINAGE ZONE 9", latin2: "TO FLOOD COMBAT READINESS", stamp: "警报" };
 
 const FRAMES = [
-  { id: "frame-01", no: "壹", zh: "闸甲壹号", en: "SLUICE FRAME 01", task: "frame-01", height: "38.2 m", pump: "1,200 m³/s", th: "28.0 %", state: "待机", stateEn: "STANDBY" },
-  { id: "frame-02", no: "弍", zh: "闸甲弍号", en: "SLUICE FRAME 02", task: "frame-02", height: "40.6 m", pump: "1,450 m³/s", th: "31.5 %", state: "出动", stateEn: "SORTIE" },
-  { id: "frame-04", no: "肆", zh: "闸甲肆号", en: "SLUICE FRAME 04", task: "frame-04", height: "36.9 m", pump: "980 m³/s", th: "26.0 %", state: "封存", stateEn: "SEALED" },
+  { id: "frame-01", no: "一", zh: "定澜闸甲", en: "FRAME DINGLAN", task: "frame-01", height: "38.2 m", pump: "1,200 m³/s", th: "28.0 %", state: "待机", stateEn: "STANDBY" },
+  { id: "frame-02", no: "二", zh: "回澜闸甲", en: "FRAME HUILAN", task: "frame-02", height: "40.6 m", pump: "1,450 m³/s", th: "31.5 %", state: "出动", stateEn: "SORTIE" },
+  { id: "frame-04", no: "四", zh: "镇水闸甲", en: "FRAME ZHENSHUI", task: "frame-04", height: "36.9 m", pump: "980 m³/s", th: "26.0 %", state: "封存", stateEn: "SEALED" },
 ];
 
 const SECTORS = [
@@ -70,9 +70,9 @@ const SEATS = [
 ];
 
 const PILOTS = [
-  { zh: "闸手 · 沈潮", en: "OPERATOR SHEN CHAO", ratio: "41.3", frame: "闸甲弍号" },
-  { zh: "闸手 · 陆泊", en: "OPERATOR LU BO", ratio: "36.8", frame: "闸甲壹号" },
-  { zh: "闸手 · 许汀", en: "OPERATOR XU TING", ratio: "28.4", frame: "闸甲肆号" },
+  { zh: "闸手 · 沈潮", en: "OPERATOR SHEN CHAO", ratio: "41.3", frame: "回澜闸甲" },
+  { zh: "闸手 · 陆泊", en: "OPERATOR LU BO", ratio: "36.8", frame: "定澜闸甲" },
+  { zh: "闸手 · 许汀", en: "OPERATOR XU TING", ratio: "28.4", frame: "镇水闸甲" },
 ];
 
 module.exports = { ORG, WORK, NAV, REPORTS, ALERT, FRAMES, SECTORS, LOG, SEATS, PILOTS };

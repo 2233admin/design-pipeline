@@ -3,7 +3,7 @@
 ## Why
 
 Closes #331. The owner asked for a template set, references and a component library in the interface and
-title-card grammar of a 1990s giant-robot anime and its film remakes. We measured the grammar privately on
+title-card grammar of 1990s Japanese mecha anime. We measured the grammar privately on
 frames and title cards (glyph ink boxes, palettes, whole-screen light and colour shares, frame-by-frame
 countdown states; never shipped, the work is not named) and built an original case on it (潮位警报 TIDEMARK:
 an organisation terminal site with six screens, an operator console, a sortie coupling monitor, a 390-wide

@@ -63,14 +63,14 @@
   "slots": {
     "title": {
       "kind": "text",
-      "default": "潮位警报重编版",
+      "default": "潮位警报东缘闸",
       "maxChars": 9,
       "font": "head",
       "title": true
     },
     "mark": {
       "kind": "text",
-      "default": "初",
+      "default": "封",
       "maxChars": 2,
       "font": "head",
       "title": true,
@@ -78,7 +78,7 @@
     },
     "caption": {
       "kind": "text",
-      "default": "TIDEMARK RECAST 1.0 FIRST TIDE",
+      "default": "TIDEMARK EAST GATE SEALED",
       "maxChars": 36,
       "font": "grot",
       "note": "Latin only"
@@ -93,7 +93,7 @@
   ],
   "provenance": {
     "corpus": "tidemark case (潮位警报 TIDEMARK): our own original organisation terminal site, two app screens and UI kit in the crisis-command grammar",
-    "experiment": "styles/crisis-command/style.json provenance (broadcast and film frames measured privately; never shipped)",
+    "experiment": "styles/crisis-command/style.json provenance (reference frames measured privately; never shipped)",
     "accessed": "2026-11-06",
     "method": "per-glyph ink boxes on three film title cards (1920 x 1080, 1400 x 788, 1920 x 816): 新 劇 場 版 at 0.35 in all three, height 20-39% of the frame, centred (margins 148 / 143)",
     "sampleIds": [
@@ -101,7 +101,7 @@
     ],
     "measured": [
       "Reference: dark 91-97%, red 3-9%.",
-      "Case: 潮位警报重编版：初 at 0 findings."
+      "Case: 潮位警报东缘闸：封 at 0 findings."
     ],
     "summary": "tidemark film title"
   }

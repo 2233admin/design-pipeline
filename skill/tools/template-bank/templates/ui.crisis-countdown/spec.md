@@ -6,7 +6,7 @@ Style: `crisis-command` (`styles/crisis-command/style.json`). Countdowns, launch
 
 ## Where it comes from
 
-the film remake's clock (strip, middle third): digits 0.36 wide per digit with gap, units 0.21, label 0.27 in bracket bars; the broadcast countdown's mode row and danger cell; frame-by-frame red share of the danger cut. Borrow grammar, never assets. The frames of the reference are private and nothing from them is shipped; all copy is the case's own original fiction (潮位警报 TIDEMARK).
+a reference film's clock (strip, middle third): digits 0.36 wide per digit with gap, units 0.21, label 0.27 in bracket bars; a reference countdown's mode row and danger cell; frame-by-frame red share of the danger cut. Borrow grammar, never assets. The frames of the reference are private and nothing from them is shipped; all copy is the case's own original fiction (潮位警报 TIDEMARK).
 
 Samples: tidemark/crisis-countdown.
 

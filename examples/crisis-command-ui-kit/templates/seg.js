@@ -1,5 +1,5 @@
-/* Segment digits drawn as SVG (no font): "capsule" (thick, upright; the film-remake clock) and "lcd"
-   (thin, slanted 6 degrees; the broadcast countdown). Shared by build/ (previews, pages) and the pages'
+/* Segment digits drawn as SVG (no font): "capsule" (thick, upright; the reference-film clock) and "lcd"
+   (thin, slanted 6 degrees; a reference countdown). Shared by build/ (previews, pages) and the pages'
    live clocks. Characters: 0-9 : . - and space. */
 (function (root) {
   "use strict";

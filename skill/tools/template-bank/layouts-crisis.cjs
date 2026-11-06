@@ -1,8 +1,8 @@
 "use strict";
 
 // Layouts of the crisis-command style pack (styles/crisis-command/style.json): the crisis command
-// terminal grammar of a 1990s giant-robot anime and its 2000s film remakes, measured privately on
-// frames of the broadcast and the films (never shipped) and proven on the original case 潮位警报
+// terminal grammar of 1990s Japanese mecha anime, measured privately on
+// reference frames (never shipped) and proven on the original case 潮位警报
 // TIDEMARK. Two kinds of screen with two light regimes: type cards (an almost black ground carrying
 // one heavy Mincho block) and alarm screens (a hot red-orange or amber field). Heavy Mincho is
 // compressed mechanically in four measured steps (1.00 card, 0.85 caption, 0.65 credits, 0.35 film
@@ -50,8 +50,8 @@ function latinOnly(d, name) {
 
 // ---- drawn segment digits ------------------------------------------------------------------
 // Seven-segment digits as filled hexagonal segments (no font): style "lcd" (thin, slanted 6 degrees,
-// the broadcast countdown) or "capsule" (thick, upright, 0.36 wide per digit with its gap: the film
-// remake's clock). Characters: 0-9 : . - and space.
+// a reference countdown) or "capsule" (thick, upright, 0.36 wide per digit with its gap: the
+// reference-film clock). Characters: 0-9 : . - and space.
 const SEGS = { 0: "abcdef", 1: "bc", 2: "abged", 3: "abgcd", 4: "fgbc", 5: "afgcd", 6: "afgedc", 7: "abc", 8: "abcdefg", 9: "abcfgd", "-": "g", " ": "" };
 const SEG_STYLE = { lcd: { w: 0.5, t: 0.12, gap: 0.02, slant: 6, pitch: 0.66 }, capsule: { w: 0.42, t: 0.16, gap: 0.025, slant: 0, pitch: 0.54 } };
 function segText(text, x, y, h, style = "lcd") {
