@@ -30,9 +30,10 @@ grammar + check rules; its templates are the parameterised layouts of that gramm
 | `lattice-dossier` | 5 (top frame, rail pager, section heading with ghost word, bulletin screen, four columns) | Industrial dossier-terminal game site: near-black ground, a 172-unit lattice with both diagonals, three frame hairlines (y 152, y 900, x 1683), one signal cyan for state only, a rail numeral cut to its top 55% |
 | `celestial-voyage` | 4 (site top bar with hanging logo and cream tab, gilt news ticket, news section, character section with faction orbit) | Star-voyage fantasy RPG site: deep navy star field, gold only as hairlines and the current state, a heavy CJK serif title over a hairline italic Latin ghost, gilt-rimmed rounded cards, faction medallions on an arc centred off-screen |
 | `crisis-command` | 5 (title card, film title line, alarm wall, countdown bezel, coupling board with a five-seat vote) | Crisis-terminal and title-card grammar of 1990s Japanese mecha anime: heavy Mincho compressed in measured steps on black, red 3.06:1 hexagons with 55-degree tips over a blue lattice, drawn amber segment clocks, hard-cut state changes |
+| `atomic-age` | 10 (magazine cover, travel poster, linen book, ad panel, field-guide label, flight-plan page, checklist page, orbit plate, credential, solar print) | Mid-century Space-Age retro-futurism: cream paper with one vermilion against teal, mustard and charcoal, condensed two-ink mastheads, starbursts, orbits and flat rocket glyphs; and mission documents in typewriter mono with a minute-tick time ladder, edition tables, holes and stamps. Marks are slots |
 | `megastructure-ink` | 5 (shaft key visual with scale marker, top bar with depths, monitor label plate, descent HUD frame, switchboard terminal) | Endless-megastructure manga and anime grammar: black and cold grey with one cold cyan light, structure as an abstract ink line system (perspective shaft, screentone, ribs, cables), a person stated only by a scale marker, white hairline HUD frames, monitors with scanlines, the pack's own rail script |
 
-The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `frontier-survey` from a reference site captured for the owner, `lattice-dossier` from a live official site captured and measured privately, `celestial-voyage` from a public reference site the owner named `megastructure-ink` from reference images of a manga and anime lineage the owner named and `crisis-command` from reference frames measured privately (all kept private, measured, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
+The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `frontier-survey` from a reference site captured for the owner, `lattice-dossier` from a live official site captured and measured privately, `celestial-voyage` from a public reference site the owner named `megastructure-ink` from reference images of a manga and anime lineage the owner named, `crisis-command` from reference frames measured privately and `atomic-age` from an owner-supplied mood board (all kept private, measured, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
 the rule *borrow grammar, never assets*); `examples` in each pack lists the case screens that stayed example
 renders because their structure was a one-off.
 
@@ -55,7 +56,7 @@ the deliverable is a full page or product flow (use `next`).
 ## Commands
 
 ```sh
-designer-pipeline template list [--family kv|cover|card|banner|ui|motion|broadcast|poster|steam|pixel|hud] [--style <id>]
+designer-pipeline template list [--family kv|cover|card|banner|ui|motion|broadcast|poster|steam|pixel|hud|doc] [--style <id>]
 designer-pipeline template render <id> --set slot=value ... --param name=value ... \
   [--seed <n>] [--size WxH] -o out.svg [--png out.png] [--font-dir <dir>] [--browser]
 designer-pipeline template check <out.svg | page.html | hand-made.svg> [--browser] [--size WxH]
@@ -129,6 +130,15 @@ every string in the calibration set (`tests/template-bank-browser.test.cjs`) and
 weight the layouts use, the model is at least Chrome's width; that test skips where Chrome or the
 fonts are missing. Nothing more is promised: another font, or a fallback font the browser picks for a
 glyph the named fonts lack, can be wider. Render `--png` and look when the copy is unusual.
+
+**Embedded faces.** A style pack may opt its own faces in to being measured at their width
+(`measure.registerMeasuredFace(family, weight)`). Text whose first family is such a face at that weight, in a
+file that embeds the face with `@font-face` (a render with `--font-dir`), is measured with the advances read
+from that embedded font file (cmap, hmtx, plus 1%; `coverage.readFontAdvances`), so a condensed title is no
+longer measured as twice its width, and a different build of the family brings its own widths; `Doc.text`
+wraps with the same file. A face that is only named, embedded at another weight, or whose file cannot be read
+at check time keeps the model above: the browser could render a wider fallback. `atomic-age` is the first pack
+that opts in.
 
 ### The browser half
 
@@ -352,6 +362,18 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
   caps lines take Latin capitals, digits and space . : / · -; the data face needs − ° · × – → (keep them in
   any subset). The rail script (`railLayout`) is the kit's own glyph generator and is decoration beside its
   reading. The full case with a design-system package is `examples/megastructure-ink-kit`.
+
+- **atomic-age**: marks are never drawn: `logo`, `emblem` and `publisher_mark` are image slots whose note gives
+  the size and clear space; fill them with the owner's file. Rockets and satellites are flat glyphs
+  (`sweptRocket`, `classicRocket`, `satellite` in `layouts-atomic.cjs`); scenes go in `art` (`poster.atomic-travel
+  --param art=slot`) or `craft` (`doc.atomic-checklist --param craft=slot`). Ageing, halftone and misregistration
+  of real outputs come from materials: a `materials generate --generator paper` sheet in the `paper` / `board`
+  ground slot, `--generator print` for the solar print's flat, `materials process --effect duotone` with
+  `misregisterMm` for scenes. Latin roles take Latin, digits, ASCII punctuation and – — ‘ ’ “ ” • · ° × … ©.
+  Render with `--font-dir` holding League Gothic, Jost, Courier Prime and Caveat: titles are sized from the face
+  that renders and measured at its width (embedded faces above); without them the roles fall back to Noto
+  Sans SC at a smaller size. The time ladder is two hours a page (`start_hour`), a tick a minute, a long tick and
+  a label every ten. Annotations are unsigned. The case is `examples/atomic-age-kit`.
 
 Layout helpers for new packs: `layout-kit.cjs` (`rbox` for a tilted slot's box, `tilt`, `ngon`,
 `discStripes`, a seeded `rng`); `d.text(..., { italic, filter, compress })` (compress scales x about the anchor and keeps the type size), `d.lettering(..., { shadow: { dx, dy,

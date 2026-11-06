@@ -1,0 +1,376 @@
+{
+ "schema": "atomic-age-kit.art.v1",
+ "note": "Every picture in art/ with its materials record (materials-licenses.json, written by materials add / process / generate in a materials project outside the repository) and, for NASA imagery, the original NASA id and date (all inside 1957-1975). The JPGs here are the recorded outputs re-encoded for size; the PNG outputs are reproducible from the records. Caption NASA imagery: Imagery: NASA. Not endorsed by NASA.",
+ "files": {
+  "colony-duotone.jpg": {
+   "materialsRecord": "processed/colony-duotone.png",
+   "process": {
+    "file": "raw/nasa-arc-1975-ac75-1086-colony.png",
+    "sha256": "f49cd244f13e05ee4d8c7eeb9819cc5d5b862329404f945375ea577042ebd06c",
+    "operation": "process",
+    "effect": "duotone",
+    "version": 1,
+    "seed": 1,
+    "params": {
+     "inks": [
+      "#211E1B",
+      "#17555B"
+     ],
+     "angles": [
+      45,
+      75
+     ],
+     "periodPx": 5,
+     "paper": "wove-cream",
+     "misregisterMm": [
+      0.6,
+      -0.4
+     ],
+     "pxPerMm": 4,
+     "split": 0.55,
+     "contrast": 1.1
+    }
+   },
+   "source": "raw/nasa-arc-1975-ac75-1086-colony.png",
+   "sourceRecord": {
+    "license": "PD-USGov-NASA",
+    "author": "NASA Ames Research Center; artist Rick Guidice (1975-05-27, AC75-1086)",
+    "sourceUrl": "https://images.nasa.gov/details/ARC-1975-AC75-1086",
+    "title": "Interior of torus wheel (L-5) space colonization module",
+    "sha256": "f49cd244f13e05ee4d8c7eeb9819cc5d5b862329404f945375ea577042ebd06c"
+   },
+   "nasaId": "ARC-1975-AC75-1086",
+   "dateCreated": "1975-05-27",
+   "title": "NASA Ames Research Center artwork by Rick Guidice: interior of a torus (L-5) space colony",
+   "credit": "Imagery: NASA. Not endorsed by NASA.",
+   "sha256": "9d7c786cdbdc504fe613200aca74c80c007bf23313a8ccc2037d810a98de7a5a"
+  },
+  "earthrise-duotone.jpg": {
+   "materialsRecord": "processed/earthrise-duotone.png",
+   "process": {
+    "file": "raw/nasa-as17-152-23272-earthrise.png",
+    "sha256": "7bac0cf237e343e83d36c87804f02faf814e4f34c9837c7579c6b61c6892089a",
+    "operation": "process",
+    "effect": "duotone",
+    "version": 1,
+    "seed": 1,
+    "params": {
+     "inks": [
+      "#10191E",
+      "#E8922A"
+     ],
+     "angles": [
+      15,
+      75
+     ],
+     "periodPx": 5,
+     "paper": "#DCC9A8",
+     "misregisterMm": [
+      0.5,
+      0.3
+     ],
+     "pxPerMm": 4,
+     "split": 0.55,
+     "contrast": 1.1
+    }
+   },
+   "source": "raw/nasa-as17-152-23272-earthrise.png",
+   "sourceRecord": {
+    "license": "PD-USGov-NASA",
+    "author": "NASA / JSC, Apollo 17 crew photograph (1972-12, AS17-152-23272)",
+    "sourceUrl": "https://images.nasa.gov/details/as17-152-23272",
+    "title": "Apollo 17, Earthrise over Moon",
+    "sha256": "7bac0cf237e343e83d36c87804f02faf814e4f34c9837c7579c6b61c6892089a"
+   },
+   "nasaId": "AS17-152-23272",
+   "dateCreated": "1972-12",
+   "title": "Apollo 17: the crescent Earth over the lunar horizon",
+   "credit": "Imagery: NASA. Not endorsed by NASA.",
+   "sha256": "9dfcf9e8fd409c1d7aeaff1bd3bbf6d5348ffd50f81c94e28bb5cace6180298b"
+  },
+  "launch-halftone.jpg": {
+   "materialsRecord": "processed/launch-halftone.png",
+   "process": {
+    "file": "raw/nasa-6900556-apollo11-launch.png",
+    "sha256": "45c839bc81aff0e1a4692c0460ead5ebeceb401a8547f3f359043e877175c65e",
+    "operation": "process",
+    "effect": "halftone",
+    "version": 1,
+    "seed": 1,
+    "params": {
+     "periodPx": 5,
+     "angleDeg": 45,
+     "shape": "round",
+     "mode": "am",
+     "ink": "#211E1B",
+     "paper": "wove-cream",
+     "contrast": 1.1,
+     "gamma": 1
+    }
+   },
+   "source": "raw/nasa-6900556-apollo11-launch.png",
+   "sourceRecord": {
+    "license": "PD-USGov-NASA",
+    "author": "NASA / MSFC (1969-07-16, 6900556)",
+    "sourceUrl": "https://images.nasa.gov/details/6900556",
+    "title": "Saturn V launch of Apollo 11",
+    "sha256": "45c839bc81aff0e1a4692c0460ead5ebeceb401a8547f3f359043e877175c65e"
+   },
+   "nasaId": "6900556",
+   "dateCreated": "1969-07-16",
+   "title": "Saturn V launch of Apollo 11 (MSFC)",
+   "credit": "Imagery: NASA. Not endorsed by NASA.",
+   "sha256": "1e2e2f864f03de5d83d22ed98c7b9b219dce3578802aec2bb917708d2acf8019"
+  },
+  "gemini-diagram-copy.jpg": {
+   "materialsRecord": "processed/gemini-diagram-copy.png",
+   "process": {
+    "file": "raw/nasa-s64-04925-gemini-diagram.png",
+    "sha256": "5f89ae7e399395df103b12d976178da6574bec710dd7f1f22034e63c3154a8b5",
+    "operation": "process",
+    "effect": "photocopy",
+    "version": 1,
+    "seed": 1,
+    "params": {
+     "contrast": 2.2,
+     "threshold": 0.3,
+     "toner": 0.001,
+     "streaks": 0.2,
+     "bloomPx": 1.5,
+     "background": 0
+    }
+   },
+   "source": "raw/nasa-s64-04925-gemini-diagram.png",
+   "sourceRecord": {
+    "license": "PD-USGov-NASA",
+    "author": "NASA / JSC (1964-09, S64-04925)",
+    "sourceUrl": "https://images.nasa.gov/details/s64-04925",
+    "title": "Diagram of Gemini spacecraft, re-entry communications experiment",
+    "sha256": "5f89ae7e399395df103b12d976178da6574bec710dd7f1f22034e63c3154a8b5"
+   },
+   "nasaId": "S64-04925",
+   "dateCreated": "1964-09",
+   "title": "Diagram of the Gemini spacecraft, re-entry communications experiment for GT-3",
+   "credit": "Imagery: NASA. Not endorsed by NASA.",
+   "sha256": "df7306895a8da2cbb6498e6641d977c537617975da2e4a38373148134c3a6131"
+  },
+  "gemini6-duotone.jpg": {
+   "materialsRecord": "processed/gemini6-duotone.png",
+   "process": {
+    "file": "raw/nasa-s65-63898-gemini6.png",
+    "sha256": "e466476cf9c8a48f84f5a3a90580a92e1038f3fadd5bbe42207d5a0fa07d2322",
+    "operation": "process",
+    "effect": "duotone",
+    "version": 1,
+    "seed": 2,
+    "params": {
+     "inks": [
+      "#211E1B",
+      "#17555B"
+     ],
+     "angles": [
+      45,
+      15
+     ],
+     "periodPx": 4,
+     "paper": "wove-cream",
+     "misregisterMm": [
+      0.4,
+      -0.4
+     ],
+     "pxPerMm": 4,
+     "split": 0.55,
+     "contrast": 1.1
+    }
+   },
+   "source": "raw/nasa-s65-63898-gemini6.png",
+   "sourceRecord": {
+    "license": "PD-USGov-NASA",
+    "author": "NASA / JSC, photographed from Gemini 7 (1965-12-15, S65-63898)",
+    "sourceUrl": "https://images.nasa.gov/details/s65-63898",
+    "title": "Gemini 6 spacecraft in orbit",
+    "sha256": "e466476cf9c8a48f84f5a3a90580a92e1038f3fadd5bbe42207d5a0fa07d2322"
+   },
+   "nasaId": "S65-63898",
+   "dateCreated": "1965-12-15",
+   "title": "Gemini 6 in orbit, photographed from Gemini 7",
+   "credit": "Imagery: NASA. Not endorsed by NASA.",
+   "sha256": "5a637bb35ce52843f40cc9eda7a93a0139a85d9264543922d58ee880c22a3b1e"
+  },
+  "paper-cover.jpg": {
+   "materialsRecord": "generated/paper-cover.png",
+   "generator": {
+    "name": "paper",
+    "version": 1,
+    "seed": 3,
+    "params": {
+     "profile": "wove-cream",
+     "pxPerMm": 2,
+     "strength": 1,
+     "creases": 1,
+     "wrinkle": 0,
+     "age": 1.2,
+     "foxing": 1.5,
+     "stains": 1,
+     "output": "color",
+     "whiteQuantile": 0.6,
+     "tint": "#EAD5B0",
+     "width": 750,
+     "height": 1000
+    },
+    "profile": {
+     "id": "wove-cream",
+     "origin": "builtin"
+    }
+   },
+   "similarity": "unlike-reference",
+   "sha256": "38485e6922dbc915f82d2182ab96eb4aac2785b293fbd1504544985bc2033d43"
+  },
+  "paper-sheet.jpg": {
+   "materialsRecord": "generated/paper-sheet.png",
+   "generator": {
+    "name": "paper",
+    "version": 1,
+    "seed": 4,
+    "params": {
+     "profile": "wove-cream",
+     "pxPerMm": 2,
+     "strength": 1,
+     "creases": 1,
+     "wrinkle": 0,
+     "age": 0.5,
+     "foxing": 0.6,
+     "stains": 0,
+     "output": "color",
+     "whiteQuantile": 0.6,
+     "tint": "#F2EFE8",
+     "width": 850,
+     "height": 1100
+    },
+    "profile": {
+     "id": "wove-cream",
+     "origin": "builtin"
+    }
+   },
+   "similarity": "unlike-reference",
+   "sha256": "0636954359add996deecf82b9ded7fe77cfe68babf49e9c4ca080ccb159e2c23"
+  },
+  "paper-card.jpg": {
+   "materialsRecord": "generated/paper-card.png",
+   "generator": {
+    "name": "paper",
+    "version": 1,
+    "seed": 5,
+    "params": {
+     "profile": "wove-toned",
+     "pxPerMm": 2,
+     "strength": 1,
+     "creases": 0,
+     "wrinkle": 0,
+     "age": 1.4,
+     "foxing": 2,
+     "stains": 1,
+     "output": "color",
+     "whiteQuantile": 0.6,
+     "tint": "#F6EBC8",
+     "width": 1000,
+     "height": 414
+    },
+    "profile": {
+     "id": "wove-toned",
+     "origin": "builtin"
+    }
+   },
+   "similarity": "within-real-range",
+   "sha256": "95b7b1c6d244551697bc32de17e00c87c1a6713c6058c4de9c68b3648f3317c2"
+  },
+  "print-terra.jpg": {
+   "materialsRecord": "generated/print-terra.png",
+   "generator": {
+    "name": "print",
+    "version": 1,
+    "seed": 2,
+    "params": {
+     "profile": "litho-red",
+     "ink": "#B03D1C",
+     "paper": "wove-cream",
+     "pxPerMm": 2,
+     "margin": 0,
+     "edgeRoughMm": 0,
+     "starvation": 0,
+     "pile": 0.25,
+     "strength": 1,
+     "misregisterMm": [
+      0.6,
+      -0.4
+     ],
+     "second": "#E8922A",
+     "width": 700,
+     "height": 1000
+    },
+    "profile": {
+     "id": "litho-red",
+     "origin": "builtin"
+    }
+   },
+   "similarity": "unlike-reference",
+   "sha256": "e5e21c5da7aa40b09cb99b73e9228696548444d58e0bdeb55d54c4237e9f5371"
+  },
+  "print-mustard.jpg": {
+   "materialsRecord": "generated/print-mustard.png",
+   "generator": {
+    "name": "print",
+    "version": 1,
+    "seed": 6,
+    "params": {
+     "profile": "litho-red",
+     "ink": "#E8922A",
+     "paper": "wove-cream",
+     "pxPerMm": 2,
+     "margin": 0,
+     "edgeRoughMm": 0,
+     "starvation": 0,
+     "pile": 0.25,
+     "strength": 1,
+     "misregisterMm": [
+      0,
+      0
+     ],
+     "second": null,
+     "width": 1000,
+     "height": 500
+    },
+    "profile": {
+     "id": "litho-red",
+     "origin": "builtin"
+    }
+   },
+   "similarity": "unlike-reference",
+   "sha256": "ef131711935526153accdce3bb0f043be9fba4d6ca8df4cf7779da0b0f401c52"
+  },
+  "nasa-a11-flight-plan-p141.jpg": {
+   "source": "https://apollojournals.org/alsj/a11/a11final-fltpln.pdf",
+   "sourceSha256": "5563218d1e47166a5709d4d3072714c75fe928db0c14c37e1ee6b65c4df3c811",
+   "page": 141,
+   "extract": "pdftoppm -r 110 -jpeg (quality 80), no cleaning",
+   "license": "PD-USGov-NASA (a NASA Manned Spacecraft Center document)",
+   "dateCreated": "1969-07-01",
+   "title": "Apollo 11 Final Flight Plan (MSC, July 1, 1969), page 141",
+   "use": "shown beside the flight-plan and checklist templates for comparison",
+   "credit": "Imagery: NASA. Not endorsed by NASA.",
+   "sha256": "e875f3cb6013ec773149d7047051e20b01497290643b724b0ba73de26a4e7a2a"
+  },
+  "nasa-a11-flight-plan-p160.jpg": {
+   "source": "https://apollojournals.org/alsj/a11/a11final-fltpln.pdf",
+   "sourceSha256": "5563218d1e47166a5709d4d3072714c75fe928db0c14c37e1ee6b65c4df3c811",
+   "page": 160,
+   "extract": "pdftoppm -r 110 -jpeg (quality 80), no cleaning",
+   "license": "PD-USGov-NASA (a NASA Manned Spacecraft Center document)",
+   "dateCreated": "1969-07-01",
+   "title": "Apollo 11 Final Flight Plan (MSC, July 1, 1969), page 160: lunar orbit rest period attitude",
+   "use": "shown beside the flight-plan and checklist templates for comparison",
+   "credit": "Imagery: NASA. Not endorsed by NASA.",
+   "sha256": "04e82d9bf13635d01b88c29bb2a1bc156265f45fc58cd37c02d76f83562c238a"
+  }
+ }
+}

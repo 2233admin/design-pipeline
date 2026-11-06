@@ -1,0 +1,309 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "atomic-age",
+  "title": "Atomic age: mid-century Space-Age retro-futurism - editorial and poster covers, ads and labels in cream, teal, vermilion, mustard and charcoal, plus mission documents (flight plans, checklists, orbital plates, credentials)",
+  "summary": "Two linked grammars on one palette. A) Atomic-age editorial and poster: cream paper, one vermilion main colour against teal, mustard and charcoal; condensed lowercase or caps titles in two inks, geometric tracked caps, starbursts, orbit ellipses, boomerangs, a sun disc, swept rockets as flat glyph silhouettes, Googie scenes in image slots, halftone and misregistered plates. B) Mission documents: typewriter mono on white sheets, a vertical time ladder (a tick a minute, a long one every ten), ruled edition tables, punched holes, rubber stamps, unsigned ballpoint ticks, orbital diagrams, white-line plates on black and press credentials. Marks (logos, insignia, emblems) are image slots the owner fills; they are never drawn.",
+  "provenance": {
+    "case": "atomic-age kit (examples/atomic-age-kit): an original world, the Halcyon Orbital Lines and its survey office, filled into all ten templates on one print-set sheet, plus a landing page in the grammar (1440 and 390 wide). The showcase sheet carries real historical text (programmes, dates) where the owner asked for it; the pack's defaults stay original.",
+    "lineage": "Mid-century Space-Age retro-futurism: 1950s-60s magazine covers, travel and science posters, car-brochure ads, cloth-bound technical books, and the flight plans, checklists, diagrams and press credentials of the early crewed space programmes. Read and measured on an owner-supplied mood board of 17 panels (palette clusters, light shares, visual-weight centres, proportions of mastheads, discs, rockets, ladders and tables); the board stays private and is not shipped. Borrowed: the grammar and the measured proportions. Never borrowed: logos, insignia, emblems, wordmarks, pictures or proprietary fonts.",
+    "borrow": "Borrow grammar, never assets. Every default name and line in the templates is our own (Orbitville Gazette, Halcyon Orbital Lines, Meridian 88, Halcyon 7); marks are empty image slots with a size and clear-space rule; rockets and satellites are flat glyph silhouettes in code, realistic scenes are image slots with task sheets.",
+    "rounds": "template check --browser on every template at every size with the OFL fixtures, and on the kit's print-set sheet and landing page (1440 and 390): first pass and final counts in the PR."
+  },
+  "palette": {
+    "paper": {
+      "value": "#EAD5B0",
+      "use": "the cream paper of covers, posters and ads (measured #E6CBA4 / #EAD6BF / #F0D2B8 on the board)"
+    },
+    "card": {
+      "value": "#F6EBC8",
+      "use": "credential and label card stock (measured #FBEFC5 / #E5E0CD)"
+    },
+    "sheet": {
+      "value": "#F2EFE8",
+      "use": "mission-document sheets (measured #E9E6E0 / #FEFEFE)"
+    },
+    "linen": {
+      "value": "#D9D6C3",
+      "use": "book cloth, the pale linen (measured #DDD9C2 / #E4E0CA)"
+    },
+    "linen_thread": {
+      "value": "#B9B5A0",
+      "use": "linen weave threads (decoration)"
+    },
+    "linen_dark_thread": {
+      "value": "#3A3632",
+      "use": "weave threads on charcoal cloth (decoration)"
+    },
+    "swoop_pale": {
+      "value": "#9FAE98",
+      "use": "the pale grey-green band on linen (decoration)"
+    },
+    "ink": {
+      "value": "#211E1B",
+      "use": "charcoal: type, the dark grounds, the dark block (measured #221B14 / #21201E)"
+    },
+    "teal": {
+      "value": "#17555B",
+      "use": "teal: the second ink, masthead, labels, blocks (measured #155056 / #18545A)"
+    },
+    "vermilion": {
+      "value": "#C4421D",
+      "use": "vermilion: the one main colour - sun disc, ad field, band, the hot half of the masthead (measured #B63C0B aged to #E64F1E fresh); large type only on paper (3.5:1)"
+    },
+    "rust": {
+      "value": "#A8360F",
+      "use": "vermilion as small type on paper and card (4.6:1)"
+    },
+    "mustard": {
+      "value": "#E8922A",
+      "use": "mustard: field-guide ground, misregistered plates, accents (measured #E58B24 / #F19321)"
+    },
+    "navy": {
+      "value": "#1F3640",
+      "use": "night-sky poster ground (measured #283C44 / #141F27)"
+    },
+    "night": {
+      "value": "#1B1D21",
+      "use": "the white-line plate ground (measured #1D1F22)"
+    },
+    "chalk": {
+      "value": "#ECE8DC",
+      "use": "chalk lines and type on the plate"
+    },
+    "grid": {
+      "value": "#2C3036",
+      "use": "the plate's faint grid (decoration)"
+    },
+    "terra": {
+      "value": "#B03D1C",
+      "use": "the solar print's ground (measured #C84927; darkened so 14 px labels pass 4.5:1)"
+    },
+    "line": {
+      "value": "#F3E3C6",
+      "use": "the solar print's cream lines and labels"
+    },
+    "ballpoint": {
+      "value": "#2A4A9C",
+      "use": "unsigned ballpoint annotations and ticks on documents"
+    },
+    "stamp": {
+      "value": "#B5322A",
+      "use": "rubber-stamp ink"
+    },
+    "punch": {
+      "value": "#3A3632",
+      "use": "punched holes (the dark board behind the sheet)"
+    }
+  },
+  "fonts": {
+    "roles": {
+      "display": {
+        "stack": [
+          "League Gothic",
+          "Noto Sans SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 400,
+        "use": "condensed titles: mastheads, poster titles, book titles, years, mission names, numerals"
+      },
+      "geo": {
+        "stack": [
+          "Jost",
+          "Noto Sans SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 700,
+        "use": "geometric caps: tracked wordmarks, form headers, labels, the field guide title"
+      },
+      "label": {
+        "stack": [
+          "Jost",
+          "Noto Sans SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 500,
+        "use": "decks, taglines, small geometric lines"
+      },
+      "mono": {
+        "stack": [
+          "Courier Prime",
+          "Noto Sans Mono",
+          "Noto Sans SC"
+        ],
+        "generic": "monospace",
+        "weight": 400,
+        "use": "typewriter: documents, typed fields, formulas, tables"
+      },
+      "monob": {
+        "stack": [
+          "Courier Prime",
+          "Noto Sans Mono",
+          "Noto Sans SC"
+        ],
+        "generic": "monospace",
+        "weight": 700,
+        "use": "typewriter bold: section bars, codes, stamp dates"
+      },
+      "hand": {
+        "stack": [
+          "Caveat",
+          "Noto Sans SC"
+        ],
+        "generic": "cursive",
+        "weight": 600,
+        "use": "unsigned annotations and chalk labels; never a signature"
+      },
+      "body": {
+        "stack": [
+          "Noto Sans SC",
+          "Noto Sans CJK SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 400,
+        "use": "paragraphs and mixed CJK and Latin copy"
+      }
+    },
+    "faces": [
+      {
+        "family": "League Gothic",
+        "weight": 400,
+        "file": "LeagueGothic-Regular.ttf",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/leaguegothic",
+        "licence": "SIL OFL 1.1",
+        "author": "The League Gothic Project Authors",
+        "instance": "LeagueGothic[wdth].ttf at wdth 100"
+      },
+      {
+        "family": "Jost",
+        "weight": 700,
+        "file": "Jost-Bold.ttf",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/jost",
+        "licence": "SIL OFL 1.1",
+        "author": "The Jost Project Authors",
+        "instance": "Jost[wght].ttf at wght 700"
+      },
+      {
+        "family": "Jost",
+        "weight": 500,
+        "file": "Jost-Medium.ttf",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/jost",
+        "licence": "SIL OFL 1.1",
+        "author": "The Jost Project Authors",
+        "instance": "Jost[wght].ttf at wght 500"
+      },
+      {
+        "family": "Courier Prime",
+        "weight": 400,
+        "file": "CourierPrime-Regular.ttf",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/courierprime",
+        "licence": "SIL OFL 1.1",
+        "author": "The Courier Prime Project Authors"
+      },
+      {
+        "family": "Courier Prime",
+        "weight": 700,
+        "file": "CourierPrime-Bold.ttf",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/courierprime",
+        "licence": "SIL OFL 1.1",
+        "author": "The Courier Prime Project Authors"
+      },
+      {
+        "family": "Caveat",
+        "weight": 600,
+        "file": "Caveat-SemiBold.ttf",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/caveat",
+        "licence": "SIL OFL 1.1",
+        "author": "The Caveat Project Authors",
+        "instance": "Caveat[wght].ttf at wght 600"
+      },
+      {
+        "family": "Noto Sans SC",
+        "weight": 700,
+        "file": "NotoSansSC[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/bbda7253fc363238b05d97515ca71f8ae49c4fa9/ofl/notosanssc",
+        "licence": "SIL OFL 1.1",
+        "author": "Google"
+      }
+    ],
+    "bundled": false,
+    "substitution": "The board's faces are mostly period metal and photo type (condensed grotesques, a geometric sans of the Futura family, a Didone masthead, typewriter faces). Open stand-ins: League Gothic for the condensed titles (its lowercase is narrower and less contrasted than the board's masthead), Jost for the geometric caps (Futura's proportions; the board's tracked wordmark is wider-set), Courier Prime for the typewriter (cleaner than a worn IBM ribbon, no ink spread), Caveat for annotations (a felt-pen hand, rounder than the ballpoint). The Didone masthead line (VAULT) has no open match in the catalog at this weight; the pack sets that line in Jost Bold tracked instead. fonts query reports none of these families because the catalog holds CJK-capable families only; each face is named with its OFL source and read from --font-dir."
+  },
+  "layout": {
+    "grammar": [
+      "Two grammars, one palette. Editorial and poster screens are cream (paper L 85-88) or a dark ground (charcoal, navy) carrying one vermilion main colour; documents are white sheets (L 87-90) with charcoal type only, plus ballpoint and stamp inks.",
+      "Vermilion is the main colour: the sun disc (0.216 of the cover width), the ad field (35-45% of the panel), the poster band, the hot half of a two-ink masthead, the solar print's ground. Teal is second (blocks, labels, the cool half); mustard plays plates and the field-guide ground; charcoal is structure.",
+      "Titles are condensed: a masthead at 0.17 of the cover height in two inks inside one word, a poster title slanted, three stacked caps lines on a book; geometric caps are tracked wide (0.52 em on the ad wordmark, 0.08-0.18 em on taglines).",
+      "Motifs: four-plus-four ray starbursts with dots at two tips, thin orbit ellipses crossing the frame, boomerang shapes, a sun or planet disc, one swooping line on linen; rockets and satellites only as flat glyph silhouettes with straight trail lines.",
+      "Print: cream paper aged at the edges, halftone shading on discs and planets, a second plate misregistered by 2-8 units (mustard behind vermilion); real ageing, halftone and misregistration come from materials generate and process.",
+      "Documents: a time ladder with a tick every minute and a long tick every ten (labels :10 ... :50, hh:00 on the hour), bracket and dotted rails, typed blocks at their minute, a boxed checklist, a six-column edition table (MISSION, EDITION, DATE, TIME, DAY/REV, PAGE), punched holes along the top (five) or side (three), rubber stamps at -7 to -12 degrees.",
+      "Scale contrast of 1:10 or more on every template (masthead against page numbers about 1:14; ad year against wordmark tracking 1:3 in size but 1:12 against the logo note).",
+      "Marks are slots: logos, insignia, emblems and seals are image slots with a stated size, safe area and clear space; the code never draws a mark."
+    ]
+  },
+  "materials": {
+    "procedural": [
+      "starbursts, orbit ellipses, boomerangs, discs, linen weave, a code dot screen on shapes (layouts-atomic.cjs)",
+      "swept rocket, classic rocket and satellite glyphs: flat silhouettes in a few polygons (sweptRocket, classicRocket, satellite)",
+      "time ladder, bracket and dotted rails, ruled tables, punched holes, rubber-stamp frames"
+    ],
+    "recipes": [
+      "Aged paper for the `paper` / `board` ground slots: materials generate --generator paper --params '{\"profile\":\"wove-cream\",\"tint\":\"#EAD5B0\",\"age\":1.2,\"foxing\":1.5,\"stains\":1,\"creases\":1,\"width\":1500,\"height\":2000,\"pxPerMm\":4}' --seed 3 (record kept in materials/generated).",
+      "Printed vermilion flat for the solar print: materials generate --generator print --params '{\"profile\":\"litho-red\",\"ink\":\"#B03D1C\",\"paper\":\"wove-cream\",\"margin\":0,\"misregisterMm\":[0.6,-0.4],\"second\":\"#E8922A\"}' --seed 2.",
+      "Halftone and misregistration of a scene in an art slot: materials process --file materials/raw/<scene>.png --effect duotone --params '{\"inks\":[\"#211E1B\",\"#17555B\"],\"angles\":[45,75],\"misregisterMm\":[0.5,-0.3],\"periodPx\":7,\"paper\":\"wove-cream\"}' --seed 1.",
+      "Realistic scenes (Googie architecture, launches, Earth and Moon) come from a public-domain period source (materials fetch) or an image-generation task sheet (#311); never drawn in code (#301)."
+    ],
+    "collage": [
+      "Pictures sit in image slots with a ground plate under any text; marks sit in their own slots with clear space."
+    ],
+    "sources": "Everything else is drawn; pictures and marks are your own files in image slots.",
+    "budget": {
+      "inks": 4,
+      "effectsMax": 3,
+      "tiltedElements": 2
+    }
+  },
+  "motionNote": "Print grammar: no motion of its own. On a page, reveal sections with a 240 ms ease-out rise of 12 px; a starburst may turn 15 degrees in 1.2 s on hover; nothing blinks.",
+  "checks": {
+    "static": [
+      "text-overflow",
+      "text-length",
+      "type-size",
+      "contrast",
+      "accent-budget",
+      "align-line"
+    ],
+    "browser": [
+      "text-overlap",
+      "off-canvas",
+      "collage-cover",
+      "contrast",
+      "text-occluded",
+      "glyph-coverage"
+    ],
+    "browserOnRender": false,
+    "guidance": [
+      "64 px distinctiveness (guidance): shrink each render to 64 px tall beside the other packs and the private board; a cover should read as cream with a vermilion disc and a two-ink masthead, a poster as a dark field with a planet limb and a light diagonal, a document as white with a black ladder rail.",
+      "Never draw a logo, insignia, emblem, seal or wordmark: fill the mark slot with the owner's file and keep its clear space.",
+      "Never draw a realistic vehicle, person or building in code (#301): rockets and satellites stay flat glyph silhouettes; scenes go in image slots with task sheets.",
+      "Annotations are unsigned: no signatures, no handwritten notes attributed to a real person, no quotes or endorsements.",
+      "Latin roles take Latin, digits, ASCII punctuation and – — ‘ ’ “ ” • · ° × … ©; mixed CJK copy goes in a body slot (glyph coverage).",
+      "Render with --font-dir holding the pack's faces: titles are sized from the face that renders, so without them the condensed titles fall back to Noto Sans SC at a smaller size."
+    ],
+    "note": "Run --browser for halftone patterns, image grounds and rotated stamps (the static half reads geometry only)."
+  },
+  "examples": {
+    "note": "The case's composed pieces that stay examples.",
+    "renders": [
+      {
+        "screen": "print-set sheet: all ten templates filled with the example world",
+        "file": "examples/atomic-age-kit/sheet.html",
+        "why": "a composition of template renders, not a parametric layout"
+      },
+      {
+        "screen": "landing page at 1440 and 390",
+        "file": "examples/atomic-age-kit/site/index.html",
+        "why": "a page with sections and interaction, composed from the grammar"
+      }
+    ]
+  }
+}

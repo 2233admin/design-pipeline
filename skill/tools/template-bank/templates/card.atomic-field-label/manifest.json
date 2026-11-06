@@ -1,0 +1,149 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.atomic-field-label",
+  "family": "card",
+  "style": "atomic-age",
+  "title": "Product label card (field-guide style): a framed card on mustard, a tracked geometric title, a subtitle between rules, typed fields under vermilion labels, an unsigned script line",
+  "use": "Product labels, field-guide and kit cards, packaging fronts, about cards.",
+  "canvas": {
+    "width": 2000,
+    "height": 1000
+  },
+  "sizes": [
+    "2000x1000",
+    "1000x500",
+    "1400x700"
+  ],
+  "aspect": "2:1",
+  "accent": {
+    "roles": [
+      "vermilion",
+      "rust"
+    ],
+    "maxShare": 0.04
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "ground": {
+      "type": "enum",
+      "values": [
+        "mustard",
+        "teal"
+      ],
+      "default": "mustard",
+      "class": "decoration",
+      "note": "board colour"
+    },
+    "emblem": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "show the emblem slot over the top right corner (off: the slot is declared but left empty)"
+    }
+  },
+  "slots": {
+    "board": {
+      "kind": "image",
+      "ground": "mustard",
+      "note": "aged board from materials generate (ground layer)",
+      "layer": "ground"
+    },
+    "emblem": {
+      "kind": "image",
+      "ground": "mustard",
+      "note": "mark slot for the owner's logo, insignia or emblem file (PNG or SVG with alpha), placed with fit contain; square, 0.08 W; keep clear space of 0.25 of its side; never drawn by the template"
+    },
+    "title": {
+      "kind": "text",
+      "default": "ORBITAL FIELD GUIDE",
+      "maxChars": 24,
+      "font": "geo",
+      "title": true
+    },
+    "subtitle": {
+      "kind": "text",
+      "default": "KNOW YOUR SKY. PLAN YOUR FLIGHT",
+      "maxChars": 34,
+      "font": "geo"
+    },
+    "label_1": {
+      "kind": "text",
+      "default": "SERVICE:",
+      "maxChars": 14,
+      "font": "geo"
+    },
+    "text_1": {
+      "kind": "text",
+      "default": "CHARTS, TABLES AND CHECKLISTS FOR THE WEEKEND NAVIGATOR.",
+      "maxChars": 80,
+      "font": "mono",
+      "lines": 3
+    },
+    "label_2": {
+      "kind": "text",
+      "default": "ISSUED BY:",
+      "maxChars": 14,
+      "font": "geo"
+    },
+    "script": {
+      "kind": "text",
+      "default": "Halcyon Survey Office",
+      "maxChars": 28,
+      "font": "hand",
+      "note": "a printed script line, never a signature"
+    },
+    "text_2": {
+      "kind": "text",
+      "default": "HALCYON SURVEY OFFICE LTD.",
+      "maxChars": 32,
+      "font": "mono"
+    },
+    "field_{i}": {
+      "kind": "text",
+      "default": [
+        "FIRST ISSUED:",
+        "ORIGIN:",
+        "SERVING:"
+      ],
+      "maxChars": 16,
+      "font": "geo"
+    },
+    "value_{i}": {
+      "kind": "text",
+      "default": [
+        "1959",
+        "PALM MESA, NEW MEXICO",
+        "AMATEUR SKYWATCHERS"
+      ],
+      "maxChars": 34,
+      "font": "mono",
+      "lines": 2
+    }
+  },
+  "relations": [
+    "Card inset 0.065 W, ruled 4 units; title centred, subtitle centred between two rules.",
+    "Typed fields in mono tracked 0.04 em under geometric labels in rust; dotted dividers."
+  ],
+  "decoration": [
+    "the frame, rules and dotted dividers"
+  ],
+  "provenance": {
+    "corpus": "atomic-age kit (Halcyon Orbital Lines): our own original world in the atomic-age grammar, examples/atomic-age-kit",
+    "experiment": "styles/atomic-age/style.json provenance (owner-supplied mood board measured privately; never shipped)",
+    "accessed": "2026-11-07",
+    "method": "k-means palette (6 clusters, OKLab-free RGB on a 160 px reduction), light and dark shares, visual-weight centre and proportions read on the board's field_guide panel",
+    "sampleIds": [
+      "moodboard/field_guide"
+    ],
+    "measured": [
+      "mustard #E68B25 31%, card #E5E0CD 40%",
+      "aspect 1.96; inner frame inset about 6%"
+    ],
+    "summary": "atomic-age field-label"
+  }
+}

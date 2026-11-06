@@ -1,0 +1,121 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.atomic-credential",
+  "family": "card",
+  "style": "atomic-age",
+  "title": "Credential / ID card: a condensed mission name, an emblem slot, a number, typed name and organisation on rules with small geometric labels, a rubber stamp",
+  "use": "Badges, passes, tickets, name cards, membership cards.",
+  "canvas": {
+    "width": 1500,
+    "height": 620
+  },
+  "sizes": [
+    "1500x620",
+    "750x310"
+  ],
+  "aspect": "75:31",
+  "accent": {
+    "roles": [
+      "stamp"
+    ],
+    "maxShare": 0.03
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "hole": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "lanyard slot"
+    },
+    "stamp": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "rubber stamp"
+    }
+  },
+  "slots": {
+    "paper": {
+      "kind": "image",
+      "ground": "card",
+      "note": "aged sheet from materials generate --generator paper (ground layer: sampled for contrast); empty draws the flat ink",
+      "layer": "ground"
+    },
+    "emblem": {
+      "kind": "image",
+      "ground": "card",
+      "note": "mark slot for the owner's logo, insignia or emblem file (PNG or SVG with alpha), placed with fit contain; square, 0.17 W, between the name and the number; keep clear space of 0.15 of its side; never drawn by the template"
+    },
+    "mission": {
+      "kind": "text",
+      "default": "HALCYON",
+      "maxChars": 12,
+      "font": "display",
+      "title": true
+    },
+    "number": {
+      "kind": "text",
+      "default": "7",
+      "maxChars": 3,
+      "font": "display",
+      "title": true
+    },
+    "name": {
+      "kind": "text",
+      "default": "IRIS MALLORY",
+      "maxChars": 24,
+      "font": "mono"
+    },
+    "name_label": {
+      "kind": "text",
+      "default": "NAME",
+      "maxChars": 12,
+      "font": "geo"
+    },
+    "org": {
+      "kind": "text",
+      "default": "PALM MESA GAZETTE",
+      "maxChars": 26,
+      "font": "mono"
+    },
+    "org_label": {
+      "kind": "text",
+      "default": "ORGANIZATION",
+      "maxChars": 14,
+      "font": "geo"
+    },
+    "stamp": {
+      "kind": "text",
+      "default": "PRESS",
+      "maxChars": 8,
+      "font": "geo"
+    }
+  },
+  "relations": [
+    "Mission name and number at 0.27 H, the emblem between them.",
+    "Two typed lines on rules at 0.62 and 0.86 H, labels under the rules."
+  ],
+  "decoration": [
+    "lanyard slot, rules, stamp frame"
+  ],
+  "provenance": {
+    "corpus": "atomic-age kit (Halcyon Orbital Lines): our own original world in the atomic-age grammar, examples/atomic-age-kit",
+    "experiment": "styles/atomic-age/style.json provenance (owner-supplied mood board measured privately; never shipped)",
+    "accessed": "2026-11-07",
+    "method": "k-means palette (6 clusters, OKLab-free RGB on a 160 px reduction), light and dark shares, visual-weight centre and proportions read on the board's credential panel",
+    "sampleIds": [
+      "moodboard/credential"
+    ],
+    "measured": [
+      "card #FBEFC5 52%, ink 9%",
+      "aspect 2.44"
+    ],
+    "summary": "atomic-age credential"
+  }
+}
