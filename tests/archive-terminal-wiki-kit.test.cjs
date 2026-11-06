@@ -105,7 +105,7 @@ function returningVisitorCopy() {
 }
 
 for (const [page, size] of [["home", null], ["entity", "390x4800"]]) {
-  test(`template check --browser passes on ${page}${size ? ` at ${size}` : ""}`, { skip, timeout: 300000 }, (t) => {
+  test(`template check --browser passes on ${page}${size ? ` at ${size}` : ""}`, { skip, timeout: 300000 }, async (t) => {
     let file = path.join(TEMPLATES, `${page}.html`);
     if (page === "home") {
       const copy = returningVisitorCopy();
@@ -117,6 +117,11 @@ for (const [page, size] of [["home", null], ["entity", "390x4800"]]) {
     if (size) args.push("--size", size);
     const run = cli(args, 280000);
     const result = JSON.parse(run.stdout);
+    if (result.status !== "passed" && page === "home") { // TEMP-DEBUG
+      const puppeteer = require(require.resolve("puppeteer-core", { paths: [REPO] }));
+      const exe = require("../skill/scripts/browser-locate.cjs").resolveBrowser();
+      await require("./dbg-tmp.cjs")(file, puppeteer, exe, process.getuid && process.getuid() === 0 ? ["--no-sandbox"] : [], (m) => console.log(m));
+    }
     assert.equal(result.status, "passed", JSON.stringify(result.findings, null, 1));
     assert.equal(run.status, 0);
   });
