@@ -1,0 +1,603 @@
+{
+  "generated/paper-card.png": {
+    "license": "generated",
+    "commercialUse": true,
+    "kind": "texture",
+    "source": "procedural",
+    "sourceUrl": "design-pipeline:procedural/paper@1",
+    "author": "design-pipeline procedural generator",
+    "retrieved": "2026-11-07",
+    "similarity": {
+      "reference": "wove-toned",
+      "metric": "spectralDb",
+      "value": 2.077,
+      "natural": 0.99,
+      "between": 3.024,
+      "histogramL": {
+        "value": 0.632,
+        "natural": 0.064,
+        "between": 0.792,
+        "level": "within-real-range"
+      },
+      "level": "within-real-range"
+    },
+    "sha256": "064b284175e205d1b4eab960fcd40b68e4fbddf627bce477c62e466785200799",
+    "bytes": 460193,
+    "width": 1000,
+    "height": 414,
+    "calibration": [
+      {
+        "id": "wove-toned",
+        "origin": "builtin",
+        "file": "references/material-calibration.json#wove-toned",
+        "sha256": "32f3e809977adfba24f3f3f91d989397f954d2e5b7804ca29794d745f6f388d5"
+      }
+    ],
+    "generator": {
+      "name": "paper",
+      "version": 1,
+      "seed": 5,
+      "params": {
+        "profile": "wove-toned",
+        "pxPerMm": 2,
+        "strength": 1,
+        "creases": 0,
+        "wrinkle": 0,
+        "age": 1.4,
+        "foxing": 2,
+        "stains": 1,
+        "output": "color",
+        "whiteQuantile": 0.6,
+        "tint": "#F6EBC8",
+        "width": 1000,
+        "height": 414
+      },
+      "profile": {
+        "id": "wove-toned",
+        "origin": "builtin"
+      }
+    }
+  },
+  "generated/paper-cover.png": {
+    "license": "generated",
+    "commercialUse": true,
+    "kind": "texture",
+    "source": "procedural",
+    "sourceUrl": "design-pipeline:procedural/paper@1",
+    "author": "design-pipeline procedural generator",
+    "retrieved": "2026-11-07",
+    "similarity": {
+      "reference": "wove-cream",
+      "metric": "spectralDb",
+      "value": 6.69,
+      "natural": 3.151,
+      "between": 3.024,
+      "histogramL": {
+        "value": 0.272,
+        "natural": 0.052,
+        "between": 0.792,
+        "level": "not-calibrated"
+      },
+      "level": "unlike-reference",
+      "reason": "spectralDb: natural 3.151 vs between 3.024 (natural must be below 0.8 x between)"
+    },
+    "sha256": "8e8cc62017342b907792ffeba391ca7396ce59bec913dfd1257c410051b2d2b3",
+    "bytes": 782519,
+    "width": 750,
+    "height": 1000,
+    "calibration": [
+      {
+        "id": "wove-cream",
+        "origin": "builtin",
+        "file": "references/material-calibration.json#wove-cream",
+        "sha256": "828dac2447814a0bc7e238fe3ccefa8c83b446b62b3965d93cf80327d892a5cd"
+      }
+    ],
+    "generator": {
+      "name": "paper",
+      "version": 1,
+      "seed": 3,
+      "params": {
+        "profile": "wove-cream",
+        "pxPerMm": 2,
+        "strength": 1,
+        "creases": 1,
+        "wrinkle": 0,
+        "age": 1.2,
+        "foxing": 1.5,
+        "stains": 1,
+        "output": "color",
+        "whiteQuantile": 0.6,
+        "tint": "#EAD5B0",
+        "width": 750,
+        "height": 1000
+      },
+      "profile": {
+        "id": "wove-cream",
+        "origin": "builtin"
+      }
+    }
+  },
+  "generated/paper-sheet.png": {
+    "license": "generated",
+    "commercialUse": true,
+    "kind": "texture",
+    "source": "procedural",
+    "sourceUrl": "design-pipeline:procedural/paper@1",
+    "author": "design-pipeline procedural generator",
+    "retrieved": "2026-11-07",
+    "similarity": {
+      "reference": "wove-cream",
+      "metric": "spectralDb",
+      "value": 6.998,
+      "natural": 3.151,
+      "between": 3.024,
+      "histogramL": {
+        "value": 0.231,
+        "natural": 0.052,
+        "between": 0.792,
+        "level": "not-calibrated"
+      },
+      "level": "unlike-reference",
+      "reason": "spectralDb: natural 3.151 vs between 3.024 (natural must be below 0.8 x between)"
+    },
+    "sha256": "d901f49fb025e5ba244380108f1ee8dbfbae48188ed9d6c20c06b44517e8ddd5",
+    "bytes": 878749,
+    "width": 850,
+    "height": 1100,
+    "calibration": [
+      {
+        "id": "wove-cream",
+        "origin": "builtin",
+        "file": "references/material-calibration.json#wove-cream",
+        "sha256": "828dac2447814a0bc7e238fe3ccefa8c83b446b62b3965d93cf80327d892a5cd"
+      }
+    ],
+    "generator": {
+      "name": "paper",
+      "version": 1,
+      "seed": 4,
+      "params": {
+        "profile": "wove-cream",
+        "pxPerMm": 2,
+        "strength": 1,
+        "creases": 1,
+        "wrinkle": 0,
+        "age": 0.5,
+        "foxing": 0.6,
+        "stains": 0,
+        "output": "color",
+        "whiteQuantile": 0.6,
+        "tint": "#F2EFE8",
+        "width": 850,
+        "height": 1100
+      },
+      "profile": {
+        "id": "wove-cream",
+        "origin": "builtin"
+      }
+    }
+  },
+  "generated/print-mustard.png": {
+    "license": "generated",
+    "commercialUse": true,
+    "kind": "texture",
+    "source": "procedural",
+    "sourceUrl": "design-pipeline:procedural/print@1",
+    "author": "design-pipeline procedural generator",
+    "retrieved": "2026-11-07",
+    "similarity": {
+      "reference": "litho-red",
+      "metric": "spectralDb",
+      "value": 3.494,
+      "natural": 2.206,
+      "between": 2.198,
+      "histogramL": {
+        "value": 3.695,
+        "natural": 0.956,
+        "between": 1.245,
+        "level": "unlike-reference"
+      },
+      "level": "unlike-reference",
+      "reason": "spectralDb: natural 2.206 vs between 2.198 (natural must be below 0.8 x between)"
+    },
+    "sha256": "08e17cb7cc536dd86b31e3109ca55a09d2b92cfa85f15a33645c0038e9c17a0c",
+    "bytes": 872737,
+    "width": 1000,
+    "height": 500,
+    "calibration": [
+      {
+        "id": "litho-red",
+        "origin": "builtin",
+        "file": "references/material-calibration.json#litho-red",
+        "sha256": "ccea1ee6470d83d6ca482bd62ac1f3c59deaff91a11d63e00f7cb2a3d9894a3d"
+      },
+      {
+        "id": "wove-cream",
+        "origin": "builtin",
+        "file": "references/material-calibration.json#wove-cream",
+        "sha256": "828dac2447814a0bc7e238fe3ccefa8c83b446b62b3965d93cf80327d892a5cd"
+      }
+    ],
+    "generator": {
+      "name": "print",
+      "version": 1,
+      "seed": 6,
+      "params": {
+        "profile": "litho-red",
+        "ink": "#E8922A",
+        "paper": "wove-cream",
+        "pxPerMm": 2,
+        "margin": 0,
+        "edgeRoughMm": 0,
+        "starvation": 0,
+        "pile": 0.25,
+        "strength": 1,
+        "misregisterMm": [
+          0,
+          0
+        ],
+        "second": null,
+        "width": 1000,
+        "height": 500
+      },
+      "profile": {
+        "id": "litho-red",
+        "origin": "builtin"
+      }
+    }
+  },
+  "generated/print-terra.png": {
+    "license": "generated",
+    "commercialUse": true,
+    "kind": "texture",
+    "source": "procedural",
+    "sourceUrl": "design-pipeline:procedural/print@1",
+    "author": "design-pipeline procedural generator",
+    "retrieved": "2026-11-07",
+    "similarity": {
+      "reference": "litho-red",
+      "metric": "spectralDb",
+      "value": 3.701,
+      "natural": 2.206,
+      "between": 2.198,
+      "histogramL": {
+        "value": 3.649,
+        "natural": 0.956,
+        "between": 1.245,
+        "level": "unlike-reference"
+      },
+      "level": "unlike-reference",
+      "reason": "spectralDb: natural 2.206 vs between 2.198 (natural must be below 0.8 x between)"
+    },
+    "sha256": "971b118a97dd51a5960e5d5a31fcd8defc1077f7d4fe6a086bb320b613b727ed",
+    "bytes": 1242762,
+    "width": 700,
+    "height": 1000,
+    "calibration": [
+      {
+        "id": "litho-red",
+        "origin": "builtin",
+        "file": "references/material-calibration.json#litho-red",
+        "sha256": "ccea1ee6470d83d6ca482bd62ac1f3c59deaff91a11d63e00f7cb2a3d9894a3d"
+      },
+      {
+        "id": "wove-cream",
+        "origin": "builtin",
+        "file": "references/material-calibration.json#wove-cream",
+        "sha256": "828dac2447814a0bc7e238fe3ccefa8c83b446b62b3965d93cf80327d892a5cd"
+      }
+    ],
+    "generator": {
+      "name": "print",
+      "version": 1,
+      "seed": 2,
+      "params": {
+        "profile": "litho-red",
+        "ink": "#B03D1C",
+        "paper": "wove-cream",
+        "pxPerMm": 2,
+        "margin": 0,
+        "edgeRoughMm": 0,
+        "starvation": 0,
+        "pile": 0.25,
+        "strength": 1,
+        "misregisterMm": [
+          0.6,
+          -0.4
+        ],
+        "second": "#E8922A",
+        "width": 700,
+        "height": 1000
+      },
+      "profile": {
+        "id": "litho-red",
+        "origin": "builtin"
+      }
+    }
+  },
+  "processed/colony-duotone.png": {
+    "license": "PD-USGov-NASA",
+    "commercialUse": false,
+    "kind": "photo",
+    "source": "owner-supplied",
+    "sourceUrl": "https://images.nasa.gov/details/ARC-1975-AC75-1086",
+    "author": "NASA Ames Research Center; artist Rick Guidice (1975-05-27, AC75-1086)",
+    "retrieved": "2026-11-07",
+    "title": "Interior of torus wheel (L-5) space colonization module",
+    "use": "magazine cover art slot",
+    "sha256": "ca4b2537bd387617764ab6ceb68cbd2336d4d3255c63265b0354e8a44825ab63",
+    "width": 1200,
+    "height": 802,
+    "calibration": [
+      {
+        "id": "wove-cream",
+        "origin": "builtin",
+        "file": "references/material-calibration.json#wove-cream",
+        "sha256": "828dac2447814a0bc7e238fe3ccefa8c83b446b62b3965d93cf80327d892a5cd"
+      }
+    ],
+    "derivedFrom": {
+      "file": "raw/nasa-arc-1975-ac75-1086-colony.png",
+      "sha256": "f49cd244f13e05ee4d8c7eeb9819cc5d5b862329404f945375ea577042ebd06c",
+      "operation": "process",
+      "effect": "duotone",
+      "version": 1,
+      "seed": 1,
+      "params": {
+        "inks": [
+          "#211E1B",
+          "#17555B"
+        ],
+        "angles": [
+          45,
+          75
+        ],
+        "periodPx": 5,
+        "paper": "wove-cream",
+        "misregisterMm": [
+          0.6,
+          -0.4
+        ],
+        "pxPerMm": 4,
+        "split": 0.55,
+        "contrast": 1.1
+      }
+    }
+  },
+  "processed/earthrise-duotone.png": {
+    "license": "PD-USGov-NASA",
+    "commercialUse": false,
+    "kind": "photo",
+    "source": "owner-supplied",
+    "sourceUrl": "https://images.nasa.gov/details/as17-152-23272",
+    "author": "NASA / JSC, Apollo 17 crew photograph (1972-12, AS17-152-23272)",
+    "retrieved": "2026-11-07",
+    "title": "Apollo 17, Earthrise over Moon",
+    "use": "travel poster art slot",
+    "sha256": "193438157387021dd87119d780dad8d4a91982cb3ead849513d5c7712cb080b5",
+    "width": 1200,
+    "height": 937,
+    "derivedFrom": {
+      "file": "raw/nasa-as17-152-23272-earthrise.png",
+      "sha256": "7bac0cf237e343e83d36c87804f02faf814e4f34c9837c7579c6b61c6892089a",
+      "operation": "process",
+      "effect": "duotone",
+      "version": 1,
+      "seed": 1,
+      "params": {
+        "inks": [
+          "#10191E",
+          "#E8922A"
+        ],
+        "angles": [
+          15,
+          75
+        ],
+        "periodPx": 5,
+        "paper": "#DCC9A8",
+        "misregisterMm": [
+          0.5,
+          0.3
+        ],
+        "pxPerMm": 4,
+        "split": 0.55,
+        "contrast": 1.1
+      }
+    }
+  },
+  "processed/gemini-diagram-copy.png": {
+    "license": "PD-USGov-NASA",
+    "commercialUse": false,
+    "kind": "photo",
+    "source": "owner-supplied",
+    "sourceUrl": "https://images.nasa.gov/details/s64-04925",
+    "author": "NASA / JSC (1964-09, S64-04925)",
+    "retrieved": "2026-11-07",
+    "title": "Diagram of Gemini spacecraft, re-entry communications experiment",
+    "use": "checklist craft slot",
+    "sha256": "c0ddd11348f5174d760c0f237df849f18b433dadf04e6e57e11752a9cbf0b953",
+    "width": 1000,
+    "height": 598,
+    "derivedFrom": {
+      "file": "raw/nasa-s64-04925-gemini-diagram.png",
+      "sha256": "5f89ae7e399395df103b12d976178da6574bec710dd7f1f22034e63c3154a8b5",
+      "operation": "process",
+      "effect": "photocopy",
+      "version": 1,
+      "seed": 1,
+      "params": {
+        "contrast": 2.2,
+        "threshold": 0.3,
+        "toner": 0.001,
+        "streaks": 0.2,
+        "bloomPx": 1.5,
+        "background": 0
+      }
+    }
+  },
+  "processed/gemini6-duotone.png": {
+    "license": "PD-USGov-NASA",
+    "commercialUse": false,
+    "kind": "photo",
+    "source": "owner-supplied",
+    "sourceUrl": "https://images.nasa.gov/details/s65-63898",
+    "author": "NASA / JSC, photographed from Gemini 7 (1965-12-15, S65-63898)",
+    "retrieved": "2026-11-07",
+    "title": "Gemini 6 spacecraft in orbit",
+    "use": "landing page",
+    "sha256": "a760c3f91a7f5ae4f666cd690e2c57a74d58211244c038a7edfe7369eec2ab5e",
+    "width": 900,
+    "height": 900,
+    "calibration": [
+      {
+        "id": "wove-cream",
+        "origin": "builtin",
+        "file": "references/material-calibration.json#wove-cream",
+        "sha256": "828dac2447814a0bc7e238fe3ccefa8c83b446b62b3965d93cf80327d892a5cd"
+      }
+    ],
+    "derivedFrom": {
+      "file": "raw/nasa-s65-63898-gemini6.png",
+      "sha256": "e466476cf9c8a48f84f5a3a90580a92e1038f3fadd5bbe42207d5a0fa07d2322",
+      "operation": "process",
+      "effect": "duotone",
+      "version": 1,
+      "seed": 2,
+      "params": {
+        "inks": [
+          "#211E1B",
+          "#17555B"
+        ],
+        "angles": [
+          45,
+          15
+        ],
+        "periodPx": 4,
+        "paper": "wove-cream",
+        "misregisterMm": [
+          0.4,
+          -0.4
+        ],
+        "pxPerMm": 4,
+        "split": 0.55,
+        "contrast": 1.1
+      }
+    }
+  },
+  "processed/launch-halftone.png": {
+    "license": "PD-USGov-NASA",
+    "commercialUse": false,
+    "kind": "photo",
+    "source": "owner-supplied",
+    "sourceUrl": "https://images.nasa.gov/details/6900556",
+    "author": "NASA / MSFC (1969-07-16, 6900556)",
+    "retrieved": "2026-11-07",
+    "title": "Saturn V launch of Apollo 11",
+    "use": "landing page hero",
+    "sha256": "4e1053ff7474836fb9f6e79809761828511bfd0dde7151b5819fafd0445e9707",
+    "width": 1200,
+    "height": 951,
+    "calibration": [
+      {
+        "id": "wove-cream",
+        "origin": "builtin",
+        "file": "references/material-calibration.json#wove-cream",
+        "sha256": "828dac2447814a0bc7e238fe3ccefa8c83b446b62b3965d93cf80327d892a5cd"
+      }
+    ],
+    "derivedFrom": {
+      "file": "raw/nasa-6900556-apollo11-launch.png",
+      "sha256": "45c839bc81aff0e1a4692c0460ead5ebeceb401a8547f3f359043e877175c65e",
+      "operation": "process",
+      "effect": "halftone",
+      "version": 1,
+      "seed": 1,
+      "params": {
+        "periodPx": 5,
+        "angleDeg": 45,
+        "shape": "round",
+        "mode": "am",
+        "ink": "#211E1B",
+        "paper": "wove-cream",
+        "contrast": 1.1,
+        "gamma": 1
+      }
+    }
+  },
+  "raw/nasa-6900556-apollo11-launch.png": {
+    "license": "PD-USGov-NASA",
+    "commercialUse": false,
+    "kind": "photo",
+    "source": "owner-supplied",
+    "sourceUrl": "https://images.nasa.gov/details/6900556",
+    "author": "NASA / MSFC (1969-07-16, 6900556)",
+    "retrieved": "2026-11-07",
+    "title": "Saturn V launch of Apollo 11",
+    "use": "landing page hero",
+    "sha256": "45c839bc81aff0e1a4692c0460ead5ebeceb401a8547f3f359043e877175c65e",
+    "bytes": 237322,
+    "width": 1200,
+    "height": 951
+  },
+  "raw/nasa-arc-1975-ac75-1086-colony.png": {
+    "license": "PD-USGov-NASA",
+    "commercialUse": false,
+    "kind": "photo",
+    "source": "owner-supplied",
+    "sourceUrl": "https://images.nasa.gov/details/ARC-1975-AC75-1086",
+    "author": "NASA Ames Research Center; artist Rick Guidice (1975-05-27, AC75-1086)",
+    "retrieved": "2026-11-07",
+    "title": "Interior of torus wheel (L-5) space colonization module",
+    "use": "magazine cover art slot",
+    "sha256": "f49cd244f13e05ee4d8c7eeb9819cc5d5b862329404f945375ea577042ebd06c",
+    "bytes": 1587275,
+    "width": 1200,
+    "height": 802
+  },
+  "raw/nasa-as17-152-23272-earthrise.png": {
+    "license": "PD-USGov-NASA",
+    "commercialUse": false,
+    "kind": "photo",
+    "source": "owner-supplied",
+    "sourceUrl": "https://images.nasa.gov/details/as17-152-23272",
+    "author": "NASA / JSC, Apollo 17 crew photograph (1972-12, AS17-152-23272)",
+    "retrieved": "2026-11-07",
+    "title": "Apollo 17, Earthrise over Moon",
+    "use": "travel poster art slot",
+    "sha256": "7bac0cf237e343e83d36c87804f02faf814e4f34c9837c7579c6b61c6892089a",
+    "bytes": 638838,
+    "width": 1200,
+    "height": 937
+  },
+  "raw/nasa-s64-04925-gemini-diagram.png": {
+    "license": "PD-USGov-NASA",
+    "commercialUse": false,
+    "kind": "photo",
+    "source": "owner-supplied",
+    "sourceUrl": "https://images.nasa.gov/details/s64-04925",
+    "author": "NASA / JSC (1964-09, S64-04925)",
+    "retrieved": "2026-11-07",
+    "title": "Diagram of Gemini spacecraft, re-entry communications experiment",
+    "use": "checklist craft slot",
+    "sha256": "5f89ae7e399395df103b12d976178da6574bec710dd7f1f22034e63c3154a8b5",
+    "bytes": 254542,
+    "width": 1000,
+    "height": 598
+  },
+  "raw/nasa-s65-63898-gemini6.png": {
+    "license": "PD-USGov-NASA",
+    "commercialUse": false,
+    "kind": "photo",
+    "source": "owner-supplied",
+    "sourceUrl": "https://images.nasa.gov/details/s65-63898",
+    "author": "NASA / JSC, photographed from Gemini 7 (1965-12-15, S65-63898)",
+    "retrieved": "2026-11-07",
+    "title": "Gemini 6 spacecraft in orbit",
+    "use": "landing page",
+    "sha256": "e466476cf9c8a48f84f5a3a90580a92e1038f3fadd5bbe42207d5a0fa07d2322",
+    "bytes": 774198,
+    "width": 900,
+    "height": 900
+  }
+}

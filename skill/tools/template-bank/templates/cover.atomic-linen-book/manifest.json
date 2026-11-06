@@ -1,0 +1,117 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "cover.atomic-linen-book",
+  "family": "cover",
+  "style": "atomic-age",
+  "title": "Linen book cover: cloth weave, one swooping line (or a loop round the title) with a rocket glyph at its head, three stacked condensed caps lines",
+  "use": "Book and report covers, manuals, data books, programme booklets.",
+  "canvas": {
+    "width": 1200,
+    "height": 1800
+  },
+  "sizes": [
+    "1200x1800",
+    "600x900"
+  ],
+  "aspect": "2:3",
+  "accent": {
+    "roles": [
+      "vermilion"
+    ],
+    "maxShare": 0.02
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "cloth": {
+      "type": "enum",
+      "values": [
+        "linen",
+        "charcoal"
+      ],
+      "default": "linen",
+      "class": "decoration",
+      "note": "cloth colour"
+    },
+    "swoop": {
+      "type": "enum",
+      "values": [
+        "line",
+        "loop"
+      ],
+      "default": "line",
+      "class": "proportion",
+      "note": "one line from the lower left, or a loop round the title"
+    },
+    "swoop_ink": {
+      "type": "enum",
+      "values": [
+        "ink",
+        "teal",
+        "vermilion"
+      ],
+      "default": "ink",
+      "class": "decoration",
+      "note": "the line's ink on pale linen"
+    }
+  },
+  "slots": {
+    "publisher_mark": {
+      "kind": "image",
+      "ground": "linen",
+      "note": "mark slot for the owner's logo, insignia or emblem file (PNG or SVG with alpha), placed with fit contain; 0.09 W x 0.06 H, centred at the foot; keep clear space of half its height; never drawn by the template"
+    },
+    "title_1": {
+      "kind": "text",
+      "default": "ORBITAL",
+      "maxChars": 14,
+      "font": "display",
+      "title": true
+    },
+    "title_2": {
+      "kind": "text",
+      "default": "MECHANICS",
+      "maxChars": 14,
+      "font": "display",
+      "title": true
+    },
+    "title_3": {
+      "kind": "text",
+      "default": "FIELD BOOK",
+      "maxChars": 14,
+      "font": "display",
+      "title": true
+    },
+    "author": {
+      "kind": "text",
+      "default": "M. A. HOLLOWAY",
+      "maxChars": 28,
+      "font": "label"
+    }
+  },
+  "relations": [
+    "Title block left aligned, three lines at 1.02 of the size, the widest line 0.62 W.",
+    "One band 0.045 W wide; the rocket glyph 0.1 W at the head of the dark line."
+  ],
+  "decoration": [
+    "linen weave, the pale band, the dark line and the classic rocket glyph (line), or the loop with a hairline and a swept glyph (loop)"
+  ],
+  "provenance": {
+    "corpus": "atomic-age kit (Halcyon Orbital Lines): our own original world in the atomic-age grammar, examples/atomic-age-kit",
+    "experiment": "styles/atomic-age/style.json provenance (owner-supplied mood board measured privately; never shipped)",
+    "accessed": "2026-11-07",
+    "method": "k-means palette (6 clusters, OKLab-free RGB on a 160 px reduction), light and dark shares, visual-weight centre and proportions read on the board's linen panel",
+    "sampleIds": [
+      "moodboard/linen"
+    ],
+    "measured": [
+      "linen #DDD9C2 / #E4E0CA, dark cloth #282526 16%",
+      "band width about 0.045 W; the rocket glyph about 0.1 W"
+    ],
+    "summary": "atomic-age linen-book"
+  }
+}

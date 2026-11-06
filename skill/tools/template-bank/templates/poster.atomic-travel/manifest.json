@@ -1,0 +1,180 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "poster.atomic-travel",
+  "family": "poster",
+  "style": "atomic-age",
+  "title": "Travel / space poster: a dark sky, a planet limb with halftone, a swept rocket (or satellite) glyph on a diagonal, a slanted condensed title, a vermilion band",
+  "use": "Travel and event posters, launch announcements, season key art.",
+  "canvas": {
+    "width": 1600,
+    "height": 2400
+  },
+  "sizes": [
+    "1600x2400",
+    "800x1200",
+    "1200x1800"
+  ],
+  "aspect": "2:3",
+  "accent": {
+    "roles": [
+      "vermilion"
+    ],
+    "maxShare": 0.36
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "ground": {
+      "type": "enum",
+      "values": [
+        "navy",
+        "ink",
+        "teal"
+      ],
+      "default": "navy",
+      "class": "decoration",
+      "note": "sky ground"
+    },
+    "title_ink": {
+      "type": "enum",
+      "values": [
+        "mustard",
+        "paper",
+        "vermilion"
+      ],
+      "default": "mustard",
+      "class": "decoration",
+      "note": "vermilion only on ink (3:1)"
+    },
+    "planet": {
+      "type": "enum",
+      "values": [
+        "vermilion",
+        "mustard",
+        "teal"
+      ],
+      "default": "vermilion",
+      "class": "decoration",
+      "note": "planet limb ink"
+    },
+    "vehicle": {
+      "type": "enum",
+      "values": [
+        "rocket",
+        "satellite"
+      ],
+      "default": "rocket",
+      "class": "decoration",
+      "note": "flat glyph on the diagonal"
+    },
+    "art": {
+      "type": "enum",
+      "values": [
+        "drawn",
+        "slot"
+      ],
+      "default": "drawn",
+      "class": "decoration",
+      "note": "slot: a period scene image replaces the glyph"
+    },
+    "italic": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "slanted title"
+    },
+    "halftone": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "code dot screen on the planet"
+    },
+    "misregister": {
+      "default": 4,
+      "min": 0,
+      "max": 10,
+      "class": "rhythm",
+      "note": "offset of the second plate"
+    },
+    "star_seed": {
+      "type": "integer",
+      "default": 7,
+      "min": 1,
+      "max": 999,
+      "class": "rhythm",
+      "note": "star placement"
+    }
+  },
+  "slots": {
+    "art": {
+      "kind": "image",
+      "ground": "navy",
+      "note": "period scene (launch, Earth, Moon), 2:1.8; from a public-domain period source or a task sheet",
+      "fit": "cover"
+    },
+    "emblem": {
+      "kind": "image",
+      "ground": "navy",
+      "note": "mark slot for the owner's logo, insignia or emblem file (PNG or SVG with alpha), placed with fit contain; square, 0.13 of the width, top right; keep clear space of 0.25 of its side; never drawn by the template"
+    },
+    "kicker": {
+      "kind": "text",
+      "default": "HALCYON ORBITAL LINES",
+      "maxChars": 30,
+      "font": "geo"
+    },
+    "title": {
+      "kind": "text",
+      "default": "SEE THE MOON",
+      "maxChars": 16,
+      "font": "display",
+      "title": true
+    },
+    "subtitle": {
+      "kind": "text",
+      "default": "Weekly departures from Pad Nine",
+      "maxChars": 40,
+      "font": "geo",
+      "lines": 2
+    },
+    "band": {
+      "kind": "text",
+      "default": "A NEW ERA OF TRAVEL",
+      "maxChars": 36,
+      "font": "geo"
+    },
+    "date": {
+      "kind": "text",
+      "default": "SEASON OF 1961",
+      "maxChars": 18,
+      "font": "display"
+    }
+  },
+  "relations": [
+    "Title top left at the margin (0.055 W), up to 0.17 of H, slanted; kicker and subtitle on the same left line.",
+    "Planet limb: a disc of radius 1.05 W centred below the frame (0.62 W); the rocket crosses at -32 degrees, 0.62 W long, trail to the lower left.",
+    "Band 0.1 of H at the foot, vermilion, charcoal tracked caps."
+  ],
+  "decoration": [
+    "seeded four-point stars, the planet with a code dot screen and a misregistered plate, a dashed orbit ellipse, the rocket or satellite glyph"
+  ],
+  "provenance": {
+    "corpus": "atomic-age kit (Halcyon Orbital Lines): our own original world in the atomic-age grammar, examples/atomic-age-kit",
+    "experiment": "styles/atomic-age/style.json provenance (owner-supplied mood board measured privately; never shipped)",
+    "accessed": "2026-11-07",
+    "method": "k-means palette (6 clusters, OKLab-free RGB on a 160 px reduction), light and dark shares, visual-weight centre and proportions read on the board's satellite_poster, book_cover_dark, shuttle_mars panel",
+    "sampleIds": [
+      "moodboard/satellite_poster"
+    ],
+    "measured": [
+      "dark 40-65% (navy #283C44 / #141F27, charcoal #292727)",
+      "vermilion 13-29% (planet, band, title)",
+      "visual-weight centre (0.48, 0.46)"
+    ],
+    "summary": "atomic-age travel"
+  }
+}

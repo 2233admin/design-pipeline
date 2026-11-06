@@ -1,0 +1,109 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "poster.atomic-orbit-plate",
+  "family": "poster",
+  "style": "atomic-age",
+  "title": "Orbital-diagram plate (dark): white lines on black, a faint grid, a celestial sphere, a hatched body cut by the edge, trajectories, a formula, chalk labels, a ruled plate title",
+  "use": "Section openers, diagrams, data plates, end papers, dark backgrounds with notation.",
+  "canvas": {
+    "width": 1600,
+    "height": 1800
+  },
+  "sizes": [
+    "1600x1800",
+    "800x900"
+  ],
+  "aspect": "8:9",
+  "accent": {
+    "roles": [],
+    "maxShare": 0
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "grid": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "faint grid"
+    },
+    "star_seed": {
+      "type": "integer",
+      "default": 11,
+      "min": 1,
+      "max": 999,
+      "class": "rhythm",
+      "note": "star placement"
+    }
+  },
+  "slots": {
+    "label_sphere": {
+      "kind": "text",
+      "default": "celestial sphere",
+      "maxChars": 22,
+      "font": "hand"
+    },
+    "label_top": {
+      "kind": "text",
+      "default": "precession circle",
+      "maxChars": 22,
+      "font": "hand"
+    },
+    "formula": {
+      "kind": "text",
+      "default": "Ug = -Gm1m2/r",
+      "maxChars": 22,
+      "font": "mono"
+    },
+    "label_arrow": {
+      "kind": "text",
+      "default": "escape velocity",
+      "maxChars": 22,
+      "font": "hand"
+    },
+    "distance": {
+      "kind": "text",
+      "default": "35,786 km",
+      "maxChars": 14,
+      "font": "mono"
+    },
+    "plate": {
+      "kind": "text",
+      "default": "PLATE IV · TRANSLUNAR GEOMETRY",
+      "maxChars": 34,
+      "font": "geo",
+      "title": true
+    },
+    "caption": {
+      "kind": "text",
+      "default": "Halcyon Survey Office, 1961",
+      "maxChars": 36,
+      "font": "mono"
+    }
+  },
+  "relations": [
+    "Ground #1B1D21 (90% dark), every line chalk; grid 0.0625 W.",
+    "Body: a circle of radius 0.46 W centred at (0.38 W, H), its rim hatched."
+  ],
+  "decoration": [
+    "grid, sphere, body, trajectories, dotted escape line, moon, stars, arrow, tag frame"
+  ],
+  "provenance": {
+    "corpus": "atomic-age kit (Halcyon Orbital Lines): our own original world in the atomic-age grammar, examples/atomic-age-kit",
+    "experiment": "styles/atomic-age/style.json provenance (owner-supplied mood board measured privately; never shipped)",
+    "accessed": "2026-11-07",
+    "method": "k-means palette (6 clusters, OKLab-free RGB on a 160 px reduction), light and dark shares, visual-weight centre and proportions read on the board's chalk panel",
+    "sampleIds": [
+      "moodboard/chalk"
+    ],
+    "measured": [
+      "dark 90%, ground #1D1F22, chalk #93938F-#ECE8DC",
+      "no chroma"
+    ],
+    "summary": "atomic-age orbit-plate"
+  }
+}

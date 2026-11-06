@@ -1,0 +1,228 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "doc.atomic-flight-plan",
+  "family": "doc",
+  "style": "atomic-age",
+  "title": "Flight-plan page: a two-hour time ladder (a tick a minute, a long one every ten), bracket and dotted rails, typed events at their minute, a rest period, a boxed checklist, an edition table, punched holes",
+  "use": "Schedules, run sheets, timetables, production plans and mission timelines.",
+  "canvas": {
+    "width": 1700,
+    "height": 2200
+  },
+  "sizes": [
+    "1700x2200",
+    "1275x1650",
+    "850x1100"
+  ],
+  "aspect": "17:22",
+  "accent": {
+    "roles": [
+      "ballpoint",
+      "stamp"
+    ],
+    "maxShare": 0.01
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "start_hour": {
+      "type": "integer",
+      "default": 40,
+      "min": 0,
+      "max": 299,
+      "class": "proportion",
+      "note": "the first hour on the ladder"
+    },
+    "period_end": {
+      "type": "integer",
+      "default": 56,
+      "min": 30,
+      "max": 70,
+      "class": "proportion",
+      "note": "minute where the long period ends"
+    },
+    "events": {
+      "type": "integer",
+      "default": 5,
+      "min": 3,
+      "max": 5,
+      "class": "proportion",
+      "note": "typed events after the period"
+    },
+    "holes": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "three punched holes along the top"
+    },
+    "annotations": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "unsigned ballpoint ticks and notes"
+    }
+  },
+  "slots": {
+    "paper": {
+      "kind": "image",
+      "ground": "sheet",
+      "note": "aged sheet from materials generate --generator paper (ground layer: sampled for contrast); empty draws the flat ink",
+      "layer": "ground"
+    },
+    "code": {
+      "kind": "text",
+      "default": "OPS-2",
+      "maxChars": 8,
+      "font": "monob"
+    },
+    "header": {
+      "kind": "text",
+      "default": "FLIGHT PLAN",
+      "maxChars": 16,
+      "font": "geo",
+      "title": true
+    },
+    "zone_time": {
+      "kind": "text",
+      "default": "0815 GMT",
+      "maxChars": 10,
+      "font": "mono"
+    },
+    "tick_{i}": {
+      "kind": "text",
+      "derived": true,
+      "font": "mono",
+      "maxChars": 6,
+      "note": "ladder labels from start_hour"
+    },
+    "net": {
+      "kind": "text",
+      "default": "RELAY",
+      "maxChars": 6,
+      "font": "mono",
+      "note": "vertical letters in the rail"
+    },
+    "period": {
+      "kind": "text",
+      "default": "REST PERIOD (8 HOURS)",
+      "maxChars": 30,
+      "font": "mono",
+      "lines": 2
+    },
+    "event_{i}": {
+      "kind": "text",
+      "default": [
+        "V22 - SEND STATE VECTOR TO PAD",
+        "WATER TANK CHANGE NO. 4 (3 INTO B, STOW 4 IN C2)",
+        "REPORT CABIN TEMP AND PRESSURE",
+        "MEAL PERIOD - ALL",
+        "O2 CELL PURGE"
+      ],
+      "maxChars": 60,
+      "font": "mono",
+      "lines": 2
+    },
+    "box_title": {
+      "kind": "text",
+      "default": "POST SLEEP",
+      "maxChars": 14,
+      "font": "mono"
+    },
+    "box_line_{i}": {
+      "kind": "text",
+      "default": [
+        "LOG ATTITUDE",
+        "CREW STATUS",
+        "CYCLE FANS",
+        "ALIGN GYROS",
+        "CONSUMABLES",
+        "SELECT NORMAL"
+      ],
+      "maxChars": 13,
+      "font": "mono"
+    },
+    "note": {
+      "kind": "text",
+      "default": "08:41 ok",
+      "maxChars": 14,
+      "font": "hand",
+      "note": "unsigned"
+    },
+    "margin_note": {
+      "kind": "text",
+      "default": "check",
+      "maxChars": 14,
+      "font": "hand",
+      "note": "unsigned"
+    },
+    "side_{i}": {
+      "kind": "text",
+      "default": [
+        "TARGET LOAD",
+        "UPLINK",
+        "STATE VECTOR"
+      ],
+      "maxChars": 16,
+      "font": "mono"
+    },
+    "col_{i}": {
+      "kind": "text",
+      "derived": true,
+      "font": "geo",
+      "maxChars": 8,
+      "note": "table heads"
+    },
+    "cell_{i}": {
+      "kind": "text",
+      "default": [
+        "3-41",
+        "HALCYON 7",
+        "FINAL",
+        "JUNE 2, 1961",
+        "40:00-42:00",
+        "3/27"
+      ],
+      "maxChars": 14,
+      "font": "mono"
+    },
+    "form": {
+      "kind": "text",
+      "default": "FORM OP-7 (MAY 61)",
+      "maxChars": 24,
+      "font": "mono"
+    },
+    "branch": {
+      "kind": "text",
+      "default": "FLIGHT PLANNING SECTION",
+      "maxChars": 30,
+      "font": "geo"
+    }
+  },
+  "relations": [
+    "Ladder rail at 0.32 W from 0.115 to 0.83 of H: 120 ticks, long every ten, labels right aligned left of the rail.",
+    "Bracket rail 0.37 W, network rail 0.395 W with vertical letters, dotted rail 0.42 W; events from 0.44 W.",
+    "Edition table 0.84 W wide at 0.865 H, six columns."
+  ],
+  "decoration": [
+    "ladder ticks, rails, period line, checklist box, ballpoint ticks, table rules, holes"
+  ],
+  "provenance": {
+    "corpus": "atomic-age kit (Halcyon Orbital Lines): our own original world in the atomic-age grammar, examples/atomic-age-kit",
+    "experiment": "styles/atomic-age/style.json provenance (owner-supplied mood board measured privately; never shipped)",
+    "accessed": "2026-11-07",
+    "method": "k-means palette (6 clusters, OKLab-free RGB on a 160 px reduction), light and dark shares, visual-weight centre and proportions read on the board's flightplan, flightplan_small panel",
+    "sampleIds": [
+      "moodboard/flightplan"
+    ],
+    "measured": [
+      "sheet #E9E6E0 / #FEFEFE, ink #0B0B0B 6%; no chroma",
+      "two hours to a page, 120 ticks, labels every ten minutes",
+      "table: MISSION | EDITION | DATE | TIME | DAY/REV | PAGE"
+    ],
+    "summary": "atomic-age flight-plan"
+  }
+}

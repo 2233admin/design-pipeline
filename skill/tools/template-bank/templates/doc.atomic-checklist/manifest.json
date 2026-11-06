@@ -1,0 +1,228 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "doc.atomic-checklist",
+  "family": "doc",
+  "style": "atomic-age",
+  "title": "Checklist page: five punched holes, a centred title, section bars, numbered steps with dotted leaders, values and boxes, an attitude diagram, a rubber stamp",
+  "use": "Checklists, procedures, inspection sheets, onboarding steps.",
+  "canvas": {
+    "width": 1700,
+    "height": 2200
+  },
+  "sizes": [
+    "1700x2200",
+    "1275x1650",
+    "850x1100"
+  ],
+  "aspect": "17:22",
+  "accent": {
+    "roles": [
+      "ballpoint",
+      "stamp"
+    ],
+    "maxShare": 0.01
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "sections": {
+      "type": "integer",
+      "default": 3,
+      "min": 2,
+      "max": 3,
+      "class": "proportion",
+      "note": "section bars"
+    },
+    "rows": {
+      "type": "integer",
+      "default": 4,
+      "min": 3,
+      "max": 4,
+      "class": "proportion",
+      "note": "steps per section"
+    },
+    "checked": {
+      "type": "integer",
+      "default": 5,
+      "min": 0,
+      "max": 12,
+      "class": "decoration",
+      "note": "ticked boxes"
+    },
+    "craft": {
+      "type": "enum",
+      "values": [
+        "glyph",
+        "slot"
+      ],
+      "default": "glyph",
+      "class": "decoration",
+      "note": "slot: a line-art craft image over the diagram"
+    },
+    "holes": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "five holes along the top"
+    },
+    "stamp": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "rubber stamp"
+    },
+    "annotations": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "ballpoint ticks"
+    }
+  },
+  "slots": {
+    "paper": {
+      "kind": "image",
+      "ground": "sheet",
+      "note": "aged sheet from materials generate --generator paper (ground layer: sampled for contrast); empty draws the flat ink",
+      "layer": "ground"
+    },
+    "craft": {
+      "kind": "image",
+      "ground": "sheet",
+      "note": "line-art spacecraft drawing (period technical illustration), transparent; never drawn"
+    },
+    "title": {
+      "kind": "text",
+      "default": "STATION APPROACH CHECKLIST",
+      "maxChars": 36,
+      "font": "geo",
+      "title": true
+    },
+    "card_id": {
+      "kind": "text",
+      "default": "CARD 3-55",
+      "maxChars": 14,
+      "font": "mono"
+    },
+    "phase": {
+      "kind": "text",
+      "default": "RENDEZVOUS PHASE",
+      "maxChars": 22,
+      "font": "mono"
+    },
+    "section_{i}": {
+      "kind": "text",
+      "default": [
+        "STATION KEEPING",
+        "PRE-APPROACH",
+        "BRAKING"
+      ],
+      "maxChars": 24,
+      "font": "monob"
+    },
+    "n_{i}": {
+      "kind": "text",
+      "derived": true,
+      "font": "mono",
+      "maxChars": 2,
+      "note": "step numbers"
+    },
+    "item_{i}": {
+      "kind": "text",
+      "default": [
+        "CAPTURE LATCH - ARM",
+        "RADAR - LOCK",
+        "RANGE RATE - CHECK",
+        "ATTITUDE HOLD - ON",
+        "DOCKING LIGHT - ON",
+        "THRUST - 2 SEC BURN",
+        "RANGE - LOG",
+        "PITCH - 20 DOWN",
+        "RATE - NULL",
+        "CLOSING - 1 FT/S",
+        "TARGET - CENTRE",
+        "PROBE - EXTEND"
+      ],
+      "maxChars": 26,
+      "font": "mono"
+    },
+    "value_{i}": {
+      "kind": "text",
+      "default": [
+        "ARMED",
+        "TRACK",
+        "-12 FT/S",
+        "AUTO",
+        "BRIGHT",
+        "T+0",
+        "1.2 NM",
+        "20°",
+        "0.0",
+        "1.0",
+        "+/-2°",
+        "OUT"
+      ],
+      "maxChars": 9,
+      "font": "mono"
+    },
+    "axis_{i}": {
+      "kind": "text",
+      "default": [
+        "SUN 60 DEG",
+        "LOS EARTH",
+        "LOCAL HORIZONTAL"
+      ],
+      "maxChars": 18,
+      "font": "mono"
+    },
+    "stamp": {
+      "kind": "text",
+      "default": "APPROVED",
+      "maxChars": 10,
+      "font": "geo"
+    },
+    "stamp_date": {
+      "kind": "text",
+      "default": "MAY 4 1961",
+      "maxChars": 12,
+      "font": "monob"
+    },
+    "page_id": {
+      "kind": "text",
+      "default": "3-55a",
+      "maxChars": 10,
+      "font": "mono"
+    },
+    "revision": {
+      "kind": "text",
+      "default": "Revision A",
+      "maxChars": 14,
+      "font": "mono"
+    }
+  },
+  "relations": [
+    "Five holes on the top edge at 0.1-0.9 W; title centred at 0.085 H.",
+    "Rows 0.031 H; a dotted leader from the item to its value; boxes at the right margin.",
+    "Diagram band from 0.715 H: a shaded body (code dot screen), axis lines, the craft."
+  ],
+  "decoration": [
+    "holes, section bars, leaders, boxes, ticks, diagram lines, stamp frame"
+  ],
+  "provenance": {
+    "corpus": "atomic-age kit (Halcyon Orbital Lines): our own original world in the atomic-age grammar, examples/atomic-age-kit",
+    "experiment": "styles/atomic-age/style.json provenance (owner-supplied mood board measured privately; never shipped)",
+    "accessed": "2026-11-07",
+    "method": "k-means palette (6 clusters, OKLab-free RGB on a 160 px reduction), light and dark shares, visual-weight centre and proportions read on the board's lunar_orbit, flightplan_small panel",
+    "sampleIds": [
+      "moodboard/lunar_orbit"
+    ],
+    "measured": [
+      "sheet #FEFEFE 73%, ink 7.5%",
+      "five holes along the top edge (ring binder)"
+    ],
+    "summary": "atomic-age checklist"
+  }
+}

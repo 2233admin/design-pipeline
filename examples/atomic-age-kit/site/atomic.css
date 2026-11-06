@@ -1,0 +1,44 @@
+/* atomic-age kit: tokens and parts shared by the print-set sheet and the landing page */
+@font-face { font-family: "League Gothic"; font-weight: 400; src: url("../fonts/LeagueGothic-Regular.woff") format("woff"); }
+@font-face { font-family: "Jost"; font-weight: 500; src: url("../fonts/Jost-Medium.woff") format("woff"); }
+@font-face { font-family: "Jost"; font-weight: 700; src: url("../fonts/Jost-Bold.woff") format("woff"); }
+@font-face { font-family: "Courier Prime"; font-weight: 400; src: url("../fonts/CourierPrime-Regular.woff") format("woff"); }
+@font-face { font-family: "Courier Prime"; font-weight: 700; src: url("../fonts/CourierPrime-Bold.woff") format("woff"); }
+@font-face { font-family: "Caveat"; font-weight: 600; src: url("../fonts/Caveat-SemiBold.woff") format("woff"); }
+
+:root {
+  --paper: #EAD5B0; --card: #F6EBC8; --sheet: #F2EFE8; --ink: #211E1B; --teal: #17555B;
+  --vermilion: #C4421D; --rust: #A8360F; --mustard: #E8922A; --navy: #1F3640; --night: #1B1D21;
+  --chalk: #ECE8DC; --line: #F3E3C6; --stamp: #B5322A; --ballpoint: #2A4A9C;
+  --display: "League Gothic", "Noto Sans SC", sans-serif;
+  --geo: "Jost", "Noto Sans SC", sans-serif;
+  --mono: "Courier Prime", "Noto Sans Mono", monospace;
+  --hand: "Caveat", cursive;
+  --m: clamp(20px, 5.5vw, 88px);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--paper); color: var(--ink); font-family: var(--geo); font-weight: 500; font-size: 18px; line-height: 1.45; }
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; }
+.mono { font-family: var(--mono); font-weight: 400; }
+.display { font-family: var(--display); font-weight: 400; line-height: 0.92; letter-spacing: -0.005em; }
+.tracked { font-family: var(--geo); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+.rust { color: var(--rust); }
+.teal { color: var(--teal); }
+.credit { font-family: var(--mono); font-size: 13px; }
+
+/* the print-set sheet */
+.sheet { padding: 48px var(--m) 72px; max-width: 1760px; margin: 0 auto; }
+.sheet-head { display: grid; grid-template-columns: 1fr auto; align-items: end; border-bottom: 4px solid var(--ink); padding-bottom: 14px; margin-bottom: 36px; }
+.sheet-head h1 { margin: 0; font-size: clamp(64px, 9vw, 150px); }
+.sheet-head h1 span { color: var(--vermilion); }
+.sheet-head p { margin: 0; text-align: right; }
+.grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 36px 28px; align-items: start; }
+.grid figure { margin: 0; }
+.grid figcaption { margin-top: 10px; font-size: 15px; line-height: 1.4; }
+.grid figcaption b { display: block; font-family: var(--geo); font-weight: 700; letter-spacing: 0.12em; font-size: 13px; text-transform: uppercase; color: var(--teal); }
+.w3 { grid-column: span 3; } .w4 { grid-column: span 4; } .w5 { grid-column: span 5; } .w6 { grid-column: span 6; } .w7 { grid-column: span 7; } .w8 { grid-column: span 8; }
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.sheet-foot { margin-top: 48px; border-top: 2px solid var(--ink); padding-top: 14px; display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; font-size: 14px; }
+@media (max-width: 760px) { .grid > * { grid-column: span 12; } .sheet-head { grid-template-columns: 1fr; } .sheet-head p { text-align: left; } .compare { grid-template-columns: 1fr; } }

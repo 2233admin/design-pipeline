@@ -1,0 +1,196 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "cover.atomic-magazine",
+  "family": "cover",
+  "style": "atomic-age",
+  "title": "Magazine cover: a two-ink condensed masthead at 0.17 of the height, a tracked line, a contents column, a sun disc, an orbit and a Googie scene slot on cream",
+  "use": "Magazine and zine covers, issue announcements, catalogue fronts.",
+  "canvas": {
+    "width": 1500,
+    "height": 2000
+  },
+  "sizes": [
+    "1500x2000",
+    "750x1000",
+    "1200x1600"
+  ],
+  "aspect": "3:4",
+  "accent": {
+    "roles": [
+      "vermilion"
+    ],
+    "maxShare": 0.08
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "items": {
+      "type": "integer",
+      "default": 4,
+      "min": 3,
+      "max": 4,
+      "class": "proportion",
+      "note": "contents entries"
+    },
+    "misregister": {
+      "default": 3,
+      "min": 0,
+      "max": 8,
+      "class": "rhythm",
+      "note": "offset of the mustard plate behind the sun (units at 1500 wide)"
+    },
+    "halftone": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "a code dot screen on the sun"
+    },
+    "starburst": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "the starburst top right"
+    }
+  },
+  "slots": {
+    "paper": {
+      "kind": "image",
+      "ground": "paper",
+      "note": "aged sheet from materials generate --generator paper (ground layer: sampled for contrast); empty draws the flat ink",
+      "layer": "ground"
+    },
+    "art": {
+      "kind": "image",
+      "ground": "paper",
+      "note": "Googie or period scene, 3:2, from a public-domain period source or a task sheet; never drawn",
+      "fit": "cover"
+    },
+    "emblem": {
+      "kind": "image",
+      "ground": "paper",
+      "note": "mark slot for the owner's logo, insignia or emblem file (PNG or SVG with alpha), placed with fit contain; square, 0.07 of the width; keep clear space of 0.25 of its side; nothing of the cover inside it; never drawn by the template"
+    },
+    "kicker": {
+      "kind": "text",
+      "default": "the",
+      "maxChars": 4,
+      "font": "display"
+    },
+    "masthead_a": {
+      "kind": "text",
+      "default": "orbit",
+      "maxChars": 7,
+      "font": "display",
+      "title": true,
+      "note": "teal half"
+    },
+    "masthead_b": {
+      "kind": "text",
+      "default": "ville",
+      "maxChars": 7,
+      "font": "display",
+      "title": true,
+      "note": "vermilion half"
+    },
+    "masthead_c": {
+      "kind": "text",
+      "default": "GAZETTE",
+      "maxChars": 10,
+      "font": "geo",
+      "title": true
+    },
+    "tagline": {
+      "kind": "text",
+      "default": "THE MAGAZINE OF THE DAY AFTER TOMORROW",
+      "maxChars": 44,
+      "font": "label"
+    },
+    "date": {
+      "kind": "text",
+      "default": "JUNE 1962",
+      "maxChars": 12,
+      "font": "display"
+    },
+    "price": {
+      "kind": "text",
+      "default": "35c",
+      "maxChars": 5,
+      "font": "display"
+    },
+    "item_{i}": {
+      "kind": "text",
+      "default": [
+        "CITIES IN THE SKY",
+        "ATOMIC KITCHENS",
+        "ORBITAL HOLIDAYS",
+        "THE ROBOT BUTLER"
+      ],
+      "maxChars": 20,
+      "font": "display",
+      "lines": 2
+    },
+    "deck_{i}": {
+      "kind": "text",
+      "default": [
+        "Towers above the clouds",
+        "Cooking at the speed of light",
+        "Two weeks on the lunar lido",
+        "Meet the help of 1975"
+      ],
+      "maxChars": 34,
+      "font": "label",
+      "lines": 2
+    },
+    "page_{i}": {
+      "kind": "text",
+      "default": [
+        "Page 56",
+        "Page 18",
+        "Page 32",
+        "Page 44"
+      ],
+      "maxChars": 9,
+      "font": "label"
+    },
+    "plus": {
+      "kind": "text",
+      "default": "PLUS:",
+      "maxChars": 5,
+      "font": "display"
+    },
+    "plus_line": {
+      "kind": "text",
+      "default": "• JET-AGE FURNITURE  • DESERT MODERN  • ATOMIC ART",
+      "maxChars": 52,
+      "font": "label"
+    }
+  },
+  "relations": [
+    "Masthead ink 0.17 of the height, two inks in one word (teal then vermilion), set tight (-10).",
+    "Contents column 0.2 of the width at the left margin (0.055), entries alternating teal and vermilion with a rule under each.",
+    "Sun disc 0.216 of the width at (0.80, 0.42), an orbit circle of radius 0.31 W through it, a starburst at (0.85, 0.215)."
+  ],
+  "decoration": [
+    "teal and charcoal blocks, the sun with a code dot screen and a misregistered mustard plate, a small teal disc, the orbit with crosshair ticks, a mobile of three poles, the starburst"
+  ],
+  "provenance": {
+    "corpus": "atomic-age kit (Halcyon Orbital Lines): our own original world in the atomic-age grammar, examples/atomic-age-kit",
+    "experiment": "styles/atomic-age/style.json provenance (owner-supplied mood board measured privately; never shipped)",
+    "accessed": "2026-11-07",
+    "method": "k-means palette (6 clusters, OKLab-free RGB on a 160 px reduction), light and dark shares, visual-weight centre and proportions read on the board's magazine panel",
+    "sampleIds": [
+      "moodboard/magazine"
+    ],
+    "measured": [
+      "masthead ink 0.16-0.18 of H, the cool half teal #155056, the hot half vermilion #B33E10",
+      "cream #E6CBA4 50.8% of the cover, dark 10.1%, chroma>30 7.8%",
+      "sun disc diameter 0.216 W, contents column 0.16 W, left margin 0.054 W",
+      "visual-weight centre (0.49, 0.54)"
+    ],
+    "summary": "atomic-age magazine"
+  }
+}

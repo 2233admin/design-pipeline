@@ -59,10 +59,23 @@ function advanceEm(ch, font = {}) {
   return value;
 }
 
+// Advance tables of faces a style pack embeds (read from the font's hmtx, plus 1 percent). They apply
+// only to text whose first family is one of these faces at the registered weight and whose file is
+// embedded in the same SVG (@font-face), so the browser cannot substitute a wider face; any other text,
+// and any character the table lacks, keeps the calibrated model above. A condensed display face is
+// then measured at its own width instead of the sans model's (about twice as wide).
+const FACE_ADVANCES = new Map();
+const faceKey = (family, weight) => `${String(family).toLowerCase()}|${Number(weight)}`;
+function registerFaceAdvances(family, weight, table) {
+  FACE_ADVANCES.set(faceKey(family, weight), new Map(Object.entries(table).map(([ch, em]) => [ch, Number(em)])));
+}
+function faceAdvances(family, weight) { return FACE_ADVANCES.get(faceKey(family, weight)) || null; }
+
 function textWidth(text, size, letterSpacing = 0, font = {}) {
   const chars = [...String(text)];
   if (!chars.length) return 0;
-  return chars.reduce((sum, ch) => sum + advanceEm(ch, font) * size, 0) + letterSpacing * (chars.length - 1);
+  const face = font.face || null;
+  return chars.reduce((sum, ch) => sum + (face?.get(ch) ?? advanceEm(ch, font)) * size, 0) + letterSpacing * (chars.length - 1);
 }
 
 // Greedy wrap by measured width: CJK breaks between any characters, Latin at spaces.
@@ -543,7 +556,22 @@ function isSerifFamily(value) {
 // Smallest horizontal compression, relative to the vertical scale, that still counts as type.
 const MIN_SQUEEZE = 0.30;
 
-function textExtent(textNode) {
+// Families with an @font-face rule in the file's own <style> (a face the renderer embedded).
+function embeddedFamilies(tree) {
+  const families = new Set();
+  for (const node of walk(tree)) {
+    if (node.name !== "style") continue;
+    for (const [, body] of textContent(node).matchAll(/@font-face\s*\{([^}]*)\}/g)) {
+      const family = /font-family:\s*['"]?([^'";]+)/.exec(body);
+      const weight = /font-weight:\s*(\d+)/.exec(body);
+      if (family) families.add(faceKey(family[1].trim(), weight ? weight[1] : 400));
+    }
+  }
+  return families;
+}
+function firstFamily(value) { return String(value || "").split(",")[0].replace(/['"]/g, "").trim(); }
+
+function textExtent(textNode, embedded = null) {
   const a = textNode.attrs;
   const size = Number(a["font-size"] || 16);
   const spacing = Number(a["letter-spacing"] || 0);
@@ -554,6 +582,8 @@ function textExtent(textNode) {
   const m = ctm(textNode);
   const lines = textLines(textNode);
   const font = { serif: isSerifFamily(a["font-family"] || attr(textNode, "font-family")), weight: Number(a["font-weight"] || attr(textNode, "font-weight") || 400) };
+  const key = faceKey(firstFamily(a["font-family"] || attr(textNode, "font-family")), font.weight);
+  if (embedded?.has(key) && FACE_ADVANCES.has(key)) font.face = FACE_ADVANCES.get(key);
   const measured = [];
   let offset = 0;
   for (const line of lines) {
@@ -584,6 +614,7 @@ function textExtent(textNode) {
 
 function readSlots(tree) {
   const slots = [];
+  const embedded = embeddedFamilies(tree);
   for (const node of walk(tree)) {
     if (hidden(node)) continue;
     const a = node.attrs;
@@ -600,14 +631,14 @@ function readSlots(tree) {
     if (kind === "text") {
       const textNode = node.name === "text" ? node : [...walk(node)].find((child) => child.name === "text");
       if (!textNode) continue;
-      const extent = textExtent(textNode);
+      const extent = textExtent(textNode, embedded);
       const content = extent.lines.map((line) => line.text).join("");
       slots.push({ ...base, squeeze: extent.squeeze, text: content, extent: extent.box, lines: extent.lines, size: extent.size, weight: extent.weight, fill: extent.fill, vertical: extent.vertical, textNode, capHeight: null });
     } else if (kind === "lettering") {
       const group = [...walk(node)].find((child) => child.attrs?.class === "lettering");
       const fallback = [...walk(node)].find((child) => child.name === "text");
       if (fallback && !group) {
-        const extent = textExtent(fallback);
+        const extent = textExtent(fallback, embedded);
         slots.push({ ...base, kind: "lettering", fallback: true, squeeze: extent.squeeze, text: extent.lines.map((line) => line.text).join(""), extent: extent.box, lines: extent.lines, size: extent.size, weight: extent.weight, fill: extent.fill, textNode: fallback });
         continue;
       }
@@ -636,7 +667,7 @@ function readSlots(tree) {
 
 module.exports = {
   ASCENT, DESCENT, TEXT_INK_FACTOR, MIN_SQUEEZE,
-  advanceEm, isCjk, textWidth, wrapText,
+  advanceEm, isCjk, textWidth, wrapText, registerFaceAdvances, faceAdvances, embeddedFamilies,
   parseXml, walk, textContent, ctm, apply, bounds, polygonArea, clipToBox,
   parseColor, hex, luminance, contrastRatio, mix,
   gradients, paints, paintArea, groundAt, samplePoints, unsupportedGeometry, readSlots, round, roundBox, parsePath, pathSubpaths,

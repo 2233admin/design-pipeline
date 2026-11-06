@@ -13,7 +13,7 @@ const measure = require("./measure.cjs");
 const coverage = require("./coverage.cjs");
 const layerContract = require("./layers.cjs");
 const compositor = require("../art-motion/composite.cjs");
-const LAYOUTS = Object.assign({}, ...["layouts.cjs", "layouts-shinbo.cjs", "layouts-citypop.cjs", "layouts-xerox.cjs", "layouts-litho.cjs", "layouts-pixel.cjs", "layouts-hud.cjs", "layouts-cyanotype.cjs", "layouts-street.cjs", "layouts-survey.cjs", "layouts-lattice.cjs", "layouts-voyage.cjs", "layouts-ink.cjs", "layouts-crisis.cjs"]
+const LAYOUTS = Object.assign({}, ...["layouts.cjs", "layouts-shinbo.cjs", "layouts-citypop.cjs", "layouts-xerox.cjs", "layouts-litho.cjs", "layouts-pixel.cjs", "layouts-hud.cjs", "layouts-cyanotype.cjs", "layouts-street.cjs", "layouts-survey.cjs", "layouts-lattice.cjs", "layouts-voyage.cjs", "layouts-ink.cjs", "layouts-crisis.cjs", "layouts-atomic.cjs"]
   .filter((file) => fs.existsSync(path.join(__dirname, file))).map((file) => require(`./${file}`).LAYOUTS));
 
 const TEMPLATES_ROOT = path.join(__dirname, "templates");
@@ -382,6 +382,9 @@ class Doc {
     if (o.filter) attrs.push(`filter="url(#${esc(o.filter)})"`); // e.g. an offset shadow plate defined with d.def()
     if (spacing) attrs.push(`letter-spacing="${f1(spacing)}"`);
     const font = { serif: roleName === "serif", weight };
+    // a face embedded from --font-dir with a registered advance table is measured at its own width
+    const lead = String(family).split(",")[0].replace(/['"]/g, "").trim();
+    if (this.faces.some((face) => face.family === lead && Number(face.weight || 400) === Number(weight) && !/\.ttc$/i.test(face.file))) font.face = measure.faceAdvances(lead, weight);
     const lines = spec.lines > 1 ? measure.wrapText(text, size, box[2], spacing, font) : [String(text)];
     const content = lines.length > 1
       ? lines.map((line, index) => `<tspan x="${f1(x)}" dy="${index === 0 ? "0" : f1(size * lineHeight)}">${esc(line)}</tspan>`).join("")

@@ -1061,3 +1061,27 @@ roles were measured from a reference corpus; nothing from that corpus is bundled
   not packaged): byte-identical copies of the GB2312 subsets in `skill/tools/art-motion/fonts/` (Noto Sans SC,
   © 2014-2021 Adobe, SIL Open Font License 1.1, Reserved Font Name "Source"), with `OFL-NotoSansSC.txt` beside
   them. Not renamed.
+
+## Atomic-age pack, kit fonts, NASA imagery and test fixtures (2026-11-07)
+
+- The `atomic-age` style pack (`skill/tools/template-bank/styles/atomic-age/`, `layouts-atomic.cjs`) and the
+  example `examples/atomic-age-kit/` are project-owned: grammar, layouts, glyphs and the original world
+  (Halcyon Orbital Lines, the Orbitville Gazette, Meridian 88) were written for this pack. The grammar was
+  measured privately on an owner-supplied mood board of mid-century Space-Age print (reference only, not
+  redistributed; no picture, mark, logo or font from it is used).
+- `skill/tools/template-bank/atomic-advances.json` (packaged): advance widths read from League Gothic, Jost,
+  Courier Prime and Caveat (SIL Open Font License 1.1); numbers only, no font data.
+- Kit fonts (`examples/atomic-age-kit/fonts/`, shipped with the example, not with the skill) and test fixtures
+  (`tests/fixtures/atomic-age/fonts/`, not packaged): byte-identical WOFF subsets of League Gothic (The League
+  Gothic Project Authors), Jost 500 and 700 (The Jost Project Authors), Courier Prime 400 and 700 (The Courier
+  Prime Project Authors) and Caveat 600 (The Caveat Project Authors), all SIL OFL 1.1, from google/fonts at
+  86aced91, instanced where variable and limited to printable ASCII plus – — ‘ ’ “ ” • · ° × … ©, each with its
+  OFL text. None declares a Reserved Font Name; the subsets keep their names. Source, commit and checksums are
+  in `tests/fixtures/atomic-age/provenance.csv`.
+- NASA imagery in `examples/atomic-age-kit/art/` (example only, not packaged): ARC-1975-AC75-1086 (NASA Ames,
+  artwork by Rick Guidice, 1975), AS17-152-23272 (Apollo 17, 1972), 6900556 (MSFC, Apollo 11 launch, 1969),
+  S64-04925 (JSC, Gemini diagram, 1964), S65-63898 (JSC, Gemini 6 from Gemini 7, 1965), from
+  images.nasa.gov, and pages 141 and 160 of the Apollo 11 Final Flight Plan (NASA MSC, July 1, 1969). US
+  Government works, public domain; reproduced as halftones, duotones or a photocopy through `materials
+  process`. Credited "Imagery: NASA. Not endorsed by NASA."; NASA insignia, logotype and seal are not used.
+
