@@ -1,6 +1,6 @@
 # card.survey-section-title
 
-Section opener: the four-layer title block, its decoration group, a yellow column with a line-art beacon and a hatched ghost word over contours.
+Section opener: the four-layer title block, its decoration group, a yellow column with a survey ruler and a hatched ghost word over contours.
 
 Style: `frontier-survey` (`styles/frontier-survey/style.json`). The opening of a page section, or a section card in a deck. tone=dark sets it on navy for the lore and media sections.
 
@@ -33,10 +33,10 @@ Samples: traverse/section-title.
 | `guides` | decoration | true / false | false | draw layout guides |
 | `tone` | decoration | light / dark | light | white or navy section |
 | `col_x` | rhythm | 0.62-0.7 | 0.66 | yellow column x / W |
-| `beacon` | decoration | true / false | true | the line-art beacon on the column |
+| `ruler` | decoration | true / false | true | a survey ruler and datum mark on the column |
 
 ## Decoration
 
-- Contours, the hatched ghost word, the beacon, the decoration group: drawn.
+- Contours, the hatched ghost word, the ruler and datum mark, the decoration group: drawn.
 
 Sizes: 960x540, 1920x1080. A passing check is technical conformance only, not visual acceptance.

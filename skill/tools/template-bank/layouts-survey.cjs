@@ -5,36 +5,12 @@
 // private, never shipped) and proven on the original site 远垦导线 TRAVERSE. A white page with a
 // fixed left rail, one signal yellow in tall columns and side bands, a four-layer section title
 // (micro path, grey arrow block + wide Latin caps, CJK), hatched ghost lettering, isometric
-// line-art instruments, topographic contours and the traverse (stations, bearings, distances).
+// topographic contours and data marks (rulers, datum marks, the three-colour rule); objects are
+// left to the image slots (no drawn pseudo-illustration).
 // Geometry in the reference's own 1920 units (a 1280 design at 1.5x) scaled to the canvas.
 
 const { f1, esc, rng, invalid } = require("./layout-kit.cjs");
 
-const COS = Math.cos(Math.PI / 6);
-// Isometric line-art: white / grey faces, ink outline, yellow accents.
-function Iso(d, ox, oy, s) { return { d, ox, oy, s, out: [] }; }
-const ip = (I, x, y, z) => [I.ox + (x - y) * COS * I.s, I.oy + (x + y) * 0.5 * I.s - z * I.s];
-function ipoly(I, pts, fill, sw = 2) { I.out.push(`<polygon points="${pts.map((q) => `${f1(q[0])},${f1(q[1])}`).join(" ")}" fill="${fill}" stroke="${I.d.pal.ink}" stroke-width="${f1(sw * I.d.k)}" stroke-linejoin="round"/>`); }
-function iline(I, pts, sw = 2, dash = "") { const q = pts.map((p) => ip(I, ...p)); I.out.push(`<polyline points="${q.map((v) => `${f1(v[0])},${f1(v[1])}`).join(" ")}" fill="none" stroke="${I.d.pal.ink}" stroke-width="${f1(sw * I.d.k)}" stroke-linecap="round"${dash ? ` stroke-dasharray="${dash}"` : ""}/>`); }
-function ibox(I, x, y, z, w, dd, h, top, left, right) {
-  const P = (a, b, c) => ip(I, a, b, c);
-  ipoly(I, [P(x, y + dd, z), P(x + w, y + dd, z), P(x + w, y + dd, z + h), P(x, y + dd, z + h)], left);
-  ipoly(I, [P(x + w, y, z), P(x + w, y + dd, z), P(x + w, y + dd, z + h), P(x + w, y, z + h)], right);
-  ipoly(I, [P(x, y, z + h), P(x + w, y, z + h), P(x + w, y + dd, z + h), P(x, y + dd, z + h)], top);
-}
-// The survey beacon: a tapered mast on a yellow footing, a lamp, two fins, guy wires (decoration).
-function beacon(d, ox, oy, s) {
-  const I = Iso(d, ox, oy, s); const { white, grey1, grey3, yellow, yellow_dk } = d.pal;
-  ibox(I, -60, -60, 0, 120, 120, 26, white, grey1, grey3);
-  ibox(I, -40, -40, 26, 80, 80, 18, yellow, yellow_dk, yellow_dk);
-  for (let i = 0; i < 5; i += 1) { const w = 34 - i * 4; ibox(I, -w / 2, -w / 2, 44 + i * 52, w, w, 52, white, i % 2 ? grey1 : white, grey3); }
-  ibox(I, -16, -16, 304, 32, 32, 30, white, yellow, yellow_dk);
-  ipoly(I, [ip(I, 14, -6, 200), ip(I, 120, -60, 230), ip(I, 124, -40, 214), ip(I, 16, 8, 186)], white);
-  ipoly(I, [ip(I, -6, 14, 150), ip(I, -70, 110, 175), ip(I, -52, 116, 160), ip(I, 8, 16, 136)], white);
-  iline(I, [[0, 0, 290], [150, 40, 0]], 1.5); iline(I, [[0, 0, 290], [-40, 150, 0]], 1.5);
-  iline(I, [[0, 0, 334], [0, 0, 400]], 2);
-  return `<g data-deco="1">${I.out.join("")}</g>`;
-}
 // Topographic contours: closed wobbling rings around a few centres (deterministic decoration).
 function contours(d, x0, y0, w, h, seed, color) {
   const r = rng(seed); let p = "";
@@ -139,7 +115,10 @@ const LAYOUTS = {
     const { text: ghost } = d.value("ghost_latin");
     const fill = hatch(d, "survey-ghost", d.pal[dark ? "ghost_dark" : "ink"], 7 * s, 1.6 * s);
     d.raw(`<text data-slot="ghost_latin" data-kind="text" data-decor="1" data-bleed="1" data-deco="1" x="${f1(40 * s)}" y="${f1(520 * s)}" font-family="${esc(d.families.wide)}" font-size="${f1(150 * s)}" fill="${fill}" opacity=".55" letter-spacing="${f1(-8 * s)}">${esc(ghost)}</text>`);
-    if (p.beacon) d.raw(beacon(d, cx + cw * 0.55, 430 * s, 0.62 * s));
+    if (p.ruler) { // a survey ruler and datum on the column: abstract, never an object drawing
+      let r = ""; for (let i = 0; i <= 30; i += 1) r += `<rect x="${f1(cx + cw - (i % 5 ? 18 : 40) * s)}" y="${f1((70 + i * 12) * s)}" width="${f1((i % 5 ? 18 : 40) * s)}" height="${f1(2 * s)}" fill="${d.pal.ink}"/>`;
+      d.raw(`<g data-deco="1">${r}${datum(cx + cw * 0.42, 250 * s, 30 * s, d.pal.ink, 5 * s)}<path d="M${f1(cx + cw * 0.42)} ${f1(150 * s)}V${f1(350 * s)}M${f1(cx + 12 * s)} ${f1(250 * s)}H${f1(cx + cw - 50 * s)}" stroke="${d.pal.ink}" stroke-width="${f1(1.5 * s)}" stroke-dasharray="${f1(6 * s)} ${f1(5 * s)}"/></g>`);
+    }
     titleBlock(d, 60 * s, 110 * s, s, { dark });
     d.raw(microDeco(d, 60 * s, 230 * s, s, d.pal[dark ? "mute_dark" : "mute"]));
     d.zone("title", "safe", [0, 60 * s, cx, 220 * s], { slots: ["title_cjk", "title_latin"] });

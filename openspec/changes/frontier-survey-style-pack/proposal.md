@@ -10,7 +10,7 @@ one-page site on the grammar (远垦导线 TRAVERSE: eight sections, a 390-wide 
 with a `?slot=1` placeholder mode, two in-game screens) and brought it to 0 findings in
 `template check --browser` from 68 on the first pass. The grammar (a white page with a fixed left rail,
 one signal yellow only as tall columns and side bands, a four-layer section title, hatched ghost
-lettering, isometric line art, contours, a dark middle pair of sections) is not in the bank:
+lettering, contours and data marks, a dark middle pair of sections) is not in the bank:
 the key-art packs cover promotional art, not the site and UI layer, and `street-tape` is a grey
 page with black stripes and 49-degree cuts. Without a pack the next brief of this kind re-measures it and
 re-learns the same traps.

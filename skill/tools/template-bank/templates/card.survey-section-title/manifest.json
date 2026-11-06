@@ -3,7 +3,7 @@
   "id": "card.survey-section-title",
   "family": "card",
   "style": "frontier-survey",
-  "title": "Section opener: the four-layer title block, its decoration group, a yellow column with a line-art beacon and a hatched ghost word over contours",
+  "title": "Section opener: the four-layer title block, its decoration group, a yellow column with a survey ruler and a hatched ghost word over contours",
   "use": "The opening of a page section, or a section card in a deck. tone=dark sets it on navy for the lore and media sections.",
   "canvas": {
     "width": 960,
@@ -44,11 +44,11 @@
       "class": "rhythm",
       "note": "yellow column x / W"
     },
-    "beacon": {
+    "ruler": {
       "type": "boolean",
       "default": true,
       "class": "decoration",
-      "note": "the line-art beacon on the column"
+      "note": "a survey ruler and datum mark on the column"
     }
   },
   "slots": {
@@ -81,7 +81,7 @@
     "The column is square-cornered and full height; the ghost word sits behind the title and the column."
   ],
   "decoration": [
-    "Contours, the hatched ghost word, the beacon, the decoration group: drawn."
+    "Contours, the hatched ghost word, the ruler and datum mark, the decoration group: drawn."
   ],
   "provenance": {
     "corpus": "traverse case (远垦导线 TRAVERSE): our own original one-page game site and two in-game screens in the frontier-survey grammar",

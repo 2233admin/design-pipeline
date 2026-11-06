@@ -1,13 +1,13 @@
 {
   "schema": "design-pipeline.template-bank-style.v1",
   "id": "frontier-survey",
-  "title": "Frontier survey: an industrial sci-fi frontier game's official-site grammar - white page, a fixed left rail, one signal yellow in tall columns and side bands, hatched ghost lettering, isometric line-art instruments, topographic contours",
-  "summary": "A white page with a fixed 90-unit left rail; one signal yellow used as tall columns, side bands and the current item (0-6% of a section with key art, 15-30% without); two mid sections turn fully dark (66-74%); a four-layer section title (micro path, a grey 78 x 24 arrow block with wide Latin caps, CJK below); hatched ghost lettering at -45 degrees; isometric line-art instruments and machines; topographic contours; round #FAFAFA arrow buttons in capsule tracks; label / value chips; a three-colour code rule.",
+  "title": "Frontier survey: an industrial sci-fi frontier game's official-site grammar - white page, a fixed left rail, one signal yellow in tall columns and side bands, hatched ghost lettering, topographic contours and data marks",
+  "summary": "A white page with a fixed 90-unit left rail; one signal yellow used as tall columns, side bands and the current item (0-6% of a section with key art, 15-30% without); two mid sections turn fully dark (66-74%); a four-layer section title (micro path, a grey 78 x 24 arrow block with wide Latin caps, CJK below); hatched ghost lettering at -45 degrees; topographic contours; round #FAFAFA arrow buttons in capsule tracks; label / value chips; a three-colour code rule.",
   "provenance": {
-    "case": "traverse (远垦导线 TRAVERSE): an original one-page official site (home, crew, lore, media, calendar, gameplay, workline, notice; 1920 and 390 wide) and two in-game screens (workline planner, fabrication) built on the grammar. The showcase has no characters: survey instruments drawn as isometric line art stand in; ?slot=1 swaps every picture for a sized placeholder frame with an image-generation task sheet.",
+    "case": "traverse (远垦导线 TRAVERSE): an original one-page official site (home, crew, lore, media, calendar, gameplay, workline, notice; 1920 and 390 wide) and two in-game screens (workline planner, fabrication) built on the grammar. The showcase has no characters and no drawn pseudo-illustration: type, frames, data slides, a field-kit stat card and generated paper and halftone textures carry each screen; ?slot=1 swaps every picture for a sized placeholder frame with an image-generation task sheet.",
     "lineage": "The official-site grammar of industrial sci-fi frontier games (2020s): a white page with a side rail, one signal yellow, hatched ghost type, isometric technical drawings, contour lines and dark lore / media sections. Read and measured on a reference site whose screenshots stay private and are not shipped. Borrowed: the grammar and the measured proportions. Never borrowed: any name, logo, wordmark, character, organisation, slogan, picture or the reference's own mark shapes.",
     "borrow": "Borrow grammar, never assets. Every name, mark, headline and picture in the case and the templates is our own (远垦导线, 第七导线队, 缓行站, 盐镜回声); the brand is a survey datum mark; figures are image slots fed by an image-generation task sheet (#311).",
-    "rounds": "One round, iterated by eye before the first check. template check --browser first pass: 68 findings over 11 pages (8 sections at 1920 x 1080, the 390-wide page, two in-game screens): 33 on the mobile page (a closed drawer's links above the canvas, drawn labels outside a cropped key art, notice cards beyond the edge), 18 contrast (grey micro labels 3.36:1 on white; capsule buttons measured with their own plate hidden, 1:1), 13 glyph coverage (a datum sign and CJK in Latin-only faces), 2 text overlap, 2 off-canvas; final 0. fonts query --style gothic --weight 700 covers all 606 CJK characters of the copy.",
+    "rounds": "One round, iterated by eye before the first check. template check --browser first pass: 68 findings over 11 pages (8 sections at 1920 x 1080, the 390-wide page, two in-game screens): 33 on the mobile page (a closed drawer's links above the canvas, drawn labels outside a cropped key art, notice cards beyond the edge), 18 contrast (grey micro labels 3.36:1 on white; capsule buttons measured with their own plate hidden, 1:1), 13 glyph coverage (a datum sign and CJK in Latin-only faces), 2 text overlap, 2 off-canvas; final 0. fonts query --style gothic --weight 700 covers all 616 CJK characters of the copy.",
     "measured": [
       "Design unit: root 12 px and every size a multiple of 1.5 (13.5, 16.5, 18.75, 22.5, 27, 36, 58.5): a 1280 design shown at 1.5x.",
       "Signal yellow #FFFA00 on the reference (37 CSS uses); the case and the pack use #FFEE00. Ink #191919 (the most used colour), greys #F2F2F2 / #E6E6E6 / #D9D9D9 / #383838, footer #252726.",
@@ -172,7 +172,7 @@
         "author": "Indian Type Foundry"
       }
     ],
-    "resolve": "fonts query --text-file <all copy> --style gothic --weight 700 resolves Noto Sans SC (the case: 606 characters, none missing; Noto Sans CJK SC 500/700/900 measured with fonts measure, none missing). Michroma and Poppins are Latin only: mixed CJK and Latin strings go to head or body, never wide or geo (13 of the case's first-pass findings were exactly that, or a sign such as the datum circle-cross that Michroma lacks).",
+    "resolve": "fonts query --text-file <all copy> --style gothic --weight 700 resolves Noto Sans SC (the case: 616 characters, none missing; Noto Sans CJK SC 500/700/900 measured with fonts measure, none missing). Michroma and Poppins are Latin only: mixed CJK and Latin strings go to head or body, never wide or geo (13 of the case's first-pass findings were exactly that, or a sign such as the datum circle-cross that Michroma lacks).",
     "licence": "All roles use SIL OFL 1.1 fonts.",
     "bundled": false,
     "note": "Fonts are named, not bundled. Michroma is about 1.0 em per capital (measured from its hmtx), so wide slots are budgeted at 1.04 em a character; without it the Latin falls back to Noto Sans SC and reads narrower. --font-dir <dir> reads coverage and embeds the faces."
@@ -184,17 +184,17 @@
       "Every section opens with the same four-layer title on its edge: a micro path line, a grey 78 x 24 arrow block with the wide Latin name, the CJK name in bold below (27 : 36), with a decoration group (cross box, two micro lines, six squares, the three-colour stub) under it.",
       "Two middle sections turn fully dark (navy, 66-74%): a point-cloud object in a tick-ring on one, a blurred moving picture with a three-card coverflow (centre 405 x 228, sides x0.8) on the other.",
       "Hatched ghost lettering: a wide Latin word set huge with a -45 degree stripe fill at about 60%, behind the content and the figure, never carrying information.",
-      "Isometric line art (white and grey faces, ink outline, yellow parts) for instruments, machines and props; topographic contours on white grounds, buttons and banners; the traverse (stations, bearings, distances) as the case's own signature line.",
+      "The reference draws isometric line art for machines; without its art, keep code-drawn objects minimal and abstract (rulers, datum marks, contours, the traverse with its bearings and distances, data slides) and carry each screen with type, frames, data and real textures from the materials tools; figures, scenes and props come from image slots.",
       "Controls: round #FAFAFA arrow buttons (54-56) paired in a capsule track (164 x 63); dark 240 x 54 'more' buttons with a 4 x 30 yellow bar; a yellow 54-unit square play key; label / value chips 90 + 165 x 24 (voice rows yellow); names in grey square brackets."
     ]
   },
   "materials": {
     "procedural": [
-      "Isometric line art: box, cylinder and polyline primitives at the 30-degree projection; the survey beacon in layouts-survey.cjs (beacon); the case also draws a sundial, a cairn, a plumb tripod, a theodolite, a compass, a tracked station and factory modules.",
+      "Data marks: a survey ruler and datum mark (ruler in card.survey-section-title), the traverse (stations, bearings, distances) and data slides (an elevation profile, a process chart, a load chart, a lot plan) in the case; no drawn objects or scenes.",
       "Topographic contours (closed wobbling rings in the pack; value noise and marching squares in the case), -45 degree hatches, the datum mark, the three-colour code rule, the decoration group."
     ],
     "recipes": [
-      "A paper-grain pass over pictures: materials generate --generator paper --seed 1, desaturated and multiplied at 6% over every picture layer before the live UI.",
+      "Real texture: materials generate --generator paper --seed 3 multiplied at 20% over the white sections, and --generator halftone --params '{\"periodPx\":9,\"angleDeg\":45,\"coverage\":0.25}' screened at 8% over the dark ones (the case's materials check passes with three generated files).",
       "Figures and key art come from an image-generation task sheet (#311): one sheet per frame with its output size (2x the frame), the safe box, the boxes left for UI, a low cold key light from the upper left with a yellow edge reflection, the palette and 'original characters only'; until then the slot shows its size, and the case's showcase uses an isometric instrument instead. Composite painted-in (colour match, light wrap, contact and long cast shadow), not as stickers; cut-outs go in with materials cut --mode none --finish cut."
     ],
     "collage": [
@@ -241,7 +241,7 @@
       "A capsule button's label is its own unit (data-chk on a span inside the button); measured as the button the label's ground is the page, not the capsule.",
       "Drawn SVG labels that sit in a cropped key art carry data-deco on the text element itself; on a group they are still measured (off-canvas)."
     ],
-    "note": "The browser check runs on every render (hatched ghost type and isometric line art are measured in pixels)."
+    "note": "The browser check runs on every render (hatched ghost type and the textures are measured in pixels)."
   },
   "examples": {
     "note": "Renders of the case that stay examples (outside the repository, with the owner): the eight sections at 1920 x 1080, the full page, the 390-wide page, slot mode, and the two in-game screens.",

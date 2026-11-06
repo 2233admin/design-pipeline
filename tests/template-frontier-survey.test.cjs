@@ -67,7 +67,7 @@ test("frontier-survey templates pass the static check at every size and for 50 s
     }
   }
   const variants = [
-    ["card.survey-section-title", { tone: "dark", beacon: false }, { title_cjk: "影像资料", title_latin: "MEDIA" }],
+    ["card.survey-section-title", { tone: "dark", ruler: false }, { title_cjk: "影像资料", title_latin: "MEDIA" }],
     ["kv.survey-album", { side: "right", band: "grey", wordmark: false }, { title_cjk: "工段规划", title_latin: "WORKLINE", band_latin: "WORKLINE", index: "1/5", caption: "自动化工段" }],
     ["ui.survey-rail", { current: 6 }, {}],
     ["card.survey-dossier", { rank: 5 }, { name: "白砾", code: "CAIRN", index: "2/5" }],

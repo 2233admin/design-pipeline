@@ -27,6 +27,11 @@
 - **Templates are the parts, not the site**: the case's single page has scripts, a point-cloud canvas,
   scroll-driven state and a responsive layout; the bank keeps five parts that recur across sections. The
   site, the slot mode and the in-game screens stay example renders with the owner.
+- **No drawn pseudo-illustration** (owner feedback mid-job): the first showcase drew survey instruments,
+  a tower and machines as isometric line art; next to the reference's real art that read cheap, and a
+  tower with a lamp read as a lighthouse. The showcase now carries each screen with type, frames, data
+  slides, a stat card and generated paper / halftone textures; the pack draws only abstract data marks
+  (a ruler and datum mark replace the line-art beacon on the section card).
 - **Characters are not drawn**: the dossier and album take pictures in image slots; the pack's recipe
   points at an image-generation task sheet (#311), painted-in compositing and `materials cut`.
 
