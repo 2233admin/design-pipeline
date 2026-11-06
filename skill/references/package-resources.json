@@ -1417,6 +1417,18 @@
     "tools/template-bank/templates/ui.tape-pager/template.svg",
     "tools/template-bank/templates/ui.tape-topbar/manifest.json",
     "tools/template-bank/templates/ui.tape-topbar/template.svg",
+    "tools/template-bank/layouts-lattice.cjs",
+    "tools/template-bank/styles/lattice-dossier/style.json",
+    "tools/template-bank/templates/banner.lattice-columns/manifest.json",
+    "tools/template-bank/templates/banner.lattice-columns/template.svg",
+    "tools/template-bank/templates/card.lattice-ghost-title/manifest.json",
+    "tools/template-bank/templates/card.lattice-ghost-title/template.svg",
+    "tools/template-bank/templates/kv.lattice-bulletin/manifest.json",
+    "tools/template-bank/templates/kv.lattice-bulletin/template.svg",
+    "tools/template-bank/templates/ui.lattice-pager/manifest.json",
+    "tools/template-bank/templates/ui.lattice-pager/template.svg",
+    "tools/template-bank/templates/ui.lattice-topbar/manifest.json",
+    "tools/template-bank/templates/ui.lattice-topbar/template.svg",
     "scripts/template-sample.cjs"
   ]
 }

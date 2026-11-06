@@ -1,0 +1,85 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.lattice-pager",
+  "family": "ui",
+  "style": "lattice-dossier",
+  "title": "Right-rail pager: a giant wide numeral cut to its top 55%, the '// 02 / 05' line on a ground plate, the screen name in wide caps",
+  "use": "The fixed screen pager in the right rail of a paged site or a game menu. current and total are two-digit numbers.",
+  "canvas": {
+    "width": 236,
+    "height": 120
+  },
+  "sizes": [
+    "236x120",
+    "354x180"
+  ],
+  "aspect": "59:30",
+  "accent": {
+    "roles": [
+      "cyan"
+    ],
+    "maxShare": 0.3
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    }
+  },
+  "slots": {
+    "current": {
+      "kind": "text",
+      "default": "02",
+      "maxChars": 2,
+      "font": "mono",
+      "note": "digits only"
+    },
+    "total": {
+      "kind": "text",
+      "default": "05",
+      "maxChars": 2,
+      "font": "mono",
+      "note": "digits only"
+    },
+    "numeral": {
+      "kind": "text",
+      "default": "02",
+      "maxChars": 2,
+      "font": "wide",
+      "derived": true,
+      "decor": true,
+      "note": "drawn from current; decoration (cut to its top 55%)"
+    },
+    "section": {
+      "kind": "text",
+      "default": "PILOTS",
+      "maxChars": 12,
+      "font": "wide",
+      "note": "Latin caps only"
+    }
+  },
+  "relations": [
+    "Numeral 86.4 units in a 47.5-unit window, right edge 38 units in.",
+    "The small line sits 13 units below the numeral's top, over its right half, on a ground plate.",
+    "Screen name 16-18 units, 10% tracking, right-aligned under the window."
+  ],
+  "decoration": [
+    "The rail hairline and the numeral: drawn."
+  ],
+  "provenance": {
+    "corpus": "fogwake case (雾航信标 FOGWAKE): our own original game site and two in-game screens in the lattice-dossier grammar",
+    "experiment": "styles/lattice-dossier/style.json provenance (official site captured and measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "computed style of the reference pager: numeral 86.4 px with a 47.52 px line box, '// 02 / 05' 18 px, name 18 px at 1.8 px tracking",
+    "sampleIds": [
+      "fogwake/pager"
+    ],
+    "measured": [
+      "Reference: right edge x 1882, numeral top y 480 on inner screens, y 398 on the first.",
+      "Case: the plate keeps the small line at 4.5:1 over the numeral."
+    ],
+    "summary": "fogwake rail pager"
+  }
+}

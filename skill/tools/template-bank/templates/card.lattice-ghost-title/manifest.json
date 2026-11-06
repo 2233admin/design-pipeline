@@ -1,0 +1,110 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.lattice-ghost-title",
+  "family": "card",
+  "style": "lattice-dossier",
+  "title": "Section heading on the lattice: a small tag and label, wide Latin over a CJK title and a cyan bar, a note, a picture slot, the ghost word on the base hairline",
+  "use": "The opening of a screen or a section card in a deck; the media slot is the section's object, scene or figure.",
+  "canvas": {
+    "width": 960,
+    "height": 540
+  },
+  "sizes": [
+    "960x540",
+    "1920x1080"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "cyan"
+    ],
+    "maxShare": 0.05
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "title_y": {
+      "default": 290,
+      "min": 270,
+      "max": 310,
+      "class": "rhythm",
+      "note": "baseline of the Latin title line, 960 units"
+    }
+  },
+  "slots": {
+    "tag": {
+      "kind": "text",
+      "default": "BEACON BUREAU ://",
+      "maxChars": 20,
+      "font": "narrow",
+      "note": "Latin only"
+    },
+    "label": {
+      "kind": "text",
+      "default": "ARCHIVE",
+      "maxChars": 14,
+      "font": "narrow",
+      "note": "Latin only"
+    },
+    "title_latin": {
+      "kind": "text",
+      "default": "ARCHIVE",
+      "maxChars": 10,
+      "font": "wide",
+      "note": "Latin caps only"
+    },
+    "title_cjk": {
+      "kind": "text",
+      "default": "雾港资料馆",
+      "maxChars": 7,
+      "font": "head",
+      "title": true
+    },
+    "note": {
+      "kind": "text",
+      "default": "请选择您要查看的内容",
+      "maxChars": 18,
+      "font": "body"
+    },
+    "ghost": {
+      "kind": "text",
+      "default": "ARCHIVE ROOM",
+      "maxChars": 14,
+      "font": "narrow",
+      "decor": true,
+      "bleed": true,
+      "note": "decoration only"
+    },
+    "media": {
+      "kind": "image",
+      "ground": "bg",
+      "note": "object, scene or figure"
+    }
+  },
+  "relations": [
+    "Hairlines at 76, 450 and x 841 (the 1920 frame halved).",
+    "Wide Latin over CJK, a 115 x 4 cyan bar under them, left edge 72.",
+    "The ghost word sits on the 450 line and bleeds off the bottom."
+  ],
+  "decoration": [
+    "The lattice and hairlines: drawn."
+  ],
+  "provenance": {
+    "corpus": "fogwake case (雾航信标 FOGWAKE): our own original game site and two in-game screens in the lattice-dossier grammar",
+    "experiment": "styles/lattice-dossier/style.json provenance (official site captured and measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "computed style of the reference's archive screen: tag 14 / label 24 condensed, title wide 50 over CJK 60, a 230 x 6 cyan bar, ghost 112 at -5.6 px",
+    "sampleIds": [
+      "fogwake/archive"
+    ],
+    "measured": [
+      "Reference: title block at x 144, y 550-700; ghost at y 900.",
+      "Case: 雾港资料馆 in the same block at 0 findings."
+    ],
+    "summary": "fogwake section heading"
+  }
+}

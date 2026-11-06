@@ -1,0 +1,200 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "kv.lattice-bulletin",
+  "family": "kv",
+  "style": "lattice-dossier",
+  "title": "Bulletin screen: tabs with a cyan current block, a dated news list, a key-art carousel between the frame lines, a headline with the main button, a progress segment, the rail pager",
+  "use": "The news or bulletin screen of a dark game site. items sets 2-3 list rows; tab and active pick the current tab and carousel item.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "cyan",
+      "cyan_dim"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "tab": {
+      "type": "integer",
+      "default": 1,
+      "min": 1,
+      "max": 4,
+      "class": "decoration",
+      "note": "current tab"
+    },
+    "items": {
+      "type": "integer",
+      "default": 3,
+      "min": 2,
+      "max": 3,
+      "class": "decoration",
+      "note": "list rows"
+    },
+    "active": {
+      "type": "integer",
+      "default": 1,
+      "min": 1,
+      "max": 3,
+      "class": "decoration",
+      "note": "current carousel item (progress segment)"
+    }
+  },
+  "slots": {
+    "tab_{i}": {
+      "kind": "text",
+      "default": [
+        "新闻",
+        "最新",
+        "公告",
+        "活动"
+      ],
+      "maxChars": 3,
+      "font": "head"
+    },
+    "cat_{i}": {
+      "kind": "text",
+      "default": [
+        "活动",
+        "活动",
+        "公告"
+      ],
+      "maxChars": 2,
+      "font": "head"
+    },
+    "date_{i}": {
+      "kind": "text",
+      "default": [
+        "2026 // 11 / 01",
+        "2026 // 11 / 06",
+        "2026 // 11 / 05"
+      ],
+      "maxChars": 16,
+      "font": "mono",
+      "note": "digits, spaces and / only"
+    },
+    "news_{i}": {
+      "kind": "text",
+      "default": [
+        "「灯语」创作征集开启",
+        "「潮汐日」限时活动开启",
+        "11月06日 停航维护公告"
+      ],
+      "maxChars": 16,
+      "font": "head",
+      "lines": 2
+    },
+    "read_more": {
+      "kind": "text",
+      "default": "READ MORE",
+      "maxChars": 10,
+      "font": "mono"
+    },
+    "head_date": {
+      "kind": "text",
+      "default": "2026 // 11 / 06",
+      "maxChars": 16,
+      "font": "mono",
+      "note": "digits, spaces and / only"
+    },
+    "headline": {
+      "kind": "text",
+      "default": "「潮汐日 · 退潮之后」限时活动开启",
+      "maxChars": 24,
+      "font": "head",
+      "lines": 2,
+      "title": true
+    },
+    "button": {
+      "kind": "text",
+      "default": "更多情报",
+      "maxChars": 5,
+      "font": "head"
+    },
+    "button_latin": {
+      "kind": "text",
+      "default": "READ MORE",
+      "maxChars": 10,
+      "font": "mono"
+    },
+    "ghost": {
+      "kind": "text",
+      "default": "BULLETIN BOARD",
+      "maxChars": 14,
+      "font": "narrow",
+      "decor": true,
+      "bleed": true,
+      "note": "decoration only"
+    },
+    "current": {
+      "kind": "text",
+      "default": "01",
+      "maxChars": 2,
+      "font": "mono",
+      "note": "digits only"
+    },
+    "total": {
+      "kind": "text",
+      "default": "05",
+      "maxChars": 2,
+      "font": "mono",
+      "note": "digits only"
+    },
+    "numeral": {
+      "kind": "text",
+      "default": "01",
+      "maxChars": 2,
+      "font": "wide",
+      "derived": true,
+      "decor": true,
+      "note": "drawn from current"
+    },
+    "section": {
+      "kind": "text",
+      "default": "BULLETIN",
+      "maxChars": 12,
+      "font": "wide",
+      "note": "Latin caps only"
+    },
+    "art": {
+      "kind": "image",
+      "ground": "bg",
+      "note": "key art 2266 x 1496 (3:2), text-free"
+    }
+  },
+  "relations": [
+    "Art x 550-1683, y 152-900, a 180-unit fade from the ground on its left edge.",
+    "List x 62-422: tabs at 112-unit pitch, rows at 96-unit pitch, 1-unit rules.",
+    "Main button 230 x 60 at x 51, y 870, crossing the y900 line; progress track y 902-910 from x 944."
+  ],
+  "decoration": [
+    "Lattice, hairlines, fade, chevrons: drawn."
+  ],
+  "provenance": {
+    "corpus": "fogwake case (雾航信标 FOGWAKE): our own original game site and two in-game screens in the lattice-dossier grammar",
+    "experiment": "styles/lattice-dossier/style.json provenance (official site captured and measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "computed style and pixel samples of the reference bulletin: tabs 16 px with a 90 x 20 current block, rows 96 px, dates 16 px at 1 px tracking, headline 36 px, button 230 x 60, progress y 902-909",
+    "sampleIds": [
+      "fogwake/bulletin"
+    ],
+    "measured": [
+      "Reference: carousel 1133 x 748 between the hairlines; segment about 195 px.",
+      "Case: three original posters in the carousel, 0 findings."
+    ],
+    "summary": "fogwake bulletin screen"
+  }
+}

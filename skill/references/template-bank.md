@@ -26,8 +26,9 @@ grammar + check rules; its templates are the parameterised layouts of that gramm
 | `acid-print-hud` | 1 (combat HUD) | One acid ink on black slabs, giant chamfered numerals with a misregistered plate, the scene as a cold halftone |
 | `cyanotype-specimen` | 2 (card frame in four rarities, pack opening) | Cyanotype specimen sheets: one Prussian blue, hand-brushed fields, white-line specimens, rarity by process not colour |
 | `street-tape` | 5 (site top bar, section title block, vertical pager, cut container with carousel, sticker CTA) | Japanese street-fashion city game site: light grey, one acid yellow-green, black fine stripes, rounded slabs with one 49-degree cut, a film strip, numbered three-line section titles |
+| `lattice-dossier` | 5 (top frame, rail pager, section heading with ghost word, bulletin screen, four columns) | Industrial dossier-terminal game site: near-black ground, a 172-unit lattice with both diagonals, three frame hairlines (y 152, y 900, x 1683), one signal cyan for state only, a rail numeral cut to its top 55% |
 
-The six game packs come from owner-approved cases, and `street-tape` from a reference board the owner supplied (kept private, measured, never shipped) and an original site built on it (each pack's `provenance` names the case, its lineage and
+The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied (kept private, measured, never shipped) and `lattice-dossier` from a live official site captured and measured privately (never shipped), each and an original site built on it (each pack's `provenance` names the case, its lineage and
 the rule *borrow grammar, never assets*); `examples` in each pack lists the case screens that stayed example
 renders because their structure was a one-off.
 
@@ -248,6 +249,16 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
   (pass `--font-dir` with Anton for the board's look). `side=right`
   mirrors the slabs and the title edge; `kv.tape-cut-carousel --param control=dots` swaps the thumb track
   for dots. Pictures go in `media`; characters come from an image-generation task sheet (#311).
+
+- **lattice-dossier**: the frame is fixed (`FRAME` in `layouts-lattice.cjs`: hairlines at y 152, y 900, x 1683
+  of 1920; `GRID` 172). Cyan is for state only (current nav and tab, tags, progress, the rail numeral, a
+  short bar under a title): every default render keeps it under 3% of the canvas. The rail numeral is the
+  derived decor slot `numeral` drawn from `current`, cut to its top 55%; the readable number is the small
+  line on its ground plate. `current` and `total` take digits only; dates take the dossier form
+  `2026 // 11 / 06` (digits, spaces and `/`). Michroma, Oswald and Chakra Petch are Latin-only roles
+  (`wide`, `narrow`, `mono`); mixed copy goes in `head` or `body`. Michroma is very wide: give its slots
+  room. Art goes in `art`, `media` and `col_N`; characters come from an image-generation task sheet (#311)
+  with a painted-in blend (grade to the scene, fog wrap, a cyan rim), not a sticker outline.
 
 Layout helpers for new packs: `layout-kit.cjs` (`rbox` for a tilted slot's box, `tilt`, `ngon`,
 `discStripes`, a seeded `rng`); `d.text(..., { italic, filter })`, `d.lettering(..., { shadow: { dx, dy,
