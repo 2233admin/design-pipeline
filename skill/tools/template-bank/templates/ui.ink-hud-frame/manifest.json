@@ -1,0 +1,260 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.ink-hud-frame",
+  "family": "ui",
+  "style": "megastructure-ink",
+  "title": "In-game descent HUD: a heading ruler, a depth ladder and readout, a viewport (abstract plate or image slot) in hairline corners with a reticle and the scale marker, three segmented gauges, a monitor comms panel and an alarm banner",
+  "use": "An in-game cockpit or terminal screen. view=drawn|slot; alert shows the banner; gauge_1-3 set the gauges (0-1).",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "signal",
+      "alarm"
+    ],
+    "maxShare": 0.06
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "view": {
+      "type": "enum",
+      "values": [
+        "drawn",
+        "slot"
+      ],
+      "default": "drawn",
+      "class": "decoration",
+      "note": "draw the abstract viewport plate or leave the image slot"
+    },
+    "seed_plate": {
+      "default": 47,
+      "min": 1,
+      "max": 999,
+      "class": "rhythm",
+      "note": "seed of the viewport plate"
+    },
+    "alert": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "show the alarm banner"
+    },
+    "gauge_1": {
+      "default": 0.74,
+      "min": 0,
+      "max": 1,
+      "class": "decoration",
+      "note": "gauge 1"
+    },
+    "gauge_2": {
+      "default": 0.88,
+      "min": 0,
+      "max": 1,
+      "class": "decoration",
+      "note": "gauge 2"
+    },
+    "gauge_3": {
+      "default": 0.31,
+      "min": 0,
+      "max": 1,
+      "class": "decoration",
+      "note": "gauge 3 (alarm under 0.35)"
+    }
+  },
+  "slots": {
+    "view": {
+      "kind": "image",
+      "ground": "void",
+      "layer": "bg",
+      "note": "viewport 3840 x 2160, structure only"
+    },
+    "heading": {
+      "kind": "text",
+      "default": "214°",
+      "maxChars": 5,
+      "font": "data"
+    },
+    "plate": {
+      "kind": "text",
+      "default": "实况",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "plate_en": {
+      "kind": "text",
+      "default": "LIVE",
+      "maxChars": 10,
+      "font": "wide"
+    },
+    "plate_note": {
+      "kind": "text",
+      "default": "03:12:44",
+      "maxChars": 12,
+      "font": "data"
+    },
+    "depth_label": {
+      "kind": "text",
+      "default": "深度",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "depth_label_en": {
+      "kind": "text",
+      "default": "DEPTH",
+      "maxChars": 10,
+      "font": "wide"
+    },
+    "depth": {
+      "kind": "text",
+      "default": "−41,200",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "scale_small": {
+      "kind": "text",
+      "default": "1.7 m",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "scale_large": {
+      "kind": "text",
+      "default": "3,400 m",
+      "maxChars": 10,
+      "font": "data"
+    },
+    "scale_ratio": {
+      "kind": "text",
+      "default": "1 : 2,000",
+      "maxChars": 11,
+      "font": "data"
+    },
+    "gauge_1": {
+      "kind": "text",
+      "default": "外压",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "gauge_en_1": {
+      "kind": "text",
+      "default": "PRESSURE",
+      "maxChars": 10,
+      "font": "wide"
+    },
+    "gauge_2": {
+      "kind": "text",
+      "default": "舱体",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "gauge_en_2": {
+      "kind": "text",
+      "default": "HULL",
+      "maxChars": 10,
+      "font": "wide"
+    },
+    "gauge_3": {
+      "kind": "text",
+      "default": "氧",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "gauge_en_3": {
+      "kind": "text",
+      "default": "OXYGEN",
+      "maxChars": 10,
+      "font": "wide"
+    },
+    "comms": {
+      "kind": "text",
+      "default": "队内",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "time_1": {
+      "kind": "text",
+      "default": "03:12:40",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "line_1": {
+      "kind": "text",
+      "default": "S-07  回声晚到了半秒。",
+      "maxChars": 30,
+      "font": "body"
+    },
+    "time_2": {
+      "kind": "text",
+      "default": "03:12:42",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "line_2": {
+      "kind": "text",
+      "default": "S-19  别回话。",
+      "maxChars": 30,
+      "font": "body"
+    },
+    "time_3": {
+      "kind": "text",
+      "default": "03:12:44",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "line_3": {
+      "kind": "text",
+      "default": "S-23  后面干净。",
+      "maxChars": 30,
+      "font": "body"
+    },
+    "alert": {
+      "kind": "text",
+      "default": "回声缺口",
+      "maxChars": 6,
+      "font": "body"
+    },
+    "alert_en": {
+      "kind": "text",
+      "default": "ECHO GAP",
+      "maxChars": 12,
+      "font": "wide"
+    },
+    "alert_text": {
+      "kind": "text",
+      "default": "右前方 1,240 m。保持静默。",
+      "maxChars": 28,
+      "font": "body"
+    }
+  },
+  "relations": [
+    "Viewport 1224 x 712 at (308, 132) in 14-unit corners with a 120-unit reticle; the scale marker at its lower left.",
+    "Ladder of 13 depths 24 units apart, the current one in signal; gauges of 24 cells at x 1568; comms monitor 920 x 168 with 3-unit scanlines."
+  ],
+  "decoration": [
+    "Heading ticks, ladder, corners, reticle, gauge cells, scanlines, alarm triangle, the viewport plate: drawn."
+  ],
+  "provenance": {
+    "corpus": "megastructure-ink-kit (《穹井》 VAULTWELL): the original kit in examples/megastructure-ink-kit",
+    "experiment": "styles/megastructure-ink/style.json provenance (reference images measured privately; never shipped)",
+    "accessed": "2026-11-07",
+    "method": "The case's hud.html at 1920 x 1080.",
+    "sampleIds": [
+      "megastructure-ink-kit/hud"
+    ],
+    "measured": [
+      "Reference interface frames: edge density 2.4-3.2%, black 59%; monitor highlights about #77EEF3."
+    ],
+    "summary": "megastructure-ink-kit descent HUD"
+  }
+}

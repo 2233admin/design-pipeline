@@ -29,8 +29,9 @@ grammar + check rules; its templates are the parameterised layouts of that gramm
 | `frontier-survey` | 5 (left rail, section opener, crew dossier, album screen, version timeline) | Industrial sci-fi frontier game site: a white page with a fixed left rail, one signal yellow as tall columns and side bands, four-layer section titles, hatched ghost lettering, contours and data marks (objects come from image slots) |
 | `lattice-dossier` | 5 (top frame, rail pager, section heading with ghost word, bulletin screen, four columns) | Industrial dossier-terminal game site: near-black ground, a 172-unit lattice with both diagonals, three frame hairlines (y 152, y 900, x 1683), one signal cyan for state only, a rail numeral cut to its top 55% |
 | `celestial-voyage` | 4 (site top bar with hanging logo and cream tab, gilt news ticket, news section, character section with faction orbit) | Star-voyage fantasy RPG site: deep navy star field, gold only as hairlines and the current state, a heavy CJK serif title over a hairline italic Latin ghost, gilt-rimmed rounded cards, faction medallions on an arc centred off-screen |
+| `megastructure-ink` | 5 (shaft key visual with scale marker, top bar with depths, monitor label plate, descent HUD frame, switchboard terminal) | Endless-megastructure manga and anime grammar: black and cold grey with one cold cyan light, structure as an abstract ink line system (perspective shaft, screentone, ribs, cables), a person stated only by a scale marker, white hairline HUD frames, monitors with scanlines, the pack's own rail script |
 
-The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `frontier-survey` from a reference site captured for the owner, `lattice-dossier` from a live official site captured and measured privately and `celestial-voyage` from a public reference site the owner named (all kept private, measured, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
+The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `frontier-survey` from a reference site captured for the owner, `lattice-dossier` from a live official site captured and measured privately, `celestial-voyage` from a public reference site the owner named and `megastructure-ink` from reference images of a manga and anime lineage the owner named (all kept private, measured, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
 the rule *borrow grammar, never assets*); `examples` in each pack lists the case screens that stayed example
 renders because their structure was a one-off.
 
@@ -334,6 +335,14 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
   character of `faction`. Cinzel and Cormorant Garamond are Latin-only roles (`label`, `ghost`). In show
   mode, carry a screen with type, frames, data and `materials generate` textures (an ink flat, a paper
   stub, FM star dust), not drawn pseudo-illustration; figures go in `art` / `cover*` from a task sheet.
+
+- **megastructure-ink**: never draw a person, mecha, creature or object; the key visual's structure is
+  `shaft()` in `layouts-ink.cjs` (an abstract perspective line system with screentone, `plate=drawn`) or an
+  image slot for generated art (`plate=slot`, a `bg` ground layer), and the scale marker states the person
+  (`scale_small` / `scale_large` / `scale_ratio`). Readouts and depths take digits, `,` `.` and a minus sign;
+  caps lines take Latin capitals, digits and space . : / · -; the data face needs − ° · × – → (keep them in
+  any subset). The rail script (`railLayout`) is the kit's own glyph generator and is decoration beside its
+  reading. The full case with a design-system package is `examples/megastructure-ink-kit`.
 
 Layout helpers for new packs: `layout-kit.cjs` (`rbox` for a tilted slot's box, `tilt`, `ngon`,
 `discStripes`, a seeded `rng`); `d.text(..., { italic, filter })`, `d.lettering(..., { shadow: { dx, dy,

@@ -1,0 +1,106 @@
+{
+ "schema": "megastructure-ink-kit.art-tasks.v1",
+ "note": "One sheet per art slot; slot ids match data-task in templates/*.html.",
+ "tasks": [
+  {
+   "id": "hero-kv",
+   "title": "官网首屏主视觉（巨构竖井 + 一个极小的人）",
+   "use": "site.html #top",
+   "size": "3840×2160",
+   "composition": "人站在 62% 高度的横梁上，身高约占画面 8.5%（1080 高时约 92px），脚点约在 (61%, 60%)；画面下方 34% 会被页面压暗放标题，不放关键细节；中上部 (46%–70%, 34%–40%) 留给比例标。",
+   "light": "光从远处上方来，冷白；竖井深处一道细光缝。",
+   "layers": "layers/hero-kv.layers.json",
+   "original": true
+  },
+  {
+   "id": "world-shaft",
+   "title": "世界分区的竖井剖面（无人）",
+   "use": "site.html #world",
+   "size": "1600×2400",
+   "composition": "全图都是结构，不放人；四个标注点附近（14%,12%）（62%,36%）（30%,64%）（70%,86%）保持中等明度，避免纯黑或纯白，标注牌压在上面。",
+   "light": "自上而下的冷光，越深越暗。",
+   "layers": null,
+   "original": true
+  },
+  {
+   "id": "member-wendi",
+   "title": "测深员立绘：闻笛 S-07（领测）",
+   "use": "site.html #bureau（占位模式）",
+   "size": "1200×1800",
+   "composition": "人物三分之二身，脚下出画；脸和手在安全区内（四周 6%/10%）；背景只要平黑和右侧细刻度。",
+   "light": "右上冷光，左侧冷青轮廓光。",
+   "layers": "layers/member-portrait.layers.json",
+   "original": true
+  },
+  {
+   "id": "member-huoyi",
+   "title": "测深员立绘：霍夷 S-12（制图）",
+   "use": "site.html #bureau（占位模式）",
+   "size": "1200×1800",
+   "composition": "同上。手里可以拿折叠的图纸板。",
+   "light": "同上。",
+   "layers": "layers/member-portrait.layers.json",
+   "original": true
+  },
+  {
+   "id": "member-sujiu",
+   "title": "测深员立绘：苏九 S-19（信号）",
+   "use": "site.html #bureau（占位模式）",
+   "size": "1200×1800",
+   "composition": "同上。耳侧有监听器，背着细天线。",
+   "light": "同上。",
+   "layers": "layers/member-portrait.layers.json",
+   "original": true
+  },
+  {
+   "id": "member-kelan",
+   "title": "测深员立绘：柯岚 S-23（后卫）",
+   "use": "site.html #bureau（占位模式）",
+   "size": "1200×1800",
+   "composition": "同上。背一卷长绳和锤。",
+   "light": "同上。",
+   "layers": "layers/member-portrait.layers.json",
+   "original": true
+  },
+  {
+   "id": "hush-sighting",
+   "title": "缄默体目击（只见回声缺口，不见形体）",
+   "use": "site.html #hush",
+   "size": "3840×1600",
+   "composition": "右侧 40% 会被页面压黑放文字；左侧 60% 是暗的结构空间，三处“缺口”位置（22%,38%）（61%,54%）（78%,30%）画成结构被整齐拆掉的空洞，不画生物本体。",
+   "light": "几乎无光，只有远处一道冷光。",
+   "layers": null,
+   "original": true
+  },
+  {
+   "id": "log-thumb",
+   "title": "通讯头条配图（信标恢复）",
+   "use": "site.html #logs",
+   "size": "1200×675",
+   "composition": "无人；画面中心一盏旧信标在竖井壁上亮着，下方 20% 留暗。",
+   "light": "信标是唯一光源，冷白。",
+   "layers": null,
+   "original": true
+  },
+  {
+   "id": "descend-well",
+   "title": "下潜分区的竖井俯视（无人）",
+   "use": "site.html #descend",
+   "size": "2400×2160",
+   "composition": "无人；俯视一口向下的竖井，消失点在画面下部 78%；左侧 45% 会被页面压黑放文字。",
+   "light": "几乎无光，井底一道冷白细光。",
+   "layers": null,
+   "original": true
+  },
+  {
+   "id": "cockpit-view",
+   "title": "下潜 HUD 的舱外视野",
+   "use": "hud.html",
+   "size": "3840×2160",
+   "composition": "正中 12% 半径内保持中灰（准星压在上面）；左下 30%×12% 留给比例标；不放人。",
+   "light": "舱外照明从视点射出，越远越暗。",
+   "layers": null,
+   "original": true
+  }
+ ]
+}
