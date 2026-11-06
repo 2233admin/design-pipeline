@@ -178,6 +178,7 @@
     "template-game-packs.test.cjs",
     "template-street-tape.test.cjs",
     "template-celestial-voyage.test.cjs",
+    "template-megastructure-ink.test.cjs",
     "template-lattice-dossier.test.cjs",
     "template-frontier-survey.test.cjs",
     "ablation-eval.test.cjs",

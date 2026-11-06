@@ -1,0 +1,170 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.ink-topbar",
+  "family": "ui",
+  "style": "megastructure-ink",
+  "title": "Top bar: rail-script mark, compressed name, Latin name, seven nav items labelled with their depth, a silence indicator and one signal button",
+  "use": "The fixed 56-unit bar of a game site. current picks the highlighted nav item (1-7).",
+  "canvas": {
+    "width": 1920,
+    "height": 56
+  },
+  "sizes": [
+    "1920x56",
+    "2880x84"
+  ],
+  "aspect": "240:7",
+  "accent": {
+    "roles": [
+      "signal",
+      "alarm"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "current": {
+      "default": 1,
+      "min": 1,
+      "max": 7,
+      "class": "decoration",
+      "note": "highlighted nav item"
+    }
+  },
+  "slots": {
+    "brand_cjk": {
+      "kind": "text",
+      "default": "穹井",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "brand_latin": {
+      "kind": "text",
+      "default": "VAULTWELL",
+      "maxChars": 12,
+      "font": "wide",
+      "note": "Latin caps only"
+    },
+    "silence": {
+      "kind": "text",
+      "default": "静默",
+      "maxChars": 2,
+      "font": "body"
+    },
+    "cta": {
+      "kind": "text",
+      "default": "预约下潜",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "nav_1": {
+      "kind": "text",
+      "default": "首层",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "depth_1": {
+      "kind": "text",
+      "default": "−000",
+      "maxChars": 7,
+      "font": "data"
+    },
+    "nav_2": {
+      "kind": "text",
+      "default": "穹井",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "depth_2": {
+      "kind": "text",
+      "default": "−120",
+      "maxChars": 7,
+      "font": "data"
+    },
+    "nav_3": {
+      "kind": "text",
+      "default": "测深署",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "depth_3": {
+      "kind": "text",
+      "default": "−860",
+      "maxChars": 7,
+      "font": "data"
+    },
+    "nav_4": {
+      "kind": "text",
+      "default": "缄默体",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "depth_4": {
+      "kind": "text",
+      "default": "−2,410",
+      "maxChars": 7,
+      "font": "data"
+    },
+    "nav_5": {
+      "kind": "text",
+      "default": "接线台",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "depth_5": {
+      "kind": "text",
+      "default": "−3,377",
+      "maxChars": 7,
+      "font": "data"
+    },
+    "nav_6": {
+      "kind": "text",
+      "default": "通讯",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "depth_6": {
+      "kind": "text",
+      "default": "−3,960",
+      "maxChars": 7,
+      "font": "data"
+    },
+    "nav_7": {
+      "kind": "text",
+      "default": "下潜",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "depth_7": {
+      "kind": "text",
+      "default": "−4,112",
+      "maxChars": 7,
+      "font": "data"
+    }
+  },
+  "relations": [
+    "Bar 56 units on ground with a rule2 seam; nav from x 318, each item a 13-unit label over a 10-unit depth; the current item and its depth in signal with a 2-unit underline.",
+    "One signal fill only (the button); the live square is 6 units."
+  ],
+  "decoration": [
+    "Rail-script mark, seam, live square, menu button: drawn."
+  ],
+  "provenance": {
+    "corpus": "megastructure-ink-kit (《穹井》 VAULTWELL): the original kit in examples/megastructure-ink-kit",
+    "experiment": "styles/megastructure-ink/style.json provenance (reference images measured privately; never shipped)",
+    "accessed": "2026-11-07",
+    "method": "The case's top bar at 1920.",
+    "sampleIds": [
+      "megastructure-ink-kit/topbar"
+    ],
+    "measured": [
+      "Case: bar 56, nav labels 13 / depths 10, button 92 x 32."
+    ],
+    "summary": "megastructure-ink-kit top bar"
+  }
+}

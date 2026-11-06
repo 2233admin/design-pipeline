@@ -1,0 +1,106 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.ink-label-plate",
+  "family": "card",
+  "style": "megastructure-ink",
+  "title": "Monitor label plate with a readout: a square tile, a dark plate with a thin label and caps, a caption, and a large tabular value in hairline corners",
+  "use": "A HUD tile or a stat card. tone=panel|screen|alarm.",
+  "canvas": {
+    "width": 720,
+    "height": 200
+  },
+  "sizes": [
+    "720x200",
+    "1440x400"
+  ],
+  "aspect": "18:5",
+  "accent": {
+    "roles": [
+      "signal",
+      "alarm"
+    ],
+    "maxShare": 0.2
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "tone": {
+      "type": "enum",
+      "values": [
+        "panel",
+        "screen",
+        "alarm"
+      ],
+      "default": "panel",
+      "class": "decoration",
+      "note": "plate tone"
+    }
+  },
+  "slots": {
+    "plate": {
+      "kind": "text",
+      "default": "实况",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "plate_en": {
+      "kind": "text",
+      "default": "LIVE",
+      "maxChars": 10,
+      "font": "wide"
+    },
+    "plate_note": {
+      "kind": "text",
+      "default": "03:12:44",
+      "maxChars": 12,
+      "font": "data"
+    },
+    "label": {
+      "kind": "text",
+      "default": "当前深度",
+      "maxChars": 4,
+      "font": "body"
+    },
+    "label_en": {
+      "kind": "text",
+      "default": "DEPTH",
+      "maxChars": 10,
+      "font": "wide"
+    },
+    "value": {
+      "kind": "text",
+      "default": "−41,200",
+      "maxChars": 8,
+      "font": "data"
+    },
+    "unit": {
+      "kind": "text",
+      "default": "m",
+      "maxChars": 4,
+      "font": "data"
+    }
+  },
+  "relations": [
+    "Tile 40 x 44 beside a 160 x 44 plate; the label tracked 0.3em; the value 56 units on a 1-unit rule in the tone's colour."
+  ],
+  "decoration": [
+    "Corners, tile marks: drawn."
+  ],
+  "provenance": {
+    "corpus": "megastructure-ink-kit (《穹井》 VAULTWELL): the original kit in examples/megastructure-ink-kit",
+    "experiment": "styles/megastructure-ink/style.json provenance (reference images measured privately; never shipped)",
+    "accessed": "2026-11-07",
+    "method": "The case's LabelPlate and Readout components at 1:1.",
+    "sampleIds": [
+      "megastructure-ink-kit/label-plate"
+    ],
+    "measured": [
+      "Reference monitors: a dark label plate about 2.4% of frame height with a thin CJK label and a small caption."
+    ],
+    "summary": "megastructure-ink-kit label plate"
+  }
+}

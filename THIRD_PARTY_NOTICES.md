@@ -1029,3 +1029,12 @@ roles were measured from a reference corpus; nothing from that corpus is bundled
   License 1.1) limited to printable ASCII, with Oswald's variable weight axis kept, and each font's OFL
   text beside it (`fonts/OFL-*.txt`). They are not renamed; none of the OFL texts declares a Reserved
   Font Name. Source URL, commit and checksum are in `tests/fixtures/lattice-dossier/provenance.csv`.
+
+## Megastructure-ink kit fonts and test fixtures (2026-11-07)
+
+- `examples/megastructure-ink-kit/design-system/fonts/` (example, not packaged) and
+  `tests/fixtures/megastructure-ink/fonts/` (test fixture, not packaged): byte-identical WOFF subsets of
+  Michroma Regular and Chakra Petch Medium (The Michroma and Chakra Petch Project Authors, SIL Open Font
+  License 1.1) limited to printable ASCII plus ° · × – — − ← → (where the face has them), each with the
+  font's OFL text beside it. They are not renamed; neither OFL text declares a Reserved Font Name. Source
+  URL, commit and checksum are in `tests/fixtures/megastructure-ink/provenance.csv`.
