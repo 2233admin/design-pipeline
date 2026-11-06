@@ -29,8 +29,9 @@ grammar + check rules; its templates are the parameterised layouts of that gramm
 | `frontier-survey` | 5 (left rail, section opener, crew dossier, album screen, version timeline) | Industrial sci-fi frontier game site: a white page with a fixed left rail, one signal yellow as tall columns and side bands, four-layer section titles, hatched ghost lettering, contours and data marks (objects come from image slots) |
 | `lattice-dossier` | 5 (top frame, rail pager, section heading with ghost word, bulletin screen, four columns) | Industrial dossier-terminal game site: near-black ground, a 172-unit lattice with both diagonals, three frame hairlines (y 152, y 900, x 1683), one signal cyan for state only, a rail numeral cut to its top 55% |
 | `celestial-voyage` | 4 (site top bar with hanging logo and cream tab, gilt news ticket, news section, character section with faction orbit) | Star-voyage fantasy RPG site: deep navy star field, gold only as hairlines and the current state, a heavy CJK serif title over a hairline italic Latin ghost, gilt-rimmed rounded cards, faction medallions on an arc centred off-screen |
+| `crisis-command` | 5 (title card, film title line, alarm wall, countdown bezel, coupling board with a five-seat vote) | Crisis-terminal and title-card grammar of a 1990s giant-robot anime: heavy Mincho compressed in measured steps on black, red 3.06:1 hexagons with 55-degree tips over a blue lattice, drawn amber segment clocks, hard-cut state changes |
 
-The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `frontier-survey` from a reference site captured for the owner, `lattice-dossier` from a live official site captured and measured privately and `celestial-voyage` from a public reference site the owner named (all kept private, measured, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
+The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `frontier-survey` from a reference site captured for the owner, `lattice-dossier` from a live official site captured and measured privately, `celestial-voyage` from a public reference site the owner named and `crisis-command` from broadcast and film frames measured privately (all kept private, measured, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
 the rule *borrow grammar, never assets*); `examples` in each pack lists the case screens that stayed example
 renders because their structure was a one-off.
 
@@ -335,8 +336,17 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
   mode, carry a screen with type, frames, data and `materials generate` textures (an ink flat, a paper
   stub, FM star dust), not drawn pseudo-illustration; figures go in `art` / `cover*` from a task sheet.
 
+- **crisis-command**: Mincho is compressed, never redrawn: `d.text(..., { compress })` draws a scale-only matrix
+  about the anchor and the check keeps the vertical type size. The steps are `COMPRESS` in `layouts-crisis.cjs`
+  (1.00 card, 0.85 panel, 0.65 credits, 0.35 film; the film template stops at 0.40 with the open face). The
+  title card's three title slots make the L: `head_1` alone on line one, `head_2`, a half-pitch comma, `head_3`.
+  Clock and ratio digits are drawn segments in lettering slots (`clock` hh:mm:ss, `elapsed` hh:mm:ss.cc, `ratio`
+  digits with one decimal); Latin slots take ASCII only and are sized from Archivo when `--font-dir` supplies it,
+  else pinned to Noto Sans SC. Hexagons are 3.06:1 with 55-degree tips (`HEX`). Mecha, pilots and feeds are image
+  slots with task sheets; the example `examples/crisis-command-ui-kit/` carries the case's pages and 26 components.
+
 Layout helpers for new packs: `layout-kit.cjs` (`rbox` for a tilted slot's box, `tilt`, `ngon`,
-`discStripes`, a seeded `rng`); `d.text(..., { italic, filter })`, `d.lettering(..., { shadow: { dx, dy,
+`discStripes`, a seeded `rng`); `d.text(..., { italic, filter, compress })` (compress scales x about the anchor and keeps the type size), `d.lettering(..., { shadow: { dx, dy,
 role } })` for an offset plate, and `d.image(..., { labelAt: [fx, fy] })` to move a placeholder label off
 the layout's copy. Placeholder labels switch to black or white when their grey would fall under 4.5:1 on
 the slot's hatch.

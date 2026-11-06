@@ -570,7 +570,9 @@ function textExtent(textNode) {
     measured.push({ text: line.text, box: bounds(corners), length });
   }
   const all = measured.flatMap((line) => [[line.box[0], line.box[1]], [line.box[0] + line.box[2], line.box[1] + line.box[3]]]);
-  const scale = Math.hypot(m[0], m[1]);
+  // The type size follows the vertical axis, so mechanically compressed (scaleX) text keeps its size;
+  // for rotations and uniform scales both axes agree.
+  const scale = Math.hypot(m[2], m[3]);
   return { box: bounds(all), lines: measured, size: size * scale, spacing, vertical, fill: a.fill || attr(textNode, "fill"), weight: Number(a["font-weight"] || attr(textNode, "font-weight") || 400) };
 }
 

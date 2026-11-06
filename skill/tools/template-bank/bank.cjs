@@ -13,7 +13,7 @@ const measure = require("./measure.cjs");
 const coverage = require("./coverage.cjs");
 const layerContract = require("./layers.cjs");
 const compositor = require("../art-motion/composite.cjs");
-const LAYOUTS = Object.assign({}, ...["layouts.cjs", "layouts-shinbo.cjs", "layouts-citypop.cjs", "layouts-xerox.cjs", "layouts-litho.cjs", "layouts-pixel.cjs", "layouts-hud.cjs", "layouts-cyanotype.cjs", "layouts-street.cjs", "layouts-survey.cjs", "layouts-lattice.cjs", "layouts-voyage.cjs"]
+const LAYOUTS = Object.assign({}, ...["layouts.cjs", "layouts-shinbo.cjs", "layouts-citypop.cjs", "layouts-xerox.cjs", "layouts-litho.cjs", "layouts-pixel.cjs", "layouts-hud.cjs", "layouts-cyanotype.cjs", "layouts-street.cjs", "layouts-survey.cjs", "layouts-lattice.cjs", "layouts-voyage.cjs", "layouts-crisis.cjs"]
   .filter((file) => fs.existsSync(path.join(__dirname, file))).map((file) => require(`./${file}`).LAYOUTS));
 
 const TEMPLATES_ROOT = path.join(__dirname, "templates");
@@ -386,9 +386,15 @@ class Doc {
     const content = lines.length > 1
       ? lines.map((line, index) => `<tspan x="${f1(x)}" dy="${index === 0 ? "0" : f1(size * lineHeight)}">${esc(line)}</tspan>`).join("")
       : esc(lines[0]);
-    const markup = `<text ${attrs.join(" ")}>${content}</text>`;
+    // o.compress: mechanical horizontal compression (0 < c <= 2) about the anchor x, as a scale-only matrix
+    // on a wrapping group; the check reads the compressed extent through the transform and keeps the
+    // type size from the vertical axis.
+    const c = o.compress && o.compress !== 1 ? o.compress : null;
+    if (c !== null && !(c > 0 && c <= 2)) throw new BankError(`layout ${this.m.id} compresses slot ${name} by ${c}; the factor must be in (0, 2]`);
+    let markup = `<text ${attrs.join(" ")}>${content}</text>`;
+    if (c !== null) markup = `<g transform="matrix(${Number(c.toFixed(4))} 0 0 1 ${f1(x * (1 - c))} 0)">${markup}</g>`;
     this.body.push(o.transform ? `<g transform="${o.transform}">${markup}</g>` : markup);
-    return { width: measure.textWidth(lines[0], size, spacing, font), lines: lines.length };
+    return { width: measure.textWidth(lines[0], size, spacing, font) * (c ?? 1), lines: lines.length };
   }
 
   // Lettering slot drawn with the code-drawn glyphs; (x, y) is the top of the cap box.

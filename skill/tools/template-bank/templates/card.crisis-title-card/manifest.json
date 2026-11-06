@@ -1,0 +1,122 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.crisis-title-card",
+  "family": "card",
+  "style": "crisis-command",
+  "title": "Episode title card: the number line at half size, the title in heavy Mincho broken into an L (one glyph, then the rest after a half-pitch comma) on black, paper or the red card",
+  "use": "Chapter, episode or section openers; the cut-in card of a film or a deck.",
+  "canvas": {
+    "width": 1440,
+    "height": 1080
+  },
+  "sizes": [
+    "1440x1080",
+    "960x720",
+    "2048x1536"
+  ],
+  "aspect": "4:3",
+  "accent": {
+    "roles": [
+      "alert"
+    ],
+    "maxShare": 0.2
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "ground": {
+      "type": "enum",
+      "values": [
+        "black",
+        "paper",
+        "red"
+      ],
+      "default": "black",
+      "class": "decoration",
+      "note": "black: white on black; paper: black on #F0F2F0; red: red-orange on #140202"
+    },
+    "number": {
+      "type": "enum",
+      "values": [
+        "row",
+        "column"
+      ],
+      "default": "row",
+      "class": "proportion",
+      "note": "row: the number over the title at half its size; column: set vertically down the left edge"
+    },
+    "compress": {
+      "default": 1,
+      "min": 0.65,
+      "max": 1,
+      "class": "proportion",
+      "note": "horizontal compression of the title lines (a line wider than the card is compressed further, never under 0.65)"
+    },
+    "scale": {
+      "default": 1,
+      "min": 0.9,
+      "max": 1,
+      "class": "rhythm",
+      "note": "title size against the measured 31% of the card height"
+    }
+  },
+  "slots": {
+    "number": {
+      "kind": "text",
+      "default": "第壹报",
+      "maxChars": 5,
+      "font": "head",
+      "note": "the episode or report number"
+    },
+    "head_1": {
+      "kind": "text",
+      "default": "水",
+      "maxChars": 3,
+      "font": "head",
+      "title": true,
+      "note": "line one: one glyph (the L's upright)"
+    },
+    "head_2": {
+      "kind": "text",
+      "default": "位",
+      "maxChars": 3,
+      "font": "head",
+      "title": true,
+      "note": "line two before the comma"
+    },
+    "head_3": {
+      "kind": "text",
+      "default": "越线",
+      "maxChars": 4,
+      "font": "head",
+      "title": true,
+      "note": "line two after the comma"
+    }
+  },
+  "relations": [
+    "Left margin 6.5% of H, number ink top 6.4% of H; number ink 15.4% of H, title ink 31% of H (2:1).",
+    "Line one ink top at 26.4% of H, line two at 60.5% of H; the comma advances half a glyph.",
+    "The type block weighs to the lower left; the right tenth of the card stays empty."
+  ],
+  "decoration": [
+    "Nothing: a title card carries no decoration."
+  ],
+  "provenance": {
+    "corpus": "tidemark case (潮位警报 TIDEMARK): our own original organisation terminal site, two app screens and UI kit in the crisis-command grammar",
+    "experiment": "styles/crisis-command/style.json provenance (broadcast and film frames measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "glyph ink boxes on the 2048 x 1536 broadcast card (number 240 x 237, title 483 x 474, comma 154 wide, lines at 405 and 930), composition share and weight centre",
+    "sampleIds": [
+      "tidemark/crisis-title-card"
+    ],
+    "measured": [
+      "Reference: dark 79%, type 19%, weight centre (0.38, 0.60).",
+      "Case: 第壹报 水 / 位、越线 at 0 findings."
+    ],
+    "summary": "tidemark title card"
+  }
+}

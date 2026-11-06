@@ -1,0 +1,10 @@
+<!-- @dsCard group="Controls" height=380 -->
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Command field</title></head>
+<body class="cc-page">
+<section class="cc-demo"><p class="cc-demo__label">rest, error and disabled</p>
+<div style="display: grid; gap: var(--space-5); width: 560px"><form class="cc-field"><label class="cc-field__label" for="f1"><span class="cc-mincho">指令</span> CMD</label><span class="cc-field__prompt" aria-hidden="true">&gt;</span><input class="cc-field__input" id="f1" placeholder="输入指令，例如 STATUS E-12"><span class="cc-field__hint">回车执行 · ENTER TO RUN</span></form><form class="cc-field is-error"><label class="cc-field__label" for="f2"><span class="cc-mincho">指令</span> CMD</label><span class="cc-field__prompt" aria-hidden="true">&gt;</span><input class="cc-field__input" id="f2" value="OPEN E-99" aria-invalid="true" aria-describedby="f2h"><span class="cc-field__hint" id="f2h">未知闸位 E-99 · UNKNOWN GATE</span></form><form class="cc-field"><label class="cc-field__label" for="f3"><span class="cc-mincho">指令</span> CMD</label><span class="cc-field__prompt" aria-hidden="true">&gt;</span><input class="cc-field__input" id="f3" value="终端锁定中" disabled><span class="cc-field__hint">表决期间不可输入 · LOCKED</span></form></div>
+</section>
+</body>
+</html>

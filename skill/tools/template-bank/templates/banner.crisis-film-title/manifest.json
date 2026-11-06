@@ -1,0 +1,108 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "banner.crisis-film-title",
+  "family": "banner",
+  "style": "crisis-command",
+  "title": "Film title line: one centred line of heavy Mincho compressed to 0.40, a colon and a mark, an optional compressed English caption, on black",
+  "use": "Film, season or campaign title frames; the opening and closing card of a trailer.",
+  "canvas": {
+    "width": 1920,
+    "height": 816
+  },
+  "sizes": [
+    "1920x816",
+    "960x408"
+  ],
+  "aspect": "40:17",
+  "accent": {
+    "roles": [
+      "alert",
+      "deep"
+    ],
+    "maxShare": 0.12
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "compress": {
+      "default": 0.4,
+      "min": 0.3,
+      "max": 0.5,
+      "class": "proportion",
+      "note": "the measured film step is 0.35; 0.40 keeps the open face's horizontals"
+    },
+    "height": {
+      "default": 0.29,
+      "min": 0.2,
+      "max": 0.39,
+      "class": "proportion",
+      "note": "title ink height as a share of the frame (measured 0.20-0.39)"
+    },
+    "ink": {
+      "type": "enum",
+      "values": [
+        "alert",
+        "deep",
+        "ink"
+      ],
+      "default": "alert",
+      "class": "decoration",
+      "note": "one colour per title"
+    },
+    "caption": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "the compressed English line under the title"
+    }
+  },
+  "slots": {
+    "title": {
+      "kind": "text",
+      "default": "潮位警报重编版",
+      "maxChars": 9,
+      "font": "head",
+      "title": true
+    },
+    "mark": {
+      "kind": "text",
+      "default": "初",
+      "maxChars": 2,
+      "font": "head",
+      "title": true,
+      "note": "after the colon"
+    },
+    "caption": {
+      "kind": "text",
+      "default": "TIDEMARK RECAST 1.0 FIRST TIDE",
+      "maxChars": 36,
+      "font": "grot",
+      "note": "Latin only"
+    }
+  },
+  "relations": [
+    "One line centred, its vertical centre at 0.48 of the height.",
+    "Ideographs at 0.35-0.40 of their width; the colon 0.4 em; the mark 12% wider than the title."
+  ],
+  "decoration": [
+    "Nothing but the type."
+  ],
+  "provenance": {
+    "corpus": "tidemark case (潮位警报 TIDEMARK): our own original organisation terminal site, two app screens and UI kit in the crisis-command grammar",
+    "experiment": "styles/crisis-command/style.json provenance (broadcast and film frames measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "per-glyph ink boxes on three film title cards (1920 x 1080, 1400 x 788, 1920 x 816): 新 劇 場 版 at 0.35 in all three, height 20-39% of the frame, centred (margins 148 / 143)",
+    "sampleIds": [
+      "tidemark/crisis-film-title"
+    ],
+    "measured": [
+      "Reference: dark 91-97%, red 3-9%.",
+      "Case: 潮位警报重编版：初 at 0 findings."
+    ],
+    "summary": "tidemark film title"
+  }
+}

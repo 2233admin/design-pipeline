@@ -1,0 +1,75 @@
+/* Crisis Command — generated from tokens.json */
+:root, [data-theme="terminal"] {
+  --void: #000000;
+  --panel: #0d0906;
+  --panel-raised: #1a120b;
+  --rule: #3b2a17;
+  --rule-strong: #7a5524;
+  --grid: #2a1a0c;
+  --ink: #ffffff;
+  --ink-muted: #c9beb5;
+  --ink-dim: #9c918a;
+  --amber: #f2a93b;
+  --amber-strong: #ffc766;
+  --amber-dim: #a07a3f;
+  --amber-wash: #2b1d0b;
+  --glow: #7a4a10;
+  --alert: #e8380d;
+  --alert-strong: #ff5530;
+  --alert-dim: #7a1d08;
+  --alert-ink: #ff6a45;
+  --alert-deep: #b8182c;
+  --on-alert: #000000;
+  --on-amber: #000000;
+  --alarm: #b0081f;
+  --alarm-strong: #d0102a;
+  --alarm-rule: #ff6a4a;
+  --on-alarm: #fff1ea;
+  --screen: #2b4f69;
+  --screen-deep: #18324a;
+  --lattice: #6f95b0;
+  --paper: #f0f2f0;
+  --on-paper: #000000;
+  --blood: #140202;
+  --ok: #7fb241;
+  --ok-deep: #2f4a17;
+  --focus-ring: #f2a93b;
+}
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-none: 0px;
+  --radius-box: 6px;
+  --radius-round: 9999px;
+  --bar-h: 56px;
+  --chamfer: 16px;
+  --chamfer-sm: 10px;
+  --stripe: 12px;
+  --hex-rule: 6px;
+  --lattice-step: 46px;
+  --scan: 3px;
+  --dur-hover: 120ms;
+  --dur-flicker: 80ms;
+  --dur-blink: 1000ms;
+  --dur-scan: 4000ms;
+  --dur-tick: 1000ms;
+  --dur-cut: 0ms;
+  --ease-standard: cubic-bezier(.2, 0, 0, 1);
+  --font-mincho: "Noto Serif SC", "Noto Serif CJK SC", "Source Han Serif SC", serif;
+  --font-grot: "Archivo", "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+  --font-sans: "Noto Sans SC", "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+.head-xl { font-family: var(--font-mincho); font-size: 72px; line-height: 1; font-weight: 900; }
+.head-l { font-family: var(--font-mincho); font-size: 48px; line-height: 1.05; font-weight: 900; }
+.head-m { font-family: var(--font-mincho); font-size: 28px; line-height: 1.15; font-weight: 900; }
+.grot-label { font-family: var(--font-grot); font-size: 13px; line-height: 1.2; font-weight: 700; letter-spacing: 0.14em; }
+.data { font-family: var(--font-grot); font-size: 15px; line-height: 1.4; font-weight: 600; }
+.body { font-family: var(--font-sans); font-size: 15px; line-height: 1.7; font-weight: 400; }
+.body-s { font-family: var(--font-sans); font-size: 13px; line-height: 1.5; font-weight: 400; }
