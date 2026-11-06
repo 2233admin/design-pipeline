@@ -32,6 +32,12 @@
   covers all 285 CJK characters; `fonts measure` finds nothing missing in Michroma, Oswald or Chakra Petch.
 - Templates: every default render, each listed size and 50 seeds pass the static check, and so do the
   variants; every default render passes the browser check; cyan stays under 3% of each default render.
+- The rail line `// 02 / 05` is positioned from the advance widths of the family that renders (`MONO_EM` in
+  `layouts-lattice.cjs`, measured in Chrome at weight 500): the first `mono` stack family whose face
+  `--font-dir` supplies, else the stack's last family, Noto Sans SC, pinned (the same rule as street-tape's
+  section number). Positions never come from a face that is only named. The browser tests render with
+  `--font-dir` holding OFL subset fixtures of the three Latin faces (`tests/fixtures/lattice-dossier/`) and the
+  bundled Noto Sans SC 700, so they do not depend on installed fonts.
 
 ## Compatibility
 

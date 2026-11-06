@@ -48,23 +48,52 @@ const ICON = {
   book: (x, y, s, c) => `<path d="M${f1(x - 24 * s)} ${f1(y - 20 * s)}c${f1(10 * s)} ${f1(-4 * s)} ${f1(18 * s)} ${f1(-4 * s)} ${f1(24 * s)} ${f1(2 * s)}c${f1(6 * s)} ${f1(-6 * s)} ${f1(14 * s)} ${f1(-6 * s)} ${f1(24 * s)} ${f1(-2 * s)}v${f1(40 * s)}c${f1(-10 * s)} ${f1(-4 * s)} ${f1(-18 * s)} ${f1(-4 * s)} ${f1(-24 * s)} ${f1(2 * s)}c${f1(-6 * s)} ${f1(-6 * s)} ${f1(-14 * s)} ${f1(-6 * s)} ${f1(-24 * s)} ${f1(-2 * s)}zM${f1(x)} ${f1(y - 18 * s)}v${f1(40 * s)}" fill="none" stroke="${c}" stroke-width="${f1(4 * s)}"/>`,
 };
 
+// Advance widths in em at weight 500 of the digits 0-9 and "/" in the "mono" stack families, measured in
+// headless Chrome from the font files (no kerning between digits or slashes: pair sums equal the measured
+// widths). Chakra Petch and Oswald digits are proportional, Noto Sans SC's are tabular.
+const MONO_EM = {
+  "Chakra Petch": { digits: [0.636, 0.366, 0.558, 0.587, 0.563, 0.59, 0.606, 0.506, 0.622, 0.611], slash: 0.484 },
+  Oswald: { digits: [0.534, 0.382, 0.497, 0.496, 0.504, 0.493, 0.521, 0.413, 0.51, 0.521], slash: 0.396 },
+  "Noto Sans SC": { digits: Array(10).fill(0.57), slash: 0.39 },
+};
+// The family the rail line is set and positioned in: the first stack family whose face --font-dir supplies
+// (its @font-face is in the SVG, so it is what renders). With none supplied, the line is pinned to the
+// stack's last family, Noto Sans SC (the catalog-resolved family of this pack's CJK roles), and positioned
+// from its widths; Chakra Petch and Oswald are named, not bundled, and a machine without them would render
+// a different face than the one the positions were computed for.
+function monoFamily(d) {
+  const stack = d.roles.mono.stack.filter((family) => MONO_EM[family]);
+  return stack.find((family) => d.faces.some((face) => face.family === family)) || stack[stack.length - 1];
+}
+
 // The rail numeral: a giant wide two-digit number cut to its top 55% (decoration; the readable
 // number is the small "// 02 / 05" line), a ground plate under the small line where it crosses it.
 function railNumber(d, right, top, s) {
   const { text: cur } = d.value("current"); digits(d, "current"); digits(d, "total");
+  const { text: tot } = d.value("total");
   const size = 86.4 * s; const keep = 47.5 * s;
   d.def(`<clipPath id="rail-cut-${d.railN = (d.railN || 0) + 1}"><rect x="${f1(right - 190 * s)}" y="${f1(top)}" width="${f1(190 * s)}" height="${f1(keep)}"/></clipPath>`);
   d.raw(`<g clip-path="url(#rail-cut-${d.railN})">`);
   d.text("numeral", right - 190 * s, top + size * 0.72, size, { role: "cyan", family: "wide", content: String(cur), tracking: -45, box: [right - 192 * s, top - size * 0.2, 192 * s, size * 1.25] });
   d.raw("</g>");
-  // "// 02 / 05" is set from the right in Chakra Petch 18 (digit 0.52 em, "/" 0.39 em): the total ends at
-  // the rail edge, then each part sits 9 units from the next, so the gaps are equal (measured 8.8 to 9.5; 10.9 before a one-digit-wide number).
-  const oy = top + 13 * s; const ow = 94 * s;
+  // "// 02 / 05" is set from the right edge with a 7-unit gap between the advance boxes of its parts,
+  // from the widths of the family that renders (MONO_EM), so the gaps are even in whichever face is used.
+  const fam = monoFamily(d); const em = MONO_EM[fam]; const px = 18 * s; const gap = 7 * s;
+  const width = (text) => [...String(text)].reduce((sum, ch) => sum + em.digits[Number(ch)], 0) * px;
+  const slash = em.slash * px;
+  const totalX = right - width(tot);
+  const slashX = totalX - gap - slash;
+  const curEnd = slashX - gap;
+  const dslashX = curEnd - width(cur) - gap - 2 * slash;
+  const oy = top + 13 * s; const ow = right - dslashX + 8 * s;
+  const at = d.roles.mono.stack.indexOf(fam);
+  const css = at === 0 ? d.families.mono : d.stackCss(d.roles.mono.stack.slice(at), d.roles.mono.generic);
+  const deco = (x, t) => `<text data-deco="1" x="${f1(x)}" y="${f1(oy + 17 * s)}" font-family="${css.replace(/"/g, "&quot;")}" font-weight="${d.roles.mono.weight}" font-size="${f1(px)}" fill="${d.pal.white}">${t}</text>`;
   d.rect(right - ow, oy, ow, 22 * s, "bg");
-  d.raw(`<text data-deco="1" x="${f1(right - 85 * s)}" y="${f1(oy + 17 * s)}" font-family="${d.families.mono}" font-size="${f1(18 * s)}" fill="${d.pal.white}">//</text>`);
-  d.text("current", right - 44 * s, oy + 17 * s, 18 * s, { role: "white", family: "mono", anchor: "end", box: [right - 68 * s, oy, 25 * s, 22 * s] });
-  d.raw(`<text data-deco="1" x="${f1(right - 35 * s)}" y="${f1(oy + 17 * s)}" font-family="${d.families.mono}" font-size="${f1(18 * s)}" fill="${d.pal.white}">/</text>`);
-  d.text("total", right, oy + 17 * s, 18 * s, { role: "white", family: "mono", anchor: "end", box: [right - 26 * s, oy, 26 * s, 22 * s] });
+  d.raw(deco(dslashX, "//"));
+  d.text("current", curEnd, oy + 17 * s, px, { role: "white", family: "mono", resolved: fam, anchor: "end", box: [curEnd - 27 * s, oy, 28 * s, 22 * s] });
+  d.raw(deco(slashX, "/"));
+  d.text("total", right, oy + 17 * s, px, { role: "white", family: "mono", resolved: fam, anchor: "end", box: [right - 26 * s, oy, 26 * s, 22 * s] });
   d.text("section", right, top + 72 * s, 16 * s, { role: "white", family: "wide", anchor: "end", tracking: 100, box: [right - 230 * s, top + 54 * s, 230 * s, 22 * s] });
 }
 

@@ -15,3 +15,4 @@
 - [x] 3.1 `skill/references/template-bank.md`, `package-resources.json`, `CHANGELOG.md` [Unreleased].
 - [x] 3.2 `tests/template-lattice-dossier.test.cjs` (registered in `scripts/test-manifest.json`); counts in `tests/template-bank.test.cjs` and `tests/template-style-pack.test.cjs`; distill nearest list.
 - [x] 3.3 Focused tests, then `npm test`.
+- [x] 3.4 Font-deterministic tests: OFL subset fixtures + `--font-dir`, rail line positioned from the rendering family (as #323).

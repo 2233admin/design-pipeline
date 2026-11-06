@@ -36,6 +36,18 @@ const BROWSER = (() => {
 })();
 const CI_SKIP = process.env.GITHUB_ACTIONS === "true" && "text-occluded differs on the CI runner (#305)";
 
+// Fonts the browser tests render with, so they do not depend on what the machine has installed: OFL
+// subset fixtures of the three Latin faces (tests/fixtures/lattice-dossier/provenance.csv) and Noto Sans SC
+// 700 bundled with the skill under the pack's face name.
+function fontDir(root, name = "fonts") {
+  const dir = path.join(root, name);
+  fs.mkdirSync(dir, { recursive: true });
+  const fixtures = path.join(__dirname, "fixtures", "lattice-dossier", "fonts");
+  for (const file of ["ChakraPetch-Medium.woff", "Michroma-Regular.woff", "Oswald[wght].woff"]) fs.copyFileSync(path.join(fixtures, file), path.join(dir, file));
+  fs.copyFileSync(path.join(__dirname, "..", "skill", "tools", "art-motion", "fonts", "NotoSansSC-700.woff"), path.join(dir, "NotoSansSC[wght].woff"));
+  return dir;
+}
+
 test("lattice-dossier names its case and lineage without a game, borrows grammar not assets, resolves its CJK roles through the font catalog, and names its Latin faces with licence and source (not bundled)", () => {
   const style = bank.loadStyle("lattice-dossier");
   assert.match(style.provenance.borrow, /^Borrow grammar, never assets\./);
@@ -125,7 +137,7 @@ test("every lattice-dossier default render passes the browser check too", { skip
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "lattice-browser-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   for (const id of IDS) {
-    const result = cli(root, "template", "render", id, "-o", `${id}.svg`, "--chrome", BROWSER.chrome, "--puppeteer-module", BROWSER.puppeteerModule);
+    const result = cli(root, "template", "render", id, "-o", `${id}.svg`, "--font-dir", fontDir(root), "--chrome", BROWSER.chrome, "--puppeteer-module", BROWSER.puppeteerModule);
     assert.equal(result.status, 0, `${id}: ${JSON.stringify(result.payload?.check?.findings || result.payload?.error || result.stderr)}`);
     assert.equal(result.payload.check.status, "passed", id);
   }
@@ -138,11 +150,12 @@ test("the rail's '// 02 / 05' line has even gaps in the pager and the bulletin (
   try {
     for (const id of ["ui.lattice-pager", "kv.lattice-bulletin"]) {
       const file = path.join(root, `${id}.svg`);
-      const rendered = bank.render(id);
+      const rendered = bank.render(id, { fontDir: fontDir(root, `fonts-${id}`) });
       fs.writeFileSync(file, rendered.svg);
       const page = await browser.newPage();
       await page.setViewport({ width: Math.round(Number(String(rendered.size).split("x")[0])), height: Math.round(Number(String(rendered.size).split("x")[1])) });
       await page.goto(`file://${file}`);
+      await page.evaluate(() => document.fonts.ready);
       const boxes = await page.evaluate(() => {
         const at = (match) => { const node = [...document.querySelectorAll("text")].find(match); const q = node.getBBox(); return [q.x, q.x + q.width]; };
         const slot = (name) => (t) => t.getAttribute("data-slot") === name;
@@ -150,7 +163,21 @@ test("the rail's '// 02 / 05' line has even gaps in the pager and the bulletin (
       });
       await page.close();
       const gaps = [boxes[1][0] - boxes[0][1], boxes[2][0] - boxes[1][1], boxes[3][0] - boxes[2][1]];
-      assert.ok(Math.max(...gaps) - Math.min(...gaps) < 3 && Math.min(...gaps) > 4, `${id}: gaps ${gaps.map((g) => g.toFixed(1)).join(", ")}`);
+      assert.ok(Math.max(...gaps) - Math.min(...gaps) < 1.5 && Math.min(...gaps) > 4, `${id}: gaps ${gaps.map((g) => g.toFixed(1)).join(", ")}`);
     }
   } finally { await browser.close(); fs.rmSync(root, { recursive: true, force: true }); }
+});
+
+test("the rail line is positioned from the family that renders: the supplied Chakra Petch, else Noto Sans SC pinned", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "lattice-pin-"));
+  try {
+    const bare = bank.render("ui.lattice-pager");
+    assert.deepEqual(bare.fontSwitches.filter((f) => f.role === "mono").map((f) => `${f.from}>${f.to}`), ["Chakra Petch>Noto Sans SC", "Chakra Petch>Noto Sans SC"]);
+    assert.match(bare.fontSwitches.find((f) => f.role === "mono").reason, /not in --font-dir either.*Fix:/);
+    assert.match(bare.svg, /data-slot="current"[^>]*font-family="'Noto Sans SC',sans-serif"/);
+    assert.match(bare.svg, /data-deco="1" x="[\d.]+" y="[\d.]+" font-family="'Noto Sans SC',sans-serif"[^>]*>\/\/</);
+    const supplied = bank.render("ui.lattice-pager", { fontDir: fontDir(root) });
+    assert.equal(supplied.fontSwitches.filter((f) => f.role === "mono").length, 0);
+    assert.match(supplied.svg, /data-slot="current"[^>]*font-family="'Chakra Petch','Oswald','Noto Sans SC',sans-serif"/);
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
