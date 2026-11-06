@@ -71,7 +71,8 @@ a.at-link--missing { color: var(--link-missing); }
 .at-brand { display: flex; align-items: center; gap: var(--space-3); min-width: 0; color: var(--ink); }
 .at-brand__mark { width: 40px; height: 40px; flex: none; color: var(--ink); }
 .at-brand__name { font-family: var(--font-display); font-size: 22px; font-weight: 900; letter-spacing: -0.05em; white-space: nowrap; }
-.at-brand__tag { padding: 4px 6px; background: var(--panel-muted); color: var(--ink-muted); font-size: 12px; line-height: 12px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
+/* will-change keeps this small label on its own layer: on a filled background Chrome with subpixel (LCD) text smooths it differently from the same text alone, which the browser check reads as hidden glyphs. */
+.at-brand__tag { will-change: transform; padding: 4px 6px; background: var(--panel-muted); color: var(--ink-muted); font-size: 12px; line-height: 12px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
 .at-topbar__search { flex: 1; display: flex; justify-content: center; min-width: 0; padding: 0 var(--space-8); }
 .at-topbar__actions { display: flex; align-items: center; gap: var(--space-1); margin-left: auto; }
 .at-iconbtn.at-topbar__menu { display: none; }
