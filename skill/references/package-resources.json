@@ -1447,6 +1447,18 @@
     "tools/art-motion/composite.cjs",
     "tools/template-bank/layers.cjs",
     "tools/template-bank/templates/kv.tape-hero/manifest.json",
-    "tools/template-bank/templates/kv.tape-hero/template.svg"
+    "tools/template-bank/templates/kv.tape-hero/template.svg",
+    "tools/template-bank/layouts-ops.cjs",
+    "tools/template-bank/styles/milspec-ops/style.json",
+    "tools/template-bank/templates/card.ops-intel/manifest.json",
+    "tools/template-bank/templates/card.ops-intel/template.svg",
+    "tools/template-bank/templates/card.ops-select-rail/manifest.json",
+    "tools/template-bank/templates/card.ops-select-rail/template.svg",
+    "tools/template-bank/templates/kv.ops-callout/manifest.json",
+    "tools/template-bank/templates/kv.ops-callout/template.svg",
+    "tools/template-bank/templates/ui.ops-brief/manifest.json",
+    "tools/template-bank/templates/ui.ops-brief/template.svg",
+    "tools/template-bank/templates/ui.ops-dock/manifest.json",
+    "tools/template-bank/templates/ui.ops-dock/template.svg"
   ]
 }

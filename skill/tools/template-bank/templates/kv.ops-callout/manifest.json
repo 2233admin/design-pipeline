@@ -1,0 +1,149 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "kv.ops-callout",
+  "family": "kv",
+  "style": "milspec-ops",
+  "title": "Gunsmith callout screen: a generic weapon silhouette on a pegboard with part callouts (dot, hairline leader, name over kind, L-brackets), title and line top-left",
+  "use": "A weapon or kit showcase on a site, or the background of an in-game gunsmith. Weapons are generic code-drawn silhouettes.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "green"
+    ],
+    "maxShare": 0.02
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "tilt": {
+      "default": -7,
+      "min": -10,
+      "max": -4,
+      "class": "rhythm",
+      "note": "weapon tilt, degrees"
+    },
+    "callouts": {
+      "default": 5,
+      "min": 3,
+      "max": 5,
+      "class": "decoration",
+      "note": "number of callouts"
+    }
+  },
+  "slots": {
+    "tag": {
+      "kind": "text",
+      "default": "改枪方案 A",
+      "maxChars": 6,
+      "font": "head"
+    },
+    "title_cjk": {
+      "kind": "text",
+      "default": "TR-11 战术步枪",
+      "maxChars": 14,
+      "font": "head",
+      "title": true
+    },
+    "desc": {
+      "kind": "text",
+      "default": "TR-11 使用 7.2 毫米中间威力弹，射速稳定，配件槽位最多。",
+      "maxChars": 34,
+      "font": "body"
+    },
+    "part_1": {
+      "kind": "text",
+      "default": "四倍棱镜瞄准镜",
+      "maxChars": 9,
+      "font": "body"
+    },
+    "kind_1": {
+      "kind": "text",
+      "default": "瞄具",
+      "maxChars": 6,
+      "font": "body"
+    },
+    "part_2": {
+      "kind": "text",
+      "default": "长效制退器",
+      "maxChars": 9,
+      "font": "body"
+    },
+    "kind_2": {
+      "kind": "text",
+      "default": "枪口",
+      "maxChars": 6,
+      "font": "body"
+    },
+    "part_3": {
+      "kind": "text",
+      "default": "可调战术枪托",
+      "maxChars": 9,
+      "font": "body"
+    },
+    "kind_3": {
+      "kind": "text",
+      "default": "枪托",
+      "maxChars": 6,
+      "font": "body"
+    },
+    "part_4": {
+      "kind": "text",
+      "default": "折角前握把",
+      "maxChars": 9,
+      "font": "body"
+    },
+    "kind_4": {
+      "kind": "text",
+      "default": "前握把",
+      "maxChars": 6,
+      "font": "body"
+    },
+    "part_5": {
+      "kind": "text",
+      "default": "橡胶战术握把",
+      "maxChars": 9,
+      "font": "body"
+    },
+    "kind_5": {
+      "kind": "text",
+      "default": "后握把",
+      "maxChars": 6,
+      "font": "body"
+    }
+  },
+  "relations": [
+    "The weapon is centred at (1150, 560) and fills about 1180 x 520, tilted -4 to -10 degrees.",
+    "Each callout: a 4-unit dot on the part, a hairline leader to the label's corner, an 18-unit name over a 14-unit muted kind, L-brackets at the bottom-left and top-right."
+  ],
+  "decoration": [
+    "The pegboard, the glow, the weapon silhouette, leaders and brackets: drawn."
+  ],
+  "provenance": {
+    "corpus": "stillfield case (寂原行动 STILLFIELD): our own original one-page game site and three in-game screens in the milspec-ops grammar",
+    "experiment": "styles/milspec-ops/style.json provenance (live reference site measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "Measured on the reference: title 35 bold at (409, 152), line 16 at y 234, part labels 18 over 14 with corner brackets, pegboard holes on a 72-unit pitch.",
+    "sampleIds": [
+      "stillfield/arms",
+      "stillfield/gunsmith"
+    ],
+    "measured": [
+      "Reference: six callouts with leaders on the firearm screen.",
+      "Case: the same callouts drive the in-game gunsmith (slot nodes instead of labels)."
+    ],
+    "summary": "stillfield/arms, stillfield/gunsmith"
+  }
+}

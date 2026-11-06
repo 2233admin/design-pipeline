@@ -1,0 +1,116 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.ops-dock",
+  "family": "ui",
+  "style": "milspec-ops",
+  "title": "Bottom dock: a 52-unit bar of six items with a raised five-sided CTA plate in the middle, the current item underlined in green over a dot field",
+  "use": "The fixed bottom navigation of a full-screen-per-topic game site or a game lobby. Six destinations, one two-line call to action.",
+  "canvas": {
+    "width": 1920,
+    "height": 110
+  },
+  "sizes": [
+    "1920x110",
+    "2880x165",
+    "3840x220"
+  ],
+  "aspect": "192:11",
+  "accent": {
+    "roles": [
+      "green"
+    ],
+    "maxShare": 0.08
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "current": {
+      "default": 1,
+      "min": 1,
+      "max": 6,
+      "class": "decoration",
+      "note": "the current item (1-6)"
+    },
+    "glow": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "the green dot field over the current item"
+    }
+  },
+  "slots": {
+    "nav_1": {
+      "kind": "text",
+      "default": "首页",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "nav_2": {
+      "kind": "text",
+      "default": "新闻",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "nav_3": {
+      "kind": "text",
+      "default": "模式",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "nav_4": {
+      "kind": "text",
+      "default": "干员",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "nav_5": {
+      "kind": "text",
+      "default": "武器",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "nav_6": {
+      "kind": "text",
+      "default": "载具",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "cta_1": {
+      "kind": "text",
+      "default": "立即",
+      "maxChars": 2,
+      "font": "head"
+    },
+    "cta_2": {
+      "kind": "text",
+      "default": "下载",
+      "maxChars": 2,
+      "font": "head"
+    }
+  },
+  "relations": [
+    "Bar 52 units high; items 147 wide from x 391 (three left, three right of the plate).",
+    "The plate is 165 x 110, centred, its shoulders at 34% of its height; the CTA is two lines of two characters in green on the deep green plate."
+  ],
+  "decoration": [
+    "The dot field, the underline, the plate outline and the chevron: drawn."
+  ],
+  "provenance": {
+    "corpus": "stillfield case (寂原行动 STILLFIELD): our own original one-page game site and three in-game screens in the milspec-ops grammar",
+    "experiment": "styles/milspec-ops/style.json provenance (live reference site measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "Measured on the reference: dock 52 high, items 147 x 93, CTA 165 x 110 at x 878; the case keeps them.",
+    "sampleIds": [
+      "stillfield/dock"
+    ],
+    "measured": [
+      "Reference: items at x 391, 537, 684 | 1090, 1236, 1383; label 15.75 px #8E8E8E, the current one a dot-grid glow and a 2 px green line.",
+      "Case: our plate is five-sided (not the reference's triangle), with a light sweeping down every 1.5 s."
+    ],
+    "summary": "stillfield/dock"
+  }
+}

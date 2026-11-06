@@ -1,0 +1,135 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.ops-select-rail",
+  "family": "card",
+  "style": "milspec-ops",
+  "title": "Selection rail: thumbs on a hairline with square markers, the current frame and marker amber, joined by a short connector",
+  "use": "The left list of a detail screen (modes, operators, weapons, vehicles) or an in-game picker. 3-6 items.",
+  "canvas": {
+    "width": 320,
+    "height": 900
+  },
+  "sizes": [
+    "320x900",
+    "480x1350",
+    "640x1800"
+  ],
+  "aspect": "16:45",
+  "accent": {
+    "roles": [
+      "amber"
+    ],
+    "maxShare": 0.06
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "items": {
+      "default": 6,
+      "min": 3,
+      "max": 6,
+      "class": "decoration",
+      "note": "number of items"
+    },
+    "current": {
+      "default": 1,
+      "min": 1,
+      "max": 6,
+      "class": "decoration",
+      "note": "the selected item"
+    }
+  },
+  "slots": {
+    "pic_1": {
+      "kind": "image",
+      "ground": "slate",
+      "note": "thumb 223 x 103"
+    },
+    "name_1": {
+      "kind": "text",
+      "default": "全面突击",
+      "maxChars": 8,
+      "font": "head"
+    },
+    "pic_2": {
+      "kind": "image",
+      "ground": "slate",
+      "note": "thumb 223 x 103"
+    },
+    "name_2": {
+      "kind": "text",
+      "default": "寂原撤离",
+      "maxChars": 8,
+      "font": "head"
+    },
+    "pic_3": {
+      "kind": "image",
+      "ground": "slate",
+      "note": "thumb 223 x 103"
+    },
+    "name_3": {
+      "kind": "text",
+      "default": "断桥协议",
+      "maxChars": 8,
+      "font": "head"
+    },
+    "pic_4": {
+      "kind": "image",
+      "ground": "slate",
+      "note": "thumb 223 x 103"
+    },
+    "name_4": {
+      "kind": "text",
+      "default": "灰隼",
+      "maxChars": 8,
+      "font": "head"
+    },
+    "pic_5": {
+      "kind": "image",
+      "ground": "slate",
+      "note": "thumb 223 x 103"
+    },
+    "name_5": {
+      "kind": "text",
+      "default": "锚点",
+      "maxChars": 8,
+      "font": "head"
+    },
+    "pic_6": {
+      "kind": "image",
+      "ground": "slate",
+      "note": "thumb 223 x 103"
+    },
+    "name_6": {
+      "kind": "text",
+      "default": "白噪",
+      "maxChars": 8,
+      "font": "head"
+    }
+  },
+  "relations": [
+    "Frames 231 x 111 on a 126 pitch, 41 units right of the hairline; 9-unit square markers centred on the line.",
+    "The current frame has a 2-unit amber border; its marker grows to 17 with an amber core and an amber connector to the frame."
+  ],
+  "decoration": [
+    "The hairline, markers, connector and the dark band under each name: drawn."
+  ],
+  "provenance": {
+    "corpus": "stillfield case (寂原行动 STILLFIELD): our own original one-page game site and three in-game screens in the milspec-ops grammar",
+    "experiment": "styles/milspec-ops/style.json provenance (live reference site measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "Measured on the reference: line at x 106, markers 9 x 9 at x 102, frames 231 x 111 at x 139 on a 126 pitch, amber #F4CF67 2 px on the current one.",
+    "sampleIds": [
+      "stillfield/rail"
+    ],
+    "measured": [
+      "Reference: the same rail on four screens (modes, operators, firearms, vehicles), the list masked at the bottom.",
+      "Case: the phone turns the rail into a 4-column grid (a scroller ran off the canvas)."
+    ],
+    "summary": "stillfield/rail"
+  }
+}

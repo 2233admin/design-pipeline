@@ -1,0 +1,135 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "ui.ops-brief",
+  "family": "ui",
+  "style": "milspec-ops",
+  "title": "Detail column: a title, a green name line, ruled rows each with an icon, a 23-unit sub-head and 16-unit body; the first row red for the role",
+  "use": "The right column of a detail screen (mode, operator, vehicle) or an in-game info panel.",
+  "canvas": {
+    "width": 500,
+    "height": 640
+  },
+  "sizes": [
+    "500x640",
+    "750x960",
+    "1000x1280"
+  ],
+  "aspect": "25:32",
+  "accent": {
+    "roles": [
+      "green",
+      "red"
+    ],
+    "maxShare": 0.1
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "rows": {
+      "default": 4,
+      "min": 2,
+      "max": 4,
+      "class": "decoration",
+      "note": "number of rows"
+    },
+    "icons": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "row icons in a 60-unit column"
+    }
+  },
+  "slots": {
+    "title": {
+      "kind": "text",
+      "default": "灰隼",
+      "maxChars": 6,
+      "font": "head",
+      "title": true
+    },
+    "name": {
+      "kind": "text",
+      "default": "姓名：沈砚舟",
+      "maxChars": 14,
+      "font": "body"
+    },
+    "sub_1": {
+      "kind": "text",
+      "default": "定位：突击",
+      "maxChars": 10,
+      "font": "head"
+    },
+    "body_1": {
+      "kind": "text",
+      "default": "突击干员拥有更快的冲刺与换弹速度，可携带破片榴弹与震撼弹。",
+      "maxChars": 40,
+      "font": "body",
+      "lines": 2
+    },
+    "sub_2": {
+      "kind": "text",
+      "default": "战术装备 - 推进护腿",
+      "maxChars": 12,
+      "font": "head"
+    },
+    "body_2": {
+      "kind": "text",
+      "default": "短时间内大幅提升冲刺速度，冲刺中开镜不受减速影响。",
+      "maxChars": 40,
+      "font": "body",
+      "lines": 2
+    },
+    "sub_3": {
+      "kind": "text",
+      "default": "战术道具 - 破门炸药",
+      "maxChars": 12,
+      "font": "head"
+    },
+    "body_3": {
+      "kind": "text",
+      "default": "贴附在门与薄墙上远程起爆，炸开一条新的进攻路线。",
+      "maxChars": 40,
+      "font": "body",
+      "lines": 2
+    },
+    "sub_4": {
+      "kind": "text",
+      "default": "干员特长 - 疾行换弹",
+      "maxChars": 12,
+      "font": "head"
+    },
+    "body_4": {
+      "kind": "text",
+      "default": "移动中换弹速度提升，不会打断冲刺。",
+      "maxChars": 40,
+      "font": "body",
+      "lines": 2
+    }
+  },
+  "relations": [
+    "Column 500 wide; title 36 bold, name line 16 green, a 1-unit rule at 104.",
+    "Rows 112 high, ruled; sub-head 23 bold (the role row red, the others green), body 16 on a 24 line; icons 40-48 in a 60-unit column."
+  ],
+  "decoration": [
+    "Rules and icons: drawn."
+  ],
+  "provenance": {
+    "corpus": "stillfield case (寂原行动 STILLFIELD): our own original one-page game site and three in-game screens in the milspec-ops grammar",
+    "experiment": "styles/milspec-ops/style.json provenance (live reference site measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "Measured on the reference: column at x 1333, 500 wide; title 35 bold, name 16 green, sub 23 bold, body 16 / 24, rules 1 px at 50% white, icons 50-60.",
+    "sampleIds": [
+      "stillfield/operators",
+      "stillfield/modes"
+    ],
+    "measured": [
+      "Reference: the same column on the modes, operators and vehicles screens.",
+      "Case: the vehicle screen adds a spec plate under it."
+    ],
+    "summary": "stillfield/operators, stillfield/modes"
+  }
+}

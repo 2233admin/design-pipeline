@@ -28,8 +28,9 @@ grammar + check rules; its templates are the parameterised layouts of that gramm
 | `street-tape` | 6 (site top bar, section title block, vertical pager, cut container with carousel, sticker CTA, first screen as layers) | Japanese street-fashion city game site: light grey, one acid yellow-green, black fine stripes, rounded slabs with one 49-degree cut, a film strip, numbered three-line section titles |
 | `frontier-survey` | 5 (left rail, section opener, crew dossier, album screen, version timeline) | Industrial sci-fi frontier game site: a white page with a fixed left rail, one signal yellow as tall columns and side bands, four-layer section titles, hatched ghost lettering, contours and data marks (objects come from image slots) |
 | `lattice-dossier` | 5 (top frame, rail pager, section heading with ghost word, bulletin screen, four columns) | Industrial dossier-terminal game site: near-black ground, a 172-unit lattice with both diagonals, three frame hairlines (y 152, y 900, x 1683), one signal cyan for state only, a rail numeral cut to its top 55% |
+| `milspec-ops` | 5 (bottom dock with a raised CTA plate, selection rail, gunsmith callout screen, intel card, detail column) | Tactical extraction shooter site: dark slate full screens, one signal green at the hot spots, amber for the selected item, hairline frames with corner ticks, part callouts on a pegboard |
 
-The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `frontier-survey` from a reference site captured for the owner and `lattice-dossier` from a live official site captured and measured privately (all kept private, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
+The six game packs come from owner-approved cases, `street-tape` from a reference board the owner supplied and `frontier-survey` from a reference site captured for the owner, `lattice-dossier` and `milspec-ops` from live official sites captured and measured privately (all kept private, never shipped), each with an original site built on it (each pack's `provenance` names the case, its lineage and
 the rule *borrow grammar, never assets*); `examples` in each pack lists the case screens that stayed example
 renders because their structure was a one-off.
 
@@ -314,6 +315,13 @@ as `lettering-fallback`, because the style changed: Source Han Sans / Serif or N
   `kv.survey-album --param side=right --param band=grey --param wordmark=false` is the mirrored companion
   screen. Figures go in `card.survey-dossier`'s `portrait` (transparent, from an image-generation task
   sheet, #311); a showcase without characters puts an instrument drawing there.
+- **milspec-ops**: one signal green (`green`) is the only strong colour and stays tiny (the CTA plate's label
+  and outline, sub-heads, the current dock line); amber (`amber`) marks only the selected rail item, the pin
+  and 'read more'. `ui.ops-dock` draws a five-sided plate (`PENT` in `layouts-ops.cjs`), never a triangle;
+  `card.ops-intel`'s `date` takes digits and `/ . -`. Rajdhani and Barlow Condensed are Latin-only roles
+  (`num`, `micro`): CJK values (重型) go to `head` or `body`. `kv.ops-callout` draws a generic code-drawn
+  rifle (`rifle()`), never a real model; operators are image slots filled from an image-generation task
+  sheet (#311), and a site without them shows a no-figure version.
 
 - **lattice-dossier**: the frame is fixed (`FRAME` in `layouts-lattice.cjs`: hairlines at y 152, y 900, x 1683
   of 1920; `GRID` 172). Cyan is for state only (current nav and tab, tags, progress, the rail numeral, a

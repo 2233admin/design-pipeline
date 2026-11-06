@@ -1,0 +1,91 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "card.ops-intel",
+  "family": "card",
+  "style": "milspec-ops",
+  "title": "Intel card: a folder strip of unreadable micro-text over a hairline card, a picture, a pin, date, title, summary and an amber 'read more'",
+  "use": "News and notices on a dark site; a briefing card in game.",
+  "canvas": {
+    "width": 483,
+    "height": 424
+  },
+  "sizes": [
+    "483x424",
+    "966x848",
+    "1449x1272"
+  ],
+  "aspect": "483:424",
+  "accent": {
+    "roles": [
+      "amber"
+    ],
+    "maxShare": 0.04
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "pin": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "the amber pin flag"
+    }
+  },
+  "slots": {
+    "media": {
+      "kind": "image",
+      "ground": "slate",
+      "note": "picture 478 x 269"
+    },
+    "date": {
+      "kind": "text",
+      "default": "2026/10/28",
+      "maxChars": 10,
+      "font": "num",
+      "note": "digits and / . - only"
+    },
+    "title": {
+      "kind": "text",
+      "default": "第三赛季「静默潮汐」开启！",
+      "maxChars": 16,
+      "font": "head"
+    },
+    "summary": {
+      "kind": "text",
+      "default": "北港码头夜战地图上线，撤离点全面重排！",
+      "maxChars": 22,
+      "font": "body"
+    },
+    "more": {
+      "kind": "text",
+      "default": "阅读更多",
+      "maxChars": 6,
+      "font": "body"
+    }
+  },
+  "relations": [
+    "Card 483 x 412 under a 12-unit strip (a 112-unit tab and a 4-unit line); picture 478 x 269 inset 2.5 and 14.",
+    "Text block from y 295: date 15, title 22 bold, summary 15, more 14 amber; 28-unit side margin."
+  ],
+  "decoration": [
+    "The strip, its micro-text bars, the hairline and the pin glyph: drawn."
+  ],
+  "provenance": {
+    "corpus": "stillfield case (寂原行动 STILLFIELD): our own original one-page game site and three in-game screens in the milspec-ops grammar",
+    "experiment": "styles/milspec-ops/style.json provenance (live reference site measured privately; never shipped)",
+    "accessed": "2026-11-06",
+    "method": "Measured on the reference: cards 483 x 412 at a 497 pitch, banner 478 x 269, date 15, title 24.25 bold, summary 15, read-more 14.25 #F5D659, pin 38 x 39.",
+    "sampleIds": [
+      "stillfield/news"
+    ],
+    "measured": [
+      "Reference: card hover lifts 27 px over 0.3 s.",
+      "Case: titles longer than the budget are cut with an ellipsis on desktop and wrap to two lines on the phone."
+    ],
+    "summary": "stillfield/news"
+  }
+}

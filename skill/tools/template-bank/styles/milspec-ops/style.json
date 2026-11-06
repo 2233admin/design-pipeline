@@ -1,0 +1,243 @@
+{
+  "schema": "design-pipeline.template-bank-style.v1",
+  "id": "milspec-ops",
+  "title": "Mil-spec ops: a tactical extraction shooter's official-site grammar - dark slate, one signal green, amber for the selected item, hairline frames with corner ticks, a docked bottom nav with a raised five-sided CTA",
+  "summary": "Full-screen dark slate sections (one per topic) over a picture or a code-drawn scene; one signal green for the call to action, sub-heads and the current nav item (under 1% of the area, always at the hot spot), amber only for the selected rail frame and 'read more'; a left rail of 231 x 111 thumbs on a hairline with 9-unit square markers; a 500-unit right column of ruled rows; hairline boxes with two corner ticks; part callouts with leaders and L-brackets on a pegboard; a fixed 52-unit bottom dock whose middle rises into a 165 x 110 five-sided plate.",
+  "provenance": {
+    "case": "stillfield (寂原行动 STILLFIELD): an original one-page official site (lobby, news, modes, operators, arms, vehicles and a footer; 1920 and 390 wide; no figures by default, ?slot=1 shows sized placeholder frames for generated art) and three in-game screens (gunsmith, extraction pre-match inventory, match HUD) built on the grammar.",
+    "lineage": "The official-site grammar of tactical extraction shooters (2020s): one full screen per topic, a dark slate ground, one signal green, hairline frames, a selection rail, a right detail column, callout leaders and a docked bottom nav. Read and measured on a live reference site whose screenshots and computed styles stay private and are not shipped. Borrowed: the grammar and the measured proportions. Never borrowed: any name, logo, wordmark, operator, faction, map, slogan, picture, insignia or real weapon name, nor the reference's own CTA shape (ours is a five-sided plate, not a triangle).",
+    "borrow": "Borrow grammar, never assets. Every name, logo, headline, operator, weapon and vehicle in the case and the templates is our own (寂原行动, 灰隼, TR-11 战术步枪, 裂岩 主战坦克); weapons and vehicles are generic code-drawn silhouettes, operators are never drawn: their slots wait for original art from an image-generation task sheet.",
+    "rounds": "template check --browser first pass: 29 findings over 10 pages (6 screens at 1920 x 1080, the 390 page, three in-game screens): 17 off-canvas (a horizontally scrolling phone rail and scene markers cropped by a slice-scaled phone scene), 8 contrast (waypoint distance labels on fog, a dark title on a mid-grey sky, a dark line over a bright hangar), 3 glyph-coverage (CJK values in a Latin face), 1 text-occluded (a fixed phone CTA over the footer in a full-page capture); second pass 1, final 0, and 0 on the seven slot-mode pages. fonts query covers all the copy with Noto Sans SC.",
+    "measured": [
+      "Sections are full screens of 1920 x 1080; top bar 87 high, rgba(0,0,0,.7) except on the first screen (transparent with a hairline at y 87, logos at x 82); bottom dock 52 high, items 147 wide from x 391, the CTA 165 x 110 centred.",
+      "Signal green #0FF796 on the reference (CSS, 21 uses; sub-heads, the CTA label, the current dock line); the case and the pack use #17F29C. Amber #F4CF67 frames the selected rail item and #F5D659 'read more'; red #FF3551 marks one role line. Body text #FFFFFF / #EAEBEB, muted #CAE1CF, dates at 50%.",
+      "Area (480 x 270 sampling): dark (L < 40) 36-87%, mid 10-44%, green 0.1-0.3%: the accent is tiny and always at the hot spot.",
+      "Type: section title 55 px regular at x 88 with an outlined ghost of the same word 48 px to the left; detail title 35 bold, sub-head 23 bold green, body 16 / 24; news title 24 bold, summary 15, date 15, tabs 21 medium; dock 15.75.",
+      "Rail: line at x 106, 9 x 9 square markers, frames 231 x 111 at x 139 on a 126 pitch, 2-unit amber border on the current one with a 42 x 18 connector; right column at x 1333, 500 wide, rows ruled 1 px at 50% white.",
+      "News: four tabs 234 x 57 (pitch 246) with corner ticks, cards 483 x 412 (pitch 497) under a 12-unit folder strip, picture 478 x 269, 'load more' 202 x 54 with a 1 px hairline.",
+      "Motion: fade-up 100 px over 0.5 s ease with 0.1-0.15 s staggers on entering a screen; switching a rail item cross-fades the detail over 1 s; hovers 0.3 s; card hover lifts 27 px; the CTA light sweeps top to bottom every 1.5 s after 1 s; scroll-hint arrows blink 1.5 s linear.",
+      "64 px: with logos masked the screens read as the grammar beside the reference and apart from the six earlier game packs and street-tape; acid-print-hud is the nearest (dark too) but is acid yellow-green, halftone and slab-heavy, where this is slate, hairline and picture-led."
+    ],
+    "accessed": "2026-11-06"
+  },
+  "palette": {
+    "ink": {
+      "value": "#0B1013",
+      "use": "the darkest ground, text on green and amber"
+    },
+    "slate": {
+      "value": "#121A1E",
+      "use": "section ground behind pictures, the rail ground"
+    },
+    "panel": {
+      "value": "#0D1516",
+      "use": "card body"
+    },
+    "dock": {
+      "value": "#131B1D",
+      "use": "the bottom dock bar"
+    },
+    "peg": {
+      "value": "#12181C",
+      "use": "the pegboard ground of the arms screen"
+    },
+    "hole": {
+      "value": "#05080A",
+      "use": "pegboard holes (decoration)"
+    },
+    "strip": {
+      "value": "#3A454B",
+      "use": "the folder strip over a card"
+    },
+    "rule": {
+      "value": "#5A6560",
+      "use": "hairlines: the rail line, row rules, the dock edge"
+    },
+    "hair": {
+      "value": "#8E9A93",
+      "use": "hairline frames and corner ticks"
+    },
+    "text": {
+      "value": "#E8ECEA",
+      "use": "titles and body on dark"
+    },
+    "mute": {
+      "value": "#A9B3AE",
+      "use": "inactive dock labels, summaries"
+    },
+    "dim": {
+      "value": "#A3AFA9",
+      "use": "dates, part kinds"
+    },
+    "green": {
+      "value": "#17F29C",
+      "use": "the one signal colour: CTA label and outline, sub-heads, the current dock line, tags"
+    },
+    "green_deep": {
+      "value": "#0E3A2C",
+      "use": "the CTA plate ground"
+    },
+    "amber": {
+      "value": "#F0C75E",
+      "use": "the selected rail frame and marker, the pin, 'read more'"
+    },
+    "red": {
+      "value": "#FF4057",
+      "use": "one role line and danger only"
+    }
+  },
+  "fonts": {
+    "roles": {
+      "head": {
+        "stack": [
+          "Noto Sans SC",
+          "Noto Sans CJK SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 700,
+        "use": "titles, sub-heads, tabs, CTA, nav and any mixed CJK and Latin copy (weapon names like TR-11 战术步枪)"
+      },
+      "body": {
+        "stack": [
+          "Noto Sans SC",
+          "Noto Sans CJK SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 400,
+        "use": "body, summaries, callout names"
+      },
+      "num": {
+        "stack": [
+          "Rajdhani",
+          "Barlow Condensed",
+          "Noto Sans SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 600,
+        "use": "dates, values, ammo counts, the Latin wordmark; Latin and digits only"
+      },
+      "micro": {
+        "stack": [
+          "Barlow Condensed",
+          "Rajdhani",
+          "Noto Sans SC"
+        ],
+        "generic": "sans-serif",
+        "weight": 600,
+        "use": "tracked Latin labels (GUNSMITH · LOADOUT A, coordinates); Latin and digits only"
+      }
+    },
+    "faces": [
+      {
+        "family": "Noto Sans SC",
+        "weight": 700,
+        "file": "NotoSansSC[wght].ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/notosanssc",
+        "licence": "SIL OFL 1.1",
+        "author": "Google"
+      },
+      {
+        "family": "Rajdhani",
+        "weight": 600,
+        "file": "Rajdhani-SemiBold.ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/rajdhani",
+        "licence": "SIL OFL 1.1",
+        "author": "Indian Type Foundry"
+      },
+      {
+        "family": "Barlow Condensed",
+        "weight": 600,
+        "file": "BarlowCondensed-SemiBold.ttf",
+        "source": "https://github.com/google/fonts/tree/main/ofl/barlowcondensed",
+        "licence": "SIL OFL 1.1",
+        "author": "The Barlow Project Authors"
+      }
+    ],
+    "resolve": "fonts query --text-file <all copy> --style gothic --weight 700 resolves Noto Sans SC for every character of the case's copy; Rajdhani and Barlow Condensed are Latin only, so a value like 重型 or 机密 goes to head or body (two of the case's first-pass findings were exactly that).",
+    "licence": "All roles use SIL OFL 1.1 fonts.",
+    "bundled": false,
+    "note": "Fonts are named, not bundled. --font-dir <dir> reads coverage and embeds the faces."
+  },
+  "layout": {
+    "grammar": [
+      "One topic per full screen (1920 x 1080): lobby, news, modes, operators, arms, vehicles; a fixed 87-unit top bar and a fixed 52-unit bottom dock frame every screen.",
+      "Dark slate is the ground; the picture or a code-drawn scene fills the screen; one signal green is the only strong colour and sits at the hot spots (CTA, sub-heads, the current dock item), amber marks only the selected item.",
+      "Section title top-left at x 88: a big regular CJK word with an outlined ghost of itself offset 48 units left; no number.",
+      "Detail screens share one layout: a left rail of 231 x 111 thumbs on a hairline with square markers (the current amber, joined by a short amber connector), the subject in the middle, a 500-unit right column of 1 px ruled rows (title 35 bold, sub-heads 23 bold green, body 16 / 24).",
+      "Frames are hairlines with two corner ticks (top-left, bottom-right); cards sit under a folder strip of unreadable micro-text; buttons are 1 px outlined boxes, never pills.",
+      "Weapons are shown as a product shot on a pegboard with part callouts: a dot on the part, a hairline leader, a name over a muted kind, L-brackets at two corners.",
+      "The bottom dock's middle rises into one five-sided plate (165 x 110) with a two-line CTA in green and a light sweeping down it; the current dock item gets a green dot field and a 2-unit green underline.",
+      "Without art (show mode) each screen is carried by its data: range rings and waypoints on the first screen, front lines or routes on the mode screens, an operator dossier (ID, four stat bars, loadout) instead of a figure, blueprints with dimension lines for weapons and vehicles."
+    ]
+  },
+  "materials": {
+    "procedural": [
+      "topographic contour lines (marching squares on value noise) at 6-16%, a 120-unit hairline grid at 4%, range rings with one green and one amber arc: the show-mode ground of every screen",
+      "generic weapon and vehicle blueprints (hairline outline on near-black, dimension line under it), never a real model; no code-drawn scenery, figures or pseudo-illustration",
+      "square rail markers, corner ticks, five-sided CTA plate, waypoint diamonds with distance plates, routes and front lines, unreadable micro-text bars"
+    ],
+    "recipes": [
+      "Real grain over every screen: materials generate --generator paper --seed 7, shown greyscale with mix-blend overlay at 18-20% (the case's grain layer).",
+      "Operators and key art come from an image-generation task sheet (#311): one sheet per frame with its size, safe box, the boxes kept for UI, a cold key light from the upper left with a warm rim, the palette and 'original characters only'; until then the site shows the no-figure version (a knolling kit, an outlined callsign, a tag) and ?slot=1 shows the sized frame; a cut-out goes in with materials cut --mode none --finish cut."
+    ],
+    "collage": [
+      "Pictures fill a screen or a frame edge to edge; text on a picture always sits on a scrim or a dark band."
+    ],
+    "sources": "Everything is drawn; pictures are your own art in the image slots.",
+    "budget": {
+      "inks": 2,
+      "effectsMax": 2,
+      "tiltedElements": 1
+    }
+  },
+  "motion": {
+    "fps": 60,
+    "grammar": [
+      "Entering a screen: blocks fade up 100 units over 0.5 s ease, staggered 0.1-0.15 s (title, tabs, then cards one by one).",
+      "Switching a rail item: the frame and marker move in 0.3 s ease-in-out; the detail column and the subject cross-fade over 1 s.",
+      "Hover 0.3 s: outlined boxes take the green; a card lifts 27 units; the CTA plate brightens while its light sweeps down every 1.5 s."
+    ],
+    "flashLimit": "No flashing; the scroll hint blinks at 1.5 s and embers drift slower than 6 s a cycle."
+  },
+  "checks": {
+    "static": [
+      "text-overflow",
+      "text-length",
+      "type-size",
+      "contrast",
+      "accent-budget"
+    ],
+    "browser": [
+      "text-overlap",
+      "off-canvas",
+      "collage-cover",
+      "contrast",
+      "text-occluded",
+      "glyph-coverage"
+    ],
+    "browserOnRender": true,
+    "guidance": [
+      "64 px distinctiveness (guidance): shrink each screen to 64 px tall beside a generic landing page with the logo masked; the slate screen, the bright subject in the middle, the left rail column and the raised green plate at the bottom centre should still read. Acid yellow-green on black slabs reads as acid-print-hud instead.",
+      "Never set a CJK value (重型, 机密) in Rajdhani or Barlow Condensed: the browser fills it from another face (glyph-coverage); use head or body.",
+      "Labels drawn into a scene (waypoint distances) need their own dark plate: fog and smoke lift the ground to 3:1.",
+      "A scene scaled with 'slice' on a phone crops its markers off the canvas: draw the phone's scene without markers, and give a rail a grid instead of a horizontal scroller.",
+      "Show mode carries a screen with the grammar itself (type, hairline frames, data, routes, rings, real grain), not with code-drawn scenery: next to the reference's real art, drawn helicopters, towers and smoke read cheap. Every art slot gets a task sheet and a layer entry so generated art drops in."
+    ],
+    "note": "The browser check runs on every render (the pegboard, the dot field and the callouts are measured in pixels)."
+  },
+  "examples": {
+    "note": "Renders of the case that stay examples (outside the repository, with the owner): the six screens at 1920 x 1080, the full page, the 390-wide page, the slot-mode screens and the three in-game screens.",
+    "renders": [
+      {
+        "screen": "official site, six screens and the 390-wide page",
+        "file": "stillfield case, shots/ (owner's copy, not in the repository)",
+        "why": "a one-page site with scripts and interaction, not a parametric layout; its parts are the five templates"
+      },
+      {
+        "screen": "in-game gunsmith, extraction pre-match inventory, match HUD",
+        "file": "stillfield case, shots/game/ (owner's copy, not in the repository)",
+        "why": "screens built from the same parts; their inventory grid and HUD are game-specific"
+      }
+    ]
+  }
+}
