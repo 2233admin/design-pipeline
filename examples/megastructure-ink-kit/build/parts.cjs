@@ -16,8 +16,14 @@ function bi(zh, en, cls = "") {
 }
 
 // Rail-script line with its reading. The glyphs are decoration; the reading is the text.
+// A signed depth inside a reading goes in the data face: the CJK subset has no U+2212, and the grammar
+// sets numbers in `data` anyway.
+function readingHtml(reading) {
+  return esc(reading).replace(/−\d[\d,.]*(?: ?m)?/g, (n) => `<span class="ms-glyphline__num data-sm">${n}</span>`);
+}
+
 function glyphline(text, reading = text, { size = 12, cls = "" } = {}) {
-  return `<span class="ms-glyphline${cls ? ` ${cls}` : ""}">${G.svg(text, { size })}<span class="ms-glyphline__read">${esc(reading)}</span></span>`;
+  return `<span class="ms-glyphline${cls ? ` ${cls}` : ""}">${G.svg(text, { size })}<span class="ms-glyphline__read">${readingHtml(reading)}</span></span>`;
 }
 
 function brand({ small = false } = {}) {

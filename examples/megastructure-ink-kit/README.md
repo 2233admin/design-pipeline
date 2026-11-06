@@ -32,7 +32,7 @@ python3 -m http.server 8830      # 或任何静态服务器
 | --- | --- |
 | `GRAMMAR.md` | 量出来的语法：整屏构图、色、字、栅格、母题、动效，以及和原作差在哪里 |
 | `DESIGN.md` / `MOTION.md` | Google 格式的设计基础与动效基础（front matter 由 `design-system design-md-tokens` 生成） |
-| `design-system/` | design-system 包：`tokens.json`、使用规则 `README.md`、26 个组件（各有 README 与预览）、封面、`components/bundle.css`、`fonts/`（Michroma 与 Chakra Petch 的 OFL 拉丁子集） |
+| `design-system/` | design-system 包：`tokens.json`、使用规则 `README.md`、26 个组件（各有 README 与预览）、封面、`components/bundle.css`、`fonts/`（Michroma 与 Chakra Petch 的 OFL 拉丁子集，以及 Noto Sans SC 的 GB2312 子集 500 与 900 两档，页面不依赖系统中文字体） |
 | `templates/` | 四个页面与 `kit.js`（交互）、`plates.js`（结构版画）、`glyphs.js`（层文） |
 | `art-tasks/` | 每个美术位一份出图任务单和 `tasks.json` |
 | `layers/` | 首屏主视觉和测深员立绘的层契约（`design-pipeline.layer-contract.v1`） |

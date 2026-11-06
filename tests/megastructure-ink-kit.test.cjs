@@ -79,6 +79,15 @@ test("pages are self-contained, previews carry no pictures, and no name from the
   assert.doesNotMatch(all, /blame|sidonia|biomega|aposimz|nihei|弐瓶|二瓶|netsphere/i);
 });
 
+test("bundle.css registers every face the stacks lead with, so the pages do not lean on system CJK fonts", () => {
+  const css = fs.readFileSync(path.join(KIT, "design-system", "components", "bundle.css"), "utf8");
+  const registered = [...css.matchAll(/@font-face\s*\{[^}]*font-family:\s*"([^"]+)"[^}]*url\("([^"]+)"\)/g)];
+  const families = new Set(registered.map((m) => m[1]));
+  for (const family of ["Michroma", "Chakra Petch", "Noto Sans SC"]) assert.ok(families.has(family), `${family} has no @font-face`);
+  for (const m of registered) assert.ok(fs.existsSync(path.resolve(KIT, "design-system", "components", m[2])), `${m[1]}: ${m[2]} does not exist`);
+  assert.ok(fs.existsSync(path.join(KIT, "design-system", "fonts", "OFL-NotoSansSC.txt")), "the Noto Sans SC licence sits beside its faces");
+});
+
 function browserEnvironment() {
   try { require.resolve("puppeteer-core/package.json", { paths: [REPO] }); } catch { return "puppeteer-core is not installed"; }
   try { require("../skill/scripts/browser-locate.cjs").resolveBrowser(); } catch { return "no headless Chrome, Edge or Chromium"; }

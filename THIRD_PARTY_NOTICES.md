@@ -1038,3 +1038,7 @@ roles were measured from a reference corpus; nothing from that corpus is bundled
   License 1.1) limited to printable ASCII plus ° · × – — − ← → (where the face has them), each with the
   font's OFL text beside it. They are not renamed; neither OFL text declares a Reserved Font Name. Source
   URL, commit and checksum are in `tests/fixtures/megastructure-ink/provenance.csv`.
+- `examples/megastructure-ink-kit/design-system/fonts/NotoSansSC-500.woff` and `NotoSansSC-900.woff` (example,
+  not packaged): byte-identical copies of the GB2312 subsets in `skill/tools/art-motion/fonts/` (Noto Sans SC,
+  © 2014-2021 Adobe, SIL Open Font License 1.1, Reserved Font Name "Source"), with `OFL-NotoSansSC.txt` beside
+  them. Not renamed.
