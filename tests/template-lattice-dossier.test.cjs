@@ -36,7 +36,7 @@ const BROWSER = (() => {
 })();
 const CI_SKIP = process.env.GITHUB_ACTIONS === "true" && "text-occluded differs on the CI runner (#305)";
 
-test("lattice-dossier names its case and lineage without a game, borrows grammar not assets, and resolves its fonts through the catalog", () => {
+test("lattice-dossier names its case and lineage without a game, borrows grammar not assets, resolves its CJK roles through the font catalog, and names its Latin faces with licence and source (not bundled)", () => {
   const style = bank.loadStyle("lattice-dossier");
   assert.match(style.provenance.borrow, /^Borrow grammar, never assets\./);
   assert.match(style.provenance.lineage, /stay private and are not shipped/);
@@ -46,9 +46,23 @@ test("lattice-dossier names its case and lineage without a game, borrows grammar
   assert.equal(style.checks.browserOnRender, true);
   for (const recipe of style.materials.recipes) assert.match(recipe, /materials (fetch|cut|process|generate)/);
   const families = new Set(CATALOG.families.map((f) => f.family));
+  // The CJK roles resolve through the font catalog (CJK only). The Latin roles do not: their first face
+  // (Michroma, Oswald, Chakra Petch) is not in the catalog, so it is named with its licence and source and
+  // not bundled, and the catalog only supplies the CJK fallback behind it.
+  const faces = new Map(style.fonts.faces.map((face) => [face.family, face]));
   for (const [role, spec] of Object.entries(style.fonts.roles)) {
-    assert.ok(spec.stack.length >= 2 && spec.stack.some((family) => families.has(family)), `${role}: ${spec.stack.join(" > ")}`);
+    assert.ok(spec.stack.length >= 2, `${role}: ${spec.stack.join(" > ")}`);
+    if (["head", "body"].includes(role)) {
+      assert.ok(families.has(spec.stack[0]), `${role}: ${spec.stack[0]} resolves via the catalog`);
+    } else {
+      const [latin, ...fallback] = spec.stack;
+      assert.ok(!families.has(latin), `${role}: ${latin} is a Latin face and not in the CJK catalog`);
+      const face = faces.get(latin);
+      assert.ok(face && /^SIL OFL/.test(face.licence) && /^https:\/\/github\.com\/google\/fonts\/tree\/main\/ofl\//.test(face.source), `${role}: ${latin} is named with its OFL licence and source`);
+      assert.ok(fallback.some((family) => families.has(family)), `${role}: a catalog CJK family sits behind ${latin}`);
+    }
   }
+  assert.equal(style.fonts.bundled, false);
   assert.deepEqual(bank.templateIds().filter((id) => bank.loadManifest(id).style === "lattice-dossier"), IDS);
   const listed = cli(fs.mkdtempSync(path.join(os.tmpdir(), "lattice-")), "template", "list", "--style", "lattice-dossier");
   assert.equal(listed.status, 0, JSON.stringify(listed.payload));
@@ -115,4 +129,28 @@ test("every lattice-dossier default render passes the browser check too", { skip
     assert.equal(result.status, 0, `${id}: ${JSON.stringify(result.payload?.check?.findings || result.payload?.error || result.stderr)}`);
     assert.equal(result.payload.check.status, "passed", id);
   }
+});
+
+test("the rail's '// 02 / 05' line has even gaps in the pager and the bulletin (no gap that reads as a missing glyph)", { skip: BROWSER.skip, timeout: 300000 }, async () => {
+  const pageCheck = require("../skill/tools/template-bank/page-check.cjs");
+  const browser = await pageCheck.launch({ puppeteerModule: BROWSER.puppeteerModule, chrome: BROWSER.chrome });
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "lattice-rail-"));
+  try {
+    for (const id of ["ui.lattice-pager", "kv.lattice-bulletin"]) {
+      const file = path.join(root, `${id}.svg`);
+      const rendered = bank.render(id);
+      fs.writeFileSync(file, rendered.svg);
+      const page = await browser.newPage();
+      await page.setViewport({ width: Math.round(Number(String(rendered.size).split("x")[0])), height: Math.round(Number(String(rendered.size).split("x")[1])) });
+      await page.goto(`file://${file}`);
+      const boxes = await page.evaluate(() => {
+        const at = (match) => { const node = [...document.querySelectorAll("text")].find(match); const q = node.getBBox(); return [q.x, q.x + q.width]; };
+        const slot = (name) => (t) => t.getAttribute("data-slot") === name;
+        return [at((t) => t.textContent.trim() === "//"), at(slot("current")), at((t) => t.textContent.trim() === "/"), at(slot("total"))];
+      });
+      await page.close();
+      const gaps = [boxes[1][0] - boxes[0][1], boxes[2][0] - boxes[1][1], boxes[3][0] - boxes[2][1]];
+      assert.ok(Math.max(...gaps) - Math.min(...gaps) < 3 && Math.min(...gaps) > 4, `${id}: gaps ${gaps.map((g) => g.toFixed(1)).join(", ")}`);
+    }
+  } finally { await browser.close(); fs.rmSync(root, { recursive: true, force: true }); }
 });

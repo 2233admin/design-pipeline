@@ -57,11 +57,13 @@ function railNumber(d, right, top, s) {
   d.raw(`<g clip-path="url(#rail-cut-${d.railN})">`);
   d.text("numeral", right - 190 * s, top + size * 0.72, size, { role: "cyan", family: "wide", content: String(cur), tracking: -45, box: [right - 192 * s, top - size * 0.2, 192 * s, size * 1.25] });
   d.raw("</g>");
-  const oy = top + 13 * s; const ow = 104 * s;
+  // "// 02 / 05" is set from the right in Chakra Petch 18 (digit 0.52 em, "/" 0.39 em): the total ends at
+  // the rail edge, then each part sits 9 units from the next, so the gaps are equal (measured 8.8 to 9.5; 10.9 before a one-digit-wide number).
+  const oy = top + 13 * s; const ow = 94 * s;
   d.rect(right - ow, oy, ow, 22 * s, "bg");
-  d.raw(`<text data-deco="1" x="${f1(right - ow + 8 * s)}" y="${f1(oy + 17 * s)}" font-family="${d.families.mono}" font-size="${f1(18 * s)}" fill="${d.pal.white}">//</text>`);
-  d.text("current", right - 62 * s, oy + 17 * s, 18 * s, { role: "white", family: "mono", anchor: "end", box: [right - 86 * s, oy, 28 * s, 22 * s] });
-  d.raw(`<text data-deco="1" x="${f1(right - 52 * s)}" y="${f1(oy + 17 * s)}" font-family="${d.families.mono}" font-size="${f1(18 * s)}" fill="${d.pal.white}">/</text>`);
+  d.raw(`<text data-deco="1" x="${f1(right - 85 * s)}" y="${f1(oy + 17 * s)}" font-family="${d.families.mono}" font-size="${f1(18 * s)}" fill="${d.pal.white}">//</text>`);
+  d.text("current", right - 44 * s, oy + 17 * s, 18 * s, { role: "white", family: "mono", anchor: "end", box: [right - 68 * s, oy, 25 * s, 22 * s] });
+  d.raw(`<text data-deco="1" x="${f1(right - 35 * s)}" y="${f1(oy + 17 * s)}" font-family="${d.families.mono}" font-size="${f1(18 * s)}" fill="${d.pal.white}">/</text>`);
   d.text("total", right, oy + 17 * s, 18 * s, { role: "white", family: "mono", anchor: "end", box: [right - 26 * s, oy, 26 * s, 22 * s] });
   d.text("section", right, top + 72 * s, 16 * s, { role: "white", family: "wide", anchor: "end", tracking: 100, box: [right - 230 * s, top + 54 * s, 230 * s, 22 * s] });
 }
