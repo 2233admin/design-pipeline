@@ -40,7 +40,7 @@ const rules = (report) => report.findings.map((finding) => `${finding.rule}:${fi
 
 test("every template renders at each listed size with its default slots and passes check", () => {
   const ids = bank.templateIds();
-  assert.equal(ids.length, 43);
+  assert.equal(ids.length, 49);
   for (const id of ids) {
     const manifest = bank.loadManifest(id);
     assert.ok(manifest.sizes.includes(`${manifest.canvas.width}x${manifest.canvas.height}`), `${id} lists its canvas size`);
@@ -314,7 +314,7 @@ test("template list filters by family and image slots embed files", (t) => {
   const root = tempRoot(t);
   const listed = cli(root, "template", "list", "--family", "kv");
   assert.equal(listed.status, 0);
-  assert.deepEqual(listed.payload.templates.map((item) => item.family), Array(7).fill("kv"));
+  assert.deepEqual(listed.payload.templates.map((item) => item.family), Array(9).fill("kv"));
   assert.ok(listed.payload.templates.every((item) => item.slots.length && item.sizes.length));
   const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
   fs.writeFileSync(path.join(root, "figure.png"), png);

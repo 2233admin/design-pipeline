@@ -1,0 +1,457 @@
+{
+  "schema": "design-pipeline.template-bank-template.v1",
+  "id": "kv.tape-hero",
+  "family": "kv",
+  "style": "street-tape",
+  "title": "First screen: a composited street scene with an original character, the brand sticker, the tilted download sticker and a platform line; its layer contract renders the scene at 1920 x 1080, 1080 x 1920 and 920 x 430 from one set of layers",
+  "use": "The key visual of a street-tape game site and its store sizes. The scene and the character are layers: materials request writes the character's generation task sheet, materials composite builds the ground (scene, shadows) and the upper image (character, fx, foreground) for every declared size; this template sets the live type over them.",
+  "canvas": {
+    "width": 1920,
+    "height": 1080
+  },
+  "sizes": [
+    "1920x1080",
+    "2560x1440",
+    "3840x2160"
+  ],
+  "aspect": "16:9",
+  "accent": {
+    "roles": [
+      "acid"
+    ],
+    "maxShare": 0.3
+  },
+  "params": {
+    "guides": {
+      "type": "boolean",
+      "default": false,
+      "class": "decoration",
+      "note": "draw layout guides"
+    },
+    "stripes": {
+      "type": "boolean",
+      "default": true,
+      "class": "decoration",
+      "note": "stripe band on the right edge"
+    }
+  },
+  "slots": {
+    "scene": {
+      "kind": "image",
+      "ground": "grey",
+      "layer": "ground",
+      "note": "materials composite <WxH>-ground.png: bg, ghost type, mid plates and the character's shadows; the text ground"
+    },
+    "figure": {
+      "kind": "image",
+      "ground": "grey",
+      "layer": "char",
+      "note": "materials composite <WxH>-upper.png: the character with its outline, fx and the foreground occluder"
+    },
+    "brand_cjk": {
+      "kind": "text",
+      "default": "回放街区",
+      "maxChars": 5,
+      "font": "head",
+      "title": true
+    },
+    "brand_latin": {
+      "kind": "text",
+      "default": "REPLAY WARD",
+      "maxChars": 12,
+      "font": "num"
+    },
+    "cta": {
+      "kind": "text",
+      "default": "立即下载",
+      "maxChars": 4,
+      "font": "head"
+    },
+    "flash": {
+      "kind": "text",
+      "default": "公测中",
+      "maxChars": 3,
+      "font": "head"
+    },
+    "platforms": {
+      "kind": "text",
+      "default": "PC 启动器下载（Windows 10 64 位及以上）",
+      "maxChars": 30,
+      "font": "body"
+    }
+  },
+  "layers": {
+    "schema": "design-pipeline.layer-contract.v1",
+    "design": [
+      1440,
+      1014
+    ],
+    "groundSlot": "scene",
+    "charSlot": "figure",
+    "note": "Plates are full design-space images (1440 x 1014 units, any resolution); boxes, feet and type boxes are output pixels of each size. Pixel parameters of the integration modes are written for a 1080 px short side and scaled by pxScale (default short side / 1080).",
+    "stack": [
+      {
+        "id": "bg",
+        "role": "bg",
+        "plate": true,
+        "note": "night sky and wall"
+      },
+      {
+        "id": "ghost",
+        "role": "ghost-type",
+        "plate": true,
+        "note": "outlined ghost numerals; never carries information"
+      },
+      {
+        "id": "mid",
+        "role": "mid",
+        "plate": true,
+        "note": "street: skyline, shop front, awning, washers, vending machine, pavement"
+      },
+      {
+        "id": "mid-cassette",
+        "role": "mid",
+        "note": "cassette sticker behind the figure"
+      },
+      {
+        "id": "mid-rewind",
+        "role": "mid",
+        "note": "type behind the figure (an allowed sandwich; the title stays in front)"
+      },
+      {
+        "id": "char",
+        "role": "char"
+      },
+      {
+        "id": "fx-rec",
+        "role": "fx"
+      },
+      {
+        "id": "fx-stars",
+        "role": "fx"
+      },
+      {
+        "id": "fg-boombox",
+        "role": "fg",
+        "note": "foreground occluder over the legs"
+      },
+      {
+        "id": "paper",
+        "role": "texture",
+        "blend": "multiply"
+      },
+      {
+        "id": "halftone",
+        "role": "texture",
+        "blend": "dots"
+      },
+      {
+        "id": "type",
+        "role": "type",
+        "note": "brand sticker, download sticker, platform line: live text, always last"
+      }
+    ],
+    "char": {
+      "use": "full-figure original character, standing, three-quarter view",
+      "facing": "three-quarter, turned to frame right (toward the shop front)",
+      "light": {
+        "key": [
+          -0.6,
+          -0.8
+        ],
+        "keyTemp": "neutral 5500 K street lamp",
+        "rim": [
+          1.0,
+          -0.15
+        ],
+        "rimColour": "acid"
+      },
+      "shadow": {
+        "castToward": [
+          0.85,
+          0.2
+        ],
+        "castLength": 0.22
+      },
+      "safe": [
+        "face",
+        "hands"
+      ]
+    },
+    "sizes": {
+      "1920x1080": {
+        "frame": {
+          "rect": [
+            200,
+            66,
+            1440,
+            1014
+          ],
+          "clip": [
+            [
+              0,
+              0
+            ],
+            [
+              1440,
+              0
+            ],
+            [
+              1440,
+              1014
+            ],
+            [
+              217,
+              1014
+            ],
+            [
+              0,
+              764
+            ]
+          ]
+        },
+        "crop": [
+          0,
+          0,
+          1440,
+          1014
+        ],
+        "char": {
+          "foot": [
+            700,
+            990
+          ],
+          "height": 880,
+          "frameBreak": []
+        },
+        "boxes": {
+          "mid-cassette": {
+            "box": [
+              170,
+              136,
+              520,
+              520
+            ]
+          },
+          "mid-rewind": {
+            "box": [
+              396,
+              660,
+              420,
+              200
+            ]
+          },
+          "fx-rec": {
+            "box": [
+              824,
+              196,
+              200,
+              200
+            ],
+            "clip": true
+          },
+          "fx-stars": {
+            "box": [
+              850,
+              500,
+              130,
+              130
+            ],
+            "clip": true
+          },
+          "fg-boombox": {
+            "box": [
+              400,
+              740,
+              300,
+              300
+            ]
+          }
+        },
+        "type": {
+          "brand": [
+            236,
+            96,
+            236,
+            212
+          ],
+          "cta": [
+            1236,
+            150,
+            380,
+            190
+          ],
+          "platforms": [
+            436,
+            1026,
+            600,
+            36
+          ]
+        }
+      },
+      "1080x1920": {
+        "frame": {
+          "rect": [
+            0,
+            0,
+            1080,
+            1920
+          ]
+        },
+        "crop": [
+          180,
+          0,
+          570.4,
+          1014
+        ],
+        "char": {
+          "foot": [
+            560,
+            1760
+          ],
+          "height": 1300,
+          "frameBreak": []
+        },
+        "boxes": {
+          "mid-cassette": {
+            "box": [
+              -90,
+              380,
+              600,
+              600
+            ]
+          },
+          "mid-rewind": {
+            "box": [
+              20,
+              1150,
+              620,
+              295
+            ]
+          },
+          "fx-rec": {
+            "box": [
+              780,
+              430,
+              260,
+              260
+            ]
+          },
+          "fx-stars": {
+            "box": [
+              820,
+              980,
+              170,
+              170
+            ]
+          },
+          "fg-boombox": {
+            "box": [
+              150,
+              1440,
+              470,
+              470
+            ]
+          }
+        },
+        "type": {
+          "brand": [
+            350,
+            24,
+            370,
+            370
+          ],
+          "cta": [
+            520,
+            1590,
+            520,
+            266
+          ],
+          "platforms": [
+            0,
+            1858,
+            1080,
+            40
+          ]
+        }
+      },
+      "920x430": {
+        "frame": {
+          "rect": [
+            0,
+            0,
+            920,
+            430
+          ]
+        },
+        "crop": [
+          60,
+          400,
+          1314.3,
+          614.3
+        ],
+        "char": {
+          "foot": [
+            650,
+            640
+          ],
+          "height": 600,
+          "frameBreak": [
+            "bottom"
+          ]
+        },
+        "boxes": {
+          "fx-rec": {
+            "box": [
+              770,
+              40,
+              130,
+              130
+            ]
+          },
+          "fg-boombox": {
+            "box": [
+              600,
+              338,
+              190,
+              190
+            ]
+          }
+        },
+        "type": {
+          "brand": [
+            40,
+            48,
+            330,
+            330
+          ]
+        },
+        "pxScale": 0.637
+      }
+    }
+  },
+  "relations": [
+    "Scene frame 1440 x 1014 at (200, 66) with its lower-left corner cut along the 49-degree line; grey band on the left, stripe band on the right.",
+    "Brand sticker top-left at (236, 96), download sticker top-right at (1236, 150), platform line on the pavement at y 1044; the character's foot at (700, 990), 880 px tall, between them.",
+    "The face and hands stay out of every type box and the foreground occluder at every size (materials composite checks the declared boxes, template check the rendered ink)."
+  ],
+  "decoration": [
+    "Stripe band and the cassette mark of the brand sticker: drawn. Scene plates, the character and the foreground are layers (materials composite)."
+  ],
+  "provenance": {
+    "corpus": "replay-ward case (回放街区 REPLAY WARD): our own original one-page game site and two in-game screens in the street-tape grammar",
+    "experiment": "issue #311 compositing prototype: the case's first screen rebuilt as layers, a CC0 stand-in figure (Cleveland Museum of Art 1972.368.6) composited sticker and painted at three sizes and measured",
+    "accessed": "2026-11-06",
+    "method": "The case's first screen without its character (?show=1) split into plates by the case's own drawing functions; the layer stack, per-size frames, crops, sprite boxes, the character slot and the type boxes are the prototype's layers.json after its two safe-area fixes (the steam occluder moved off the left hand, the vertical brand sticker off the face).",
+    "sampleIds": [
+      "replay-ward/hero",
+      "replay-ward/hero-1080x1920",
+      "replay-ward/hero-920x430"
+    ],
+    "measured": [
+      "Prototype: black-point difference +0.060 untreated, +0.017 sticker, -0.001 painted; mean dE 21.5 / 16.8 / 13.6 (hero).",
+      "Prototype: defringe cut the backdrop-coloured edge from 2.15 to 1.18 px; two real safe-area faults found and fixed (occluder over a hand 76%, brand sticker over the face)."
+    ],
+    "summary": "replay-ward first screen as layers"
+  }
+}

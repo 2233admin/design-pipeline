@@ -104,7 +104,9 @@
       else if (e.key === "Enter" && active >= 0) { e.preventDefault(); location.href = $$("[role=option]", list)[active].getAttribute("href"); }
       else if (e.key === "Escape") { if (!list.hidden) { e.stopPropagation(); close(); } else input.blur(); }
     });
-    input.addEventListener("blur", function () { setTimeout(close, 150); });
+    // Pressing a suggestion must not blur the input before the click lands, however long the press lasts.
+    list.addEventListener("mousedown", function (e) { e.preventDefault(); });
+    input.addEventListener("blur", close);
   });
 
   // ---------- version notice (dialog) ----------
@@ -124,7 +126,9 @@
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
   }
-  var auto = /[?&]notice=1/.test(location.search) || (document.body.dataset.page === "home" && store.get("at-notice") !== "v2.4.0" && !navigator.webdriver);
+  // First visit shows the notice once (remembered in localStorage); ?notice=0 suppresses it and ?notice=1 forces it.
+  var noticeParam = (/[?&]notice=([01])/.exec(location.search) || [])[1];
+  var auto = noticeParam === "1" || (noticeParam !== "0" && document.body.dataset.page === "home" && store.get("at-notice") !== "v2.4.0");
   if (auto) setTimeout(openNotice, 400);
 
   // ---------- toasts ----------
@@ -141,7 +145,7 @@
     if (ms) setTimeout(function () { li.remove(); }, ms);
     return li;
   }
-  if (document.body.dataset.page === "home" && !store.get("at-guided") && !navigator.webdriver) {
+  if (document.body.dataset.page === "home" && !store.get("at-guided") && !/[?&]notice=0/.test(location.search)) {
     var g = toast("正在载入引导…", "loading");
     setTimeout(function () { if (g) g.remove(); store.set("at-guided", "1"); }, 2600);
   }

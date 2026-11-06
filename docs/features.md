@@ -353,7 +353,8 @@ node skill/scripts/designer-pipeline.cjs materials check --project-root .
 ```
 
 - **取图**：`search` / `fetch` 只下载 CC0 和公有领域的记录，其他许可连同证据一起拒绝。克利夫兰、大都会、Rijksmuseum 可以自动查和取；Wikimedia Commons 按确切的 `File:` 名取；需要密钥或被拦截的来源会说明原因和替代做法（`materials sources`、`probe` 重新测可达性）。你自己的字体、扫描和照片用 `materials add` 登记。
-- **切图**：`cut` 把图切成贴纸、墨层（黑色加透明度，即墨色密度）、剪纸白边和手剪版画块，并提示渐变背景、碰到画框的物件和可能的投影。
+- **切图**：`cut` 把图切成贴纸、墨层（黑色加透明度，即墨色密度）、剪纸白边和手剪版画块，并提示渐变背景、碰到画框的物件和可能的投影。背景是渐变、暗角或带投影时用 `--mode grabcut`（颜色模型加图割，去溢色边，记录光晕宽度）；`--finish outline` 加贴纸描边（模切白边、黑线、偏移底板）。
+- **生成角色与合成**：展示一律无角色；角色由外部生图模型出。`materials request --template kv.tape-hero` 按模板的图层契约写出图任务单（不低于槽位 2 倍、透明或纯色底、光向和轮廓光、色板、参考名、不写字、只要原创角色）；`materials add --kind generated --tool <工具> --prompt <任务单>` 登记生成图；`materials composite` 用同一套图层出模板声明的每个尺寸（OKLab 调色、光包裹、轮廓光、阴影、贴纸描边、前景遮挡、统一材质），量放大倍数、黑场差、均值色差、光晕和脸手安全区，并记下血缘。
 - **自制**：`generate` 用固定种子生成纸纹、网点、油墨平涂、建筑线稿（走廊、拱廊、楼梯、窗墙、棋盘地）和纹样，`process` 把任何已登记的图做成木刻、网点、剪纸、复印或双色效果；同一记录可以原样重放。`measure` 把纹理和真实扫描的校准档比较，量它像不像真的。
 - **账目**：所有文件的出处、许可、作者、取用日期、哈希和派生关系写在 `materials/licenses.json`；`check` 拒绝没有记录的文件、出处不全的记录，以及来源已经变了的切图和派生图。采集纸张和网点扫描的方法见 [`material-capture.md`](../skill/references/material-capture.md)。
 

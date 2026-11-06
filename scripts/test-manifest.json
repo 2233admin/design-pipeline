@@ -155,6 +155,7 @@
     "art-motion-assets-audio.test.cjs",
     "materials.test.cjs",
     "procedural-materials.test.cjs",
+    "composite-layers.test.cjs",
     "composition-ground.test.cjs",
     "art-motion-tools.test.cjs",
     "taste-skill.test.cjs",
@@ -175,6 +176,7 @@
     "template-style-pack.test.cjs",
     "template-game-packs.test.cjs",
     "template-street-tape.test.cjs",
+    "template-frontier-survey.test.cjs",
     "ablation-eval.test.cjs",
     "template-bank-browser.test.cjs",
     "template-distill.test.cjs"
