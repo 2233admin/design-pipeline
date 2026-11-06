@@ -1,0 +1,113 @@
+{
+ "schema": "design-pipeline.layer-contract.v1",
+ "design": [
+  1200,
+  1800
+ ],
+ "note": "Member portrait (slot mode of the member card, 2:3). One contract for the four members; each has its own task sheet.",
+ "stack": [
+  {
+   "id": "bg",
+   "role": "bg",
+   "plate": true,
+   "note": "flat void with the faint 8px depth ruler at the right edge; no scenery"
+  },
+  {
+   "id": "char",
+   "role": "char"
+  },
+  {
+   "id": "tone",
+   "role": "texture",
+   "blend": "dots"
+  },
+  {
+   "id": "type",
+   "role": "type",
+   "note": "code, name, role line, deepest record: live HTML below the frame, always last"
+  }
+ ],
+ "char": {
+  "use": "original adult explorer, three-quarter length, standing still, listening",
+  "facing": "three-quarter, turned to frame left",
+  "light": {
+   "key": [
+    0.7,
+    -0.7
+   ],
+   "keyTemp": "cold 7000 K from above right",
+   "rim": [
+    -1,
+    0
+   ],
+   "rimColour": "signal"
+  },
+  "shadow": {
+   "castToward": [
+    -0.5,
+    1
+   ],
+   "castLength": 0.1
+  },
+  "safe": [
+   "face",
+   "hands"
+  ]
+ },
+ "sizes": {
+  "240x360": {
+   "frame": {
+    "rect": [
+     0,
+     0,
+     240,
+     360
+    ]
+   },
+   "crop": [
+    0,
+    0,
+    1200,
+    1800
+   ],
+   "char": {
+    "foot": [
+     120,
+     372
+    ],
+    "height": 330,
+    "frameBreak": [
+     "bottom"
+    ]
+   },
+   "type": {}
+  },
+  "180x270": {
+   "frame": {
+    "rect": [
+     0,
+     0,
+     180,
+     270
+    ]
+   },
+   "crop": [
+    0,
+    0,
+    1200,
+    1800
+   ],
+   "char": {
+    "foot": [
+     90,
+     279
+    ],
+    "height": 248,
+    "frameBreak": [
+     "bottom"
+    ]
+   },
+   "type": {}
+  }
+ }
+}
