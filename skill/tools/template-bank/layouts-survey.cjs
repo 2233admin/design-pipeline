@@ -69,9 +69,11 @@ function titleBlock(d, x, y, s, { right = false, dark = false } = {}) {
 }
 function digitsOnly(d, name, re, example) {
   const { text } = d.value(name);
-  if (!re.test(String(text))) throw invalid(`slot ${name} takes ${re === DATE ? "digits and . only" : "digits and / only"}, got ${JSON.stringify(text)}. Fix: --set ${name}=${example} ; put words in a text slot`);
+  if (!re.test(String(text))) throw invalid(`slot ${name} takes ${re === DATE ? "digits and . only" : re === INDEX_ALBUM ? "digits and / only, one digit each side" : "digits and / only"}, got ${JSON.stringify(text)}. Fix: --set ${name}=${example} ; put words in a text slot`);
 }
 const DATE = /^\d{1,2}\.\d{2}$/; const INDEX = /^\d{1,2} ?\/ ?\d{1,2}$/;
+// the album's index box is 28 units wide (the caption starts 30 units in): one digit each side
+const INDEX_ALBUM = /^\d ?\/ ?\d$/;
 
 const LAYOUTS = {
   // ---- the left rail, open: 270 x 1080 ----------------------------------------------------------
@@ -188,7 +190,7 @@ const LAYOUTS = {
     d.raw(`<text data-deco="1" x="${f1(bandX + 190 * s)}" y="${f1(top + 560 * s)}" font-family="${esc(d.families.wide)}" font-size="${f1(6 * s)}" fill="${d.pal.ink}" transform="rotate(90 ${f1(bandX + 190 * s)} ${f1(top + 560 * s)})">SURVEY MANUAL / FIELD EDITION</text>`);
     pager(d, imgX + 27 * s, top + ah - 48 * s, s, true);
     // caption: index, title, description
-    digitsOnly(d, "index", INDEX, "1/4");
+    digitsOnly(d, "index", INDEX_ALBUM, "1/4");
     const cx = imgX + 30 * s; const cy = top + ah + 40 * s;
     d.text("index", imgX, cy - 22 * s, 12 * s, { role: "ink", family: "geo", box: [imgX - 2 * s, cy - 36 * s, 28 * s, 18 * s] });
     d.text("caption", cx, cy + 10 * s, 36 * s, { role: "ink", family: "body", box: [cx - 2 * s, cy - 26 * s, 700 * s, 44 * s] });
