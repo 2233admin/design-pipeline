@@ -72,6 +72,10 @@ SKILLS_DOWNLOAD_MAX_BYTES=104857600 SKILLS_EXTRACT_MAX_BYTES=268435456 SKILLS_EX
 
 **《潮位警报 TIDEMARK》· `crisis-command`**：九十年代日式机甲动画的危机指挥终端与字卡语法——压缩过的极粗明朝字卡、3.06:1 的红色长六边形警报墙、琥珀段码倒计时、耦合曲线和五席表决。[示例组件库](examples/crisis-command-ui-kit/)有 26 个组件、六屏组织终端站、操作台和同步监视两屏，九个页面视图第一轮 26 处、最终 0。为它 `Doc.text` 加了 `compress`，`template check` 也改成按纵向量变形文字的字号，机械压扁的字不再被误判成小字。局限：监视器和机体位是空的，机甲和人物不该用代码画，只能等出图。模板：`card.crisis-title-card`、`banner.crisis-film-title`、`ui.crisis-alert-wall`、`ui.crisis-countdown`、`ui.crisis-sync-graph`。
 
+<p align="center"><img src="examples/atomic-age-kit/readme/sheet.jpg" width="100%" alt="《印刷套组 No.1》十个模板拼版：米色底，青、朱红、芥黄、炭黑四色，杂志封面、地出旅行海报、亚麻书封、横版广告、田野指南标签卡、飞行计划、检查单、轨道图版、太阳系版画和证件卡"></p>
+
+**《印刷套组 No.1》· `atomic-age`**：五六十年代太空时代复古未来主义——米色旧纸、炭黑、朱红、青和芥黄，高窄的压缩字刊头拆成两色，太阳圆盘配轨道线，套色错位和旧纸质感由 `materials process` 生成。十个模板分杂志、海报、书封、广告、标签卡和文档六类，其中 `doc.atomic-flight-plan`、`doc.atomic-checklist` 旁边并排放着阿波罗 11 号最终飞行计划的原页对照。插图全部是 NASA 1964–1975 年的老图（公共领域，署名 "Imagery: NASA. Not endorsed by NASA."），标志、徽章和国徽只留尺寸和留白明确的空位，不画也不仿。[示例套组](examples/atomic-age-kit/)另有着陆页（1440 和 390 两个宽度）。局限：缺高反差衬线开源字，刊头偏平；打字机字体太干净；广告里的火箭剪影更像喷气机。模板：`cover.atomic-magazine`、`poster.atomic-travel`、`banner.atomic-ad-panel`、`doc.atomic-flight-plan`、`card.atomic-credential`。
+
 <p align="center"><img src="examples/archive-terminal-wiki-kit/readme/home-light.jpg" width="80%" alt="《霜线档案》资料站首页（亮色）：浅灰细网格、白色切角面板、唯一的黄色强调色、中文配英文大写小字的双语侧栏"></p>
 
 **《霜线档案》· archive-terminal wiki kit**：给游戏资料站用的组件库和页面模板，语法量自一个界面仿照游戏内 UI 的玩家社区 wiki——浅灰细网格、白色 9px 切角面板、唯一的黄色、「中文 / ENGLISH」双语标签和三色信号条。[示例](examples/archive-terminal-wiki-kit/)有亮暗两套主题、22 个组件、七个页面模板（首页、条目详情、带筛选的列表、物品、活动文章、最近更改、搜索），桌面、390 宽和暗色都过了浏览器检查，键盘操作 47 项全过；为了对比度，亮色次要文字和焦点环比参考调深了。局限：这是静态 HTML 模板，不带 wiki 后端，接 MediaWiki 之类要自己移植；示例里的图位都是空框。它不是风格包，没有对应的 SVG 模板。
