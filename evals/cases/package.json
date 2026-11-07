@@ -5,6 +5,6 @@
   "license": "MIT",
   "devDependencies": {
     "gsap": "3.15.1",
-    "hyperframes": "0.9.15"
+    "hyperframes": "0.9.20"
   }
 }
