@@ -24,5 +24,5 @@
 
 ## 5. 验证
 
-- [ ] 5.1 聚焦：`node --test tests/state-recovery.test.cjs tests/state-machine-tables.test.cjs tests/pipeline-state.test.cjs tests/adaptation.test.cjs tests/designmd-ingestion.test.cjs`。
-- [ ] 5.2 仓库 QA：`npm test`，与未改动 HEAD 的基线逐项对比，差异写进 PR。
+- [x] 5.1 聚焦：`node --test tests/state-recovery.test.cjs tests/state-machine-tables.test.cjs tests/pipeline-state.test.cjs tests/adaptation.test.cjs tests/designmd-ingestion.test.cjs`。
+- [x] 5.2 仓库 QA：`npm test`，与未改动 HEAD 的基线逐项对比，差异写进 PR。
