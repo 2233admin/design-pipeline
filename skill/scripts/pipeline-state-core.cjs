@@ -18,7 +18,7 @@ const {
   sha256,
   sortValue,
 } = require("./contract-utils.cjs");
-const { assertTransition, defineMachine, listResidue, transactionSuffix } = require("./state-machine-core.cjs");
+const { acquireOwnerLock, assertTransition, defineMachine, listResidue, releaseOwnerLock, transactionSuffix } = require("./state-machine-core.cjs");
 
 const STATE_V2 = "design-pipeline.state.v2";
 const V1_SCHEMAS = new Set(["design-pipeline.state.v1", "design-pipeline-state.v1"]);
@@ -421,19 +421,6 @@ const COMMIT_MACHINE = defineMachine("pipeline-state.commit", {
   },
 });
 
-function pidAlive(pid) {
-  try { process.kill(pid, 0); return true; }
-  catch (error) { return error.code === "EPERM"; }
-}
-
-// 写者锁持有者已死（崩溃）时回收锁；无法确认时保持原样，仍由 LOCKED 拒绝。
-function reclaimDeadLock(lock) {
-  let owner;
-  try { owner = JSON.parse(fs.readFileSync(lock, "utf8")); } catch { return false; }
-  if (!Number.isInteger(owner?.pid) || owner.pid < 1 || owner.pid === process.pid || pidAlive(owner.pid)) return false;
-  try { fs.rmSync(lock); return true; } catch { return false; }
-}
-
 // 在持锁状态下调用：把上次崩溃留下的暂存/备份残留收敛回一致的一对文件。
 // 备份存在 = 提交进行中。新的一对都在且一致则前滚（丢弃备份），否则回滚到备份。
 function recoverTransaction(stateFile, eventsFile) {
@@ -519,28 +506,15 @@ function writeNewChange(stateFile, eventsFile, state, options = {}) {
 
 function withWriterLock(stateFile, eventsFile, callback, options = {}) {
   const lock = `${stateFile}.lock`;
-  let lockFd;
-  let lockCreated = false;
-  try {
-    try { lockFd = fs.openSync(lock, "wx"); }
-    catch (error) {
-      if (error.code !== "EEXIST" || !reclaimDeadLock(lock)) throw error;
-      lockFd = fs.openSync(lock, "wx");
-    }
-    lockCreated = true;
-    fs.writeFileSync(lockFd, `${JSON.stringify({ pid: process.pid, createdAt: options.timestamp || null })}\n`);
-    fs.fsyncSync(lockFd);
-  } catch (error) {
-    if (lockFd !== undefined) fs.closeSync(lockFd);
-    if (lockCreated) removeIfPresent(lock);
-    fail("pipeline state", `writer lock exists: ${lock}`, { code: "LOCKED", cause: error.message });
-  }
+  let lockFd = null;
+  try { lockFd = acquireOwnerLock(lock, { createdAt: options.timestamp || null }); }
+  catch (error) { fail("pipeline state", `writer lock exists: ${lock}`, { code: "LOCKED", cause: error.message }); }
+  if (lockFd === null) fail("pipeline state", `writer lock exists: ${lock}`, { code: "LOCKED" });
   try {
     recoverTransaction(stateFile, eventsFile);
     return callback();
   } finally {
-    fs.closeSync(lockFd);
-    removeIfPresent(lock);
+    releaseOwnerLock(lock, lockFd);
   }
 }
 

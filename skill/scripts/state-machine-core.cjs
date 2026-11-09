@@ -80,4 +80,56 @@ function listResidue(target, kind) {
   return fs.readdirSync(parent).filter((name) => name.startsWith(prefix)).sort().map((name) => path.join(parent, name));
 }
 
-module.exports = { allMachines, analyzeMachine, assertInitial, assertTransition, defineMachine, legalNext, listResidue, moveStatus, transactionSuffix };
+function pidAlive(pid) {
+  try { process.kill(pid, 0); return true; }
+  catch (error) { return error.code === "EPERM"; }
+}
+
+function createLock(lock, payload) {
+  let fd;
+  try { fd = fs.openSync(lock, "wx"); }
+  catch (error) { if (error.code === "EEXIST") return null; throw error; }
+  try {
+    fs.writeFileSync(fd, `${JSON.stringify({ pid: process.pid, ...payload })}
+`);
+    fs.fsyncSync(fd);
+  } catch (error) {
+    fs.closeSync(fd);
+    fs.rmSync(lock, { force: true });
+    throw error;
+  }
+  return fd;
+}
+
+// 回收已死持有者的锁。回收本身用独占的 `.reclaim` 守卫串行化：持守卫后重新读锁再删，
+// 因此不会删掉别的写者刚建好的新锁。守卫文件只在微秒级窗口内存在；
+// 若进程恰在窗口内崩溃，手工删除 `<lock>.reclaim` 即可。
+function reclaimDeadLock(lock) {
+  let guard;
+  try { guard = fs.openSync(`${lock}.reclaim`, "wx"); }
+  catch (error) { if (error.code === "EEXIST") return false; throw error; }
+  try {
+    let owner;
+    try { owner = JSON.parse(fs.readFileSync(lock, "utf8")); } catch { return false; }
+    if (!Number.isInteger(owner?.pid) || owner.pid < 1 || owner.pid === process.pid || pidAlive(owner.pid)) return false;
+    fs.rmSync(lock);
+    return true;
+  } finally {
+    fs.closeSync(guard);
+    fs.rmSync(`${lock}.reclaim`, { force: true });
+  }
+}
+
+// 取得独占锁：返回 fd，被存活写者持有时返回 null。持有者已死则回收后重试一次。
+function acquireOwnerLock(lock, payload = {}) {
+  const fd = createLock(lock, payload);
+  if (fd !== null) return fd;
+  return reclaimDeadLock(lock) ? createLock(lock, payload) : null;
+}
+
+function releaseOwnerLock(lock, fd) {
+  try { fs.closeSync(fd); } catch { /* 已关闭 */ }
+  fs.rmSync(lock, { force: true });
+}
+
+module.exports = { acquireOwnerLock, releaseOwnerLock, allMachines, analyzeMachine, assertInitial, assertTransition, defineMachine, legalNext, listResidue, moveStatus, transactionSuffix };

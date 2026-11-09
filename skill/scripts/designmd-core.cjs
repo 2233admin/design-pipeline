@@ -3,7 +3,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalJson, fail, isObject, resolveInside, sha256, sortValue } = require("./contract-utils.cjs");
-const { assertTransition, defineMachine, listResidue, transactionSuffix } = require("./state-machine-core.cjs");
+const { acquireOwnerLock, assertTransition, defineMachine, listResidue, releaseOwnerLock, transactionSuffix } = require("./state-machine-core.cjs");
 
 const SCHEMA = "design-pipeline.designmd-catalog.v1";
 const VERSION = "1";
@@ -542,11 +542,21 @@ function recoverPublish(targetRoot) {
   for (const leftover of [...backups, ...temps]) fs.rmSync(leftover, { recursive: true, force: true });
 }
 
+// 发布与崩溃恢复由 `<目标>.lock` 独占。锁被存活写者持有时，只读路径（recovered/blocked）照常返回，
+// 不做恢复也不删任何暂存；真要发布则以 STATE_LOCKED 失败，绝不碰对方的暂存目录。
 function writeCatalog(catalog, outputRoot) {
+  const lockFile = `${path.resolve(outputRoot)}.lock`;
+  fs.mkdirSync(path.dirname(lockFile), { recursive: true });
+  const lockFd = acquireOwnerLock(lockFile);
+  try { return publishCatalog(catalog, outputRoot, lockFd !== null); }
+  finally { if (lockFd !== null) releaseOwnerLock(lockFile, lockFd); }
+}
+
+function publishCatalog(catalog, outputRoot, owned) {
   if (catalog.entries.length) validateCatalog(catalog);
   const targetRoot = path.resolve(outputRoot);
   const parentRoot = path.dirname(targetRoot);
-  recoverPublish(targetRoot);
+  if (owned) recoverPublish(targetRoot);
   const tag = transactionSuffix();
   const temporaryRoot = `${targetRoot}.tmp-${tag}`;
   const backupRoot = `${targetRoot}.backup-${tag}`;
@@ -590,6 +600,7 @@ function writeCatalog(catalog, outputRoot) {
       nextAction: NEXT_ACTIONS.blocked,
     });
   }
+  if (!owned) fail("designmd", `another publish holds ${targetRoot}.lock; retry after it finishes`, { code: "STATE_LOCKED" });
   fs.mkdirSync(parentRoot, { recursive: true });
   fs.rmSync(temporaryRoot, { recursive: true, force: true });
   fs.mkdirSync(temporaryRoot, { recursive: true });

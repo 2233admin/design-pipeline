@@ -93,3 +93,36 @@ for (const crashBeforeRename of [2]) {
     }
   });
 }
+
+test("a reclaim in progress blocks a second reclaimer instead of racing it", () => {
+  const change = newChange();
+  try {
+    const dead = spawnSync(process.execPath, ["-e", "process.stdout.write(String(process.pid))"], { encoding: "utf8" });
+    fs.writeFileSync(`${change.stateFile}.lock`, `${JSON.stringify({ pid: Number(dead.stdout) })}\n`);
+    fs.writeFileSync(`${change.stateFile}.lock.reclaim`, "");
+    assert.throws(() => advanceChange(change.stateFile, change.eventsFile, advanceInput(change)), /writer lock exists/);
+    assert.ok(fs.existsSync(`${change.stateFile}.lock`), "dead lock is left for the reclaimer that holds the guard");
+    fs.rmSync(`${change.stateFile}.lock.reclaim`);
+    assert.equal(advanceChange(change.stateFile, change.eventsFile, advanceInput(change)).state.revision, 1);
+  } finally {
+    fs.rmSync(change.root, { recursive: true, force: true });
+  }
+});
+
+test("designmd never cleans another live publisher's staging directory", async () => {
+  const parent = fs.mkdtempSync(path.join(os.tmpdir(), "designmd-live-"));
+  const outputRoot = path.join(parent, "catalog");
+  try {
+    writeCatalog(await sampleCatalog("First title"), outputRoot);
+    const staging = `${outputRoot}.tmp-livepublisher`;
+    fs.mkdirSync(staging);
+    const next = await sampleCatalog("Second title");
+    fs.writeFileSync(`${outputRoot}.lock`, `${JSON.stringify({ pid: process.ppid })}
+`);
+    assert.throws(() => writeCatalog(next, outputRoot), (error) => error.code === "STATE_LOCKED");
+    assert.ok(fs.existsSync(staging), "live publisher's staging survives");
+    assert.ok(fs.existsSync(path.join(outputRoot, "designmd-catalog.json")));
+  } finally {
+    fs.rmSync(parent, { recursive: true, force: true });
+  }
+});
