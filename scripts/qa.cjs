@@ -107,8 +107,12 @@ try {
   if (shard && shard.index > 1) {
     const manifest = readJson(path.join(repoRoot, "scripts/test-manifest.json"));
     const slice = manifest.tests.filter((_, position) => position % shard.total === shard.index - 1).map((name) => path.join(repoRoot, "tests", name));
-    const sliceRun = run(process.execPath, ["--test", `--test-concurrency=${Math.min(4, os.availableParallelism())}`, ...slice], { env: hermeticEnv, stdio: ["ignore", "inherit", "inherit"] });
-    report(sliceRun.status === 0, `repository tests shard ${shard.index}/${shard.total} (${slice.length} files)`);
+    // `node --test` with no paths auto-discovers nested upstream fixtures, so an empty slice must never reach it.
+    if (slice.length === 0) report(false, `repository tests shard ${shard.index}/${shard.total} selects no files (manifest has ${manifest.tests.length})`);
+    else {
+      const sliceRun = run(process.execPath, ["--test", `--test-concurrency=${Math.min(4, os.availableParallelism())}`, ...slice], { env: hermeticEnv, stdio: ["ignore", "inherit", "inherit"] });
+      report(sliceRun.status === 0, `repository tests shard ${shard.index}/${shard.total} (${slice.length} files)`);
+    }
     break shardedQa;
   }
   const requiredRepoFiles =["package.json", "package-lock.json", "README.md", "CHANGELOG.md", "LICENSE", "DESIGN.md", "MOTION.md", "THIRD_PARTY_NOTICES.md", "skill/SKILL.md", "scripts/package.cjs", "scripts/install-local.cjs", "scripts/test-manifest.json", "skill/references/package-resources.json", "openspec/specs/design-pipeline/spec.md"];
