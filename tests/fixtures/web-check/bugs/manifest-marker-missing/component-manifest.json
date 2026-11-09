@@ -1,0 +1,1 @@
+{ "entries": [{ "name": "Hero", "sourceId": "src/Hero.jsx", "availability": "project-owned", "license": { "state": "project-owned" }, "usedIn": [{ "file": "index.html", "marker": "Hero", "how": "adapted" }] }] }

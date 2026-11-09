@@ -1,0 +1,10 @@
+{
+  "_comment": "每个坏页面一条：对应检查必须报出这个 code。新增故障类别时在这里加一行并放一个最小页面。干净页面必须零发现。",
+  "bugs": {
+    "page-load-console-error": { "check": "page-load", "code": "page-load.console-error" },
+    "page-load-request-failed": { "check": "page-load", "code": "page-load.request-failed" },
+    "manifest-marker-missing": { "check": "manifest", "code": "manifest.marker-missing" },
+    "architecture-hardcoded-color": { "check": "architecture", "code": "architecture.hardcoded-color" }
+  },
+  "pending": ["layout.horizontal-overflow", "layout.text-overlap", "layout.low-contrast", "layout.no-visible-focus", "motion.not-triggered", "page-load.uncaught-exception", "manifest.marker-in-comment"]
+}
