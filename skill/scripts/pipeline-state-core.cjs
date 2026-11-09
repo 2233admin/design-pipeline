@@ -18,6 +18,7 @@ const {
   sha256,
   sortValue,
 } = require("./contract-utils.cjs");
+const { assertTransition, defineMachine, listResidue, transactionSuffix } = require("./state-machine-core.cjs");
 
 const STATE_V2 = "design-pipeline.state.v2";
 const V1_SCHEMAS = new Set(["design-pipeline.state.v1", "design-pipeline-state.v1"]);
@@ -406,6 +407,68 @@ function createInitialState(input) {
   return state;
 }
 
+// state.json + events.jsonl 两文件提交的步骤。崩溃后由 recoverTransaction 按磁盘残留回滚或前滚。
+const COMMIT_MACHINE = defineMachine("pipeline-state.commit", {
+  initial: ["idle"],
+  transitions: {
+    idle: ["staged"],
+    staged: ["backed-up", "rolled-back"],
+    "backed-up": ["events-installed", "rolled-back"],
+    "events-installed": ["state-installed", "rolled-back"],
+    "state-installed": ["committed", "rolled-back"],
+    committed: [],
+    "rolled-back": [],
+  },
+});
+
+function pidAlive(pid) {
+  try { process.kill(pid, 0); return true; }
+  catch (error) { return error.code === "EPERM"; }
+}
+
+// 写者锁持有者已死（崩溃）时回收锁；无法确认时保持原样，仍由 LOCKED 拒绝。
+function reclaimDeadLock(lock) {
+  let owner;
+  try { owner = JSON.parse(fs.readFileSync(lock, "utf8")); } catch { return false; }
+  if (!Number.isInteger(owner?.pid) || owner.pid < 1 || owner.pid === process.pid || pidAlive(owner.pid)) return false;
+  try { fs.rmSync(lock); return true; } catch { return false; }
+}
+
+// 在持锁状态下调用：把上次崩溃留下的暂存/备份残留收敛回一致的一对文件。
+// 备份存在 = 提交进行中。新的一对都在且一致则前滚（丢弃备份），否则回滚到备份。
+function recoverTransaction(stateFile, eventsFile) {
+  const files = [stateFile, eventsFile];
+  const backups = files.map((file) => listResidue(file, "backup"));
+  const temps = files.flatMap((file) => listResidue(file, "tmp"));
+  let action = "none";
+  if (backups.some((list) => list.length > 1)) {
+    fail("pipeline state", `ambiguous transaction residue: ${backups.flat().join(", ")}; keep the oldest backup per file and delete the rest`, { code: "STALE_TRANSACTION" });
+  }
+  if (backups.some((list) => list.length)) {
+    let forward = false;
+    if (fs.existsSync(stateFile) && fs.existsSync(eventsFile)) {
+      try { forward = inspectConsistency(readJson(stateFile, "pipeline state"), fs.readFileSync(eventsFile, "utf8")).status === "consistent"; } catch { forward = false; }
+    }
+    if (forward) action = "rolled-forward";
+    else {
+      action = "rolled-back";
+      files.forEach((file, index) => {
+        const [backup] = backups[index];
+        if (!backup) return;
+        if (fs.existsSync(file)) fs.rmSync(file);
+        fs.renameSync(backup, file);
+      });
+    }
+    for (const backup of backups.flat()) removeIfPresent(backup);
+  } else if (!fs.existsSync(stateFile) && fs.existsSync(eventsFile) && fs.statSync(eventsFile).size === 0) {
+    fs.rmSync(eventsFile);
+    action = "cleaned";
+  }
+  for (const temp of temps) removeIfPresent(temp);
+  if (temps.length && action === "none") action = "cleaned";
+  return action;
+}
+
 function removeIfPresent(file) {
   try {
     if (fs.existsSync(file)) fs.rmSync(file);
@@ -417,12 +480,13 @@ function removeIfPresent(file) {
 function writeNewChange(stateFile, eventsFile, state, options = {}) {
   validateV2(state);
   fs.mkdirSync(path.dirname(stateFile), { recursive: true });
-  return withWriterLock(stateFile, () => {
+  return withWriterLock(stateFile, eventsFile, () => {
     if (fs.existsSync(stateFile) || fs.existsSync(eventsFile)) {
       fail("pipeline state", "change state or event history already exists", { code: "ALREADY_EXISTS" });
     }
-    const stateTemp = `${stateFile}.tmp-${process.pid}`;
-    const eventsTemp = `${eventsFile}.tmp-${process.pid}`;
+    const tag = transactionSuffix();
+    const stateTemp = `${stateFile}.tmp-${tag}`;
+    const eventsTemp = `${eventsFile}.tmp-${tag}`;
     let stateInstalled = false;
     let eventsInstalled = false;
     const trip = (name) => {
@@ -453,12 +517,16 @@ function writeNewChange(stateFile, eventsFile, state, options = {}) {
   }, options);
 }
 
-function withWriterLock(stateFile, callback, options = {}) {
+function withWriterLock(stateFile, eventsFile, callback, options = {}) {
   const lock = `${stateFile}.lock`;
   let lockFd;
   let lockCreated = false;
   try {
-    lockFd = fs.openSync(lock, "wx");
+    try { lockFd = fs.openSync(lock, "wx"); }
+    catch (error) {
+      if (error.code !== "EEXIST" || !reclaimDeadLock(lock)) throw error;
+      lockFd = fs.openSync(lock, "wx");
+    }
     lockCreated = true;
     fs.writeFileSync(lockFd, `${JSON.stringify({ pid: process.pid, createdAt: options.timestamp || null })}\n`);
     fs.fsyncSync(lockFd);
@@ -468,6 +536,7 @@ function withWriterLock(stateFile, callback, options = {}) {
     fail("pipeline state", `writer lock exists: ${lock}`, { code: "LOCKED", cause: error.message });
   }
   try {
+    recoverTransaction(stateFile, eventsFile);
     return callback();
   } finally {
     fs.closeSync(lockFd);
@@ -481,10 +550,13 @@ function commitStateAndEvents(stateFile, eventsFile, state, eventsText, options 
   if (consistency.status !== "consistent") {
     fail("pipeline state", `transaction output is ${consistency.status}`, { code: "INCONSISTENT_OUTPUT" });
   }
-  const stateTemp = `${stateFile}.tmp-${process.pid}`;
-  const eventsTemp = `${eventsFile}.tmp-${process.pid}`;
-  const stateBackup = `${stateFile}.backup-${process.pid}`;
-  const eventsBackup = `${eventsFile}.backup-${process.pid}`;
+  const tag = transactionSuffix();
+  const stateTemp = `${stateFile}.tmp-${tag}`;
+  const eventsTemp = `${eventsFile}.tmp-${tag}`;
+  const stateBackup = `${stateFile}.backup-${tag}`;
+  const eventsBackup = `${eventsFile}.backup-${tag}`;
+  let phase = "idle";
+  const enter = (next) => { assertTransition(COMMIT_MACHINE, phase, next, "pipeline state"); phase = next; };
   const failpoint = options.failpoint;
   let stateBackedUp = false;
   let eventsBackedUp = false;
@@ -495,30 +567,33 @@ function commitStateAndEvents(stateFile, eventsFile, state, eventsText, options 
     if (failpoint === name) fail("pipeline state", `simulated interruption at ${name}`, { code: "SIMULATED_INTERRUPTION" });
   };
   try {
-    for (const candidate of [stateTemp, eventsTemp, stateBackup, eventsBackup]) {
-      if (fs.existsSync(candidate)) fail("pipeline state", `stale transaction artifact exists: ${candidate}`, { code: "STALE_TRANSACTION" });
-    }
     for (const [file, bytes] of [[stateTemp, canonicalJson(state)], [eventsTemp, eventsText]]) {
       const fd = fs.openSync(file, "wx");
       try { fs.writeFileSync(fd, bytes); fs.fsyncSync(fd); } finally { fs.closeSync(fd); }
     }
     const stagedState = JSON.parse(fs.readFileSync(stateTemp, "utf8"));
     inspectConsistency(stagedState, fs.readFileSync(eventsTemp, "utf8"));
+    enter("staged");
     trip("after-stage");
     fs.renameSync(stateFile, stateBackup);
     stateBackedUp = true;
     fs.renameSync(eventsFile, eventsBackup);
     eventsBackedUp = true;
+    enter("backed-up");
     trip("after-backup");
     fs.renameSync(eventsTemp, eventsFile);
     eventsInstalled = true;
+    enter("events-installed");
     trip("after-events");
     fs.renameSync(stateTemp, stateFile);
     stateInstalled = true;
+    enter("state-installed");
     trip("after-state");
     inspectConsistency(readJson(stateFile, "pipeline state"), fs.readFileSync(eventsFile, "utf8"));
+    enter("committed");
     committed = true;
   } catch (error) {
+    if (phase !== "idle" && phase !== "committed") phase = "rolled-back";
     if (stateInstalled && fs.existsSync(stateFile)) fs.rmSync(stateFile);
     if (eventsInstalled && fs.existsSync(eventsFile)) fs.rmSync(eventsFile);
     if (stateBackedUp && fs.existsSync(stateBackup)) fs.renameSync(stateBackup, stateFile);
@@ -546,7 +621,7 @@ function requireExpectedState(stateFile, expectedSha256) {
 }
 
 function advanceChange(stateFile, eventsFile, input) {
-  return withWriterLock(stateFile, () => {
+  return withWriterLock(stateFile, eventsFile, () => {
     const current = requireExpectedState(stateFile, input.expectedSha256);
     validateV2(current.state);
     const existingEvents = fs.readFileSync(eventsFile, "utf8");
@@ -601,7 +676,7 @@ function advanceChange(stateFile, eventsFile, input) {
 }
 
 function repairChange(stateFile, eventsFile, input) {
-  return withWriterLock(stateFile, () => {
+  return withWriterLock(stateFile, eventsFile, () => {
     const current = requireExpectedState(stateFile, input.expectedSha256);
     validateV2(current.state);
     const existingEvents = fs.readFileSync(eventsFile, "utf8");
@@ -643,7 +718,7 @@ function repairChange(stateFile, eventsFile, input) {
 }
 
 function repairLegacyEvents(stateFile, eventsFile, input) {
-  return withWriterLock(stateFile, () => {
+  return withWriterLock(stateFile, eventsFile, () => {
     const current = requireExpectedState(stateFile, input.expectedSha256);
     validateV2(current.state);
     if (current.state.lastEventSeq !== 0) fail("pipeline state", "legacy event repair requires lastEventSeq 0", { code: "LEGACY_REPAIR_REJECTED" });
@@ -730,6 +805,7 @@ function migrateFile(file, options = {}) {
 
 module.exports = {
   CONTROL_OUTCOMES,
+  recoverTransaction,
   CONTROL_PHASE_STATUSES,
   PHASE_ALIASES,
   REGISTRY_V2,

@@ -3,6 +3,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalJson, fail, isObject, resolveInside, sha256, sortValue } = require("./contract-utils.cjs");
+const { assertTransition, defineMachine, listResidue, transactionSuffix } = require("./state-machine-core.cjs");
 
 const SCHEMA = "design-pipeline.designmd-catalog.v1";
 const VERSION = "1";
@@ -516,12 +517,41 @@ function persistableEntries(catalog, contentRoot) {
   });
 }
 
+// 目录快照发布：旧目录先改名备份，再把暂存目录改名成目标。两次改名之间崩溃时目标目录缺失。
+const PUBLISH_MACHINE = defineMachine("designmd.publish", {
+  initial: ["idle"],
+  transitions: {
+    idle: ["staged"],
+    staged: ["backed-up", "installed"],
+    "backed-up": ["installed", "restored"],
+    installed: ["committed", "restored"],
+    committed: [],
+    restored: [],
+  },
+});
+
+// 下次发布前收敛上次崩溃的残留：目标缺失则从备份还原；目标在则备份与暂存都丢弃。
+function recoverPublish(targetRoot) {
+  const backups = listResidue(targetRoot, "backup");
+  const temps = listResidue(targetRoot, "tmp");
+  if (!fs.existsSync(targetRoot) && backups.length) {
+    const newest = backups.map((dir) => ({ dir, mtime: fs.statSync(dir).mtimeMs })).sort((a, b) => b.mtime - a.mtime || (a.dir < b.dir ? 1 : -1))[0].dir;
+    fs.renameSync(newest, targetRoot);
+    backups.splice(backups.indexOf(newest), 1);
+  }
+  for (const leftover of [...backups, ...temps]) fs.rmSync(leftover, { recursive: true, force: true });
+}
+
 function writeCatalog(catalog, outputRoot) {
   if (catalog.entries.length) validateCatalog(catalog);
   const targetRoot = path.resolve(outputRoot);
   const parentRoot = path.dirname(targetRoot);
-  const temporaryRoot = `${targetRoot}.tmp-${process.pid}`;
-  const backupRoot = `${targetRoot}.backup-${process.pid}`;
+  recoverPublish(targetRoot);
+  const tag = transactionSuffix();
+  const temporaryRoot = `${targetRoot}.tmp-${tag}`;
+  const backupRoot = `${targetRoot}.backup-${tag}`;
+  let phase = "idle";
+  const enter = (next) => { assertTransition(PUBLISH_MACHINE, phase, next, "designmd"); phase = next; };
   const existingCatalog = path.join(targetRoot, "designmd-catalog.json");
   let previous = null;
   if (fs.existsSync(existingCatalog)) {
@@ -575,15 +605,19 @@ function writeCatalog(catalog, outputRoot) {
   });
   fs.writeFileSync(path.join(temporaryRoot, "designmd-catalog.json"), canonicalJson(persisted));
   let backedUp = false;
+  enter("staged");
   try {
     if (fs.existsSync(targetRoot)) {
-      fs.rmSync(backupRoot, { recursive: true, force: true });
       fs.renameSync(targetRoot, backupRoot);
       backedUp = true;
+      enter("backed-up");
     }
     fs.renameSync(temporaryRoot, targetRoot);
+    enter("installed");
     if (backedUp) fs.rmSync(backupRoot, { recursive: true, force: true });
+    enter("committed");
   } catch (error) {
+    if (phase !== "committed") phase = "restored";
     if (fs.existsSync(targetRoot)) fs.rmSync(targetRoot, { recursive: true, force: true });
     if (backedUp && fs.existsSync(backupRoot)) fs.renameSync(backupRoot, targetRoot);
     throw error;
