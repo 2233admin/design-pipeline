@@ -53,6 +53,7 @@ const { renderCutSheet, seedCuts } = require("./film-cut-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
 const { evaluateFilmRuns } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
+const { runPreview, scaffoldWeb } = require("./web-project-core.cjs");
 const { prepareFilmMethods } = require("../tools/film-methods/prepare.cjs");
 const { templates: filmTemplates } = require("../tools/prompt-motion/library.cjs");
 const templateBank = require("../tools/template-bank/bank.cjs");
@@ -179,6 +180,7 @@ const KNOWN_OPTIONS = new Set([
   "--generator", "--seed", "--reference",
   "--text", "--text-file", "--weight", "--contrast",
   "--tool", "--prompt", "--landmarks", "--layer", "--subject",
+  "--decision", "--port",
 ]);
 function parseArgs(argv) {
   const positionals = [];
@@ -482,6 +484,8 @@ function publicHelp() {
     `  composition scaffold --output <new-dir> [--template ${scaffoldTemplates.join("|")}]`,
     "  composition compare --source <png> --image <png> --output <new-dir>",
     "  art-motion render --spec <file> --output <new-dir> [--stills 0,1.5] [--chrome <exe>] [--puppeteer-module <file>] [--ffmpeg <exe>] [--ffprobe <exe>]   (PNG stills or video plus render-report.json; diagnostics only)",
+    "  web scaffold --output <dir> --decision <frontend-stack-decision.json> [--replace]   (writes a pinned Vite project for the decided framework, styling and UI library: package.json, index.html with a data-section shell, src entry and style, empty component-manifest.json, WEB.md; exit 2 on a blocked decision, 1 on OUTPUT_EXISTS without --replace)",
+    "  web preview --root <dir> [--path <subdir>] [--port <n>] [--timeout-ms <n>]   (static server on 127.0.0.1 for section review and evidence refs; address on stderr, runs until Ctrl+C or --timeout-ms, then closes; exit 1 INPUT_MISSING without index.html)",
     "  film scaffold --output <dir> [--template default|motion-study|tracking-hud] [--replace]",
     "  film methods --project-root <dir> --input <plan.json> [--write] [--replace]",
     "  film templates [--query <terms> | --template <id>] [--all]",
@@ -3071,6 +3075,29 @@ const COMMANDS = {
     },
   },
   "design-code-map": { actions: { check: { required: ["--artifact"], run: designCodeMapCheckCommand } } },
+  web: {
+    actions: {
+      scaffold: {
+        required: ["--output", "--decision"],
+        run: ({ parsed, root }) => {
+          const project = contained(root, option(parsed, "--output"), "--output", false);
+          const decision = readJson(contained(root, option(parsed, "--decision"), "--decision"), "frontend stack decision");
+          return { result: scaffoldWeb(project, decision, { replace: option(parsed, "--replace") === true }), exitCode: 0 };
+        },
+      },
+      preview: {
+        required: [],
+        run: ({ parsed, root }) => {
+          const served = option(parsed, "--path") ? contained(root, option(parsed, "--path"), "--path") : root;
+          const port = option(parsed, "--port") === null ? 0 : Number(option(parsed, "--port"));
+          const timeoutMs = option(parsed, "--timeout-ms") === null ? 0 : Number(option(parsed, "--timeout-ms"));
+          if (!Number.isInteger(port) || port < 0 || port > 65535) fail("cli", "--port must be an integer from 0 to 65535", { code: "INVALID_OPTION" });
+          if (!Number.isFinite(timeoutMs) || timeoutMs < 0) fail("cli", "--timeout-ms must be a non-negative number", { code: "INVALID_OPTION" });
+          return { result: runPreview(served, { port, timeoutMs }), exitCode: 0 };
+        },
+      },
+    },
+  },
   film: {
     actions: {
       templates: {
