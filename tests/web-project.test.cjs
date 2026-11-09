@@ -173,3 +173,35 @@ test("web scaffold through the CLI: exit 0, OUTPUT_EXISTS exit 1, blocked decisi
     assert.equal(run(path.join(dir, "other")).status, 2);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+test("preview refuses an index.html symlink that points outside the root", async (t) => {
+  const dir = tmp();
+  const outside = path.join(path.dirname(dir), `${path.basename(dir)}-outside.html`);
+  try {
+    fs.writeFileSync(outside, "secret");
+    try { fs.symlinkSync(outside, path.join(dir, "index.html"), "file"); } catch { t.skip("symlinks are not permitted here"); return; }
+    const preview = await startPreview(dir);
+    try { assert.equal((await get(preview.url)).status, 403); } finally { await preview.stop(); }
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); fs.rmSync(outside, { force: true }); }
+});
+
+test("the preview server stops when the CLI process that started it is killed", async () => {
+  const dir = tmp();
+  try {
+    fs.writeFileSync(path.join(dir, "index.html"), "ok");
+    const child = spawn(process.execPath, [cli, "web", "preview", "--root", dir, "--json"], { stdio: ["ignore", "pipe", "pipe"] });
+    let stderr = "";
+    const url = await new Promise((resolve, reject) => {
+      child.stderr.on("data", (chunk) => { stderr += chunk; const match = /http:\/\/127\.0\.0\.1:\d+\//.exec(stderr); if (match) resolve(match[0]); });
+      child.on("exit", () => reject(new Error(`exited early: ${stderr}`)));
+    });
+    assert.equal((await get(url)).status, 200);
+    child.kill("SIGTERM");
+    let alive = true;
+    for (let attempt = 0; attempt < 20 && alive; attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      alive = await get(url).then(() => true, () => false);
+    }
+    assert.equal(alive, false, "the orphaned server kept answering");
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});

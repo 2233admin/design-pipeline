@@ -14,13 +14,21 @@ const { cliCommand, shellPath } = require("./workflows/shared.cjs");
 
 // 固定版本，与 film scaffold 固定 gsap/hyperframes 同理：同一份脚手架今天与明天装出同一棵树。
 const VERSIONS = {
-  vite: "8.3.7",
-  react: "19.3.1", "react-dom": "19.3.1", "@vitejs/plugin-react": "6.3.0",
-  vue: "3.5.45", "@vitejs/plugin-vue": "6.0.10",
-  svelte: "5.57.3", "@sveltejs/vite-plugin-svelte": "7.3.1",
-  "solid-js": "1.9.18", "vite-plugin-solid": "2.11.15",
-  tailwindcss: "4.3.5", "@tailwindcss/vite": "4.3.5",
-  sass: "1.108.1", less: "4.9.1", postcss: "8.5.32",
+  "vite": "8.3.7",
+  "react": "19.3.1",
+  "react-dom": "19.3.1",
+  "@vitejs/plugin-react": "6.3.0",
+  "vue": "3.5.45",
+  "@vitejs/plugin-vue": "6.0.10",
+  "svelte": "5.57.3",
+  "@sveltejs/vite-plugin-svelte": "7.3.1",
+  "solid-js": "1.9.18",
+  "vite-plugin-solid": "2.11.15",
+  "tailwindcss": "4.3.5",
+  "@tailwindcss/vite": "4.3.5",
+  "sass": "1.108.1",
+  "less": "4.9.1",
+  "postcss": "8.5.32",
 };
 
 const FRAMEWORKS = {
@@ -197,7 +205,11 @@ function resolveRequest(realRoot, rawUrl) {
   try {
     file = fs.realpathSync(file);
     if (!inside(file)) return { status: 403 };
-    if (fs.statSync(file).isDirectory()) file = path.join(file, "index.html");
+    if (fs.statSync(file).isDirectory()) {
+      // 目录回落到 index.html 后要对最终文件重新取真实路径，否则指向根外的符号链接会被读出。
+      file = fs.realpathSync(path.join(file, "index.html"));
+      if (!inside(file)) return { status: 403 };
+    }
     if (!fs.statSync(file).isFile()) return { status: 404 };
   } catch { return { status: 404 }; }
   return { status: 200, file };
@@ -230,7 +242,7 @@ function startPreview(root, options = {}) {
 function runPreview(root, options = {}) {
   const served = path.resolve(root);
   if (!fs.existsSync(path.join(served, "index.html"))) fail("web preview", `no index.html in ${served}. Fix: scaffold or build the page first (web scaffold, then npm run build and --path dist), or pass --path <the directory that holds index.html>`, { code: "INPUT_MISSING" });
-  const args = [__filename, "--serve", served, String(options.port ?? 0), String(options.timeoutMs ?? 0)];
+  const args = [__filename, "--serve", served, String(options.port ?? 0), String(options.timeoutMs ?? 0), String(process.pid)];
   const child = spawnSync(process.execPath, args, { stdio: ["ignore", "inherit", "inherit"] });
   if (child.error) throw child.error;
   if (child.status !== 0 && child.signal === null) fail("web preview", `the preview server exited with code ${child.status}`, { code: "PREVIEW_FAILED" });
@@ -238,7 +250,7 @@ function runPreview(root, options = {}) {
 }
 
 if (require.main === module && process.argv[2] === "--serve") {
-  const [, , , dir, port, timeoutMs] = process.argv;
+  const [, , , dir, port, timeoutMs, parentPid] = process.argv;
   startPreview(dir, { port }).then((preview) => {
     process.stderr.write(`preview: ${preview.url}  (Ctrl+C to stop)\n`);
     let stopping = false;
@@ -246,6 +258,8 @@ if (require.main === module && process.argv[2] === "--serve") {
     process.on("SIGINT", stop);
     process.on("SIGTERM", stop);
     if (Number(timeoutMs) > 0) setTimeout(stop, Number(timeoutMs));
+    // 阻塞中的父进程收到 SIGTERM 会直接退出而来不及转发；子进程轮询父进程是否还在，不在就关闭，避免孤儿服务占着端口。
+    if (Number(parentPid) > 0) setInterval(() => { try { process.kill(Number(parentPid), 0); } catch { stop(); } }, 500).unref();
   }, (error) => { process.stderr.write(`preview: ${error.message}\n`); process.exit(1); });
 }
 
