@@ -2,11 +2,11 @@
   "schema": "design-pipeline.good-css-source.v1",
   "source": {
     "repository": "https://github.com/vojtaholik/good-css",
-    "revision": "a6804e75b5ee946d6b007ac20734f958d7938bca",
-    "gitTree": "24e09738cb61dd42078c5054aabd2ac970eb1c49",
-    "committedAt": "2026-11-03T19:56:34+01:00",
+    "revision": "35e0e8c673854ca34d8e1879038e44834c855dfb",
+    "gitTree": "9815584badca18eb4854f194da7b67efd06130f6",
+    "committedAt": "2026-11-05T10:11:04+01:00",
     "license": "MIT",
-    "reviewedAt": "2026-11-04",
+    "reviewedAt": "2026-11-09",
     "scope": [
       "**"
     ]
@@ -31,8 +31,8 @@
   "snapshot": {
     "root": "upstream",
     "fileCount": 139,
-    "byteCount": 908213,
-    "treeSha256": "bfe7189dd6f562e34e24e34b6869b95ca507ea1a8da38ccca938821b4571c430",
+    "byteCount": 908657,
+    "treeSha256": "c31628f811e7c8e1868c6c15078212857f6a33dc25a8614c6fdf0fabf62d1efd",
     "executableFiles": [],
     "objects": [
       {
@@ -74,8 +74,8 @@
       {
         "path": "deploy/agent-files.js",
         "mode": "100644",
-        "oid": "a55093d6b297fb5f635d36aaca2645233781ca5b",
-        "size": 4454
+        "oid": "38d80e9456827d06209a5721932965f329f7c98c",
+        "size": 4616
       },
       {
         "path": "deploy/build.js",
@@ -788,8 +788,8 @@
       {
         "path": "README.md",
         "mode": "100644",
-        "oid": "7558acdf20cef74fdf6340d50197ab65366dce04",
-        "size": 2732
+        "oid": "5f6f5cafc02441f11819edd41d1dec281afe72a3",
+        "size": 2828
       },
       {
         "path": "scripts/build-skill.js",
@@ -860,8 +860,8 @@
       {
         "path": "vercel.json",
         "mode": "100644",
-        "oid": "f84374848929b416b2d185b923bf63ab0d680a3f",
-        "size": 1213
+        "oid": "399d69df5e933cbd8df17b08baab86578d3e9f77",
+        "size": 1399
       },
       {
         "path": "vite.config.js",

@@ -1,1 +1,1 @@
-gepa @ git+https://github.com/gepa-ai/gepa.git@8c7b697a71977980afc7537dac0881e784eef99f
+gepa @ git+https://github.com/gepa-ai/gepa.git@ce5b0d6e3d6af6c6dbec6de2c54536bbb961d309

@@ -2,7 +2,7 @@
   "schema": "design-pipeline.impeccable-product-design.v1",
   "source": {
     "url": "https://github.com/pbakaus/impeccable",
-    "revision": "9fadc41729c38fd47d7ae622b501558653f9d2e9",
+    "revision": "0fb9d01efd70c5dc0bc341f3baaa297444261f9a",
     "reviewedAt": "2026-11-04"
   },
   "visitorModes": [

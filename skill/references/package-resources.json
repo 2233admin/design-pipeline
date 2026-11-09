@@ -354,6 +354,8 @@
     "vendor/interface-discipline/manifest.json",
     "vendor/interface-discipline/upstream/LICENSE",
     "vendor/interface-discipline/upstream/README.md",
+    "vendor/interface-discipline/upstream/skills/afk/agents/openai.yaml",
+    "vendor/interface-discipline/upstream/skills/afk/UPSTREAM-SKILL.md",
     "vendor/interface-discipline/upstream/skills/better-accessibility/agents/openai.yaml",
     "vendor/interface-discipline/upstream/skills/better-accessibility/focus-and-keyboard.md",
     "vendor/interface-discipline/upstream/skills/better-accessibility/forms.md",

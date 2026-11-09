@@ -7,8 +7,8 @@ ambient `good-css` installation is needed. Apply the relevant techniques automat
 reading their complete original entries; a whole page normally touches most categories.
 
 The built-in source is the complete reviewed
-[`vojtaholik/good-css`](https://github.com/vojtaholik/good-css/tree/a6804e75b5ee946d6b007ac20734f958d7938bca)
-Git tree at `a6804e75b5ee946d6b007ac20734f958d7938bca`, reviewed on 2026-11-04. It contains
+[`vojtaholik/good-css`](https://github.com/vojtaholik/good-css/tree/35e0e8c673854ca34d8e1879038e44834c855dfb)
+Git tree at `35e0e8c673854ca34d8e1879038e44834c855dfb`, reviewed on 2026-11-09. It contains
 133 tracked files, 47 practices in eight categories, eight generated agent references and 47
 live specimen fixtures. The commit is dated 2026-10-07. Read the pinned provenance and file
 integrity evidence in [`manifest.json`](../vendor/good-css/manifest.json).

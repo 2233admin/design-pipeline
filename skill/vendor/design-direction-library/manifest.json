@@ -3,11 +3,11 @@
   "bundle": "design-direction-library",
   "source": {
     "repository": "https://github.com/alchaincyf/huashu-design",
-    "revision": "9b01ee8751679724dd43d855a532944aaa2c2b59",
-    "gitTree": "90bc6a8d9ed7a419b4b8436b24d635ba3a53ce08",
-    "committedAt": "2026-10-31T02:50:57+09:00",
+    "revision": "b2460b031c33ff32d2bf3b97263527daa231e4de",
+    "gitTree": "ade3656c17e054fdb69062e02a671bb28c209e0b",
+    "committedAt": "2026-11-03T17:28:45-10:00",
     "license": "MIT",
-    "reviewedAt": "2026-11-04",
+    "reviewedAt": "2026-11-09",
     "scope": [
       "**"
     ]
@@ -22,8 +22,8 @@
   "snapshot": {
     "root": "upstream",
     "fileCount": 195,
-    "byteCount": 1681706,
-    "treeSha256": "ce60b19a7016ab62ec204c8a6c66c8a5684cd18ce1ee5239491e4f1c202824f5",
+    "byteCount": 1684846,
+    "treeSha256": "72ddc0b973f3876a05edb3aaea701bdff702e65cf1fae939ea51eb37f1c3c781",
     "executableFiles": [
       "scripts/add-music.sh",
       "scripts/cloud/tts-doubao.mjs",
@@ -789,16 +789,16 @@
       {
         "path": "README.en.md",
         "mode": "100644",
-        "oid": "ec064235faa80c29b8c4d55480dfb05ba444466e",
-        "size": 29948,
-        "sha256": "66908c76b256431a18a0300d1ba0d4accfe37910f6a1bdd5bdfb72599f6f874c"
+        "oid": "24a09ec546680a32d26fa89fff35ec8309478fd0",
+        "size": 30182,
+        "sha256": "7bbe60987e97515a2123ee455bf18addff1375b42247ebc4e4a290eaf714047b"
       },
       {
         "path": "README.md",
         "mode": "100644",
-        "oid": "2e00918d256635162362d56b2325ea8df4cce581",
-        "size": 30113,
-        "sha256": "5931dcd0ee6aec5b4cfe27fe970ba1887e438a45f5da0a55d55f9c56f7687c67"
+        "oid": "f6e4dd8aa2b2f55d59526a3cd4b70266671575ae",
+        "size": 30840,
+        "sha256": "f1a710d672084fce3fc85d5af124cf8a3981bb024e99d0e6c877ab70c5795393"
       },
       {
         "path": "references/about-author.md",
@@ -1160,9 +1160,9 @@
       {
         "path": "scripts/export_deck_pdf.mjs",
         "mode": "100644",
-        "oid": "af4fbb2e94b6727172f805e59ee09ad331ef65dc",
-        "size": 3209,
-        "sha256": "323f3d5963e8b9245d468f051d4b676e67d9b97cc73b62d98239a13c65d8cc31"
+        "oid": "976afe96691562e22a410bd33e0942add9c803db",
+        "size": 3383,
+        "sha256": "78baf0f6c2779ec3f3d23a92ecae8039148b06c38bdaaf2e65ac70fc22ee0eef"
       },
       {
         "path": "scripts/export_deck_pptx.mjs",
@@ -1174,9 +1174,9 @@
       {
         "path": "scripts/export_deck_stage_pdf.mjs",
         "mode": "100644",
-        "oid": "a5526b8080e5634540bc5a9b99a171a0706dece6",
-        "size": 4781,
-        "sha256": "d024a6b5fa84c1d25caf4c1acf47ca24a5c9e8c7ed3c45befa9fabac82765b04"
+        "oid": "6dbac7975a96a3b32aa5e582b7aeb3e1c1e75ecd",
+        "size": 4955,
+        "sha256": "567fdb3f7d63b7511ddf917963c2d23efe01d85d3944997fedfed5f0f66794b5"
       },
       {
         "path": "scripts/fetch_images.py",
@@ -1188,16 +1188,16 @@
       {
         "path": "scripts/gen_deck_thumbs.mjs",
         "mode": "100644",
-        "oid": "4ef73d0387704118eb9bdbe154598e7474bda3e2",
-        "size": 3037,
-        "sha256": "7a6ec5c4351e36aaeeec66f5488a3ef12574bb994b3f81c4b35fd33144066e33"
+        "oid": "1b3b7453312b2944156b4a4f8ef239e1dac71a1f",
+        "size": 3509,
+        "sha256": "e48e5a38cceacdce66f2527fa9627e30d7e61a10a1fc54cf0b4cafb7e767f197"
       },
       {
         "path": "scripts/html2pptx.js",
         "mode": "100644",
-        "oid": "f794cf17c2eab52eaa63d2fc526588ab12e1d00a",
-        "size": 34510,
-        "sha256": "79bd2df2c0aed3548ba78d88f7bf2906c2fbdef6bcf9dce8ee4a83013c6563ac"
+        "oid": "330ba18766303efd0d9c9e26f6d965ab328f8e1b",
+        "size": 34728,
+        "sha256": "ffc5b3b46fb6039bf5f0588ced2ec78670f5f16c10b8696beb5bff086955d384"
       },
       {
         "path": "scripts/learn.py",
@@ -1391,9 +1391,9 @@
       {
         "path": "SKILL.md",
         "mode": "100644",
-        "oid": "23f09262546164b63c04fbca36b04d77a9fc1618",
-        "size": 15699,
-        "sha256": "095ffe5c156e0f299233f7bed44080ce0654c191b9a97ca580c5d798cf45eaf8"
+        "oid": "fa3139d14e2bc3d80d060e38e553d15c2dea7de9",
+        "size": 16840,
+        "sha256": "a6c9beaa87d182b93792d3d0e7a212b9af28d54d89d7e1784c323b7a5cf479f7"
       },
       {
         "path": "test-prompts.json",
@@ -1406,9 +1406,9 @@
   },
   "fetched": {
     "root": "fetched",
-    "fileCount": 244,
-    "byteCount": 41738191,
-    "treeSha256": "d569e575d65729e9c18cecbb6bea60c02558138b41d966756373ad87780a9821",
+    "fileCount": 245,
+    "byteCount": 41739443,
+    "treeSha256": "83dd53eca67d7fab5faa1f9827b3dbbd15073b52a7a2f7afa418658c6ef0705f",
     "executableFiles": [],
     "objects": [
       {
@@ -2938,6 +2938,13 @@
         "sha256": "c4e49e9ffe7f00b93414117c608362a826ac6970ecd13cdbe56f4c19907beb7e"
       },
       {
+        "path": "cordis.patch.yml",
+        "mode": "100644",
+        "oid": "ba72480ebc8f70e377b35b336b42338c32a3dcfe",
+        "size": 554,
+        "sha256": "eab3865657409014dc5e16ab8258201668b8807424479b179ce0d4a8c84172ee"
+      },
+      {
         "path": "demos/c1-ios-prototype-en.html",
         "mode": "100644",
         "oid": "df3a605ac96cf881f016e821e0f67b4fd07486f2",
@@ -3108,9 +3115,9 @@
       {
         "path": "package.json",
         "mode": "100644",
-        "oid": "baadd4585c57c4aab62be54b0b37bdd7c4746a6b",
-        "size": 133,
-        "sha256": "144b28fbf3911f2969589bbddb3208bb02e98bfb33988723d33d3a724ad3b7d5"
+        "oid": "639212883e16f7e3abc693250cde495c24bc05f5",
+        "size": 831,
+        "sha256": "b6ec7ea2e1bc7bae170fbb784314c7b6ed59c660de9410e5c9217f9a3647abe7"
       },
       {
         "path": "scripts/tests/fixtures/assets/logo.png",

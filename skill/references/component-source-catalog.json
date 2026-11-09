@@ -471,10 +471,10 @@
           "https://api.github.com/repos/shadcn-ui/ui/git/blobs/fad4d887a681dd49233e5ed01ee2c7a1513089a0",
           "https://ui.shadcn.com/",
           "https://github.com/shadcn-ui/ui",
-          "https://github.com/shadcn-ui/ui/blob/4aaea19d9cff3e0908e12a8c1d504b8c5ec34610/LICENSE.md"
+          "https://github.com/shadcn-ui/ui/blob/8ab27715521cbd4f87ae6886cd989cbb678f6de7/LICENSE.md"
         ]
       },
-      "licenseScope": "MIT license text verified at existing registry revision 4aaea19d9cff3e0908e12a8c1d504b8c5ec34610; retain copyright and license notices. Paid products, linked source and unrelated hosted-site assets are not licensed by this root grant.",
+      "licenseScope": "MIT license text verified at existing registry revision 8ab27715521cbd4f87ae6886cd989cbb678f6de7; retain copyright and license notices. Paid products, linked source and unrelated hosted-site assets are not licensed by this root grant.",
       "name": {
         "en": "shadcn/ui component primitives",
         "zh": "shadcn/ui 组件基元"
@@ -4642,13 +4642,13 @@
           "https://api.github.com/repos/DavidHDev/react-bits/license",
           "https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md",
           "https://api.github.com/repos/DavidHDev/react-bits/git/blobs/4069ce9d0ef1a712c93d6ce48ade5d5667e0f5ee",
-          "https://github.com/DavidHDev/react-bits/blob/4dc7b5b7772e1217c8fb8d2a7aa074302180e5b4/LICENSE.md",
+          "https://github.com/DavidHDev/react-bits/blob/b0422bb475ac9ec1fe1680290970494ceff5d4eb/LICENSE.md",
           "https://reactbits.dev/r/DepthCarousel-TS-TW.json",
-          "https://github.com/DavidHDev/react-bits/blob/4dc7b5b7772e1217c8fb8d2a7aa074302180e5b4/src/ts-tailwind/Components/DepthCarousel/DepthCarousel.tsx",
+          "https://github.com/DavidHDev/react-bits/blob/b0422bb475ac9ec1fe1680290970494ceff5d4eb/src/ts-tailwind/Components/DepthCarousel/DepthCarousel.tsx",
           "2026-10-12 identity verified: live public JS-CSS and TS-TW registry JSON equal pinned public repository registry files; component content equals corresponding pinned source files."
         ]
       },
-      "licenseScope": "Repository is expressly declared by catalog/stack metadata. Decoded current LICENSE.md grants commercial application/website/product incorporation with retained notices, but prohibits selling, sublicensing or redistributing components alone, in bundles or ported versions. GitHub SPDX response is NOASSERTION; actual custom license text establishes the restricted grant, never plain MIT. Since November 2026 the same restriction also covers the React Bits tools, the sound library and their exports sold or redistributed on their own; component use is unchanged. DecryptedText and Dither share this evidence; paid React Bits Pro is not covered. 2026-10-12 identity resolved from exact live public registry/pinned source equality: this is the public DepthCarousel-TS-TW component at revision 4dc7b5b7772e1217c8fb8d2a7aa074302180e5b4, not React Bits Pro. Preserve copyright/license notices; no standalone/bundled/ported component redistribution. Its GSAP dependency is governed separately by the user-authorized GSAP Standard No Charge terms.",
+      "licenseScope": "Repository is expressly declared by catalog/stack metadata. Decoded current LICENSE.md grants commercial application/website/product incorporation with retained notices, but prohibits selling, sublicensing or redistributing components alone, in bundles or ported versions. GitHub SPDX response is NOASSERTION; actual custom license text establishes the restricted grant, never plain MIT. Since November 2026 the same restriction also covers the React Bits tools, the sound library and their exports sold or redistributed on their own; component use is unchanged. DecryptedText and Dither share this evidence; paid React Bits Pro is not covered. 2026-10-12 identity resolved from exact live public registry/pinned source equality: this is the public DepthCarousel-TS-TW component at revision b0422bb475ac9ec1fe1680290970494ceff5d4eb, not React Bits Pro. Preserve copyright/license notices; no standalone/bundled/ported component redistribution. Its GSAP dependency is governed separately by the user-authorized GSAP Standard No Charge terms.",
       "name": {
         "en": "React Bits depth carousel",
         "zh": "React Bits 深度轮播"
@@ -4678,8 +4678,8 @@
         "source": "React Bits",
         "url": "https://reactbits.dev/components/depth-carousel",
         "repository": "https://github.com/DavidHDev/react-bits",
-        "revision": "4dc7b5b7772e1217c8fb8d2a7aa074302180e5b4",
-        "sourceCode": "https://github.com/DavidHDev/react-bits/blob/4dc7b5b7772e1217c8fb8d2a7aa074302180e5b4/src/ts-tailwind/Components/DepthCarousel/DepthCarousel.tsx",
+        "revision": "b0422bb475ac9ec1fe1680290970494ceff5d4eb",
+        "sourceCode": "https://github.com/DavidHDev/react-bits/blob/b0422bb475ac9ec1fe1680290970494ceff5d4eb/src/ts-tailwind/Components/DepthCarousel/DepthCarousel.tsx",
         "license": "MIT + Commons Clause",
         "licenseNotice": "Retain copyright/license notices. Do not sell, sublicense or redistribute components themselves alone, bundled or ported. GSAP dependency follows Standard No Charge terms; competing no-code animation tools need written consent.",
         "attribution": "Public React Bits component identity verified against matching registry and pinned implementation; no upstream bytes copied into this index."
@@ -4696,7 +4696,7 @@
         "id": "MIT",
         "evidence": [
           "https://api.github.com/repos/motiondivision/motion/license",
-          "https://github.com/motiondivision/motion/blob/7415b6cd14dfdb35d91dfc5b9758994444cc228b/LICENSE.md",
+          "https://github.com/motiondivision/motion/blob/733a94e19cda41678a64ef9ecaf4b3754f3fb53a/LICENSE.md",
           "https://api.github.com/repos/motiondivision/motion/git/blobs/81110442c72270dd317667cc52181522647401f2",
           "2026-10-12 verified with gh api repos/motiondivision/motion/license; full MIT grant decoded and pinned license inspected; retain copyright and permission notices."
         ]
@@ -4740,7 +4740,7 @@
         "source": "Motion",
         "url": "https://github.com/motiondivision/motion",
         "repository": "https://github.com/motiondivision/motion",
-        "revision": "7415b6cd14dfdb35d91dfc5b9758994444cc228b",
+        "revision": "733a94e19cda41678a64ef9ecaf4b3754f3fb53a",
         "license": "MIT",
         "licenseNotice": "Retain Motion copyright and MIT permission notices for copied or substantially included library software.",
         "attribution": "Verified npm/ESM library metadata; no remote implementation is vendored."
@@ -5336,7 +5336,7 @@
           "https://api.github.com/repos/DavidHDev/react-bits/license",
           "https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md",
           "https://api.github.com/repos/DavidHDev/react-bits/git/blobs/4069ce9d0ef1a712c93d6ce48ade5d5667e0f5ee",
-          "https://github.com/DavidHDev/react-bits/blob/4dc7b5b7772e1217c8fb8d2a7aa074302180e5b4/LICENSE.md"
+          "https://github.com/DavidHDev/react-bits/blob/b0422bb475ac9ec1fe1680290970494ceff5d4eb/LICENSE.md"
         ]
       },
       "licenseScope": "Repository is expressly declared by catalog/stack metadata. Decoded current LICENSE.md grants commercial application/website/product incorporation with retained notices, but prohibits selling, sublicensing or redistributing components alone, in bundles or ported versions. GitHub SPDX response is NOASSERTION; actual custom license text establishes the restricted grant, never plain MIT. Since November 2026 the same restriction also covers the React Bits tools, the sound library and their exports sold or redistributed on their own; component use is unchanged. DecryptedText and Dither share this evidence; paid React Bits Pro is not covered."
@@ -5470,8 +5470,8 @@
       "availability": "reference-link",
       "aliases": [
         "https://github.com/emilkowalski/skills",
-        "https://github.com/emilkowalski/skills/tree/f1090bec277140d02ed202440185ad9d02ac1490",
-        "https://github.com/emilkowalski/skills/tree/f1090bec277140d02ed202440185ad9d02ac1490"
+        "https://github.com/emilkowalski/skills/tree/715c1807e08c497cfd1dc4feb450a2a3300ef2a9",
+        "https://github.com/emilkowalski/skills/tree/715c1807e08c497cfd1dc4feb450a2a3300ef2a9"
       ],
       "localPaths": {
         "guide": "references/ui-craft-sources.md",
@@ -5481,7 +5481,7 @@
         "source": "Animation opportunity and review reference",
         "license": "MIT",
         "url": "https://github.com/emilkowalski/skills",
-        "revision": "f1090bec277140d02ed202440185ad9d02ac1490",
+        "revision": "715c1807e08c497cfd1dc4feb450a2a3300ef2a9",
         "contentHash": "936fccfc37aa3a13bd49e4a5b56e937bfbc92013edfcc89fa8cb61294e1adf1c",
         "hashScope": "ordered UTF-8 sourceFiles with path-and-newline separators"
       },
@@ -5489,11 +5489,11 @@
         "state": "verified",
         "id": "MIT",
         "evidence": [
-          "https://github.com/emilkowalski/skills/blob/f1090bec277140d02ed202440185ad9d02ac1490/LICENSE",
-          "https://github.com/emilkowalski/skills/blob/f1090bec277140d02ed202440185ad9d02ac1490/LICENSE"
+          "https://github.com/emilkowalski/skills/blob/715c1807e08c497cfd1dc4feb450a2a3300ef2a9/LICENSE",
+          "https://github.com/emilkowalski/skills/blob/715c1807e08c497cfd1dc4feb450a2a3300ef2a9/LICENSE"
         ]
       },
-      "licenseScope": "Explicit MIT grant retrieved at requested revision f1090bec277140d02ed202440185ad9d02ac1490; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings. The bundled emil-design-eng snapshot (LICENSE and skills/emil-design-eng/** at f1090bec277140d02ed202440185ad9d02ac1490, vendor/emil-design-eng/manifest.json) carries the same pinned MIT grant; the rest of the repository stays reference-only."
+      "licenseScope": "Explicit MIT grant retrieved at requested revision 715c1807e08c497cfd1dc4feb450a2a3300ef2a9; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings. The bundled emil-design-eng snapshot (LICENSE and skills/emil-design-eng/** at 715c1807e08c497cfd1dc4feb450a2a3300ef2a9, vendor/emil-design-eng/manifest.json) carries the same pinned MIT grant; the rest of the repository stays reference-only."
     },
     {
       "id": "source/facebook/astryx",
@@ -5513,13 +5513,13 @@
         "source": "Astryx",
         "license": "MIT",
         "url": "https://github.com/facebook/astryx",
-        "revision": "de4692eeedb5039f6b168dadb2ed2b4afcc70f8c"
+        "revision": "df8a86a3ae9d0b2d6337c5cf3369488a6f5ac838"
       },
       "license": {
         "state": "verified",
         "id": "MIT",
         "evidence": [
-          "https://github.com/facebook/astryx/blob/de4692eeedb5039f6b168dadb2ed2b4afcc70f8c/LICENSE"
+          "https://github.com/facebook/astryx/blob/df8a86a3ae9d0b2d6337c5cf3369488a6f5ac838/LICENSE"
         ]
       },
       "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Official Astryx source snapshot provenance; not a blanket grant for site assets or third-party integrations. Alias https://astryx.atmeta.com unifies repository identity only; it does not expand licensed scope. Snapshot provenance attribution mentions Meta Platforms, Inc. and affiliates; fetched LICENSE instead states Copyright (c) 2026 Meta Platforms, Inc."
@@ -5542,16 +5542,16 @@
         "source": "gepa",
         "license": "MIT",
         "url": "https://github.com/gepa-ai/gepa",
-        "revision": "8c7b697a71977980afc7537dac0881e784eef99f",
-        "gitTree": "22284bd2f2a442022fd12547845b34a2af5bad01",
-        "contentHash": "6d549f5cbb4eac9ed00ae5fa618d0e51a8cc617b930313d05f71b4b019fc1e78",
+        "revision": "ce5b0d6e3d6af6c6dbec6de2c54536bbb961d309",
+        "gitTree": "a596ad918f0cfedc7f9b108269685f7039d4ed9a",
+        "contentHash": "f73e24bca27d820714bbe34ed1f3942cdfd40ba1d4cb0fd8873bcf68e0d1702f",
         "hashScope": "selected official skill and root metadata: sorted POSIX path, NUL, SHA-256 blob hash, newline; gitTree is the upstream repository root, not this scoped snapshot"
       },
       "license": {
         "state": "verified",
         "id": "MIT",
         "evidence": [
-          "https://github.com/gepa-ai/gepa/blob/8c7b697a71977980afc7537dac0881e784eef99f/LICENSE"
+          "https://github.com/gepa-ai/gepa/blob/ce5b0d6e3d6af6c6dbec6de2c54536bbb961d309/LICENSE"
         ]
       },
       "webRanking": false,
@@ -5734,7 +5734,7 @@
         "source": "fixing-accessibility",
         "license": "MIT",
         "url": "https://github.com/ibelick/ui-skills",
-        "revision": "73fb128d046d1f0d74c2909cd26eb616e3415567",
+        "revision": "97dea9e747ea94d5671ef1468cbb8f9bd5f32542",
         "contentHash": "bc4375b2fce2417ccf354e00b08cc7365e7bd11cd3ce6b5d501ff82a7d15fcd4",
         "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
       },
@@ -5742,7 +5742,7 @@
         "state": "verified",
         "id": "MIT",
         "evidence": [
-          "https://github.com/ibelick/ui-skills/blob/73fb128d046d1f0d74c2909cd26eb616e3415567/LICENSE"
+          "https://github.com/ibelick/ui-skills/blob/97dea9e747ea94d5671ef1468cbb8f9bd5f32542/LICENSE"
         ]
       },
       "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: LICENSE and skills/fixing-accessibility/** snapshot; the repository's other skills are not bundled."
@@ -6240,15 +6240,15 @@
         "source": "interface-discipline",
         "license": "MIT",
         "url": "https://github.com/jakubkrehel/skills",
-        "revision": "60bf140e43c98b248e6594487384ec967e89d98a",
-        "contentHash": "61dc34e854081e3dba00bc07a91d41b45c7bf7b13bb7e3ada17246e7ed921896",
+        "revision": "659cc4e5b6df90cfe1f306f5ae1c83fa549e075c",
+        "contentHash": "e5c6dafca9414f105f0a538b6f3a41f145b0985063be7f1e701a199b7b48ea10",
         "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
       },
       "license": {
         "state": "verified",
         "id": "MIT",
         "evidence": [
-          "https://github.com/jakubkrehel/skills/blob/60bf140e43c98b248e6594487384ec967e89d98a/LICENSE"
+          "https://github.com/jakubkrehel/skills/blob/659cc4e5b6df90cfe1f306f5ae1c83fa549e075c/LICENSE"
         ]
       },
       "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: LICENSE, README.md and skills/** snapshot."
@@ -6500,17 +6500,17 @@
         "source": "mengto-skills",
         "license": "MIT",
         "url": "https://github.com/mengto/skills",
-        "revision": "1de14e21b2ba8937c0f7f6ddca581cf7cd9d94af",
-        "gitTree": "8f1fd0384a302803c8dff9b9cd06438face91e56",
-        "contentHash": "086de3eb7cece47628c80571a7f7184b0d6eab19a20ba8227196823e19cd01d5",
+        "revision": "d6324a05ca03ce5f6cdba519318d92176dbc43d2",
+        "gitTree": "c49ebc49269098adeeb6e347cc8f73df3f51aa4e",
+        "contentHash": "2b135afd7b071899bd420e4b82955128abcc2fa617f55c5e46c62d67f2c1ea1f",
         "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
       },
       "license": {
         "state": "verified",
         "id": "MIT",
         "evidence": [
-          "https://github.com/MengTo/Skills/blob/1de14e21b2ba8937c0f7f6ddca581cf7cd9d94af/LICENSE",
-          "https://github.com/MengTo/Skills/blob/1de14e21b2ba8937c0f7f6ddca581cf7cd9d94af/agent-skills/web-design/scroll-world-storytelling/demo/threejs/assets/THREE-LICENSE.txt"
+          "https://github.com/MengTo/Skills/blob/d6324a05ca03ce5f6cdba519318d92176dbc43d2/LICENSE",
+          "https://github.com/MengTo/Skills/blob/d6324a05ca03ce5f6cdba519318d92176dbc43d2/agent-skills/web-design/scroll-world-storytelling/demo/threejs/assets/THREE-LICENSE.txt"
         ]
       },
       "licenseScope": "Exact pinned LICENSE contains an explicit MIT grant and notice-retention condition. Scope: Complete tracked snapshot; nested third-party THREE-LICENSE.txt requires separate attribution. The pinned nested THREE-LICENSE.txt independently grants MIT for bundled three.js material, Copyright © 2010-2025 three.js authors; preserve that notice as well as the repository notice."
@@ -6533,15 +6533,15 @@
         "source": "playwright-cli",
         "license": "Apache-2.0",
         "url": "https://github.com/microsoft/playwright-cli",
-        "revision": "db2a0fad3a768319a16e3a2bb8078cf62e690b07",
-        "contentHash": "b09d73b7064556c4db737afa8b126bf7b47cf215f4dc9c48c346851fb7b53e29",
+        "revision": "4bc00fb7fa5b4329f2fb53ac4743a066c2c664e8",
+        "contentHash": "18573350c4dec40c6c896c4f1616fd0401e4f4f41fcd1cc786033db1b98e4799",
         "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
       },
       "license": {
         "state": "verified",
         "id": "Apache-2.0",
         "evidence": [
-          "https://github.com/microsoft/playwright-cli/blob/db2a0fad3a768319a16e3a2bb8078cf62e690b07/LICENSE"
+          "https://github.com/microsoft/playwright-cli/blob/4bc00fb7fa5b4329f2fb53ac4743a066c2c664e8/LICENSE"
         ]
       },
       "licenseScope": "Exact pinned LICENSE contains the Apache License 2.0; no NOTICE file exists at the reviewed revision; retain the license and copyright notices. Scope: LICENSE, README.md and skills/playwright-cli/** snapshot of the skill text; the pipeline never installs the CLI."
@@ -6674,16 +6674,16 @@
         "source": "UI UX Pro Max companion baseline",
         "license": "MIT",
         "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
-        "revision": "713eef51b04efc98d6fa565323b495f7c9c89fd4"
+        "revision": "4f2dbb67e64969a9a30ab00742f2d55d66ddec2b"
       },
       "license": {
         "state": "verified",
         "id": "MIT",
         "evidence": [
-          "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/713eef51b04efc98d6fa565323b495f7c9c89fd4/LICENSE"
+          "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/4f2dbb67e64969a9a30ab00742f2d55d66ddec2b/LICENSE"
         ]
       },
-      "licenseScope": "Explicit MIT grant retrieved at requested revision 713eef51b04efc98d6fa565323b495f7c9c89fd4; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+      "licenseScope": "Explicit MIT grant retrieved at requested revision 4f2dbb67e64969a9a30ab00742f2d55d66ddec2b; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
     },
     {
       "id": "source/pbakaus/impeccable",
@@ -6699,16 +6699,16 @@
         "source": "Impeccable design contract and bounded polish",
         "license": "Apache-2.0",
         "url": "https://github.com/pbakaus/impeccable",
-        "revision": "9fadc41729c38fd47d7ae622b501558653f9d2e9"
+        "revision": "0fb9d01efd70c5dc0bc341f3baaa297444261f9a"
       },
       "license": {
         "state": "verified",
         "id": "Apache-2.0",
         "evidence": [
-          "https://github.com/pbakaus/impeccable/blob/9fadc41729c38fd47d7ae622b501558653f9d2e9/LICENSE"
+          "https://github.com/pbakaus/impeccable/blob/0fb9d01efd70c5dc0bc341f3baaa297444261f9a/LICENSE"
         ]
       },
-      "licenseScope": "Explicit Apache-2.0 grant retrieved at requested revision 9fadc41729c38fd47d7ae622b501558653f9d2e9; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+      "licenseScope": "Explicit Apache-2.0 grant retrieved at requested revision 0fb9d01efd70c5dc0bc341f3baaa297444261f9a; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
     },
     {
       "id": "source/pixijs/pixijs-skills",
@@ -6992,7 +6992,7 @@
         "source": "shadcn",
         "license": "MIT",
         "url": "https://github.com/shadcn-ui/ui",
-        "revision": "4aaea19d9cff3e0908e12a8c1d504b8c5ec34610"
+        "revision": "8ab27715521cbd4f87ae6886cd989cbb678f6de7"
       },
       "license": {
         "state": "verified",
@@ -7003,11 +7003,11 @@
           "https://api.github.com/repos/shadcn-ui/ui/git/blobs/fad4d887a681dd49233e5ed01ee2c7a1513089a0",
           "https://ui.shadcn.com/",
           "https://github.com/shadcn-ui/ui",
-          "https://github.com/shadcn-ui/ui/blob/4aaea19d9cff3e0908e12a8c1d504b8c5ec34610/LICENSE.md",
-          "https://github.com/shadcn-ui/ui/blob/4aaea19d9cff3e0908e12a8c1d504b8c5ec34610/LICENSE.md"
+          "https://github.com/shadcn-ui/ui/blob/8ab27715521cbd4f87ae6886cd989cbb678f6de7/LICENSE.md",
+          "https://github.com/shadcn-ui/ui/blob/8ab27715521cbd4f87ae6886cd989cbb678f6de7/LICENSE.md"
         ]
       },
-      "licenseScope": "MIT license text verified at existing registry revision 4aaea19d9cff3e0908e12a8c1d504b8c5ec34610; retain copyright and license notices. Paid products, linked source and unrelated hosted-site assets are not licensed by this root grant. The bundled shadcn skill snapshot (LICENSE.md and skills/shadcn/** at 4aaea19d9cff3e0908e12a8c1d504b8c5ec34610, vendor/shadcn/manifest.json) is guidance text under the same MIT grant; no component source is bundled."
+      "licenseScope": "MIT license text verified at existing registry revision 8ab27715521cbd4f87ae6886cd989cbb678f6de7; retain copyright and license notices. Paid products, linked source and unrelated hosted-site assets are not licensed by this root grant. The bundled shadcn skill snapshot (LICENSE.md and skills/shadcn/** at 8ab27715521cbd4f87ae6886cd989cbb678f6de7, vendor/shadcn/manifest.json) is guidance text under the same MIT grant; no component source is bundled."
     },
     {
       "id": "source/shadcnblocks",
@@ -7300,7 +7300,7 @@
       "availability": "bundled-implementation",
       "aliases": [
         "https://github.com/vojtaholik/good-css",
-        "https://github.com/vojtaholik/good-css/tree/a6804e75b5ee946d6b007ac20734f958d7938bca"
+        "https://github.com/vojtaholik/good-css/tree/35e0e8c673854ca34d8e1879038e44834c855dfb"
       ],
       "localPaths": {
         "guide": "references/good-css.md",
@@ -7311,18 +7311,18 @@
         "source": "good-css",
         "license": "MIT AND OFL-1.1",
         "url": "https://github.com/vojtaholik/good-css",
-        "revision": "a6804e75b5ee946d6b007ac20734f958d7938bca",
-        "gitTree": "24e09738cb61dd42078c5054aabd2ac970eb1c49",
-        "contentHash": "bfe7189dd6f562e34e24e34b6869b95ca507ea1a8da38ccca938821b4571c430",
+        "revision": "35e0e8c673854ca34d8e1879038e44834c855dfb",
+        "gitTree": "9815584badca18eb4854f194da7b67efd06130f6",
+        "contentHash": "c31628f811e7c8e1868c6c15078212857f6a33dc25a8614c6fdf0fabf62d1efd",
         "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
       },
       "license": {
         "state": "verified",
         "id": "MIT AND OFL-1.1",
         "evidence": [
-          "https://github.com/vojtaholik/good-css/blob/a6804e75b5ee946d6b007ac20734f958d7938bca/LICENSE",
-          "https://github.com/vojtaholik/good-css/blob/a6804e75b5ee946d6b007ac20734f958d7938bca/harness/public/fonts/Inter-OFL.txt",
-          "https://github.com/vojtaholik/good-css/blob/a6804e75b5ee946d6b007ac20734f958d7938bca/harness/public/fonts/GeistMono-OFL.txt"
+          "https://github.com/vojtaholik/good-css/blob/35e0e8c673854ca34d8e1879038e44834c855dfb/LICENSE",
+          "https://github.com/vojtaholik/good-css/blob/35e0e8c673854ca34d8e1879038e44834c855dfb/harness/public/fonts/Inter-OFL.txt",
+          "https://github.com/vojtaholik/good-css/blob/35e0e8c673854ca34d8e1879038e44834c855dfb/harness/public/fonts/GeistMono-OFL.txt"
         ]
       },
       "adoptionBoundary": {
@@ -7373,16 +7373,16 @@
         "source": "wevm/frog",
         "license": "MIT",
         "url": "https://github.com/wevm/frog",
-        "revision": "cbe18b192b59a8770466ee9f193b17294778c8a9"
+        "revision": "0770aab86af569b54b5987ee2d2624254fcb3f79"
       },
       "license": {
         "state": "verified",
         "id": "MIT",
         "evidence": [
-          "https://github.com/wevm/frog/blob/cbe18b192b59a8770466ee9f193b17294778c8a9/LICENSE"
+          "https://github.com/wevm/frog/blob/0770aab86af569b54b5987ee2d2624254fcb3f79/LICENSE"
         ]
       },
-      "licenseScope": "The stack tool is pinned at cbe18b192b59a8770466ee9f193b17294778c8a9. Actual LICENSE was fetched at that exact revision and contains complete MIT grant, Copyright (c) 2025-present weth, LLC, with notice retention. This supersedes the external slice initial current-main evidence; it does not grant rights to external services or linked materials."
+      "licenseScope": "The stack tool is pinned at 0770aab86af569b54b5987ee2d2624254fcb3f79. Actual LICENSE was fetched at that exact revision and contains complete MIT grant, Copyright (c) 2025-present weth, LLC, with notice retention. This supersedes the external slice initial current-main evidence; it does not grant rights to external services or linked materials."
     },
     {
       "id": "source/garrytan/gstack",
@@ -7426,14 +7426,14 @@
         "source": "Motion",
         "license": "MIT",
         "url": "https://github.com/motiondivision/motion",
-        "revision": "7415b6cd14dfdb35d91dfc5b9758994444cc228b"
+        "revision": "733a94e19cda41678a64ef9ecaf4b3754f3fb53a"
       },
       "license": {
         "state": "verified",
         "id": "MIT",
         "evidence": [
           "https://api.github.com/repos/motiondivision/motion/license",
-          "https://github.com/motiondivision/motion/blob/7415b6cd14dfdb35d91dfc5b9758994444cc228b/LICENSE.md",
+          "https://github.com/motiondivision/motion/blob/733a94e19cda41678a64ef9ecaf4b3754f3fb53a/LICENSE.md",
           "https://api.github.com/repos/motiondivision/motion/git/blobs/81110442c72270dd317667cc52181522647401f2",
           "2026-10-12 verified with gh api repos/motiondivision/motion/license; full MIT grant decoded and pinned license inspected; retain copyright and permission notices."
         ]

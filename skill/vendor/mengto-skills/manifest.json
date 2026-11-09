@@ -2,20 +2,20 @@
   "schema": "design-pipeline.mengto-skills-source.v1",
   "source": {
     "repository": "https://github.com/MengTo/skills",
-    "revision": "1de14e21b2ba8937c0f7f6ddca581cf7cd9d94af",
-    "gitTree": "8f1fd0384a302803c8dff9b9cd06438face91e56",
-    "committedAt": "2026-11-03T14:26:41+08:00",
+    "revision": "d6324a05ca03ce5f6cdba519318d92176dbc43d2",
+    "gitTree": "c49ebc49269098adeeb6e347cc8f73df3f51aa4e",
+    "committedAt": "2026-11-09T00:46:40+08:00",
     "license": "MIT",
-    "reviewedAt": "2026-11-04",
+    "reviewedAt": "2026-11-09",
     "scope": [
       "**"
     ]
   },
   "snapshot": {
     "root": "upstream",
-    "fileCount": 1447,
-    "byteCount": 140866597,
-    "treeSha256": "086de3eb7cece47628c80571a7f7184b0d6eab19a20ba8227196823e19cd01d5",
+    "fileCount": 1527,
+    "byteCount": 143605561,
+    "treeSha256": "2b135afd7b071899bd420e4b82955128abcc2fa617f55c5e46c62d67f2c1ea1f",
     "executableFiles": [
       "agent-skills/codex/audit-reference-originality/scripts/build_evidence_inventory.py",
       "agent-skills/codex/browser-video-recording/scripts/render_browser_demo.py",
@@ -31,6 +31,19 @@
       "agent-skills/game-combat/game-dev-combat-animation/scripts/tools/vidcompose.py",
       "agent-skills/game-development/build-rigged-game-assets/scripts/validate_asset_manifest.py",
       "agent-skills/game-development/build-vesperfall-review-assets/scripts/validate_pair.py",
+      "agent-skills/media/digital-twin/scripts/crops.sh",
+      "agent-skills/media/digital-twin/scripts/extract_frames.sh",
+      "agent-skills/media/digital-twin/scripts/hf_seedream_batch.sh",
+      "agent-skills/media/digital-twin/scripts/measure_drafts.sh",
+      "agent-skills/media/digital-twin/scripts/run_round.sh",
+      "agent-skills/media/digital-twin/scripts/voice/build_ref.py",
+      "agent-skills/media/digital-twin/scripts/voice/el.sh",
+      "agent-skills/media/digital-twin/scripts/voice/make_dataset.py",
+      "agent-skills/media/digital-twin/scripts/voice/make_ivc.py",
+      "agent-skills/media/digital-twin/scripts/voice/scan_dataset.py",
+      "agent-skills/media/digital-twin/scripts/voice/score_voice.py",
+      "agent-skills/media/digital-twin/scripts/voice/tts_line.sh",
+      "agent-skills/media/digital-twin/scripts/voice/watch_train.sh",
       "agent-skills/media/html-reel/scripts/bubble.mjs",
       "agent-skills/media/html-reel/scripts/decursor.py",
       "agent-skills/media/html-reel/scripts/fil-words.py",
@@ -42,6 +55,13 @@
       "agent-skills/media/html-reel/scripts/timemap.py",
       "agent-skills/media/html-reel/scripts/verify-export.mjs",
       "agent-skills/media/html-reel/scripts/vo-words.py",
+      "agent-skills/media/url-to-motion-design/scripts/fetch-source.mjs",
+      "agent-skills/media/url-to-motion-design/scripts/panel.py",
+      "agent-skills/media/url-to-motion-design/scripts/publish-list.mjs",
+      "agent-skills/media/url-to-motion-design/scripts/render.mjs",
+      "agent-skills/media/url-to-motion-design/scripts/screening.mjs",
+      "agent-skills/media/url-to-motion-design/scripts/shots.mjs",
+      "agent-skills/media/url-to-motion-design/scripts/video.mjs",
       "agent-skills/web-design/add-shader-cursor-trail/scripts/verify-cursor-trail.mjs",
       "agent-skills/workflow/workflow-progress-screenshots/scripts/capture.mjs",
       "agent-skills/workflow/workflow-progress-screenshots/scripts/compare.py",
@@ -3639,6 +3659,342 @@
         "size": 9498
       },
       {
+        "path": "agent-skills/media/digital-twin/agents/openai.yaml",
+        "mode": "100644",
+        "oid": "9983789b09d868647b9f67407001b962ec5dc709",
+        "size": 540
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/face.webp",
+        "mode": "100644",
+        "oid": "26fec11a76e31fd2b92f6005fa2ba94f5aec30e4",
+        "size": 41968
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/index.html",
+        "mode": "100644",
+        "oid": "b3a6fefc4817b552cc4d0a77ed513bb5e1cd311c",
+        "size": 41998
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/preview.jpg",
+        "mode": "100644",
+        "oid": "adf7ed5c79612a1a84cd2d3b6dd940e486e8f902",
+        "size": 103359
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/PROMPT.md",
+        "mode": "100644",
+        "oid": "78251c402a9d250fa589e7ae494f8b3811ae1f93",
+        "size": 5229
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/step-window.css",
+        "mode": "100644",
+        "oid": "82fc214f81c45f5d94bbf95b988e5627c59b21b4",
+        "size": 5411
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/step-window.js",
+        "mode": "100644",
+        "oid": "605771574f43f7a34e838d4970323c76d37704a7",
+        "size": 8424
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/still-1-before.webp",
+        "mode": "100644",
+        "oid": "e5ebc4c2cea506a30447d384052c2a0b2f4031b5",
+        "size": 44964
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/still-1.webp",
+        "mode": "100644",
+        "oid": "de23017fa2457a6c58edbfddfac4c3ce1a538efd",
+        "size": 46768
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/still-2.webp",
+        "mode": "100644",
+        "oid": "2d22954b073fec097512fa2f22a6ca1b9c0b500d",
+        "size": 40852
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/still-3.webp",
+        "mode": "100644",
+        "oid": "c748b1217d8d29d3fb8e7e0f874b23583048e611",
+        "size": 50004
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/talk-final.mp4",
+        "mode": "100644",
+        "oid": "c7023085aaa2dba1bf3dab6832526847cdd73e94",
+        "size": 1015321
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/talk-final.webp",
+        "mode": "100644",
+        "oid": "40168019abe4ffbc6456c5d5a5800469d1238747",
+        "size": 33296
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/talk.mp4",
+        "mode": "100644",
+        "oid": "e972ce154e0a5902137addce220c4c03eb44b37c",
+        "size": 362665
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/talk.webp",
+        "mode": "100644",
+        "oid": "3aae9e82b8cbcb23dfdb7974daf1f12fd9fdae63",
+        "size": 30300
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/twin-demo.css",
+        "mode": "100644",
+        "oid": "f98ab99963e1d441efcfcdab944f8763f5e8ad7b",
+        "size": 31932
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/twin-demo.js",
+        "mode": "100644",
+        "oid": "9b7ada657c3f1d34ac874e67675294a22623b825",
+        "size": 63365
+      },
+      {
+        "path": "agent-skills/media/digital-twin/demo/voice.mp3",
+        "mode": "100644",
+        "oid": "b9629e6c2aec9384fec5ac710b73fa15bf21037c",
+        "size": 132327
+      },
+      {
+        "path": "agent-skills/media/digital-twin/references/audit.md",
+        "mode": "100644",
+        "oid": "3e5cdf7ab58a90f814a3562dd57346db585b75a2",
+        "size": 3650
+      },
+      {
+        "path": "agent-skills/media/digital-twin/references/cinematic.md",
+        "mode": "100644",
+        "oid": "6cc95e802c6ef4950e2f58fbb309d838fe7766c9",
+        "size": 4025
+      },
+      {
+        "path": "agent-skills/media/digital-twin/references/consent.md",
+        "mode": "100644",
+        "oid": "b083072c080a83c68e512e715bda62e656893c48",
+        "size": 1943
+      },
+      {
+        "path": "agent-skills/media/digital-twin/references/costs.md",
+        "mode": "100644",
+        "oid": "5b94698a30dd3ee2acfaea1ee2d1af268c8dc81d",
+        "size": 1606
+      },
+      {
+        "path": "agent-skills/media/digital-twin/references/fil-workflow.md",
+        "mode": "100644",
+        "oid": "567e0af4ea66243863b4332aa93550fe3297c515",
+        "size": 3132
+      },
+      {
+        "path": "agent-skills/media/digital-twin/references/identity-template.md",
+        "mode": "100644",
+        "oid": "eccda6cd8ba6fc88058ec1bd3f68c005d3ad9724",
+        "size": 4936
+      },
+      {
+        "path": "agent-skills/media/digital-twin/references/judging.md",
+        "mode": "100644",
+        "oid": "85baffa3d93e1937666e2e3b8507f53eb4a2100a",
+        "size": 2449
+      },
+      {
+        "path": "agent-skills/media/digital-twin/references/references.md",
+        "mode": "100644",
+        "oid": "6149fdbaf7e9b46e2e131b720068966d60bb2c75",
+        "size": 4597
+      },
+      {
+        "path": "agent-skills/media/digital-twin/references/speaking.md",
+        "mode": "100644",
+        "oid": "9ee32e80d861fb7a991b328cc4344983cf177f3b",
+        "size": 3841
+      },
+      {
+        "path": "agent-skills/media/digital-twin/references/stills.md",
+        "mode": "100644",
+        "oid": "3a8d9492fc8c78d1e222fb7e507327e2615d36ba",
+        "size": 6392
+      },
+      {
+        "path": "agent-skills/media/digital-twin/references/video.md",
+        "mode": "100644",
+        "oid": "10ca938beebd3002de40cb4698e15898225b71ee",
+        "size": 6998
+      },
+      {
+        "path": "agent-skills/media/digital-twin/references/voice.md",
+        "mode": "100644",
+        "oid": "7b283104346b5083873fcc22ca4837cac80b400e",
+        "size": 8580
+      },
+      {
+        "path": "agent-skills/media/digital-twin/references/workspace.md",
+        "mode": "100644",
+        "oid": "0d776ff8f0c6afb31f7074d099a099fcac7ae6c9",
+        "size": 3344
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/crops.sh",
+        "mode": "100755",
+        "oid": "bc736095853b08d464d373dd05ea8beed7c542ed",
+        "size": 1037
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/extract_frames.sh",
+        "mode": "100755",
+        "oid": "9d8d0879dc5ce1be0680798fbe07e7ab88388489",
+        "size": 852
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/faces.swift",
+        "mode": "100644",
+        "oid": "b3d133e3feb12e3bf0fffdb04da00662a2477e3f",
+        "size": 914
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/film_grade.py",
+        "mode": "100644",
+        "oid": "162a3f57e19a1da35d317dc9b06fa95f7c91f84e",
+        "size": 3668
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/fix_still.py",
+        "mode": "100644",
+        "oid": "6bb49e084428850ef884d159f29a9cabd072ac99",
+        "size": 2517
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/hf_seedream_batch.sh",
+        "mode": "100755",
+        "oid": "182bb8306eb12185b8ccf6fc374a821bea739673",
+        "size": 1423
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/landmarks.swift",
+        "mode": "100644",
+        "oid": "940e50778088835feb68f69623d8f17840185bcc",
+        "size": 1957
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/lmjson.swift",
+        "mode": "100644",
+        "oid": "b0a99ab48f4a232f8ce821b20791c82c89fff9f1",
+        "size": 2064
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/make_round.py",
+        "mode": "100644",
+        "oid": "35c8f197547fe87539299d38ed2e0cbaf009663c",
+        "size": 2785
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/measure_drafts.sh",
+        "mode": "100755",
+        "oid": "a8b494ebb856334b7585425b06649729d250013e",
+        "size": 1492
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/measure.py",
+        "mode": "100644",
+        "oid": "780fe7fe363a63a8faa706bd864418640796ea60",
+        "size": 1799
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/numbered_sheet.py",
+        "mode": "100644",
+        "oid": "a5f9884cb35ae331319c642e61934be64d8a49dc",
+        "size": 1276
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/run_round.sh",
+        "mode": "100755",
+        "oid": "a0a95058bde9abd7d77b8c5d0bf9e541afe49a18",
+        "size": 828
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/speakstats.swift",
+        "mode": "100644",
+        "oid": "2d49b1f6ed0863a6f402cd456d7290ec19b48595",
+        "size": 3368
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/speaksummary.py",
+        "mode": "100644",
+        "oid": "d81bc10919e621d804a5d991dc20830517430521",
+        "size": 2340
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/voice/build_ref.py",
+        "mode": "100755",
+        "oid": "10dd60faccafe63d290847c31bcc33337646d1b8",
+        "size": 2505
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/voice/el.sh",
+        "mode": "100755",
+        "oid": "d15dcd877d56ff420f35beb3b629e42e19f46028",
+        "size": 758
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/voice/make_dataset.py",
+        "mode": "100755",
+        "oid": "47c049eba66ca099de0f582d7572ff4ba16ee69c",
+        "size": 1861
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/voice/make_ivc.py",
+        "mode": "100755",
+        "oid": "905229a2933491190e8d41c3b0b598168062196b",
+        "size": 2547
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/voice/scan_dataset.py",
+        "mode": "100755",
+        "oid": "7c0a3294d2ecee0df150dbe9e75af83425b9e8a2",
+        "size": 1871
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/voice/score_voice.py",
+        "mode": "100755",
+        "oid": "1b998190952179c468e7b3e9199bee9cda0a54e0",
+        "size": 3851
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/voice/tts_line.sh",
+        "mode": "100755",
+        "oid": "9c52c7142869f13a8a53a2aa6e3a8c8149357136",
+        "size": 1262
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/voice/watch_train.sh",
+        "mode": "100755",
+        "oid": "9a7e83ddfd7756e34a9b614eabcb6a2bcd50bf61",
+        "size": 988
+      },
+      {
+        "path": "agent-skills/media/digital-twin/scripts/warp_face.py",
+        "mode": "100644",
+        "oid": "925241618d0c96e51278be1c7fb1de223d6a596b",
+        "size": 7928
+      },
+      {
+        "path": "agent-skills/media/digital-twin/SKILL.md",
+        "mode": "100644",
+        "oid": "d39b2f26f2db3da29a73d713be1adff967605a43",
+        "size": 22029
+      },
+      {
         "path": "agent-skills/media/html-explainer-video/agents/openai.yaml",
         "mode": "100644",
         "oid": "9131e530e1f960a67d5d096d781bfc4f68faa709",
@@ -4213,6 +4569,150 @@
         "mode": "100644",
         "oid": "cacf5a32616451ae8e14140c2b167558089ebf6e",
         "size": 5096
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/agents/openai.yaml",
+        "mode": "100644",
+        "oid": "79184bebb9ce780f777c82f4238babe2a44f0d2e",
+        "size": 548
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/lab/anchors/prompt-box-final.jpg",
+        "mode": "100644",
+        "oid": "a7afdcc52133041b14d627d9c39b51a5f1aff948",
+        "size": 73310
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/lab/anchors/prompt-box.jpg",
+        "mode": "100644",
+        "oid": "70aa6d210fa54223059bef0f154856bfb3397e4a",
+        "size": 187036
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/lab/anchors/ruled-lines-final.jpg",
+        "mode": "100644",
+        "oid": "69c79592b65546f839baa27811366b797cee0b2b",
+        "size": 50475
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/lab/anchors/ruled-lines.jpg",
+        "mode": "100644",
+        "oid": "f7f3c643aff3c9fed4a2ef38d0f5fdc278ba85ec",
+        "size": 150331
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/lab/runner.html",
+        "mode": "100644",
+        "oid": "411ead1fffbad7f306e434a194e0a7d587e5861a",
+        "size": 5922
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/lab/screening.html",
+        "mode": "100644",
+        "oid": "6a42a803a35a27b5114001a243247b7ea6c7af4e",
+        "size": 10331
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/lab/server.mjs",
+        "mode": "100644",
+        "oid": "75bcbda864531728ed5b43aa6a5073ec0d34247a",
+        "size": 4898
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/lab/template.html",
+        "mode": "100644",
+        "oid": "35d053105fb2c1a9a4807acd6f7b02ab83eed682",
+        "size": 4597
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/references/builder-brief.md",
+        "mode": "100644",
+        "oid": "e632dc05dee48404d294138630fccc66da6a6dcf",
+        "size": 4422
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/references/judge.md",
+        "mode": "100644",
+        "oid": "4957f4f5a58826ea3b9875955c47e9d0b0427945",
+        "size": 2388
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/references/lab.md",
+        "mode": "100644",
+        "oid": "da31953e7795af608c5595476fb4ce8b8b45ded1",
+        "size": 3438
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/references/publish.md",
+        "mode": "100644",
+        "oid": "c83753f066bae1f12d1a03e9f3a79175849b461d",
+        "size": 3877
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/references/scene-contract.md",
+        "mode": "100644",
+        "oid": "e911c7469803906be37b064828e47d7f41904580",
+        "size": 4915
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/references/seven-to-eight.md",
+        "mode": "100644",
+        "oid": "a43e6a17f31c478d408292c0280923c2ac212942",
+        "size": 4213
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/scripts/__pycache__/panel.cpython-314.pyc",
+        "mode": "100644",
+        "oid": "894d83ac29ad882b3dbb49626f4da0e5c52315c7",
+        "size": 8556
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/scripts/fetch-source.mjs",
+        "mode": "100755",
+        "oid": "1bc7f20b278cf1f8c294f7038d44d0dfdaf285fc",
+        "size": 2925
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/scripts/panel.py",
+        "mode": "100755",
+        "oid": "829747182c07303f79640148e31b05c16255596d",
+        "size": 4033
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/scripts/publish-list.mjs",
+        "mode": "100755",
+        "oid": "183c22ef2f519e55d872fb06fd342a73ed251594",
+        "size": 1324
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/scripts/render.mjs",
+        "mode": "100755",
+        "oid": "693879116f5084440741f81297b8a3c1c467284d",
+        "size": 2339
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/scripts/screening.mjs",
+        "mode": "100755",
+        "oid": "394e5a8b9bb051c328d57129dbeaaead9d163412",
+        "size": 4374
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/scripts/shots.mjs",
+        "mode": "100755",
+        "oid": "ac9385fd3b4562f4462e7ca82b935d51822238d6",
+        "size": 4843
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/scripts/video.mjs",
+        "mode": "100755",
+        "oid": "e59b99ce367d66d75867d3d95ca00933a55bf635",
+        "size": 4846
+      },
+      {
+        "path": "agent-skills/media/url-to-motion-design/SKILL.md",
+        "mode": "100644",
+        "oid": "e89f34e63abd21af539aa176530c89f741799473",
+        "size": 6887
       },
       {
         "path": "agent-skills/ui/audit-ai-design-slop/agents/openai.yaml",
@@ -8746,7 +9246,7 @@
     "game-combat": 6,
     "game-development": 20,
     "illustration": 14,
-    "media": 5,
+    "media": 7,
     "ui": 3,
     "web-design": 92,
     "workflow": 4
@@ -9660,6 +10160,18 @@
       ]
     },
     {
+      "id": "media/digital-twin",
+      "name": "digital-twin",
+      "category": "media",
+      "description": "Build a digital twin of yourself, meaning photoreal stills of you in your own real room, talking video clips of you, and lines in your own cloned voice, that people who know you accept as you. It's a proven workflow (160+ numbered stills over two dozen rounds, 20+ talking drafts and a voice taken from 8.7 to 9.2/10 on one creator's twin, Nov 2026). It covers consent, picking references from your own recordings, writing an identity prompt, the 4-part prompt stack on Seedream 5 Pro, your-real-room-only with the camera as the only variable, 3 images at a time, cinematic looks taken from reference videos as words, measuring face proportions, the audit and paste-back fix, an instant voice clone with an audio tag, a speaker-similarity scorer, Seedance 2.5 draft talking clips, and the traps (voice verification lockouts, iMacs, grey hair, wide mouths, other people's faces bleeding in). Use it whenever someone wants AI images, video or voice of THEMSELVES, even if they only say \"my digital twin\", \"AI headshots of me\", \"a video of me talking\", \"clone my voice\", \"make me a presenter clip\", \"an AI avatar of me\", \"me at my desk\", \"a talking-head intro without filming\" or \"creator or founder content with my face\". Only for your own face and voice, or someone who gave documented consent.",
+      "path": "upstream/agent-skills/media/digital-twin/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation"
+      ]
+    },
+    {
       "id": "media/html-explainer-video",
       "name": "html-explainer-video",
       "category": "media",
@@ -9689,6 +10201,18 @@
       "category": "media",
       "description": "Use when you need to pick high-quality Unsplash images for product/design assets (avatars, headshots, portraits, large website backgrounds, and abstract wallpapers) and output real Unsplash URLs plus practical instructions for producing the right resolutions and aspect ratios (1:1, 4:5, 3:4, 16:9, 9:16).",
       "path": "upstream/agent-skills/media/unsplash-asset-images/SKILL.md",
+      "activation": "automatic",
+      "stages": [
+        "directions",
+        "implementation"
+      ]
+    },
+    {
+      "id": "media/url-to-motion-design",
+      "name": "url-to-motion-design",
+      "category": "media",
+      "description": "Turn a launch film, product video or post at a URL (an X or Twitter post, YouTube, Vimeo, a direct video link) into Fil HTML motion scenes. Captures the film's best 5 to 10 distinct motion-graphics shots as screenshots and clips, rebuilds each as an original Fil motion scene in its look with Fil's own words, polishes them with blind judges to 8/10, puts them in a section of the HTML motion scenes canvas, and shows them as a screening page and MP4s. Use when someone shares a video or a post and asks to capture its scenes, to get screenshots of its best shots, to add its scenes or style to the motion scenes library, or to make motion scenes like it, or says url to motion design, even if they only ask for the screenshots first.",
+      "path": "upstream/agent-skills/media/url-to-motion-design/SKILL.md",
       "activation": "automatic",
       "stages": [
         "directions",

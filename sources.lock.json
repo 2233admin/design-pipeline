@@ -43,18 +43,18 @@
       "id": "anthropic-skills",
       "kind": "catalog-reference",
       "repo": "https://github.com/anthropics/skills",
-      "revision": "ca45fc496a3436251f191354091d557da31c15b5",
-      "reviewedAt": "2026-11-03",
-      "committedAt": "2026-10-28T12:20:38-07:00"
+      "revision": "2c5958ecac7cee2b583967a2c4981d0f4a75c579",
+      "reviewedAt": "2026-11-09",
+      "committedAt": "2026-11-06T14:32:28-08:00"
     },
     {
       "id": "astryx",
       "kind": "npm",
       "package": "@astryxdesign/core",
-      "version": "0.7.7",
-      "reviewedAt": "2026-11-04",
+      "version": "0.7.11",
+      "reviewedAt": "2026-11-09",
       "repo": "https://github.com/facebook/astryx",
-      "revision": "de4692eeedb5039f6b168dadb2ed2b4afcc70f8c",
+      "revision": "df8a86a3ae9d0b2d6337c5cf3369488a6f5ac838",
       "tag": "v{version}",
       "sites": [
         {
@@ -66,7 +66,7 @@
           "pattern": "`@astryxdesign/core` and `@astryxdesign/cli` {version}"
         }
       ],
-      "committedAt": "2026-11-03T08:52:59-08:00",
+      "committedAt": "2026-11-06T19:35:06-08:00",
       "importer": [
         "scripts/generate-astryx-snapshot.cjs",
         "--core",
@@ -143,17 +143,17 @@
       "id": "design-direction-library",
       "kind": "fetched-on-demand",
       "repo": "https://github.com/alchaincyf/huashu-design",
-      "revision": "9b01ee8751679724dd43d855a532944aaa2c2b59",
-      "reviewedAt": "2026-11-04",
+      "revision": "b2460b031c33ff32d2bf3b97263527daa231e4de",
+      "reviewedAt": "2026-11-09",
       "bundle": "design-direction-library",
       "importer": [
         "scripts/import-design-direction-library.cjs",
         "--source",
         "{source}"
       ],
-      "committedAt": "2026-10-31T02:50:57+09:00",
-      "treeSha256": "ce60b19a7016ab62ec204c8a6c66c8a5684cd18ce1ee5239491e4f1c202824f5",
-      "fetchedTreeSha256": "d569e575d65729e9c18cecbb6bea60c02558138b41d966756373ad87780a9821"
+      "committedAt": "2026-11-03T17:28:45-10:00",
+      "treeSha256": "72ddc0b973f3876a05edb3aaea701bdff702e65cf1fae939ea51eb37f1c3c781",
+      "fetchedTreeSha256": "83dd53eca67d7fab5faa1f9827b3dbbd15073b52a7a2f7afa418658c6ef0705f"
     },
     {
       "id": "design-md",
@@ -174,8 +174,8 @@
       "id": "emil-design-eng",
       "kind": "vendored",
       "repo": "https://github.com/emilkowalski/skills",
-      "revision": "f1090bec277140d02ed202440185ad9d02ac1490",
-      "reviewedAt": "2026-11-04",
+      "revision": "715c1807e08c497cfd1dc4feb450a2a3300ef2a9",
+      "reviewedAt": "2026-11-09",
       "bundle": "emil-design-eng",
       "importer": [
         "scripts/import-ui-craft-sources.cjs",
@@ -184,15 +184,15 @@
         "--source",
         "{source}"
       ],
-      "committedAt": "2026-11-02T10:21:52+01:00",
+      "committedAt": "2026-11-09T13:07:26+01:00",
       "treeSha256": "6a117e5bda9e135fb4b68b407fc49dbac2705a1fd52cac5445e2004932c5d258"
     },
     {
       "id": "emilkowalski-animation-review",
       "kind": "adapted-reference",
       "repo": "https://github.com/emilkowalski/skills",
-      "revision": "f1090bec277140d02ed202440185ad9d02ac1490",
-      "reviewedAt": "2026-11-04",
+      "revision": "715c1807e08c497cfd1dc4feb450a2a3300ef2a9",
+      "reviewedAt": "2026-11-09",
       "documents": [
         "skill/references/animation-opportunity-and-review.md"
       ],
@@ -200,7 +200,7 @@
         "emilkowalski-animation-review",
         "motion-review-skill-contracts"
       ],
-      "committedAt": "2026-11-02T10:21:52+01:00"
+      "committedAt": "2026-11-09T13:07:26+01:00"
     },
     {
       "id": "ff-tracking",
@@ -223,8 +223,8 @@
       "id": "fixing-accessibility",
       "kind": "vendored",
       "repo": "https://github.com/ibelick/ui-skills",
-      "revision": "73fb128d046d1f0d74c2909cd26eb616e3415567",
-      "reviewedAt": "2026-11-04",
+      "revision": "97dea9e747ea94d5671ef1468cbb8f9bd5f32542",
+      "reviewedAt": "2026-11-09",
       "bundle": "fixing-accessibility",
       "importer": [
         "scripts/import-ui-craft-sources.cjs",
@@ -233,7 +233,7 @@
         "--source",
         "{source}"
       ],
-      "committedAt": "2026-11-03T07:54:32+01:00",
+      "committedAt": "2026-11-07T15:47:27+01:00",
       "treeSha256": "bc4375b2fce2417ccf354e00b08cc7365e7bd11cd3ce6b5d501ff82a7d15fcd4"
     },
     {
@@ -252,39 +252,39 @@
       "id": "frog",
       "kind": "catalog-reference",
       "repo": "https://github.com/wevm/frog",
-      "revision": "cbe18b192b59a8770466ee9f193b17294778c8a9",
-      "reviewedAt": "2026-11-04",
-      "committedAt": "2026-10-31T13:05:32-04:00"
+      "revision": "0770aab86af569b54b5987ee2d2624254fcb3f79",
+      "reviewedAt": "2026-11-09",
+      "committedAt": "2026-11-04T14:00:20-05:00"
     },
     {
       "id": "gepa",
       "kind": "vendored",
       "repo": "https://github.com/gepa-ai/gepa",
-      "revision": "8c7b697a71977980afc7537dac0881e784eef99f",
-      "reviewedAt": "2026-11-04",
+      "revision": "ce5b0d6e3d6af6c6dbec6de2c54536bbb961d309",
+      "reviewedAt": "2026-11-09",
       "bundle": "gepa",
       "importer": [
         "scripts/import-gepa.cjs",
         "--source",
         "{source}"
       ],
-      "committedAt": "2026-10-31T12:40:38-07:00",
-      "treeSha256": "6d549f5cbb4eac9ed00ae5fa618d0e51a8cc617b930313d05f71b4b019fc1e78"
+      "committedAt": "2026-11-09T01:07:36-08:00",
+      "treeSha256": "f73e24bca27d820714bbe34ed1f3942cdfd40ba1d4cb0fd8873bcf68e0d1702f"
     },
     {
       "id": "good-css",
       "kind": "vendored",
       "repo": "https://github.com/vojtaholik/good-css",
-      "revision": "a6804e75b5ee946d6b007ac20734f958d7938bca",
-      "reviewedAt": "2026-11-04",
+      "revision": "35e0e8c673854ca34d8e1879038e44834c855dfb",
+      "reviewedAt": "2026-11-09",
       "bundle": "good-css",
       "importer": [
         "scripts/import-good-css.cjs",
         "--source",
         "{source}"
       ],
-      "committedAt": "2026-11-03T19:56:34+01:00",
-      "treeSha256": "bfe7189dd6f562e34e24e34b6869b95ca507ea1a8da38ccca938821b4571c430",
+      "committedAt": "2026-11-05T10:11:04+01:00",
+      "treeSha256": "c31628f811e7c8e1868c6c15078212857f6a33dc25a8614c6fdf0fabf62d1efd",
       "profiles": [
         "good-css"
       ]
@@ -432,8 +432,8 @@
       "id": "hyperframes-maintenance",
       "kind": "npm",
       "package": "hyperframes",
-      "version": "0.9.15",
-      "reviewedAt": "2026-11-05",
+      "version": "0.9.26",
+      "reviewedAt": "2026-11-09",
       "note": "The golden-case workspace and browser:install use this copy; the version scaffolded into target projects is the hyperframes entry.",
       "sites": [
         {
@@ -705,9 +705,9 @@
       "id": "impeccable",
       "kind": "catalog-reference",
       "repo": "https://github.com/pbakaus/impeccable",
-      "revision": "9fadc41729c38fd47d7ae622b501558653f9d2e9",
-      "reviewedAt": "2026-11-04",
-      "committedAt": "2026-11-02T14:38:11-08:00",
+      "revision": "0fb9d01efd70c5dc0bc341f3baaa297444261f9a",
+      "reviewedAt": "2026-11-09",
+      "committedAt": "2026-11-09T12:47:25+00:00",
       "profiles": [
         "impeccable-skill-v4"
       ]
@@ -716,8 +716,8 @@
       "id": "interface-discipline",
       "kind": "vendored",
       "repo": "https://github.com/jakubkrehel/skills",
-      "revision": "60bf140e43c98b248e6594487384ec967e89d98a",
-      "reviewedAt": "2026-11-04",
+      "revision": "659cc4e5b6df90cfe1f306f5ae1c83fa549e075c",
+      "reviewedAt": "2026-11-09",
       "bundle": "interface-discipline",
       "importer": [
         "scripts/import-scoped-snapshot.cjs",
@@ -726,8 +726,8 @@
         "--source",
         "{source}"
       ],
-      "committedAt": "2026-11-01T20:29:42-05:00",
-      "treeSha256": "61dc34e854081e3dba00bc07a91d41b45c7bf7b13bb7e3ada17246e7ed921896"
+      "committedAt": "2026-11-08T19:26:26-05:00",
+      "treeSha256": "e5c6dafca9414f105f0a538b6f3a41f145b0985063be7f1e701a199b7b48ea10"
     },
     {
       "id": "lxgw-wenkai",
@@ -770,16 +770,16 @@
       "id": "mengto-skills",
       "kind": "fetched-on-demand",
       "repo": "https://github.com/MengTo/skills",
-      "revision": "1de14e21b2ba8937c0f7f6ddca581cf7cd9d94af",
-      "reviewedAt": "2026-11-04",
+      "revision": "d6324a05ca03ce5f6cdba519318d92176dbc43d2",
+      "reviewedAt": "2026-11-09",
       "bundle": "mengto-skills",
       "importer": [
         "scripts/import-mengto-skills.cjs",
         "--source",
         "{source}"
       ],
-      "committedAt": "2026-11-03T14:26:41+08:00",
-      "treeSha256": "086de3eb7cece47628c80571a7f7184b0d6eab19a20ba8227196823e19cd01d5",
+      "committedAt": "2026-11-09T00:46:40+08:00",
+      "treeSha256": "2b135afd7b071899bd420e4b82955128abcc2fa617f55c5e46c62d67f2c1ea1f",
       "derive": [
         "scripts/project-mengto-catalog.cjs"
       ]
@@ -799,31 +799,31 @@
       "id": "motion",
       "kind": "catalog-reference",
       "repo": "https://github.com/motiondivision/motion",
-      "revision": "7415b6cd14dfdb35d91dfc5b9758994444cc228b",
-      "reviewedAt": "2026-11-04",
-      "committedAt": "2026-10-30T11:22:53+01:00"
+      "revision": "733a94e19cda41678a64ef9ecaf4b3754f3fb53a",
+      "reviewedAt": "2026-11-09",
+      "committedAt": "2026-11-09T11:45:25+01:00"
     },
     {
       "id": "motion-web-reference-skill",
       "kind": "adapted-reference",
       "repo": "https://github.com/feitangyuan/motion-web",
-      "revision": "5f4e40f1253e11e28850d08dce28b9b7e4320115",
-      "reviewedAt": "2026-11-04",
+      "revision": "536ef6551530ff0c6b091e2b7786d3ecc21f26fa",
+      "reviewedAt": "2026-11-09",
       "documents": [
         "skill/references/reference-skill-motion-web.md"
       ],
-      "committedAt": "2026-09-15T06:11:33-07:00"
+      "committedAt": "2026-11-04T19:55:03-08:00"
     },
     {
       "id": "onetake-reference-skill",
       "kind": "adapted-reference",
       "repo": "https://github.com/feitangyuan/onetake",
-      "revision": "013a61ac8d98883c73733f59c06e49e9ba444f14",
-      "reviewedAt": "2026-11-04",
+      "revision": "abb6d17279cdc749e27e99aa534a062d8fd01ced",
+      "reviewedAt": "2026-11-09",
       "documents": [
         "skill/references/reference-skill-onetake.md"
       ],
-      "committedAt": "2026-10-21T11:56:36-06:00"
+      "committedAt": "2026-11-04T19:52:15-08:00"
     },
     {
       "id": "open-design",
@@ -869,8 +869,8 @@
       "id": "openspec",
       "kind": "npm",
       "package": "@fission-ai/openspec",
-      "version": "1.16.0",
-      "reviewedAt": "2026-11-04",
+      "version": "1.16.1",
+      "reviewedAt": "2026-11-09",
       "sites": [
         {
           "file": "package.json",
@@ -931,8 +931,8 @@
       "id": "playwright",
       "kind": "npm",
       "package": "playwright",
-      "version": "1.64.1",
-      "reviewedAt": "2026-11-04",
+      "version": "1.65.0",
+      "reviewedAt": "2026-11-09",
       "sites": [
         {
           "file": "tools/browser-automation/package.json",
@@ -944,8 +944,8 @@
       "id": "playwright-cli",
       "kind": "vendored",
       "repo": "https://github.com/microsoft/playwright-cli",
-      "revision": "db2a0fad3a768319a16e3a2bb8078cf62e690b07",
-      "reviewedAt": "2026-11-04",
+      "revision": "4bc00fb7fa5b4329f2fb53ac4743a066c2c664e8",
+      "reviewedAt": "2026-11-09",
       "bundle": "playwright-cli",
       "importer": [
         "scripts/import-ui-craft-sources.cjs",
@@ -954,8 +954,8 @@
         "--source",
         "{source}"
       ],
-      "committedAt": "2026-11-03T09:14:04-08:00",
-      "treeSha256": "b09d73b7064556c4db737afa8b126bf7b47cf215f4dc9c48c346851fb7b53e29"
+      "committedAt": "2026-11-05T15:09:31-08:00",
+      "treeSha256": "18573350c4dec40c6c896c4f1616fd0401e4f4f41fcd1cc786033db1b98e4799"
     },
     {
       "id": "pngjs",
@@ -1008,17 +1008,17 @@
       "id": "react-bits",
       "kind": "catalog-reference",
       "repo": "https://github.com/DavidHDev/react-bits",
-      "revision": "4dc7b5b7772e1217c8fb8d2a7aa074302180e5b4",
-      "reviewedAt": "2026-11-04",
-      "committedAt": "2026-10-31T09:02:37+09:00"
+      "revision": "b0422bb475ac9ec1fe1680290970494ceff5d4eb",
+      "reviewedAt": "2026-11-09",
+      "committedAt": "2026-11-08T23:37:18+02:00"
     },
     {
       "id": "reflex-xy",
       "kind": "release",
-      "version": "0.0.8",
-      "reviewedAt": "2026-11-04",
+      "version": "0.0.9",
+      "reviewedAt": "2026-11-09",
       "repo": "https://github.com/reflex-dev/xy",
-      "revision": "6483032a7947e1f44ced1a560ac08f1025637529",
+      "revision": "877dd79b0b5dfb24534b25d742c44e2eeb1988fc",
       "tag": "v{version}",
       "sites": [
         {
@@ -1030,14 +1030,14 @@
           "pattern": "\"https://github.com/reflex-dev/xy\",\"revision\":\"{revision}\",\"reviewedVersion\":\"{version}\""
         }
       ],
-      "committedAt": "2026-10-13T11:41:40-07:00"
+      "committedAt": "2026-11-06T00:07:35+05:00"
     },
     {
       "id": "shadcn",
       "kind": "vendored",
       "repo": "https://github.com/shadcn-ui/ui",
-      "revision": "4aaea19d9cff3e0908e12a8c1d504b8c5ec34610",
-      "reviewedAt": "2026-11-04",
+      "revision": "8ab27715521cbd4f87ae6886cd989cbb678f6de7",
+      "reviewedAt": "2026-11-09",
       "bundle": "shadcn",
       "importer": [
         "scripts/import-ui-craft-sources.cjs",
@@ -1046,7 +1046,7 @@
         "--source",
         "{source}"
       ],
-      "committedAt": "2026-11-02T11:02:07+04:00",
+      "committedAt": "2026-11-08T12:14:55+04:00",
       "treeSha256": "b95ba26ff8d9f25a347176a8949d45ab1beb8bb71a11b553cd0a06b9d101f63e"
     },
     {
@@ -1109,17 +1109,17 @@
       "id": "transitions-dev",
       "kind": "catalog-reference",
       "repo": "https://github.com/Jakubantalik/transitions.dev",
-      "revision": "e3aefb554d8fd2cb3e91e773e82a0f2d5a4f82a0",
-      "reviewedAt": "2026-11-04",
-      "committedAt": "2026-10-29T11:48:25+01:00"
+      "revision": "20d70c1262bf721c0300c2946cbe1fc7605a555c",
+      "reviewedAt": "2026-11-09",
+      "committedAt": "2026-11-08T12:03:05+01:00"
     },
     {
       "id": "ui-ux-pro-max",
       "kind": "catalog-reference",
       "repo": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
-      "revision": "713eef51b04efc98d6fa565323b495f7c9c89fd4",
-      "reviewedAt": "2026-11-04",
-      "committedAt": "2026-11-02T23:10:22+07:00",
+      "revision": "4f2dbb67e64969a9a30ab00742f2d55d66ddec2b",
+      "reviewedAt": "2026-11-09",
+      "committedAt": "2026-11-08T02:05:11+07:00",
       "profiles": [
         "ui-ux-pro-max"
       ]

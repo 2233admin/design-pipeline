@@ -37,7 +37,7 @@ test("routes the proven public React Bits depth carousel as ready and blocks it 
   assert.equal(selected.licenseEvidence.state, "verified");
   assert.equal(selected.licenseEvidence.id, "LicenseRef-MIT-Commons-Clause");
   assert.match(selected.install, /@react-bits\/DepthCarousel-TS-TW/);
-  assert.match(selected.sourceCode, /4dc7b5b7772e1217c8fb8d2a7aa074302180e5b4/);
+  assert.match(selected.sourceCode, /b0422bb475ac9ec1fe1680290970494ceff5d4eb/);
   assert.match(selected.licenseNotice, /redistribut/i);
   assert.equal(catalog().entries.some((entry) => entry.localId === "reactbits-pro/depth-carousel"), false);
 

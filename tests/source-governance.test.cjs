@@ -28,7 +28,7 @@ const sourceRefs = {
   },
   "skill/references/animation-opportunity-and-review.md": {
     sourceId: "emilkowalski-animation-review",
-    revision: "f1090bec277140d02ed202440185ad9d02ac1490",
+    revision: "715c1807e08c497cfd1dc4feb450a2a3300ef2a9",
     contentHash: "936fccfc37aa3a13bd49e4a5b56e937bfbc92013edfcc89fa8cb61294e1adf1c",
     license: "MIT",
     reviewedAt: "2026-08-26T00:00:00.000Z",
@@ -250,16 +250,16 @@ test("the existing audit reports current, drifted, and missing evidence determin
 const referenceSkills = {
   "skill/references/reference-skill-motion-web.md": {
     sourceId: "motion-web-reference-skill",
-    url: "https://github.com/feitangyuan/motion-web/tree/5f4e40f1253e11e28850d08dce28b9b7e4320115",
-    revision: "5f4e40f1253e11e28850d08dce28b9b7e4320115",
-    contentHash: "68945441b0bbd6b79f2849206c019c2c7bc01a13a2bbd5c267c9c3d5c069c1b4",
+    url: "https://github.com/feitangyuan/motion-web/tree/536ef6551530ff0c6b091e2b7786d3ecc21f26fa",
+    revision: "536ef6551530ff0c6b091e2b7786d3ecc21f26fa",
+    contentHash: "872f0816f29cb301d4b750c7a562a0c19e7d591853c7d80c0ae495995158e180",
     license: "CC-BY-NC-4.0",
   },
   "skill/references/reference-skill-onetake.md": {
     sourceId: "onetake-reference-skill",
-    url: "https://github.com/feitangyuan/onetake/tree/013a61ac8d98883c73733f59c06e49e9ba444f14",
-    revision: "013a61ac8d98883c73733f59c06e49e9ba444f14",
-    contentHash: "b1748e94eb8e09a13a247345d8d9eee9b244469e7557d65e5d7dec8984ad2d5d",
+    url: "https://github.com/feitangyuan/onetake/tree/abb6d17279cdc749e27e99aa534a062d8fd01ced",
+    revision: "abb6d17279cdc749e27e99aa534a062d8fd01ced",
+    contentHash: "37341e8988f55a3c3e7aff59bb060a54ec017e64fc41a948e026ba36504410f5",
     license: "PolyForm-Noncommercial-1.0.0",
   },
 };

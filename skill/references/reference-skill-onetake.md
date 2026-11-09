@@ -2,12 +2,12 @@
 sourceMeta:
   id: onetake-reference-skill
   kind: github
-  url: https://github.com/feitangyuan/onetake/tree/013a61ac8d98883c73733f59c06e49e9ba444f14
-  reviewedRevision: 013a61ac8d98883c73733f59c06e49e9ba444f14
-  reviewedContentHash: b1748e94eb8e09a13a247345d8d9eee9b244469e7557d65e5d7dec8984ad2d5d
+  url: https://github.com/feitangyuan/onetake/tree/abb6d17279cdc749e27e99aa534a062d8fd01ced
+  reviewedRevision: abb6d17279cdc749e27e99aa534a062d8fd01ced
+  reviewedContentHash: 37341e8988f55a3c3e7aff59bb060a54ec017e64fc41a948e026ba36504410f5
   contentHashScope: ordered UTF-8 sourceFiles with path-and-newline separators
   sourceFiles: README.md, LICENSE
-  reviewedAt: 2026-11-04T00:00:00.000Z
+  reviewedAt: 2026-11-09T00:00:00.000Z
   freshnessDays: 30
   license: PolyForm-Noncommercial-1.0.0
   useBoundary: reference-only; ideas only; do not install, execute, copy, or bundle upstream code, text or assets

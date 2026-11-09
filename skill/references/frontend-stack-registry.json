@@ -29,7 +29,7 @@
   "shadcn": {
     "sourceId": "shadcn-ui/ui",
     "source": "https://github.com/shadcn-ui/ui",
-    "revision": "4aaea19d9cff3e0908e12a8c1d504b8c5ec34610",
+    "revision": "8ab27715521cbd4f87ae6886cd989cbb678f6de7",
     "bases": ["radix", "base", "aria"],
     "styles": ["nova", "vega", "maia", "lyra", "mira", "luma", "sera", "rhea"],
     "baseColors": ["neutral", "stone", "zinc", "gray", "mauve", "olive", "mist", "taupe"],
@@ -82,8 +82,8 @@
     { "id": "design-pipeline/website-cloning", "capabilities": ["website-cloning"], "activation": "keyword", "keywords": ["clone", "cloning", "rebuild", "replicate", "复刻", "克隆", "仿站", "1:1"], "mode": "project-owned", "status": "ready", "source": "bundled" },
     { "id": "hi5jeff/deepclonewebsite", "capabilities": ["website-cloning", "reverse-engineering"], "activation": "keyword", "keywords": ["clone", "cloning", "rebuild", "reverse engineer", "复刻", "克隆", "逆向"], "mode": "governed-candidate", "status": "review", "sourceId": "hi5jeff/deepclonewebsite", "source": "https://github.com/hi5jeff/deepclonewebsite", "revision": "ab180fbe14a0f86c478bf033b375b1d40fabe6b1", "license": "MIT", "requirements": ["Node.js 20+", "Chrome or Edge", "interactive login", "OpenAI-compatible API credential"], "fallback": "design-pipeline/website-cloning" },
     { "id": "design-pipeline/feedback-loop", "capabilities": ["friction-logging"], "activation": "always", "mode": "project-owned", "status": "ready", "source": "bundled" },
-    { "id": "wevm/frog", "capabilities": ["friction-logging", "github-issue-sync"], "activation": "capability", "mode": "governed-candidate", "status": "review", "sourceId": "wevm/frog", "source": "https://github.com/wevm/frog", "revision": "cbe18b192b59a8770466ee9f193b17294778c8a9", "license": "MIT", "requirements": ["Node.js 22+", "explicit GitHub repository and workflow permission"], "fallback": "design-pipeline/feedback-loop" },
-    { "id": "MengTo/skills", "capabilities": ["design-workflow", "interaction-extraction", "visual-style", "verification"], "activation": "always", "mode": "bundled-index", "status": "ready", "sourceId": "mengto/skills", "source": "https://github.com/MengTo/skills", "revision": "1de14e21b2ba8937c0f7f6ddca581cf7cd9d94af", "license": "MIT", "catalog": "mengto-skills-catalog.json" },
+    { "id": "wevm/frog", "capabilities": ["friction-logging", "github-issue-sync"], "activation": "capability", "mode": "governed-candidate", "status": "review", "sourceId": "wevm/frog", "source": "https://github.com/wevm/frog", "revision": "0770aab86af569b54b5987ee2d2624254fcb3f79", "license": "MIT", "requirements": ["Node.js 22+", "explicit GitHub repository and workflow permission"], "fallback": "design-pipeline/feedback-loop" },
+    { "id": "MengTo/skills", "capabilities": ["design-workflow", "interaction-extraction", "visual-style", "verification"], "activation": "always", "mode": "bundled-index", "status": "ready", "sourceId": "mengto/skills", "source": "https://github.com/MengTo/skills", "revision": "d6324a05ca03ce5f6cdba519318d92176dbc43d2", "license": "MIT", "catalog": "mengto-skills-catalog.json" },
     {
       "id": "SmoothUI/components",
       "capabilities": ["animated-ui", "component-source", "motion-design"],

@@ -2,12 +2,12 @@
 sourceMeta:
   id: emilkowalski-animation-review
   kind: github
-  url: https://github.com/emilkowalski/skills/tree/f1090bec277140d02ed202440185ad9d02ac1490
-  reviewedRevision: f1090bec277140d02ed202440185ad9d02ac1490
+  url: https://github.com/emilkowalski/skills/tree/715c1807e08c497cfd1dc4feb450a2a3300ef2a9
+  reviewedRevision: 715c1807e08c497cfd1dc4feb450a2a3300ef2a9
   reviewedContentHash: 936fccfc37aa3a13bd49e4a5b56e937bfbc92013edfcc89fa8cb61294e1adf1c
   contentHashScope: ordered UTF-8 sourceFiles with path-and-newline separators
   sourceFiles: skills/improve-animations/SKILL.md, skills/find-animation-opportunities/SKILL.md, skills/animation-vocabulary/SKILL.md, skills/review-animations/SKILL.md
-  reviewedAt: 2026-11-04T00:00:00.000Z
+  reviewedAt: 2026-11-09T00:00:00.000Z
   freshnessDays: 365
   license: MIT
   useBoundary: reference-only; distilled guidance; do not install or execute upstream content
@@ -22,7 +22,7 @@ their upstream skill files. Use it with `references/motion-foundation.md` and
 primitives and detailed fields.
 
 Source concepts: `improve-animations`, `find-animation-opportunities`, `animation-vocabulary`, and
-`review-animations` from [emilkowalski/skills](https://github.com/emilkowalski/skills/tree/f1090bec277140d02ed202440185ad9d02ac1490). This reference
+`review-animations` from [emilkowalski/skills](https://github.com/emilkowalski/skills/tree/715c1807e08c497cfd1dc4feb450a2a3300ef2a9). This reference
 is an internal operating contract, not a replacement skill package. Do not install, import, copy, or
 execute upstream content from these four skills. `emil-design-eng`, a different skill from the same
 repository, is bundled separately as an inert pinned snapshot; see
@@ -66,8 +66,8 @@ This adds an output shape to broad audits; it does not require a new plan direct
 implementation of an audit finding without authorization.
 
 This broad-audit supplement was reviewed against the current
-[opportunity scan](https://github.com/emilkowalski/skills/blob/f1090bec277140d02ed202440185ad9d02ac1490/skills/find-animation-opportunities/SKILL.md)
-and [audit/handoff method](https://github.com/emilkowalski/skills/blob/f1090bec277140d02ed202440185ad9d02ac1490/skills/improve-animations/SKILL.md)
+[opportunity scan](https://github.com/emilkowalski/skills/blob/715c1807e08c497cfd1dc4feb450a2a3300ef2a9/skills/find-animation-opportunities/SKILL.md)
+and [audit/handoff method](https://github.com/emilkowalski/skills/blob/715c1807e08c497cfd1dc4feb450a2a3300ef2a9/skills/improve-animations/SKILL.md)
 on 2026-10-07. The four-file baseline recorded above is retained; this scoped review does not
 declare every upstream skill or installed companion current.
 

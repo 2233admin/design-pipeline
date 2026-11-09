@@ -2,11 +2,11 @@
   "schema": "design-pipeline.gepa-source.v1",
   "source": {
     "repository": "https://github.com/gepa-ai/gepa",
-    "revision": "8c7b697a71977980afc7537dac0881e784eef99f",
-    "gitTree": "22284bd2f2a442022fd12547845b34a2af5bad01",
-    "committedAt": "2026-10-31T12:40:38-07:00",
+    "revision": "ce5b0d6e3d6af6c6dbec6de2c54536bbb961d309",
+    "gitTree": "a596ad918f0cfedc7f9b108269685f7039d4ed9a",
+    "committedAt": "2026-11-09T01:07:36-08:00",
     "license": "MIT",
-    "reviewedAt": "2026-11-04",
+    "reviewedAt": "2026-11-09",
     "scope": [
       ".claude/skills/gepa-optimize-anything/**",
       "LICENSE",
@@ -25,8 +25,8 @@
   "snapshot": {
     "root": "upstream",
     "fileCount": 10,
-    "byteCount": 112408,
-    "treeSha256": "6d549f5cbb4eac9ed00ae5fa618d0e51a8cc617b930313d05f71b4b019fc1e78",
+    "byteCount": 112812,
+    "treeSha256": "f73e24bca27d820714bbe34ed1f3942cdfd40ba1d4cb0fd8873bcf68e0d1702f",
     "executableFiles": [],
     "objects": [
       {
@@ -80,14 +80,14 @@
       {
         "path": "pyproject.toml",
         "mode": "100644",
-        "oid": "3716b220b76df7c54b930380057a4d7819d89550",
+        "oid": "15b6a7a5fbedf81d74df408fd73eea321272732f",
         "size": 5691
       },
       {
         "path": "README.md",
         "mode": "100644",
-        "oid": "365edf3d878f6996259cfc95c401547825fdc65b",
-        "size": 44656
+        "oid": "554b6d58a45b727feaa5d2c81b7077ee8ca73479",
+        "size": 45060
       }
     ]
   },

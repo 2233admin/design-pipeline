@@ -120,9 +120,14 @@
     {
       "name": "Listening and film sound",
       "level": "optional",
-      "skills": ["earshot", "real-sound"],
+      "skills": [
+        "earshot",
+        "real-sound"
+      ],
       "fallback": "Use verify audio (loudness, peaks, silence, entry and exit, hit-cue sync) and references/audio-gate.md; say the soundtrack was measured, not listened to, and never describe how it sounds.",
-      "install": ["Install earshot (CLI, MCP server and the earshot and real-sound skills) from: https://github.com/Leonxlnx/earshot"]
+      "install": [
+        "Install earshot (CLI, MCP server and the earshot and real-sound skills) from: https://github.com/Leonxlnx/earshot"
+      ]
     },
     {
       "name": "React / Next.js engineering",
@@ -568,7 +573,7 @@
         "id": "impeccable-skill-v4",
         "kind": "github",
         "url": "https://github.com/pbakaus/impeccable",
-        "reviewedRevision": "9fadc41729c38fd47d7ae622b501558653f9d2e9",
+        "reviewedRevision": "0fb9d01efd70c5dc0bc341f3baaa297444261f9a",
         "reviewedMarkers": [
           "surface-modes",
           "refinement-semantics",
@@ -576,7 +581,7 @@
           "command-routing",
           "drift-boundary"
         ],
-        "reviewedAt": "2026-11-04T00:00:00.000Z",
+        "reviewedAt": "2026-11-09T00:00:00.000Z",
         "freshnessDays": 30
       },
       "fallback": "Use references/impeccable-contract.md and the built-in brief, anti-slop, state, browser, and bounded verification gates.",
@@ -656,7 +661,7 @@
         "id": "motion-review-skill-contracts",
         "kind": "installed-skill",
         "url": "https://github.com/emilkowalski/skills",
-        "reviewedRevision": "f1090bec277140d02ed202440185ad9d02ac1490",
+        "reviewedRevision": "715c1807e08c497cfd1dc4feb450a2a3300ef2a9",
         "reviewedContentHash": "936fccfc37aa3a13bd49e4a5b56e937bfbc92013edfcc89fa8cb61294e1adf1c",
         "contentHashScope": "ordered UTF-8 sourceFiles with path-and-newline separators",
         "sourceFiles": [
@@ -670,7 +675,7 @@
           "motion-review-standards",
           "motion-findings"
         ],
-        "reviewedAt": "2026-11-04T00:00:00.000Z",
+        "reviewedAt": "2026-11-09T00:00:00.000Z",
         "freshnessDays": 30,
         "license": "MIT",
         "useBoundary": "installed companion evidence only; no automatic upstream upgrade"
@@ -779,12 +784,12 @@
       "skill": "design-pipeline",
       "level": "enhancement",
       "sourceId": "emilkowalski/skills",
-      "source": "https://github.com/emilkowalski/skills/tree/f1090bec277140d02ed202440185ad9d02ac1490",
+      "source": "https://github.com/emilkowalski/skills/tree/715c1807e08c497cfd1dc4feb450a2a3300ef2a9",
       "sourceMeta": {
         "id": "emilkowalski-animation-review",
         "kind": "github",
-        "url": "https://github.com/emilkowalski/skills/tree/f1090bec277140d02ed202440185ad9d02ac1490",
-        "reviewedRevision": "f1090bec277140d02ed202440185ad9d02ac1490",
+        "url": "https://github.com/emilkowalski/skills/tree/715c1807e08c497cfd1dc4feb450a2a3300ef2a9",
+        "reviewedRevision": "715c1807e08c497cfd1dc4feb450a2a3300ef2a9",
         "reviewedContentHash": "936fccfc37aa3a13bd49e4a5b56e937bfbc92013edfcc89fa8cb61294e1adf1c",
         "contentHashScope": "ordered UTF-8 sourceFiles with path-and-newline separators",
         "sourceFiles": [
@@ -793,7 +798,7 @@
           "skills/animation-vocabulary/SKILL.md",
           "skills/review-animations/SKILL.md"
         ],
-        "reviewedAt": "2026-11-04T00:00:00.000Z",
+        "reviewedAt": "2026-11-09T00:00:00.000Z",
         "freshnessDays": 365,
         "license": "MIT",
         "useBoundary": "reference-only; no upstream install, copy, or execution"
@@ -823,8 +828,8 @@
         "id": "ui-ux-pro-max",
         "kind": "github",
         "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
-        "reviewedRevision": "713eef51b04efc98d6fa565323b495f7c9c89fd4",
-        "reviewedAt": "2026-11-04T00:00:00.000Z",
+        "reviewedRevision": "4f2dbb67e64969a9a30ab00742f2d55d66ddec2b",
+        "reviewedAt": "2026-11-09T00:00:00.000Z",
         "freshnessDays": 30,
         "license": "MIT",
         "useBoundary": "installed companion evidence only; no automatic upstream upgrade"
@@ -1113,15 +1118,15 @@
       "skill": "design-pipeline",
       "level": "enhancement",
       "sourceId": "vojtaholik/good-css",
-      "source": "https://github.com/vojtaholik/good-css/tree/a6804e75b5ee946d6b007ac20734f958d7938bca",
+      "source": "https://github.com/vojtaholik/good-css/tree/35e0e8c673854ca34d8e1879038e44834c855dfb",
       "sourceMeta": {
         "id": "good-css",
         "kind": "github",
-        "url": "https://github.com/vojtaholik/good-css/tree/a6804e75b5ee946d6b007ac20734f958d7938bca",
-        "reviewedRevision": "a6804e75b5ee946d6b007ac20734f958d7938bca",
-        "reviewedContentHash": "bfe7189dd6f562e34e24e34b6869b95ca507ea1a8da38ccca938821b4571c430",
+        "url": "https://github.com/vojtaholik/good-css/tree/35e0e8c673854ca34d8e1879038e44834c855dfb",
+        "reviewedRevision": "35e0e8c673854ca34d8e1879038e44834c855dfb",
+        "reviewedContentHash": "c31628f811e7c8e1868c6c15078212857f6a33dc25a8614c6fdf0fabf62d1efd",
         "contentHashScope": "complete Git tree: sorted POSIX path, NUL, SHA-256 blob hash, newline",
-        "reviewedAt": "2026-11-04T00:00:00.000Z",
+        "reviewedAt": "2026-11-09T00:00:00.000Z",
         "freshnessDays": 365,
         "license": "MIT; bundled Inter and Geist Mono fonts SIL-OFL-1.1",
         "useBoundary": "built-in source reference and maintained local specimen adaptation; no upstream install or deployment"

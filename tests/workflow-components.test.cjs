@@ -978,7 +978,7 @@ test("discovery: a GitHub URL of an indexed source keeps the existing citation r
   const answer = "Search the index, then find more";
   const cited = url => ({
     ...carousel(), name: "Navigation", url,
-    license: { state: "verified", id: "MIT", evidence: ["https://github.com/shadcn-ui/ui/blob/4aaea19d9cff3e0908e12a8c1d504b8c5ec34610/LICENSE.md"], file: "licenses/embla-carousel.txt" },
+    license: { state: "verified", id: "MIT", evidence: ["https://github.com/shadcn-ui/ui/blob/8ab27715521cbd4f87ae6886cd989cbb678f6de7/LICENSE.md"], file: "licenses/embla-carousel.txt" },
   });
   for (const url of ["https://github.com/shadcn-ui/ui", "https://github.com/Shadcn-UI/ui.git", "https://github.com/shadcn-ui/ui/tree/main/apps/v4"]) {
     checkDiscovery(root, "index,discover", answer, { entries: [cited(url)] }, /entries\[0\]\.url matches the indexed source shadcn-ui\/ui: cite it by sourceId/);

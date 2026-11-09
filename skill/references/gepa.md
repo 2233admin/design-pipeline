@@ -6,8 +6,8 @@ Start with one instruction and a declared editable scope, frozen cases, an evalu
 inference configuration and an evaluation budget. Search produces a reviewable proposal.
 
 The complete official [gepa-optimize-anything skill](../vendor/gepa/upstream/.claude/skills/gepa-optimize-anything/UPSTREAM-SKILL.md)
-is bundled at reviewed revision `8c7b697a71977980afc7537dac0881e784eef99f`, reviewed on
-2026-11-04. Its seven files, root README, package metadata and
+is bundled at reviewed revision `ce5b0d6e3d6af6c6dbec6de2c54536bbb961d309`, reviewed on
+2026-11-09. Its seven files, root README, package metadata and
 [MIT license](../vendor/gepa/upstream/LICENSE) preserve original bytes; Copyright © 2025
 Lakshya A Agrawal. [manifest.json](../vendor/gepa/manifest.json) records the selected source
 scope, root Git tree and individual blobs. Only that source skill and metadata are bundled;

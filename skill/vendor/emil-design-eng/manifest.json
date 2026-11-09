@@ -3,11 +3,11 @@
   "name": "emil-design-eng",
   "source": {
     "repository": "https://github.com/emilkowalski/skills",
-    "revision": "f1090bec277140d02ed202440185ad9d02ac1490",
-    "gitTree": "7d952685029ffc0702e3faa2291f7424f7cd9632",
-    "committedAt": "2026-11-02T10:21:52+01:00",
+    "revision": "715c1807e08c497cfd1dc4feb450a2a3300ef2a9",
+    "gitTree": "6c4f809e289f5626cadb04508a9e3686a748519e",
+    "committedAt": "2026-11-09T13:07:26+01:00",
     "license": "MIT",
-    "reviewedAt": "2026-11-04",
+    "reviewedAt": "2026-11-09",
     "scope": [
       "skills/emil-design-eng/**",
       "LICENSE"

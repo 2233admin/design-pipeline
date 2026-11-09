@@ -2,12 +2,12 @@
 sourceMeta:
   id: motion-web-reference-skill
   kind: github
-  url: https://github.com/feitangyuan/motion-web/tree/5f4e40f1253e11e28850d08dce28b9b7e4320115
-  reviewedRevision: 5f4e40f1253e11e28850d08dce28b9b7e4320115
-  reviewedContentHash: 68945441b0bbd6b79f2849206c019c2c7bc01a13a2bbd5c267c9c3d5c069c1b4
+  url: https://github.com/feitangyuan/motion-web/tree/536ef6551530ff0c6b091e2b7786d3ecc21f26fa
+  reviewedRevision: 536ef6551530ff0c6b091e2b7786d3ecc21f26fa
+  reviewedContentHash: 872f0816f29cb301d4b750c7a562a0c19e7d591853c7d80c0ae495995158e180
   contentHashScope: ordered UTF-8 sourceFiles with path-and-newline separators
   sourceFiles: README.md, LICENSE
-  reviewedAt: 2026-11-04T00:00:00.000Z
+  reviewedAt: 2026-11-09T00:00:00.000Z
   freshnessDays: 30
   license: CC-BY-NC-4.0
   useBoundary: reference-only; ideas only; do not install, execute, copy, or bundle upstream code, text or assets

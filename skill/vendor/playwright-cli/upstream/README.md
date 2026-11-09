@@ -27,6 +27,9 @@ npm install -g @playwright/cli@latest
 playwright-cli --help
 ```
 
+Argument parsing and startup errors exit with code 1 and print an error message. With
+`--json`, these errors are written to stdout as `{ "isError": true, "error": "..." }`.
+
 ### Installing skills
 
 Claude Code, GitHub Copilot and others will use the locally installed skills.
@@ -78,8 +81,8 @@ Playwright CLI keeps the browser profile in memory by default. Your cookies and 
 are preserved between CLI calls within the session, but lost when the browser closes. Use
 `--persistent` to save the profile to disk for persistence across browser restarts.
 
-You can use different instances of the browser for different projects with sessions. Pass `-s=` to
-the invocation to talk to a specific browser.
+You can use different instances of the browser for different projects with sessions. Pass `-s=name`,
+`-s name` or `--session name` to the invocation to talk to a specific browser.
 
 ```bash
 playwright-cli open https://playwright.dev
