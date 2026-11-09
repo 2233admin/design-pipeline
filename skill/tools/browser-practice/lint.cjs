@@ -20,20 +20,40 @@ const RULES = {
   "screenshot-baseline": "截图基线断言（toHaveScreenshot / toMatchSnapshot）把视觉验收绑进测试；仅在 forbidBaseline 开启时报告，是否允许由项目规则决定。",
 };
 
-const ONE_SHOT = /\bexpect\(\s*await\s+[^;\n]*?\.(isVisible|isHidden|isEnabled|isDisabled|isChecked|isEditable|textContent|innerText|innerHTML|inputValue|getAttribute|count|evaluate|evaluateAll|\$eval|\$\$eval)\s*\(/;
-const FIXED_WAIT = /\.waitForTimeout\s*\(/;
-const BROWSER_FILE = /\b(page|browser|context)\.(goto|locator|evaluate|click|screenshot|newPage)\b|require\(["'](playwright|puppeteer)|from ["']@?playwright|\bchromium\b/;
-const LOCATOR_CALL = /\.(?:locator|\$|\$\$|waitForSelector|click|fill)\(\s*(["'`])((?:\.|(?!\1).)*)\1/g;
-const BASELINE = /\.(toHaveScreenshot|toMatchSnapshot)\s*\(/;
+const ONE_SHOT = /\bexpect\(\s*await\s+[^;]{0,300}?\.(isVisible|isHidden|isEnabled|isDisabled|isChecked|isEditable|textContent|innerText|innerHTML|inputValue|getAttribute|count|evaluate|evaluateAll|\$eval|\$\$eval)\s*\(/g;
+const FIXED_WAIT = /\.waitForTimeout\s*\(/g;
+const LOCATOR_CALL = /\.(?:locator|\$|\$\$|waitForSelector|click|fill)\(\s*(["'`])((?:\\.|(?!\1)[^\\])*)\1/g;
+const BASELINE = /\.(toHaveScreenshot|toMatchSnapshot)\s*\(/g;
 const ALLOW = /browser-practice-allow\s+([a-z-]+)\s*:\s*(\S.*)$/;
 
 function isBrittleSelector(selector) {
   return /:nth-(child|of-type|last-child)\b/.test(selector) || /^\s*xpath=/.test(selector) || /^\s*\/\//.test(selector);
 }
 
-// 返回 [{ rule, line, text }]；text 为命中行去首尾空白。
+// 把注释换成空格（保留换行，行号不变）。keepStrings 为 false 时字符串内容也换成空格，只留引号。
+function mask(source, keepStrings) {
+  let out = "", i = 0;
+  const blank = (text) => text.replace(/[^\n]/g, " ");
+  while (i < source.length) {
+    const two = source.slice(i, i + 2);
+    if (two === "//") { const end = source.indexOf("\n", i); const stop = end < 0 ? source.length : end; out += blank(source.slice(i, stop)); i = stop; }
+    else if (two === "/*") { const end = source.indexOf("*/", i + 2); const stop = end < 0 ? source.length : end + 2; out += blank(source.slice(i, stop)); i = stop; }
+    else if (source[i] === '"' || source[i] === "'" || source[i] === "`") {
+      const quote = source[i]; let j = i + 1;
+      while (j < source.length && source[j] !== quote && (quote === "`" || source[j] !== "\n")) j += source[j] === "\\" ? 2 : 1;
+      const body = source.slice(i + 1, j);
+      out += quote + (keepStrings ? body : blank(body)) + (source[j] === quote ? quote : "");
+      i = j + 1;
+    } else { out += source[i]; i += 1; }
+  }
+  return out.slice(0, source.length);
+}
+
+// 返回 [{ rule, line, text }]；可跨行的表达式取起始行，text 为该行去首尾空白。
 function lintSource(source, options = {}) {
   const lines = source.split(/\r?\n/);
+  const noStrings = mask(source, false);
+  const withStrings = mask(source, true);
   const allowed = (index, rule) => {
     for (const probe of [index, index - 1]) {
       const match = probe >= 0 && lines[probe].match(ALLOW);
@@ -41,19 +61,22 @@ function lintSource(source, options = {}) {
     }
     return false;
   };
+  const lineOf = (text, offset) => text.slice(0, offset).split("\n").length - 1;
   const findings = [];
-  const add = (rule, index) => { if (!allowed(index, rule)) findings.push({ rule, line: index + 1, text: lines[index].trim().slice(0, 160) }); };
-  lines.forEach((line, index) => {
-    const code = line;
-    if (/^\s*(\/\/|\*|\/\*)/.test(line)) return;
-    if (FIXED_WAIT.test(code)) add("fixed-wait", index);
-    if (ONE_SHOT.test(code)) add("one-shot-read", index);
+  const scan = (text, pattern, rule, accept = () => true) => {
+    pattern.lastIndex = 0;
     let match;
-    LOCATOR_CALL.lastIndex = 0;
-    while ((match = LOCATOR_CALL.exec(code))) { if (isBrittleSelector(match[2])) { add("brittle-locator", index); break; } }
-    if (options.forbidBaseline && BASELINE.test(code)) add("screenshot-baseline", index);
-  });
-  return findings;
+    while ((match = pattern.exec(text))) {
+      if (!accept(match)) continue;
+      const index = lineOf(text, match.index);
+      if (!allowed(index, rule)) findings.push({ rule, line: index + 1, text: (lines[index] || "").trim().slice(0, 160) });
+    }
+  };
+  scan(noStrings, FIXED_WAIT, "fixed-wait");
+  scan(noStrings, ONE_SHOT, "one-shot-read");
+  scan(withStrings, LOCATOR_CALL, "brittle-locator", (match) => isBrittleSelector(match[2]));
+  if (options.forbidBaseline) scan(noStrings, BASELINE, "screenshot-baseline");
+  return findings.sort((x, y) => x.line - y.line);
 }
 
 // 缺理由或未知规则的 allow 注释本身算违规，避免用空注释绕过。

@@ -59,3 +59,17 @@ test("CLI 命中返回退出码 2，干净返回 0", () => {
   assert.equal(spawnSync(process.execPath, [cli, bad, "--json"]).status, 2);
   assert.equal(spawnSync(process.execPath, [cli, good]).status, 0);
 });
+
+test("跨行写法同样命中，并报表达式起始行", () => {
+  const one = lintSource("expect(\n  await page.locator('#s').isVisible()\n).toBe(true);");
+  assert.deepEqual(one.map((f) => [f.rule, f.line]), [["one-shot-read", 1]]);
+  const loc = lintSource("const a = 1;\npage.locator(\n  'li:nth-child(2)'\n);");
+  assert.deepEqual(loc.map((f) => [f.rule, f.line]), [["brittle-locator", 2]]);
+});
+
+test("注释与字符串里的文字不算调用", () => {
+  assert.deepEqual(rules("await page.waitForFunction(() => 1); // 替代 page.waitForTimeout(500)"), []);
+  assert.deepEqual(rules("/*\n page.waitForTimeout(5)\n*/\nconst t = 'x.waitForTimeout(1)';"), []);
+  assert.deepEqual(rules("const m = \"expect(await a.isVisible())\";"), []);
+  assert.deepEqual(rules("// page.locator('li:nth-child(2)')"), []);
+});
