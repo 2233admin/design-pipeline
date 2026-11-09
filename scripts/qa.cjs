@@ -93,8 +93,25 @@ const hermeticEnv = {
   DESIGN_PIPELINE_NOW: "2026-07-23T00:00:00.000Z",
 };
 
+// DESIGN_PIPELINE_QA_SHARD="i/n" splits the repository test files across n CI jobs. Shard 1 also
+// runs every other check (packaging, installed-package smoke); shards 2..n run only their slice.
+const shardMatch = /^(\d+)\/(\d+)$/.exec(process.env.DESIGN_PIPELINE_QA_SHARD || "");
+const shard = shardMatch ? { index: Number(shardMatch[1]), total: Number(shardMatch[2]) } : null;
+if (process.env.DESIGN_PIPELINE_QA_SHARD && !(shard && shard.index >= 1 && shard.index <= shard.total)) {
+  console.error(`FAIL DESIGN_PIPELINE_QA_SHARD must be "i/n" with 1 <= i <= n, got "${process.env.DESIGN_PIPELINE_QA_SHARD}"`);
+  process.exit(1);
+}
+
 try {
-  const requiredRepoFiles = ["package.json", "package-lock.json", "README.md", "CHANGELOG.md", "LICENSE", "DESIGN.md", "MOTION.md", "THIRD_PARTY_NOTICES.md", "skill/SKILL.md", "scripts/package.cjs", "scripts/install-local.cjs", "scripts/test-manifest.json", "skill/references/package-resources.json", "openspec/specs/design-pipeline/spec.md"];
+  shardedQa: {
+  if (shard && shard.index > 1) {
+    const manifest = readJson(path.join(repoRoot, "scripts/test-manifest.json"));
+    const slice = manifest.tests.filter((_, position) => position % shard.total === shard.index - 1).map((name) => path.join(repoRoot, "tests", name));
+    const sliceRun = run(process.execPath, ["--test", `--test-concurrency=${Math.min(4, os.availableParallelism())}`, ...slice], { env: hermeticEnv, stdio: ["ignore", "inherit", "inherit"] });
+    report(sliceRun.status === 0, `repository tests shard ${shard.index}/${shard.total} (${slice.length} files)`);
+    break shardedQa;
+  }
+  const requiredRepoFiles =["package.json", "package-lock.json", "README.md", "CHANGELOG.md", "LICENSE", "DESIGN.md", "MOTION.md", "THIRD_PARTY_NOTICES.md", "skill/SKILL.md", "scripts/package.cjs", "scripts/install-local.cjs", "scripts/test-manifest.json", "skill/references/package-resources.json", "openspec/specs/design-pipeline/spec.md"];
   for (const file of requiredRepoFiles) report(fs.existsSync(path.join(repoRoot, file)), file);
 
   const rootMarkdown = new Set(["AGENTS.md", "CHANGELOG.md", "CLAUDE.md", "DESIGN.md", "MOTION.md", "README.md", "THIRD_PARTY_NOTICES.md"]);
@@ -165,10 +182,11 @@ try {
     report(child.status === 0 && envelope?.ok === true && envelope?.schema === "design-pipeline.cli-result.v1", `CLI ${args.slice(0, 2).join(" ")}`);
   }
 
-  const testFiles = testManifest.tests.map((name) => path.join(repoRoot, "tests", name));
+  const shardTests = shard ? testManifest.tests.filter((_, position) => position % shard.total === 0) : testManifest.tests;
+  const testFiles = shardTests.map((name) => path.join(repoRoot, "tests", name));
   // ponytail: cap subprocess contention at four files; tune only with measured suite timings.
   const tests = run(process.execPath, ["--test", `--test-concurrency=${Math.min(4, os.availableParallelism())}`, ...testFiles], { env: hermeticEnv, stdio: ["ignore", "inherit", "inherit"] });
-  report(tests.status === 0, `repository tests (${testManifest.tests.length} files)`);
+  report(tests.status === 0, shard ? `repository tests shard 1/${shard.total} (${shardTests.length} files)` : `repository tests (${testManifest.tests.length} files)`);
 
   const packageScript = path.join(repoRoot, "scripts/package.cjs");
   const outputA = path.join(tempRoot, "package-a");
@@ -276,6 +294,7 @@ try {
 
   const installedCliTests = run(process.execPath, ["--test", path.join(repoRoot, "tests/designer-pipeline-cli.test.cjs")], { env: { ...hermeticEnv, DESIGN_PIPELINE_CLI_PATH: path.join(installed, "scripts/designer-pipeline.cjs") } });
   report(installedCliTests.status === 0, "installed-package public CLI smoke");
+  }
 } catch (error) {
   console.error(`FAIL QA exception: ${error.stack || error.message}`);
   failed = true;

@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, master]
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   windows-path-regressions:
     runs-on: windows-latest
@@ -51,7 +55,13 @@ jobs:
 
   qa-and-package:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    env:
+      DESIGN_PIPELINE_QA_SHARD: ${{ matrix.shard }}/3
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -83,13 +93,20 @@ jobs:
         run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - name: Validate specifications
+        if: matrix.shard == 1
         run: npm run specs:check
 
       - name: Hermetic QA
+        # Shard 1 runs the repository checks, packaging smoke and its slice of the test files; the
+        # other shards run only their slice (see DESIGN_PIPELINE_QA_SHARD in scripts/qa.cjs).
         shell: bash
         run: |
           set -o pipefail
-          npm test 2>&1 | tee "$RUNNER_TEMP/qa.log"
+          node scripts/qa.cjs 2>&1 | tee "$RUNNER_TEMP/qa.log"
+
+      - name: Browser tool self-tests
+        if: matrix.shard == 2
+        run: npm run test:browser
 
       - name: Annotate QA failures
         # Puts each failed QA line and failing test (with the start of its error) on the PR as an
@@ -101,9 +118,11 @@ jobs:
           awk '/^[[:space:]]*not ok /{if(n>0) print block; block=$0; n=25; next} n>0{block=block "%0A" $0; n--; if(n==0){print block}} END{if(n>0) print block}' "$RUNNER_TEMP/qa.log" | head -10 | while IFS= read -r block; do echo "::error title=Failing test::$block"; done
 
       - name: Package
+        if: matrix.shard == 1
         run: npm run package:skill -- --output-root dist
 
       - name: Upload package artifacts
+        if: matrix.shard == 1
         uses: actions/upload-artifact@v7
         with:
           name: design-pipeline-skill
