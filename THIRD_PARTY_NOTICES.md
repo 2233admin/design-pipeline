@@ -48,6 +48,11 @@ runtime, workflow, remote prompt, or skill implementation is bundled or executed
   control, live-preview, preset, prompt-handoff, and six reviewed template-category patterns into
   an original hash-bound lifecycle and clean-room generation blueprints. No upstream template
   text, skill text, plugin runtime, or source code is bundled.
+- `currents-dev/playwright-best-practices-skill`, read 2026-11-09 at commit
+  `0b75b5835a87de1fdd202ba965f3bc5a27738fdf`, MIT, Copyright © 2026 Currents Software Inc.
+  Design Pipeline adopts four test-script practices (no fixed waits, no one-shot reads inside
+  `expect`, no positional locators, optional screenshot-baseline report) as an original static
+  checker, `skill/tools/browser-practice/lint.cjs`; no upstream text or code is bundled.
 
 The MIT-licensed sources retain their upstream copyright and permission notices. Their repositories
 remain the authority for full license text and runtime installation instructions.

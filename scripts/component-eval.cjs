@@ -377,7 +377,7 @@ class Workbench {
       await page.screenshot({ path: path.join(context.cwd, "side.png") }); result.files.push("side.png");
       result.shader = await page.evaluate(() => window.__evalShader); if (!result.shader.compiled || !result.shader.linked || result.shader.errors.length || result.errors.length) throw error("RUNTIME_FAILED", "WebGL或页面运行检查失败");
       result.checks.push("独立浏览器加载、固定时间、两个视角、shader编译");
-      if (context.task.id === "motion" || context.task.visual?.property.startsWith("motion.")) { await page.evaluate(() => window.sampleTime(.2)); const first = await page.locator("canvas").first().screenshot(); await page.locator("#play").click(); await page.waitForTimeout(750); const next = await page.locator("canvas").first().screenshot(); if (first.equals(next)) throw error("PLAYBACK_FAILED", "播放后画布没有推进"); result.checks.push("实际播放推进"); }
+      if (context.task.id === "motion" || context.task.visual?.property.startsWith("motion.")) { await page.evaluate(() => window.sampleTime(.2)); const first = await page.locator("canvas").first().screenshot(); await page.locator("#play").click(); const deadline = Date.now() + 5000; let next = first; while (first.equals(next) && Date.now() < deadline) next = await page.locator("canvas").first().screenshot(); if (first.equals(next)) throw error("PLAYBACK_FAILED", "播放后画布没有推进"); result.checks.push("实际播放推进"); }
       result.status = "passed";
     } catch (e) { result.failure = redact(e.message); } finally { await browser.close(); writeJson(path.join(context.cwd, "technical-check.json"), result); }
     if (result.status !== "passed") throw Object.assign(error("RUNTIME_FAILED", result.failure), { evidence: result }); return result;

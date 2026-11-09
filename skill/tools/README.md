@@ -24,6 +24,7 @@ by the visual problem; using a helper does not create a film project or select a
 | Phone and tablet web: viewport units, safe areas, input zoom, touch targets, hover gating | [Mobile web](../references/mobile-web.md) | Project-owned rules with checks to run on a real device |
 | Stress a component with hostile content, counts, containers and environments | [Worst-case content](../references/worst-case-content.md) | Scenario ids that map to component-matrix states |
 | Small defaults every screen should get right (surfaces, truncation, forms, waiting) | [Interface defaults](../references/interface-defaults.md) | Rules not already in Good CSS or the UI craft sources |
+| Write or review Playwright/Puppeteer capture and test scripts | [Browser script practices](../references/browser-practices.md) | `browser-practice/lint.cjs`: fixed waits, one-shot reads in `expect`, positional locators |
 | Rebuild a reference interaction's motion | [Timeline deconstruction](../references/timeline-deconstruction.md) | State machine and per-property track before code; feeds MOTION.md and frame pairs |
 | Poses, spacing, acting, audiovisual phrasing | [Animation thinking](../references/animation-thinking.md) | Existing choreography and motion study |
 | Explicit product film or short motion loop | [Built-in film methods](../references/film-methods.md) | Complete Cinetic/product-film sources, real component provenance, selected recipes and configurable motion primitives through existing film tools |
