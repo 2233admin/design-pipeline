@@ -422,6 +422,14 @@ At `quick` build the whole page in one pass: `index.html` from the decisions you
 in replicate mode from the reference and its invariants. At the `full` tier, open an OpenSpec
 change under `openspec/changes/<id>/` first and build inside it.
 
+When the component decision has settled a frontend stack (`frontend-stack resolve-stack` wrote a
+decision), `web scaffold --output <dir> --decision <decision.json>` writes a pinned Vite project for it
+(`package.json`, `index.html` with a `data-section` shell, a `src/` entry and style, an empty
+`component-manifest.json`, `WEB.md`) and lists the install and UI-library commands in `next`; it refuses to
+overwrite without `--replace` and exits 2 on a blocked decision. `web preview --root <dir> [--path dist]`
+serves the page on 127.0.0.1 for section review and `evidence refs` (address on stderr, stops on Ctrl+C or
+`--timeout-ms`); a framework project is built first (`npm run build`, then `--path dist`).
+
 At `standard` and `full` the page is built in the sections of the approved description, first
 screen first, and the owner reviews each section before the next one starts:
 
