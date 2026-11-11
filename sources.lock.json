@@ -4,6 +4,17 @@
   "description": "Single record of the upstream each bundle, adapted reference, catalog link and runtime pin follows. Written by npm run sources:update; checked by tests/sources-lock.test.cjs.",
   "sources": [
     {
+      "id": "animate-ui",
+      "kind": "adapted-reference",
+      "repo": "https://github.com/imskyleen/animate-ui",
+      "revision": "22a9236ae107328f8564edb7e3299375da3247af",
+      "reviewedAt": "2026-11-12",
+      "documents": [
+        "skill/references/animate-ui.md"
+      ],
+      "committedAt": "2026-11-09T10:02:56+01:00"
+    },
+    {
       "id": "animejs",
       "kind": "npm",
       "package": "animejs",
@@ -194,7 +205,8 @@
       "revision": "f1090bec277140d02ed202440185ad9d02ac1490",
       "reviewedAt": "2026-11-04",
       "documents": [
-        "skill/references/animation-opportunity-and-review.md"
+        "skill/references/animation-opportunity-and-review.md",
+        "skill/references/motion-vocabulary.md"
       ],
       "profiles": [
         "emilkowalski-animation-review",

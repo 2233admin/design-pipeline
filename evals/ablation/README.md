@@ -32,7 +32,21 @@ runner 改自 pstack-omp 的 `evals/run.mjs` 和 `evals/lib.mjs`：变体交替�
 - **open 组**：不给 DESIGN.md。有预设风格时，基础步骤（写 DESIGN.md）、设计方向库和 Taste 套件几乎没事可做；open 组就是为了让这几层真的被用到。
 - **双比例裁切**：S1 的两种尺寸取自调研，那份调研本身注明了 2560×1600 是 16:10，不是 4:3。安全区按平台的两种裁切算：16:9 那版左右各留 96px，16:10 那版上下各留 80px。
 - **两套皮肤**：S4 的第二套皮肤用工作目录里的 `DESIGN-light.md`，打分时按纸页的色值量。
-- **默认组**：默认跑 core 和 open（`--sets` 可改）。ignoredone 组主要用来比较“原则对配方”。
+- **默认组**：默认跑 core、open 和 product-ui（`--sets` 可改）。ignoredone 组主要用来比较“原则对配方”。
+
+### 产品界面组（product-ui）
+
+前面三组都是封面、长图卡和官网首屏。这一组是产品里的真实页面，用来回答“通用设计规则对产品界面有没有用”。
+
+| 场景 | 风格 | 内容 | 交付 |
+| --- | --- | --- | --- |
+| `workbench-list` | 铸台应用（`foundry-app`：铸台控制台的色值，产品字阶 13–32px） | 工作台：导航、三个筛选、四行构建（成功、失败、进行中）、一块空状态面板 | 1440×900 一屏，≥ 13px |
+| `settings-page` | 纸页应用（`broadsheet-app`：纸页的色值加一个报错色，产品字阶 13–40px） | 设置页：分区列表、两个输入框（其中一个在出错状态）、一个开关、危险区、保存栏 | 1440×900 一屏，≥ 13px |
+
+- 状态靠文字承载：`content.md` 里有每个状态的文字标签和出错提示，少了就扣文字覆盖。重复出现的词每处都算：筛选里的“进行中”不能顶替某一行的“进行中”。
+- 控件要是真的：链接指向存在的锚点，筛选和操作用按钮，输入框用 `input`。假控件照常扣分。
+- 点击区域：brief 要求每个不小于 32×32。页面审计量出的过小控件数（`targetSizeFails`）写在每次运行的 `measure.json` 里，不进综合分，也不是 `results.tsv` 的列（列是钉住的）。
+- 层级下限是 2 倍（页面标题对正文），不是封面的 2.5 倍。
 
 ## 变体
 
@@ -45,8 +59,18 @@ runner 改自 pstack-omp 的 `evals/run.mjs` 和 `evals/lib.mjs`：变体交替�
 | `recipes` | 同 `bare`，多一份固定像素的装饰与质感配方（`rules/recipes.md`）。内容：<br>· 四角钉、标题条、方括号标题、小节标记、胶囊标签、英文微排版、页脚条、刻度<br>· 点阵、扫描线、颗粒、硬投影、改色 |
 | `full` | 装上这个检出的 design-pipeline，内容和发布包一致（不含按需下载的 MengTo、iart 原文） |
 | `full-minus-<层>` | 装上去掉一层的 design-pipeline |
+| `reference-system` | 同 `bare`，不装技能，另给两样：工作目录的 `references/` 里一到两张参考图，和一份项目的 `DESIGN.md`。规则里多两句：先看参考图、借版式和细节不照抄内容；颜色字号只从 `DESIGN.md` 取 |
 
 共用的两条项目规则（写进工作目录的 `AGENTS.md`，`CLAUDE.md` 指向它）：没人会回答问题，需要拍板时自己定，在回复里说一句；只交付 brief.md 写的文件。
+
+### 参考加设计系统（`reference-system`）
+
+这个变体对应一条常见的主张：不要靠通用的设计规则，先找真实参考、把截图交给模型，再给项目建一套设计系统让模型照着做。
+
+- **参考图从哪来**：默认用 `references/` 下为本实测原创的参考页，每种风格一张产品界面、一张封面，内容和场景不同（见 [references/README.md](references/README.md)）。HTML 参考页在开跑时截成 PNG，代理只看到图片。
+- **用自己的参考**：`--references <目录>` 换成自己的截图目录，结构是 `<场景名或风格名>/*.png`，场景名的目录优先。原创参考页比不上真实的高水准参考，要认真验证这条主张，就用自己收集的截图跑；它们只留在本机，不提交。
+- **设计系统**：带预设风格的场景用场景自己的 `DESIGN.md`。开放场景本来不给 `DESIGN.md`，这个变体给它同一风格的那份，因为“自带设计系统”正是这条主张的一部分。
+- 找不到参考图时开跑前就报错，不会悄悄跑成 `bare`。
 
 ### 减层怎么做
 
@@ -125,6 +149,10 @@ node evals/ablation/variants.mjs --out /tmp/variants
 
 几个交付物的场景，综合分取各版的平均，次数类分项相加。
 
+**文字覆盖怎么数**（`measure.mjs` 的 `coveredPieces`）：`content.md` 的每一段要在页面文字里有自己的一处。重复出现的段要出现同样多次；一段是另一段的一部分时（“删除账户”和“删除账户…”），长的那处不顶替短的。
+
+`measure.json` 里另有一项不进综合分的量：`targetSizeFails`，要求真控件的场景里点击区域过小的控件数（页面审计的 `audit.target-size`）。
+
 **校准**（`tests/fixtures/ablation/`，测试里钉住）：
 
 | 文件 | 内容 | 综合分 |
@@ -174,6 +202,9 @@ node evals/ablation/variants.mjs --out /tmp/variants
 - **网络**：代理在工作目录里照常能上网。brief 要求交付物不引用网络资源，渲染时发出的请求会被记下并判不合约定，但代理在做的过程中去网上查资料、下载东西，这里管不着，也不记录。要严格隔离，就在断网或只放行模型接口的环境里跑。
 - **共用缓存**：下载缓存（`~/.cache/design-pipeline`，或 `DESIGN_PIPELINE_CACHE`）对所有变体都可见。runner 每次开跑时把它的状态写进 `environment.jsonl`。
 - 装了 pstack 等其他技能的客户端，`bare` 也不是一张白纸。
+- **参考的水准**：随仓库带的参考页是原创的，水准有限。`reference-system` 用它们输了，只说明“这几张参考加设计系统”不如技能，不说明真实参考不行；结论里要写明用的是哪套参考。
+- **开放场景里输入不对等**：`reference-system` 在开放场景多拿到一份 `DESIGN.md`，`full` 要自己写。这一组比的是两种做法，不是同样输入下谁强。
+- **提示写法的规则包是为封面写的**：`decision-tree`、`recipes` 在 product-ui 组上按所属风格照常套用，内容并不针对产品界面。回答下面三个问题时不用跑它们。
 
 ## 判定规则（跑之前定好，`report.mjs` 的 `RULES`）
 
@@ -216,6 +247,23 @@ n = 2σ²(z₁₋α/₂ + z₀.₈)² / (S·δ²)，δ = 5 分，α = 0.05 / 5�
 - 原则对配方：`principles` 对 `recipes`、`principles` 对 `bare`、`recipes` 对 `bare`、`principles` 对 `decision-tree`。
   - 主人的假设成立，要求 `principles` 胜过 `recipes`，并且 `principles` 没被判为套模板。
   - `recipes` 只在量值上胜、盲评没胜，说明它只是把可量的数卡住了。
+- 参考加设计系统：`full` 对 `reference-system`、`reference-system` 对 `bare`，两组一族做 Holm 校正。只有跑了这个变体，报告里才有这一段。
+
+### 三个问题
+
+报告最后固定回答三个问题，每个只有“是 / 否 / 样本不足”三种答案，按上面的规则判，不另立标准：
+
+1. **装了技能是否胜过不装**：`full` 对 `bare`。
+2. **技能与“参考加设计系统”谁好**：`full` 对 `reference-system`。
+3. **单独拿掉 `ui-craft` 层是变好还是变差**：`full` 对 `full-minus-ui-craft`。这一层是 UI 工艺规则与 Impeccable 契约。完整技能的运行里不到一半读到这一层时，答“样本不足”。
+
+### 输了怎么办
+
+- 某一层判为“砍掉”（去掉它反而更好）：开工单把这一层从发布包里拿掉，或者重做后重新过一遍消融。不保留一个已被判定拖累成品的层。
+- `full` 判为输给 `bare`：先停掉往技能里加规则的工作，查流水线整体，逐层结论这时不作数。
+- `full` 判为输给 `reference-system`：把参考与设计系统这条路提到默认流程的前面，规则层只留下判为“保留”的。
+- “样本不足”和“矛盾”不触发任何处置，只继续收数据。
+- 结论和结果表提交到 `docs/research/`，写明客户端和模型、跑的日期、每格次数、盲评用的模型、参考图的来源。
 
 ## 怎么跑
 
@@ -228,7 +276,8 @@ node evals/ablation/report.mjs <结果目录>
 ```
 
 - **客户端**：`--client` 可选 `claude`、`codex`、`omp`。
-- **选范围**：`--sets core,open,ignoredone`、`--variants`、`--scenarios` 可以只跑一部分。比较原则对配方：`--sets ignoredone,core --variants bare,principles,recipes,decision-tree`。
+- **参考图**：`--references <目录>` 换掉 `reference-system` 用的参考图，见上面“参考加设计系统”。用的目录记在 `environment.jsonl` 里。
+- **选范围**：`--sets core,open,product-ui,ignoredone`、`--variants`、`--scenarios` 可以只跑一部分。只回答三个问题：`--variants bare,full,reference-system,full-minus-ui-craft`。比较原则对配方：`--sets ignoredone,core --variants bare,principles,recipes,decision-tree`。
 - **目录**：
   - 结果默认放在 `~/agent-runs/ablation-<时间>`（`--out` 可改）。
   - 工作目录放在 `~/agent-runs/work/<场景>-xxxx`（`--work-root` 可改），上级目录不带“消融”字样，因为代理看得到自己的路径。
@@ -249,17 +298,17 @@ node evals/ablation/report.mjs <结果目录>
 全量一轮的运行次数：
 
 ```text
-（11 个变体 × 6 个 core 与 open 场景 + 5 个不装技能的变体 × 4 个 ignoredone 场景）× n
+（12 个变体 × 8 个 core、open 与 product-ui 场景 + 5 个不装技能的变体 × 4 个 ignoredone 场景）× n
 ```
 
-n 是试跑算出的每格次数。n = 5 时是 430 次。下面是估计（还没有实测；第一轮跑完后用 `seconds` 列和客户端的用量记录替换掉）：
+n 是试跑算出的每格次数。n = 5 时是 580 次。只回答三个问题时是 4 个变体 × 8 个场景 × n，n = 5 时 160 次，其中装技能的 80 次。下面是估计（还没有实测；第一轮跑完后用 `seconds` 列和客户端的用量记录替换掉）：
 
 | 部分 | 每次 | 说明 |
 | --- | --- | --- |
-| 方差试跑 | 3 到 8 分钟，约 2 万到 6 万 token | `bare` × 6 场景 × 5 次 = 30 次，约 2 到 4 小时 |
+| 方差试跑 | 3 到 8 分钟，约 2 万到 6 万 token | `bare` × 8 场景 × 5 次 = 40 次，约 2 到 5 小时 |
 | 不装技能的变体 | 3 到 8 分钟，约 2 万到 6 万 token | 约占全量的一半 |
 | `full` 和 5 个减层 | 10 到 30 分钟，约 20 万到 60 万 token | 读技能文档、跑 `next` 和检查，大部分是可缓存的输入 |
 | 打分 | 每个交付物约 6 秒 | 不用模型 |
-| 盲评 | 30 到 60 秒，约 1 万 token | 默认 15 组对局 × 场景数 × n |
+| 盲评 | 30 到 60 秒，约 1 万 token | 默认 17 组对局 × 场景数 × n |
 
 n = 5 时，全量单线程要几天，主要花在装了技能的那几百次上。先跑方差试跑，再按它算出的次数决定跑全量，还是先只跑 core 和 open 里最关心的几层。

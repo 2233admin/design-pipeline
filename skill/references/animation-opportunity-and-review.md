@@ -16,15 +16,17 @@ sourceMeta:
 # Animation Opportunity and Review
 
 This project-owned reference turns motion intent into a bounded design decision and an evidence-backed
-review. It distills the four supplied Emil motion skills named below without installing or copying
-their upstream skill files. Use it with `references/motion-foundation.md` and
+review. It distills the four supplied Emil motion skills named below without installing their
+upstream skill files. Use it with `references/motion-foundation.md` and
 `references/motion-spec.md`; the foundation and change spec remain authoritative for project
 primitives and detailed fields.
 
 Source concepts: `improve-animations`, `find-animation-opportunities`, `animation-vocabulary`, and
 `review-animations` from [emilkowalski/skills](https://github.com/emilkowalski/skills/tree/f1090bec277140d02ed202440185ad9d02ac1490). This reference
-is an internal operating contract, not a replacement skill package. Do not install, import, copy, or
-execute upstream content from these four skills. `emil-design-eng`, a different skill from the same
+is an internal operating contract, not a replacement skill package. Do not install, import or
+execute upstream content from these four skills. One part is quoted rather than distilled: the
+`animation-vocabulary` glossary, whose terms and definitions are reproduced verbatim with attribution
+in [motion-vocabulary.md](motion-vocabulary.md) and `motion-vocabulary.json`. `emil-design-eng`, a different skill from the same
 repository, is bundled separately as an inert pinned snapshot; see
 [ui-craft-sources.md](ui-craft-sources.md#emil-design-eng).
 
@@ -73,9 +75,11 @@ declare every upstream skill or installed companion current.
 
 ## 2. Vocabulary, curve, and runtime contract
 
-Name the behavior before choosing the mechanism. Use `animation-vocabulary` terms such as `enter/exit`,
-`scale in`, `origin-aware animation`, `continuity transition`, `shared element transition`, `stagger`,
-`spring`, `interruptible animation`, or `scroll-driven animation` so the intent is unambiguous. Then
+Name the behavior before choosing the mechanism. Take the name from the built-in
+[motion vocabulary](motion-vocabulary.md) (the `animation-vocabulary` glossary: 91 terms with
+definitions, close terms and named anti-patterns) and record its term id, for example `enter-exit`,
+`origin-aware-animation` or `shared-element-transition`, so the intent is unambiguous. When only a
+description is available, look the term up with `design-system search --kind doc --query "<description>"`. Then
 record the exact project easing token or cubic-bezier, duration, delay/stagger, origin, distance, and
 animated properties. Do not invent a parallel curve or duration scale when the project foundation has a
 suitable primitive.
