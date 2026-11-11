@@ -72,6 +72,10 @@ not:
 | `distill` / `quieter` / `bolder` | simplify or change intensity only when the direction is still correct |
 | `live` | use browser-based variants and acceptance evidence, not screenshot-only guessing |
 
+`critique`, `polish`, `distill` and `quieter` have step guides in
+[refine-intents.md](refine-intents.md); `impeccable-product-design.json` names the guide for every
+command.
+
 ## Verification loop
 
 Build the whole requested path first. Inspect one batched render set covering desktop and mobile,
