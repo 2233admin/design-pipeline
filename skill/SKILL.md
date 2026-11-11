@@ -28,6 +28,7 @@ Pick one row, open what it names, and open nothing else until the task needs it.
 | Learn from real design systems: DESIGN.md examples and 198 brand design systems (tokens, components), compare palettes and type | `references/design-md.md` | `designmd search` / `inspect` results (inspiration only) |
 | The brief names a real brand or product (logo, colours, product facts) | `references/brand-facts.md` | `DESIGN.md` Product Context and `design-system/tokens.json` |
 | CSS authoring or review in any stack | `references/good-css.md` | its matched source entries |
+| An existing surface to critique, polish, distill (too much on it) or make quieter (too loud) | `references/refine-intents.md` | the one section `route` names → the existing review record in `qa.md` |
 | UI polish, accessibility, motion principles, shadcn/ui, browser driving | `references/ui-craft-sources.md` | a source only when a rule needs it |
 | Web treatment, section briefs, review rules W1-W7 | `references/web-direction.md` | `references/workflow-web.md` |
 | Animation decisions | `references/animation-thinking.md` | see [Animation](#animation) |
