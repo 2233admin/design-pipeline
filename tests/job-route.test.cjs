@@ -121,6 +121,46 @@ test("explicit jobs beat scored jobs, and default catches unmatched briefs", () 
   assert.equal(fallback.primaryKnowledge.id, "prism");
 });
 
+test("refine intents route to the refine-intents guide in English and Chinese", () => {
+  const guide = "references/refine-intents.md";
+  assert.ok(fs.existsSync(path.join(repoRoot, "skill", guide)), guide);
+  assert.ok(packageResources.required.includes(guide), guide);
+  for (const [query, keyword] of [
+    ["critique this page", "critique"],
+    ["帮我点评一下这个页面", "点评"],
+    ["make this quieter", "quieter"],
+    ["这页太吵了，克制一点", "太吵"],
+    ["distill this screen", "distill"],
+    ["帮我把这页收一收", "收一收"],
+    ["polish before ship", "polish"],
+    ["上线前打磨一遍", "打磨"],
+  ]) {
+    const result = run(["route", "--root", repoRoot, "--query", query]);
+    assert.equal(result.status, 0, `${query}: ${result.stderr || result.stdout}`);
+    assert.equal(result.output.status, "ready", query);
+    assert.equal(result.output.job, "refine-intents", query);
+    assert.ok(result.output.candidates[0].score > 0, query);
+    assert.ok(result.output.candidates[0].matchedKeywords.includes(keyword), query);
+    assert.notEqual(result.output.confidence, "low", query);
+    assert.equal(`references/${result.output.primaryKnowledge.id}.md`, guide, query);
+    assert.equal(result.output.primaryKnowledge.admission, "ready", query);
+    // The guide is read, not executed: the route adds no step beyond the kernel.
+    assert.deepEqual(result.output.next.map((step) => step.role), ["kernel", "kernel"], query);
+  }
+  for (const keyword of ["critique", "评审", "点评", "polish", "打磨", "抛光", "distill", "精简", "收一收", "quieter", "太吵", "降噪", "克制"]) {
+    assert.equal(routeJob({ query: keyword }).job, "refine-intents", keyword);
+  }
+});
+
+test("a refine word does not take a brief from an explicit job or a stronger scored match", () => {
+  assert.equal(routeJob({ query: "clone this page and polish it" }).job, "website-clone");
+  assert.equal(routeJob({ query: "critique this three.js scene" }).job, "graphics-runtime");
+  assert.equal(routeJob({ query: "polish the gsap scrolltrigger animation" }).job, "technique");
+  const single = routeJob({ query: "polish the animation" });
+  assert.equal(single.status, "ready");
+  assert.equal(single.job, "refine-intents");
+});
+
 test("game VFX and shader briefs select graphics without a library name", () => {
   for (const query of [
     "制作游戏法术 VFX 效果，蓄力、冲击波、火花和消散，GPU shader，可重播和调整强度",

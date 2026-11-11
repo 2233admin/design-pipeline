@@ -35,6 +35,11 @@ revision); the 24th, `craft`, is a deprecated alias, so 23 are core commands and
 The deprecated `craft` alias maps to `shape` plus `new-work`; `teach` maps to `init`. They do not
 create a second workflow.
 
+Every command carries a `guide`: `<file>#<anchor>` relative to `references/`, the heading to open
+for that intent. `critique`, `polish`, `distill` and `quieter` point at their sections of
+[refine-intents.md](refine-intents.md), which `designer-pipeline route` reaches through the
+`refine-intents` job. A command without a guide of its own points at the nearest existing rule.
+
 ## What “product design” means here
 
 - `shape` and `init` capture product truth before visual decisions.
