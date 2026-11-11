@@ -89,6 +89,7 @@ Use these skills with `references/motion-spec.md`. The document is required for 
 | `design-motion-principles` | `kylezantos/design-motion-principles` (was design-engineer-auditor-package) | Dedicated motion create/audit workflow for UI animation, micro-interactions, Framer Motion, CSS, and app transitions |
 | `emil-design-eng` | Built-in pinned `emilkowalski/skills` | [Local design-engineering source](ui-craft-sources.md#emil-design-eng); no companion installation |
 | `animation-vocabulary` | Built-in, quoted from `emilkowalski/skills` | [Local motion vocabulary](motion-vocabulary.md): 91 terms with definitions, reverse lookup from a loose description through `design-system search --kind doc`; no companion installation |
+| `animate-ui` | Built-in component source, pinned `imskyleen/animate-ui` | [Local guide](animate-ui.md): Motion-based drop-in primitives for shadcn/ui, Radix UI, Base UI, React Aria and reka-ui, with text, number, entrance and pointer primitives and registry backgrounds, page transitions and icons; found through `design-system search` and `design-system route` (`animate-ui/components`); no companion installation, no component source bundled |
 | `review-animations` | `emilkowalski/skills` | Strict animation quality review with production standards |
 | `apple-design` | `emilkowalski/skills` | Apple HIG-inspired interface principles and fluid motion for web, from WWDC talks |
 | `vercel-react-view-transitions` | `vercel-labs/agent-skills` | React and Next.js view transition patterns |

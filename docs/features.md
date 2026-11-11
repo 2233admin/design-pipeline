@@ -249,9 +249,15 @@ node skill/scripts/designer-pipeline.cjs design-system route \
 # SmoothUI：从本地 130 项快照中推荐具体组件
 node skill/scripts/designer-pipeline.cjs design-system route \
   --query "SmoothUI animated tabs" --platform web --json
+
+# Animate UI：点名来源时返回它的包、安装命令和每个组件的 import
+node skill/scripts/designer-pipeline.cjs design-system route \
+  --query "animate-ui dialog and sliding number" --platform web --json
 ```
 
 当前内置的是这些来源元数据：Beautiful UI、`expo-content-transition`、React Bits 免费 Dither、React Bits Pro app UI、React Bits depth carousel、SmoothUI 130 项组件快照，以及 Web DOM 数字过渡回退。SmoothUI 快照会返回组件名、文档 URL、registry 安装命令、依赖和 reduced-motion 信息；组件源码不在本仓库内，其他来源仍按路由结果做许可审查。
+
+Animate UI（`imskyleen/animate-ui`，MIT + Commons Clause）登记为 `animate-ui/components`：99 个条目，包含 Radix UI、Base UI、React Aria 的 drop-in 动效基元、它自带的进场、文字、数字、按钮和指针效果基元，以及从 shadcn registry 安装的背景、按钮、页面转场和动效图标。简报里点名 `animate-ui` 时路由选中它；没点名时原有路由不变，它列在备选里。用法见 `skill/references/animate-ui.md`：shadcn/ui 组件跑上游 CLI，手写组件换 import，和现有组件共存要去掉哪些 CSS 动画类，以及 reduced motion。中文关键词也能搜到，例如 `design-system search --snapshot references/component-source-catalog.json --query "页面转场"`。
 
 ### 网站克隆
 

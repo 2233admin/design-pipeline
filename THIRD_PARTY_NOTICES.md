@@ -36,6 +36,14 @@ runtime, workflow, remote prompt, or skill implementation is bundled or executed
   https://reactbits.dev/text-animations/decrypted-text and https://github.com/DavidHDev/react-bits,
   MIT + Commons Clause. The pipeline stores the DecryptedText behavioral and accessibility
   contract only; it does not redistribute the component library itself.
+- `imskyleen/animate-ui`, reviewed 2026-11-12 at commit
+  `22a9236ae107328f8564edb7e3299375da3247af` from https://github.com/imskyleen/animate-ui and
+  https://animate-ui.com/docs, MIT + Commons Clause, Copyright (c) 2025 Elliot Sutton. The pipeline
+  stores component names, import paths, install commands and its own descriptions
+  (`skill/references/component-source-catalog.json`, record `animate-ui/components`), a pinned
+  name inventory for tests (`tests/fixtures/animate-ui/upstream-inventory.json`) and a guide written
+  for this project (`skill/references/animate-ui.md`) that restates how the upstream agent skill
+  uses the library. No component source is bundled or redistributed, and nothing is auto-installed.
 - User-curated component references: Beautiful UI, beUI, Rare UI, Transitions.dev, shadcn/ui,
   Shadcnblocks, Magic UI, Aceternity UI, and AI SDK Elements. The catalog stores URL, routing,
   and compatibility metadata only; no upstream source code, runtime, or dependency is bundled.

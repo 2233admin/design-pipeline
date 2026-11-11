@@ -40,6 +40,9 @@ function validateRouteEntry(entry) {
   if (route.requiresLicense !== undefined && typeof route.requiresLicense !== "boolean") {
     routeFail(`${entry.id}.routing.requiresLicense must be boolean`);
   }
+  if (route.selectWhenNamed !== undefined && typeof route.selectWhenNamed !== "boolean") {
+    routeFail(`${entry.id}.routing.selectWhenNamed must be boolean`);
+  }
   if (route.dependencies !== undefined) strings(route.dependencies, `${entry.id}.routing.dependencies`);
   if (route.componentCount !== undefined && (!Number.isInteger(route.componentCount) || route.componentCount < 1)) {
     routeFail(`${entry.id}.routing.componentCount must be a positive integer`);
@@ -93,6 +96,19 @@ function implementationStatus(entry) {
   return "ready";
 }
 
+// A brief that names a source ("SmoothUI tabs", "animate-ui dialog") asks for that source. A requested
+// capability is a source name when it is the first id segment of a component record that advertises
+// it (smoothui/components advertises smoothui).
+function namedSources(entries, capabilities) {
+  const requested = new Set(capabilities);
+  const names = new Set();
+  for (const entry of entries) {
+    const name = String(entry.localId || "").split("/")[0];
+    if (requested.has(name) && entry.routing.capabilities.includes(name)) names.add(name);
+  }
+  return names;
+}
+
 function recommendedComponentDetails(route, capability, referenceOnly) {
   const names = route.recommendations?.[capability];
   if (!Array.isArray(names) || !names.length || !Array.isArray(route.componentInventory)) return [];
@@ -102,6 +118,8 @@ function recommendedComponentDetails(route, capability, referenceOnly) {
     ...(item.displayName ? { displayName: item.displayName } : {}),
     ...(item.category ? { category: item.category } : {}),
     ...(item.docUrl ? { docUrl: item.docUrl } : {}),
+    ...(!referenceOnly && item.import ? { import: item.import } : {}),
+    ...(item.bases?.length ? { bases: item.bases } : {}),
     ...(!referenceOnly && item.installCommand ? { install: item.installCommand } : {}),
     ...(!referenceOnly && item.dependencies?.length ? { dependencies: item.dependencies } : {}),
     ...(!referenceOnly && item.registryDependencies?.length ? { registryDependencies: item.registryDependencies } : {}),
@@ -153,11 +171,19 @@ function routeComponents(options = {}) {
   const entries = routeEntries(options.catalog, platform);
   const routes = [];
   const unavailable = [];
+  // Records of a source the brief names lead every capability they advertise; the score orders the
+  // rest. A record marked selectWhenNamed is selected only that way: unnamed, it is listed among the
+  // alternatives at its score and never displaces the route a brief had without it.
+  const named = namedSources(entries, capabilities);
+  const isNamed = (entry) => (entry.routing.capabilities.some((capability) => named.has(capability)) ? 1 : 0);
+  const waitsForName = (entry) => entry.routing.selectWhenNamed === true && !isNamed(entry);
 
   for (const capability of capabilities) {
     const candidates = entries
       .filter((entry) => entry.routing.capabilities.includes(capability) && entry.routing.platforms.includes(platform))
-      .sort((left, right) => candidateScore(right, capability) - candidateScore(left, capability) || left.id.localeCompare(right.id));
+      .sort((left, right) => isNamed(right) - isNamed(left) || candidateScore(right, capability) - candidateScore(left, capability) || left.id.localeCompare(right.id));
+    const first = candidates.findIndex((entry) => !waitsForName(entry));
+    if (first > 0) candidates.unshift(...candidates.splice(first, 1));
     if (!candidates.length) {
       unavailable.push(capability);
       routes.push({ capability, status: "blocked", selected: null, alternatives: [], rationale: `No ${platform} route advertises ${capability}.` });

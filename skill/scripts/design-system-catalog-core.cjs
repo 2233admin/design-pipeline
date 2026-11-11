@@ -615,7 +615,7 @@ const CAPABILITY_TERMS = Object.freeze({
   "interactive-card": ["interactive card", "tilt card", "hover card"],
   "dither-background": ["dither background", "dithering", "dither", "抖动背景", "抖动"],
   "animated-background": ["animated background", "动态背景"], "shader-background": ["shader background", "webgl background", "着色器背景"],
-  smoothui: ["smoothui", "smooth ui"], "react-bits": ["react bits", "reactbits"], "decrypted-text": ["decrypted text", "decryptedtext", "decrypting text"],
+  smoothui: ["smoothui", "smooth ui"], "animate-ui": ["animate-ui", "animate ui", "animateui"], "react-bits": ["react bits", "reactbits"], "decrypted-text": ["decrypted text", "decryptedtext", "decrypting text"],
   "spring-animation": ["spring animation", "spring physics", "spring"],
   "scroll-reveal": ["scroll reveal", "scroll animation", "scroll-triggered"],
   timeline: ["timeline", "animation timeline", "sequenced animation"],

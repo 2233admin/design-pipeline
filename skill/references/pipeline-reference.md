@@ -88,7 +88,10 @@ Use the public CLI for the complete lifecycle:
 - `design-system decompose` converts a product brief into a durable capability inventory; a direct
   zero-result does not prove exhaustion when capability searches find candidates.
 - `design-system route` defaults to the component-source index and selects project, platform,
-  package, or attributed reference routes for the decomposed component capabilities.
+  package, or attributed reference routes for the decomposed component capabilities. A brief that
+  names a catalog source (`SmoothUI`, `animate-ui`) gets that source for every capability it
+  covers; a record marked `selectWhenNamed` (Animate UI, see [animate-ui.md](animate-ui.md)) is
+  otherwise listed as an alternative and does not replace the route a brief had before.
 - `design-system search` without `--platform` searches Astryx by default; pass `--snapshot`
   to search another index. With `--platform web`, it defaults to the component-source index
   and filters to web-reusable components/libraries, including when an index is supplied.
@@ -442,6 +445,7 @@ For dynamic UI, interaction motion, and animation-specific work, apply these mot
 - `emil-design-eng`: built-in design-engineering judgment for animation and interaction polish
   ([ui-craft-sources.md](ui-craft-sources.md#emil-design-eng)).
 - `animation-vocabulary`: built in as [motion-vocabulary.md](motion-vocabulary.md); look up the exact term for a loosely described effect with `design-system search --kind doc`, then use that term in `motion.md`.
+- `animate-ui`: built in as [animate-ui.md](animate-ui.md), a component source rather than a rule set; when the project uses shadcn/ui, Radix UI, Base UI, React Aria or reka-ui, or the brief names an effect it ships, find the component with `design-system route --query "animate-ui <need>"` and follow the guide's path, install and reduced-motion sections.
 - `review-animations`: strict post-implementation animation review.
 - `references/animation-opportunity-and-review.md`: project-owned gate for screening opportunities before implementation, naming vocabulary/curves, and recording review evidence.
 - `apple-design`: Apple HIG-inspired interface principles and fluid system UI motion for web (WWDC-informed).
