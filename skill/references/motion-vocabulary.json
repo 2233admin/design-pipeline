@@ -105,7 +105,9 @@
           "tr-dissolve",
           "tx-fade-up-words"
         ],
-        "guides": []
+        "guides": [
+          "references/animate-ui.md#entrances-and-scroll-reveals"
+        ]
       }
     },
     {
@@ -144,7 +146,8 @@
           "soft-rise"
         ],
         "guides": [
-          "references/ui-transition-rules.md#tr-07--direction-does-not-invent-meaning"
+          "references/ui-transition-rules.md#tr-07--direction-does-not-invent-meaning",
+          "references/animate-ui.md#entrances-and-scroll-reveals"
         ]
       }
     },
@@ -186,7 +189,8 @@
           "tx-random-tilt-scale-in"
         ],
         "guides": [
-          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#never-animate-from-scale0"
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#never-animate-from-scale0",
+          "references/animate-ui.md#entrances-and-scroll-reveals"
         ]
       }
     },
@@ -318,7 +322,8 @@
         "guides": [
           "references/ui-transition-rules.md#tr-04--entrance-and-exit-have-one-coordination-owner",
           "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#animate-enter-states-with-starting-style",
-          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#asymmetric-enterexit-timing"
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#asymmetric-enterexit-timing",
+          "references/animate-ui.md#drop-in-primitives"
         ]
       }
     },
@@ -433,7 +438,8 @@
           "catalog-ui-navigation-staggered-reveal"
         ],
         "guides": [
-          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#stagger-animations"
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#stagger-animations",
+          "references/animate-ui.md#entrances-and-scroll-reveals"
         ]
       }
     },
@@ -804,7 +810,8 @@
           "catalog-ui-navigation-card-flip"
         ],
         "guides": [
-          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#3d-transforms-for-depth"
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#3d-transforms-for-depth",
+          "references/animate-ui.md#pointer-effects"
         ]
       }
     },
@@ -922,7 +929,8 @@
         ],
         "guides": [
           "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#make-popovers-origin-aware",
-          "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff"
+          "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff",
+          "references/animate-ui.md#drop-in-primitives"
         ]
       }
     },
@@ -1106,7 +1114,8 @@
         ],
         "guides": [
           "references/ui-transition-rules.md#tr-02--continuity-preserves-logical-identity",
-          "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff"
+          "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff",
+          "references/animate-ui.md#page-and-theme-transitions"
         ]
       }
     },
@@ -1155,7 +1164,8 @@
           "tx-balanced-reflow"
         ],
         "guides": [
-          "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff"
+          "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff",
+          "references/animate-ui.md#shared-highlight-and-layout"
         ]
       }
     },
@@ -1195,7 +1205,8 @@
           "tx-expand-truncated"
         ],
         "guides": [
-          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#the-opacity--height-combination"
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#the-opacity--height-combination",
+          "references/animate-ui.md#drop-in-primitives"
         ]
       }
     },
@@ -1271,7 +1282,8 @@
           "tx-view-timeline-words"
         ],
         "guides": [
-          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#image-reveals-on-scroll"
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#image-reveals-on-scroll",
+          "references/animate-ui.md#entrances-and-scroll-reveals"
         ]
       }
     },
@@ -1392,7 +1404,8 @@
           "tr-wipe"
         ],
         "guides": [
-          "references/ui-transition-rules.md#tr-04--entrance-and-exit-have-one-coordination-owner"
+          "references/ui-transition-rules.md#tr-04--entrance-and-exit-have-one-coordination-owner",
+          "references/animate-ui.md#page-and-theme-transitions"
         ]
       }
     },
@@ -1435,7 +1448,8 @@
           "shared-element"
         ],
         "guides": [
-          "references/ui-transition-rules.md#tr-02--continuity-preserves-logical-identity"
+          "references/ui-transition-rules.md#tr-02--continuity-preserves-logical-identity",
+          "references/animate-ui.md#page-and-theme-transitions"
         ]
       }
     },
@@ -1519,7 +1533,8 @@
         ],
         "guides": [
           "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#buttons-must-feel-responsive",
-          "references/mobile-web.md#4-tap-latency-and-touch-action"
+          "references/mobile-web.md#4-tap-latency-and-touch-action",
+          "references/animate-ui.md#press-and-button-feedback"
         ]
       }
     },
@@ -1794,7 +1809,9 @@
           "ripple-reveal",
           "catalog-ui-material-chrome-ripple"
         ],
-        "guides": []
+        "guides": [
+          "references/animate-ui.md#press-and-button-feedback"
+        ]
       }
     },
     {
@@ -2954,7 +2971,9 @@
           "tx-scramble-decode",
           "tx-flip-words-blur"
         ],
-        "guides": []
+        "guides": [
+          "references/animate-ui.md#changing-text"
+        ]
       }
     },
     {
@@ -3032,7 +3051,9 @@
           "catalog-ui-feedback-number-ticker",
           "tx-score-update"
         ],
-        "guides": []
+        "guides": [
+          "references/animate-ui.md#numbers"
+        ]
       }
     },
     {
@@ -3104,7 +3125,9 @@
           "tx-human-typewriter",
           "tx-terminal-typing"
         ],
-        "guides": []
+        "guides": [
+          "references/animate-ui.md#changing-text"
+        ]
       }
     },
     {
@@ -3664,7 +3687,8 @@
         "guides": [
           "references/ui-transition-rules.md#tr-09--reduced-motion-preserves-the-result",
           "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#prefers-reduced-motion",
-          "references/motion-spec.md#accessibility-and-reduced-motion"
+          "references/motion-spec.md#accessibility-and-reduced-motion",
+          "references/animate-ui.md#reduced-motion"
         ]
       }
     }

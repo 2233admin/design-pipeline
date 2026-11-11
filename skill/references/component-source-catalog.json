@@ -4865,6 +4865,2549 @@
         "licenseNotice": "GSAP Standard No Charge, not MIT. Preserve proprietary notices; competing no-code visual-animation tools require written consent. Follow full Standard License terms.",
         "attribution": "Verified npm/ESM library metadata; no remote implementation is vendored."
       }
+    },
+    {
+      "id": "animate-ui/components",
+      "sourceId": "imskyleen/animate-ui",
+      "recordType": "component",
+      "availability": "reference-link",
+      "localPaths": {
+        "guide": "references/animate-ui.md"
+      },
+      "license": {
+        "state": "verified",
+        "id": "LicenseRef-MIT-Commons-Clause",
+        "evidence": [
+          "https://github.com/imskyleen/animate-ui/blob/22a9236ae107328f8564edb7e3299375da3247af/LICENSE.md",
+          "https://github.com/imskyleen/animate-ui/blob/22a9236ae107328f8564edb7e3299375da3247af/README.md",
+          "2026-11-12 read at the locked revision: MIT text with a Commons Clause restriction; the published packages declare SEE LICENSE IN LICENSE.md."
+        ]
+      },
+      "licenseScope": "LICENSE.md at revision 22a9236ae107328f8564edb7e3299375da3247af is the MIT text limited to use \"as part of an application, website, or product\" plus a Commons Clause restriction: any commercial use is allowed, selling or redistributing the components themselves in their original form, alone or in a bundle, is not. Copyright (c) 2025 Elliot Sutton. It is never plain MIT. This package therefore ships names, import paths, install commands and its own descriptions only, and no upstream component source; a project installs the components itself from npm or the upstream registry.",
+      "name": {
+        "en": "Animate UI animated primitives and registry components",
+        "zh": "Animate UI 动效基元与组件"
+      },
+      "category": "animated-ui",
+      "status": "stable",
+      "keywords": [
+        "animate-ui",
+        "animate ui",
+        "animateui",
+        "@animate-ui/react",
+        "@animate-ui/vue",
+        "@animate-ui/cli",
+        "Motion",
+        "shadcn/ui",
+        "Radix UI",
+        "Base UI",
+        "React Aria",
+        "reka-ui",
+        "drop-in primitives",
+        "animated primitives",
+        "import swap",
+        "reduced motion",
+        "动效基元",
+        "动效组件库",
+        "给 shadcn 组件加动效",
+        "shadcn 动效",
+        "换 import 加动效",
+        "进出场动效",
+        "页面转场",
+        "动态背景",
+        "动效图标",
+        "数字滚动",
+        "文字动效"
+      ],
+      "description": "Motion-based animated primitives that keep the API of Radix UI, Base UI and React Aria (reka-ui in Vue), so a shadcn/ui or hand-built component gains enter, exit, press and selection motion by swapping its import; plus Animate UI's own entrance, text, number, button and pointer primitives, and backgrounds, styled buttons, page transitions and animated icons installed from its shadcn registry.",
+      "routing": {
+        "capabilities": [
+          "accordion",
+          "animate-ui",
+          "animated-background",
+          "animated-react-components",
+          "animated-stat",
+          "animated-ui",
+          "avatar",
+          "button",
+          "carousel",
+          "dialog",
+          "drawer",
+          "interactive-card",
+          "navigation",
+          "numeric-content-transition",
+          "numeric-text",
+          "pagination",
+          "progress",
+          "scroll-reveal",
+          "select",
+          "slider",
+          "stepper",
+          "tabs",
+          "text-animation",
+          "toast-notification",
+          "toggle",
+          "tooltip",
+          "transition"
+        ],
+        "platforms": [
+          "web"
+        ],
+        "mode": "package",
+        "evidenceStatus": "verified",
+        "requiresLicense": false,
+        "selectWhenNamed": true,
+        "package": "@animate-ui/react",
+        "install": "npm install @animate-ui/react motion",
+        "dependencies": [
+          "@animate-ui/react",
+          "motion"
+        ],
+        "fallback": "Keep the project's own primitives and motion runtime; write the named motion by hand through the motion gate (references/animation-opportunity-and-review.md) with a reduced-motion path.",
+        "degradation": "React ^19.0.0 and Motion ^14.0.0. Drop-in primitives need the base library the component already uses (radix-ui, @base-ui/react or react-aria-components); it stays installed. Registry items (backgrounds, styled buttons, page transitions, icons) are files added with the shadcn CLI and need components.json. Vue projects use @animate-ui/vue with motion-v and reka-ui at the same paths.",
+        "componentCount": 99,
+        "catalogReviewedAt": "2026-11-12",
+        "recommendations": {
+          "animate-ui": [
+            "accordion",
+            "alert-dialog",
+            "animate-ui-tabs",
+            "animate-ui-tooltip",
+            "auto-height",
+            "avatar-group",
+            "blur",
+            "bottom-navigation",
+            "bubble-background",
+            "button",
+            "carousel",
+            "checkbox",
+            "click",
+            "code-block",
+            "collapsible",
+            "combo-box",
+            "combobox",
+            "context-menu",
+            "copy-button",
+            "counting-number",
+            "cursor",
+            "dialog",
+            "disclosure",
+            "drawer",
+            "dropdown-menu",
+            "effect",
+            "fade",
+            "fireworks-background",
+            "flip-button",
+            "github-stars",
+            "github-stars-button",
+            "glyph-background",
+            "gradient-background",
+            "gradient-text",
+            "gravity-stars-background",
+            "hexagon-background",
+            "highlight",
+            "highlight-text",
+            "hole-background",
+            "hover-card",
+            "hugeicons",
+            "icon-button",
+            "image-zoom",
+            "input-otp",
+            "liquid-button",
+            "list-box",
+            "lucide-icons",
+            "magnetic",
+            "menu",
+            "menubar",
+            "modal",
+            "morphing-text",
+            "motion-grid",
+            "navigation-menu",
+            "page-transition",
+            "page-transition-react-router",
+            "page-transition-tanstack-router",
+            "pagination",
+            "particles",
+            "pinned-list",
+            "popover",
+            "preview-card",
+            "preview-link-card",
+            "progress",
+            "progress-bar",
+            "questionnaire",
+            "radio",
+            "radio-group",
+            "ripple-button",
+            "rolling-text",
+            "rotating-text",
+            "scroll-fade",
+            "scroll-progress",
+            "scrolling-number",
+            "select",
+            "shimmering-text",
+            "shine",
+            "sidebar",
+            "slide",
+            "slider",
+            "sliding-number",
+            "sliding-text",
+            "splitting-text",
+            "spring",
+            "stars-background",
+            "swapping-text",
+            "switch",
+            "tabs",
+            "tag-group",
+            "theme-toggler",
+            "theme-toggler-button",
+            "tilt",
+            "toast",
+            "toggle",
+            "toggle-group",
+            "tooltip",
+            "topography-background",
+            "typing-text",
+            "zoom"
+          ],
+          "animated-ui": [
+            "auto-height",
+            "blur",
+            "button",
+            "click",
+            "copy-button",
+            "counting-number",
+            "cursor",
+            "effect",
+            "fade",
+            "flip-button",
+            "github-stars-button",
+            "gradient-text",
+            "highlight",
+            "highlight-text",
+            "icon-button",
+            "image-zoom",
+            "liquid-button",
+            "magnetic",
+            "morphing-text",
+            "particles",
+            "ripple-button",
+            "rolling-text",
+            "rotating-text",
+            "scroll-fade",
+            "scrolling-number",
+            "shimmering-text",
+            "shine",
+            "slide",
+            "sliding-number",
+            "sliding-text",
+            "splitting-text",
+            "spring",
+            "swapping-text",
+            "theme-toggler",
+            "theme-toggler-button",
+            "tilt",
+            "typing-text",
+            "zoom"
+          ],
+          "animated-react-components": [
+            "accordion",
+            "alert-dialog",
+            "checkbox",
+            "collapsible",
+            "combo-box",
+            "combobox",
+            "context-menu",
+            "dialog",
+            "disclosure",
+            "drawer",
+            "dropdown-menu",
+            "hover-card",
+            "list-box",
+            "menu",
+            "menubar",
+            "modal",
+            "navigation-menu",
+            "popover",
+            "preview-card",
+            "preview-link-card",
+            "progress",
+            "progress-bar",
+            "radio",
+            "radio-group",
+            "select",
+            "slider",
+            "switch",
+            "tabs",
+            "tag-group",
+            "toast",
+            "toggle",
+            "toggle-group",
+            "tooltip"
+          ],
+          "accordion": [
+            "accordion",
+            "collapsible",
+            "disclosure",
+            "auto-height"
+          ],
+          "dialog": [
+            "dialog",
+            "alert-dialog",
+            "modal"
+          ],
+          "drawer": [
+            "drawer"
+          ],
+          "tabs": [
+            "tabs",
+            "animate-ui-tabs",
+            "bottom-navigation"
+          ],
+          "tooltip": [
+            "tooltip",
+            "animate-ui-tooltip",
+            "popover",
+            "hover-card",
+            "preview-card",
+            "preview-link-card"
+          ],
+          "select": [
+            "select",
+            "combobox",
+            "combo-box",
+            "dropdown-menu",
+            "menu",
+            "context-menu",
+            "menubar",
+            "list-box"
+          ],
+          "toggle": [
+            "toggle",
+            "toggle-group",
+            "switch",
+            "checkbox",
+            "radio-group",
+            "radio"
+          ],
+          "slider": [
+            "slider"
+          ],
+          "progress": [
+            "progress",
+            "progress-bar",
+            "scroll-progress",
+            "motion-grid"
+          ],
+          "toast-notification": [
+            "toast"
+          ],
+          "navigation": [
+            "navigation-menu",
+            "menubar",
+            "bottom-navigation",
+            "highlight",
+            "sidebar"
+          ],
+          "pagination": [
+            "pagination"
+          ],
+          "stepper": [
+            "questionnaire"
+          ],
+          "avatar": [
+            "avatar-group"
+          ],
+          "carousel": [
+            "carousel"
+          ],
+          "button": [
+            "button",
+            "copy-button",
+            "icon-button",
+            "ripple-button",
+            "liquid-button",
+            "flip-button",
+            "theme-toggler-button",
+            "github-stars-button",
+            "magnetic"
+          ],
+          "text-animation": [
+            "gradient-text",
+            "highlight-text",
+            "morphing-text",
+            "rolling-text",
+            "rotating-text",
+            "shimmering-text",
+            "sliding-text",
+            "splitting-text",
+            "swapping-text",
+            "typing-text"
+          ],
+          "numeric-content-transition": [
+            "counting-number",
+            "sliding-number",
+            "scrolling-number"
+          ],
+          "numeric-text": [
+            "sliding-number",
+            "scrolling-number",
+            "counting-number"
+          ],
+          "animated-stat": [
+            "counting-number",
+            "sliding-number"
+          ],
+          "scroll-reveal": [
+            "fade",
+            "slide",
+            "blur",
+            "zoom",
+            "effect",
+            "splitting-text",
+            "scroll-fade",
+            "scroll-progress"
+          ],
+          "transition": [
+            "page-transition",
+            "page-transition-react-router",
+            "page-transition-tanstack-router",
+            "theme-toggler"
+          ],
+          "animated-background": [
+            "bubble-background",
+            "fireworks-background",
+            "glyph-background",
+            "gradient-background",
+            "gravity-stars-background",
+            "hexagon-background",
+            "hole-background",
+            "stars-background",
+            "topography-background"
+          ],
+          "interactive-card": [
+            "tilt",
+            "image-zoom"
+          ]
+        },
+        "componentInventory": [
+          {
+            "name": "accordion",
+            "displayName": "Accordion",
+            "category": "drop-in",
+            "description": "Sections that open and close with their height animated.",
+            "tags": [
+              "accordion",
+              "disclosure",
+              "手风琴",
+              "折叠面板"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/accordion",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/accordion"
+          },
+          {
+            "name": "alert-dialog",
+            "displayName": "Alert Dialog",
+            "category": "drop-in",
+            "description": "A confirmation dialog that enters and leaves from the center.",
+            "tags": [
+              "alert dialog",
+              "confirm",
+              "确认弹窗",
+              "警告对话框"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/alert-dialog",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/alert-dialog"
+          },
+          {
+            "name": "animate-ui-tabs",
+            "displayName": "Tabs",
+            "category": "navigation",
+            "description": "Standalone tabs with a gliding highlight and sliding panels.",
+            "tags": [
+              "tabs",
+              "标签页",
+              "选项卡"
+            ],
+            "import": "@animate-ui/react/primitives/tabs",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/tabs"
+          },
+          {
+            "name": "animate-ui-tooltip",
+            "displayName": "Tooltip",
+            "category": "feedback",
+            "description": "Tooltips sharing one popup that moves between triggers.",
+            "tags": [
+              "tooltip",
+              "shared tooltip",
+              "工具提示",
+              "共享提示"
+            ],
+            "import": "@animate-ui/react/primitives/tooltip",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion",
+              "@floating-ui/react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/tooltip"
+          },
+          {
+            "name": "auto-height",
+            "displayName": "Auto Height",
+            "category": "effect",
+            "description": "A container whose height follows its content.",
+            "tags": [
+              "auto height",
+              "height animation",
+              "高度自适应",
+              "高度动画"
+            ],
+            "import": "@animate-ui/react/primitives/effects/auto-height",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/auto-height"
+          },
+          {
+            "name": "avatar-group",
+            "displayName": "Avatar Group",
+            "category": "layout",
+            "description": "Overlapping avatars; the hovered one rises with its tooltip.",
+            "tags": [
+              "avatar group",
+              "头像组"
+            ],
+            "import": "@animate-ui/react/primitives/avatar-group",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/avatar-group"
+          },
+          {
+            "name": "blur",
+            "displayName": "Blur",
+            "category": "effect",
+            "description": "Content coming into focus out of a blur, on load or in view.",
+            "tags": [
+              "blur in",
+              "模糊进场"
+            ],
+            "import": "@animate-ui/react/primitives/effects/blur",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/blur"
+          },
+          {
+            "name": "bottom-navigation",
+            "displayName": "Bottom Navigation",
+            "category": "navigation",
+            "description": "A mobile bottom bar with a gliding highlight that can shrink or hide while scrolling.",
+            "tags": [
+              "bottom navigation",
+              "tab bar",
+              "底部导航",
+              "底部标签栏"
+            ],
+            "import": "@animate-ui/react/primitives/bottom-navigation",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/bottom-navigation"
+          },
+          {
+            "name": "bubble-background",
+            "displayName": "Bubble Background",
+            "category": "background",
+            "description": "Soft gradient bubbles that can follow the pointer.",
+            "tags": [
+              "bubble background",
+              "气泡背景",
+              "animated background",
+              "动态背景"
+            ],
+            "registry": "@animate-ui/backgrounds-bubble",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/backgrounds-bubble",
+            "registryUrl": "https://animate-ui.com/r/backgrounds-bubble.json",
+            "docUrl": "https://animate-ui.com/docs/backgrounds/bubble"
+          },
+          {
+            "name": "button",
+            "displayName": "Button",
+            "category": "button",
+            "description": "A button that presses down on a spring.",
+            "tags": [
+              "button",
+              "press feedback",
+              "按钮",
+              "按压反馈"
+            ],
+            "import": "@animate-ui/react/primitives/buttons/button",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/button"
+          },
+          {
+            "name": "carousel",
+            "displayName": "Carousel",
+            "category": "layout",
+            "description": "Drop-in for embla-carousel-react; slides shrink away from the center, with dots and a counter.",
+            "tags": [
+              "carousel",
+              "slider",
+              "轮播"
+            ],
+            "import": "@animate-ui/react/primitives/carousel",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion",
+              "embla-carousel-react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/carousel"
+          },
+          {
+            "name": "checkbox",
+            "displayName": "Checkbox",
+            "category": "drop-in",
+            "description": "A checkbox whose check mark draws in and out.",
+            "tags": [
+              "checkbox",
+              "复选框",
+              "勾选"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui",
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/checkbox",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/checkbox"
+          },
+          {
+            "name": "click",
+            "displayName": "Click",
+            "category": "effect",
+            "description": "A visual effect at the point the pointer clicks.",
+            "tags": [
+              "click effect",
+              "点击特效"
+            ],
+            "import": "@animate-ui/react/primitives/effects/click",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/click"
+          },
+          {
+            "name": "code-block",
+            "displayName": "Code Block",
+            "category": "content",
+            "description": "Parts for shadcn/ui's code block: code that types itself out and an animated copy button.",
+            "tags": [
+              "code block",
+              "typing code",
+              "代码块",
+              "打字效果"
+            ],
+            "import": "@animate-ui/react/primitives/code-block",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion",
+              "shiki"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/code-block"
+          },
+          {
+            "name": "collapsible",
+            "displayName": "Collapsible",
+            "category": "drop-in",
+            "description": "One region that opens and closes with its height animated.",
+            "tags": [
+              "collapsible",
+              "disclosure",
+              "折叠",
+              "展开收起"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/collapsible",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/collapsible"
+          },
+          {
+            "name": "combo-box",
+            "displayName": "Combo Box",
+            "category": "drop-in",
+            "description": "React Aria's filterable list popup, growing from its input.",
+            "tags": [
+              "combobox",
+              "autocomplete",
+              "组合框",
+              "可搜索下拉"
+            ],
+            "bases": [
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/combo-box",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion"
+          },
+          {
+            "name": "combobox",
+            "displayName": "Combobox",
+            "category": "drop-in",
+            "description": "A filterable list popup that grows from its input.",
+            "tags": [
+              "combobox",
+              "autocomplete",
+              "组合框",
+              "可搜索下拉"
+            ],
+            "bases": [
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/combobox",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/base-ui/combobox"
+          },
+          {
+            "name": "context-menu",
+            "displayName": "Context Menu",
+            "category": "drop-in",
+            "description": "A right-click menu that grows from the pointer, with a highlight gliding between items.",
+            "tags": [
+              "context menu",
+              "右键菜单"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/context-menu",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/context-menu"
+          },
+          {
+            "name": "copy-button",
+            "displayName": "Copy Button",
+            "category": "button",
+            "description": "Copy to clipboard; the icon swaps for a check and back.",
+            "tags": [
+              "copy button",
+              "复制按钮"
+            ],
+            "import": "@animate-ui/react/primitives/buttons/copy",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/copy-button"
+          },
+          {
+            "name": "counting-number",
+            "displayName": "Counting Number",
+            "category": "text",
+            "description": "A number counting up to its value, for stats and totals.",
+            "tags": [
+              "count up",
+              "counter",
+              "number ticker",
+              "数字滚动",
+              "数字递增",
+              "计数"
+            ],
+            "import": "@animate-ui/react/primitives/texts/counting-number",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/counting-number"
+          },
+          {
+            "name": "cursor",
+            "displayName": "Cursor",
+            "category": "pointer",
+            "description": "A custom cursor, or a label that follows it.",
+            "tags": [
+              "custom cursor",
+              "cursor follow",
+              "自定义光标",
+              "跟随光标"
+            ],
+            "import": "@animate-ui/react/primitives/cursor",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/cursor"
+          },
+          {
+            "name": "dialog",
+            "displayName": "Dialog",
+            "category": "drop-in",
+            "description": "A modal dialog with overlay, entering and leaving from the center.",
+            "tags": [
+              "dialog",
+              "modal",
+              "弹窗",
+              "对话框",
+              "模态框"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/dialog",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/dialog"
+          },
+          {
+            "name": "disclosure",
+            "displayName": "Disclosure",
+            "category": "drop-in",
+            "description": "React Aria's disclosure, its panel height animated.",
+            "tags": [
+              "disclosure",
+              "collapsible",
+              "折叠",
+              "展开收起"
+            ],
+            "bases": [
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/disclosure",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion"
+          },
+          {
+            "name": "drawer",
+            "displayName": "Drawer",
+            "category": "drop-in",
+            "description": "A panel sliding from a screen edge that can be dragged closed.",
+            "tags": [
+              "drawer",
+              "sheet",
+              "bottom sheet",
+              "抽屉",
+              "底部面板"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/drawer",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/drawer"
+          },
+          {
+            "name": "dropdown-menu",
+            "displayName": "Dropdown Menu",
+            "category": "drop-in",
+            "description": "A menu growing from its trigger, with a highlight gliding between items.",
+            "tags": [
+              "dropdown menu",
+              "menu",
+              "下拉菜单"
+            ],
+            "bases": [
+              "radix-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/dropdown-menu",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/dropdown-menu"
+          },
+          {
+            "name": "effect",
+            "displayName": "Effect",
+            "category": "effect",
+            "description": "Any mix of fade, blur, slide and zoom on one element, or staggered across its children.",
+            "tags": [
+              "entrance",
+              "stagger",
+              "进场",
+              "交错进场",
+              "逐个出现"
+            ],
+            "import": "@animate-ui/react/primitives/effects/effect",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/effect"
+          },
+          {
+            "name": "fade",
+            "displayName": "Fade",
+            "category": "effect",
+            "description": "Elements fading in on load or when they scroll into view.",
+            "tags": [
+              "fade in",
+              "scroll reveal",
+              "淡入",
+              "滚动显现"
+            ],
+            "import": "@animate-ui/react/primitives/effects/fade",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/fade"
+          },
+          {
+            "name": "fireworks-background",
+            "displayName": "Fireworks Background",
+            "category": "background",
+            "description": "Fireworks bursting across the area.",
+            "tags": [
+              "fireworks",
+              "烟花背景",
+              "animated background",
+              "动态背景"
+            ],
+            "registry": "@animate-ui/backgrounds-fireworks",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/backgrounds-fireworks",
+            "registryUrl": "https://animate-ui.com/r/backgrounds-fireworks.json",
+            "docUrl": "https://animate-ui.com/docs/backgrounds/fireworks"
+          },
+          {
+            "name": "flip-button",
+            "displayName": "Flip Button",
+            "category": "button",
+            "description": "A button flipping to its back face.",
+            "tags": [
+              "flip button",
+              "翻转按钮"
+            ],
+            "registry": "@animate-ui/buttons-flip",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/buttons-flip",
+            "registryUrl": "https://animate-ui.com/r/buttons-flip.json",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/flip-button"
+          },
+          {
+            "name": "github-stars",
+            "displayName": "Github Stars",
+            "category": "content",
+            "description": "A repository's GitHub star count, counted up.",
+            "tags": [
+              "github stars",
+              "星标数"
+            ],
+            "import": "@animate-ui/react/primitives/github-stars",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/github-stars"
+          },
+          {
+            "name": "github-stars-button",
+            "displayName": "Github Stars Button",
+            "category": "button",
+            "description": "A button showing a repository's star count, counted up.",
+            "tags": [
+              "github stars button",
+              "星标按钮"
+            ],
+            "registry": "@animate-ui/buttons-github-stars",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/buttons-github-stars",
+            "registryUrl": "https://animate-ui.com/r/buttons-github-stars.json",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/github-stars-button"
+          },
+          {
+            "name": "glyph-background",
+            "displayName": "Glyph Background",
+            "category": "background",
+            "description": "Characters lit by drifting glows, with a pointer trail.",
+            "tags": [
+              "glyph background",
+              "字符背景",
+              "animated background",
+              "动态背景"
+            ],
+            "registry": "@animate-ui/backgrounds-glyph",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/backgrounds-glyph",
+            "registryUrl": "https://animate-ui.com/r/backgrounds-glyph.json",
+            "docUrl": "https://animate-ui.com/docs/backgrounds/glyph"
+          },
+          {
+            "name": "gradient-background",
+            "displayName": "Gradient Background",
+            "category": "background",
+            "description": "A slow shifting gradient.",
+            "tags": [
+              "gradient background",
+              "渐变背景",
+              "animated background",
+              "动态背景"
+            ],
+            "registry": "@animate-ui/backgrounds-gradient",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/backgrounds-gradient",
+            "registryUrl": "https://animate-ui.com/r/backgrounds-gradient.json",
+            "docUrl": "https://animate-ui.com/docs/backgrounds/gradient"
+          },
+          {
+            "name": "gradient-text",
+            "displayName": "Gradient Text",
+            "category": "text",
+            "description": "A gradient sweeping across text.",
+            "tags": [
+              "gradient text",
+              "渐变文字"
+            ],
+            "import": "@animate-ui/react/primitives/texts/gradient",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/gradient-text"
+          },
+          {
+            "name": "gravity-stars-background",
+            "displayName": "Gravity Stars Background",
+            "category": "background",
+            "description": "Dots drawn toward the pointer.",
+            "tags": [
+              "gravity stars",
+              "引力星点",
+              "animated background",
+              "动态背景"
+            ],
+            "registry": "@animate-ui/backgrounds-gravity-stars",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/backgrounds-gravity-stars",
+            "registryUrl": "https://animate-ui.com/r/backgrounds-gravity-stars.json",
+            "docUrl": "https://animate-ui.com/docs/backgrounds/gravity-stars"
+          },
+          {
+            "name": "hexagon-background",
+            "displayName": "Hexagon Background",
+            "category": "background",
+            "description": "A hexagon grid lighting up under the pointer.",
+            "tags": [
+              "hexagon grid",
+              "六边形网格",
+              "animated background",
+              "动态背景"
+            ],
+            "registry": "@animate-ui/backgrounds-hexagon",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/backgrounds-hexagon",
+            "registryUrl": "https://animate-ui.com/r/backgrounds-hexagon.json",
+            "docUrl": "https://animate-ui.com/docs/backgrounds/hexagon"
+          },
+          {
+            "name": "highlight",
+            "displayName": "Highlight",
+            "category": "pointer",
+            "description": "One background gliding between items of a nav, a list or a segmented control.",
+            "tags": [
+              "highlight",
+              "shared layout",
+              "hover highlight",
+              "滑动高亮",
+              "悬停高亮"
+            ],
+            "import": "@animate-ui/react/primitives/effects/highlight",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/highlight"
+          },
+          {
+            "name": "highlight-text",
+            "displayName": "Highlight Text",
+            "category": "text",
+            "description": "A highlighter sweep behind text.",
+            "tags": [
+              "highlight text",
+              "荧光笔",
+              "文字高亮"
+            ],
+            "import": "@animate-ui/react/primitives/texts/highlight",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/highlight-text"
+          },
+          {
+            "name": "hole-background",
+            "displayName": "Hole Background",
+            "category": "background",
+            "description": "A tunnel of rings with rising particles.",
+            "tags": [
+              "tunnel",
+              "隧道背景",
+              "animated background",
+              "动态背景"
+            ],
+            "registry": "@animate-ui/backgrounds-hole",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/backgrounds-hole",
+            "registryUrl": "https://animate-ui.com/r/backgrounds-hole.json",
+            "docUrl": "https://animate-ui.com/docs/backgrounds/hole"
+          },
+          {
+            "name": "hover-card",
+            "displayName": "Hover Card",
+            "category": "drop-in",
+            "description": "A card that appears beside a hovered link.",
+            "tags": [
+              "hover card",
+              "悬停卡片"
+            ],
+            "bases": [
+              "radix-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/hover-card",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/hover-card"
+          },
+          {
+            "name": "hugeicons",
+            "displayName": "Animated Hugeicons",
+            "category": "icon",
+            "description": "Animated versions of Hugeicons, one file per icon, played on hover, tap, in view or from state.",
+            "tags": [
+              "animated icons",
+              "hugeicons",
+              "动效图标",
+              "图标动画"
+            ],
+            "registry": "@animate-ui/icons-hugeicons-<name>",
+            "count": 381,
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/icons-hugeicons-<name>",
+            "registryUrl": "https://animate-ui.com/r/icons-hugeicons-<name>.json",
+            "docUrl": "https://animate-ui.com/docs/icons/hugeicons"
+          },
+          {
+            "name": "icon-button",
+            "displayName": "Icon Button",
+            "category": "button",
+            "description": "A like or favorite button that bursts particles.",
+            "tags": [
+              "icon button",
+              "like",
+              "favorite",
+              "点赞",
+              "收藏"
+            ],
+            "import": "@animate-ui/react/primitives/buttons/icon",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/icon-button"
+          },
+          {
+            "name": "image-zoom",
+            "displayName": "Image Zoom",
+            "category": "pointer",
+            "description": "An image zooming where the pointer is.",
+            "tags": [
+              "image zoom",
+              "magnifier",
+              "图片放大",
+              "放大镜"
+            ],
+            "import": "@animate-ui/react/primitives/effects/image-zoom",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/image-zoom"
+          },
+          {
+            "name": "input-otp",
+            "displayName": "Input OTP",
+            "category": "form",
+            "description": "Drop-in for input-otp; a ring glides to the active slot.",
+            "tags": [
+              "otp input",
+              "one-time code",
+              "验证码输入"
+            ],
+            "import": "@animate-ui/react/primitives/input-otp",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion",
+              "input-otp"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/input-otp"
+          },
+          {
+            "name": "liquid-button",
+            "displayName": "Liquid Button",
+            "category": "button",
+            "description": "A button with a fill rising on hover.",
+            "tags": [
+              "liquid button",
+              "液体按钮"
+            ],
+            "registry": "@animate-ui/buttons-liquid",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/buttons-liquid",
+            "registryUrl": "https://animate-ui.com/r/buttons-liquid.json",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/liquid-button"
+          },
+          {
+            "name": "list-box",
+            "displayName": "List Box",
+            "category": "drop-in",
+            "description": "React Aria's list of options with a gliding highlight.",
+            "tags": [
+              "listbox",
+              "列表框",
+              "选项列表"
+            ],
+            "bases": [
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/list-box",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion"
+          },
+          {
+            "name": "lucide-icons",
+            "displayName": "Animated Lucide Icons",
+            "category": "icon",
+            "description": "Animated versions of Lucide icons, one file per icon, played on hover, tap, in view or from state.",
+            "tags": [
+              "animated icons",
+              "lucide",
+              "动效图标",
+              "图标动画"
+            ],
+            "registry": "@animate-ui/icons-lucide-<name>",
+            "count": 392,
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/icons-lucide-<name>",
+            "registryUrl": "https://animate-ui.com/r/icons-lucide-<name>.json",
+            "docUrl": "https://animate-ui.com/docs/icons/lucide-icons"
+          },
+          {
+            "name": "magnetic",
+            "displayName": "Magnetic",
+            "category": "pointer",
+            "description": "An element pulled toward the pointer.",
+            "tags": [
+              "magnetic",
+              "磁吸"
+            ],
+            "import": "@animate-ui/react/primitives/effects/magnetic",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/magnetic"
+          },
+          {
+            "name": "menu",
+            "displayName": "Menu",
+            "category": "drop-in",
+            "description": "A menu growing from its trigger, with a highlight gliding between items.",
+            "tags": [
+              "menu",
+              "dropdown",
+              "菜单",
+              "下拉菜单"
+            ],
+            "bases": [
+              "base-ui",
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/menu",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion"
+          },
+          {
+            "name": "menubar",
+            "displayName": "Menubar",
+            "category": "drop-in",
+            "description": "A menu bar whose popup moves and resizes from one menu to the next.",
+            "tags": [
+              "menubar",
+              "菜单栏"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/menubar",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/menubar"
+          },
+          {
+            "name": "modal",
+            "displayName": "Modal",
+            "category": "drop-in",
+            "description": "React Aria's modal overlay, entering and leaving from the center.",
+            "tags": [
+              "modal",
+              "dialog",
+              "模态框",
+              "弹窗"
+            ],
+            "bases": [
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/modal",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion"
+          },
+          {
+            "name": "morphing-text",
+            "displayName": "Morphing Text",
+            "category": "text",
+            "description": "One string turning into the next; letters both share slide to their new place.",
+            "tags": [
+              "text morph",
+              "morphing text",
+              "文字变形",
+              "文字渐变替换"
+            ],
+            "import": "@animate-ui/react/primitives/texts/morphing",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/morphing-text"
+          },
+          {
+            "name": "motion-grid",
+            "displayName": "Motion Grid",
+            "category": "feedback",
+            "description": "A grid of dots playing loading and status patterns.",
+            "tags": [
+              "loading dots",
+              "status",
+              "加载动画",
+              "点阵"
+            ],
+            "import": "@animate-ui/react/primitives/motion-grid",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/motion-grid"
+          },
+          {
+            "name": "navigation-menu",
+            "displayName": "Navigation Menu",
+            "category": "drop-in",
+            "description": "A site navigation whose panel and indicator move between triggers.",
+            "tags": [
+              "navigation menu",
+              "mega menu",
+              "导航菜单"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/navigation-menu",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/navigation-menu"
+          },
+          {
+            "name": "page-transition",
+            "displayName": "Page Transition (Next.js App Router)",
+            "category": "page-transition",
+            "description": "Animated changes between the pages of a Next.js App Router app, with a shared element that can morph from one page to the next.",
+            "tags": [
+              "page transition",
+              "route transition",
+              "shared element",
+              "页面转场",
+              "路由过渡",
+              "next.js"
+            ],
+            "registry": "@animate-ui/components-page-transition",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/components-page-transition",
+            "registryUrl": "https://animate-ui.com/r/components-page-transition.json",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/page-transition"
+          },
+          {
+            "name": "page-transition-react-router",
+            "displayName": "Page Transition (React Router)",
+            "category": "page-transition",
+            "description": "Animated changes between the pages of a React Router app, with a shared element that can morph from one page to the next.",
+            "tags": [
+              "page transition",
+              "route transition",
+              "shared element",
+              "页面转场",
+              "路由过渡",
+              "react router"
+            ],
+            "registry": "@animate-ui/components-page-transition-react-router",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/components-page-transition-react-router",
+            "registryUrl": "https://animate-ui.com/r/components-page-transition-react-router.json",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/page-transition"
+          },
+          {
+            "name": "page-transition-tanstack-router",
+            "displayName": "Page Transition (TanStack Router)",
+            "category": "page-transition",
+            "description": "Animated changes between the pages of a TanStack Router app, with a shared element that can morph from one page to the next.",
+            "tags": [
+              "page transition",
+              "route transition",
+              "shared element",
+              "页面转场",
+              "路由过渡",
+              "tanstack router"
+            ],
+            "registry": "@animate-ui/components-page-transition-tanstack-router",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/components-page-transition-tanstack-router",
+            "registryUrl": "https://animate-ui.com/r/components-page-transition-tanstack-router.json",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/page-transition"
+          },
+          {
+            "name": "pagination",
+            "displayName": "Pagination",
+            "category": "navigation",
+            "description": "The moving current-page indicator behind shadcn/ui's pagination.",
+            "tags": [
+              "pagination",
+              "分页"
+            ],
+            "import": "@animate-ui/react/primitives/pagination",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/pagination"
+          },
+          {
+            "name": "particles",
+            "displayName": "Particles",
+            "category": "effect",
+            "description": "A burst of particles around any element.",
+            "tags": [
+              "particles",
+              "burst",
+              "粒子",
+              "迸发"
+            ],
+            "import": "@animate-ui/react/primitives/effects/particles",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/particles"
+          },
+          {
+            "name": "pinned-list",
+            "displayName": "Pinned List",
+            "category": "layout",
+            "description": "Items gliding between a pinned and an unpinned group.",
+            "tags": [
+              "pinned list",
+              "reorder",
+              "置顶列表"
+            ],
+            "import": "@animate-ui/react/primitives/pinned-list",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/pinned-list"
+          },
+          {
+            "name": "popover",
+            "displayName": "Popover",
+            "category": "drop-in",
+            "description": "A popup that grows from its trigger.",
+            "tags": [
+              "popover",
+              "气泡",
+              "浮层"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui",
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/popover",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/popover"
+          },
+          {
+            "name": "preview-card",
+            "displayName": "Preview Card",
+            "category": "drop-in",
+            "description": "Base UI's card that previews a link on hover.",
+            "tags": [
+              "preview card",
+              "hover card",
+              "预览卡片"
+            ],
+            "bases": [
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/preview-card",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion"
+          },
+          {
+            "name": "preview-link-card",
+            "displayName": "Preview Link Card",
+            "category": "drop-in",
+            "description": "A link whose hover card shows a preview of its target.",
+            "tags": [
+              "link preview",
+              "链接预览"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui",
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/preview-link-card",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/preview-link-card"
+          },
+          {
+            "name": "progress",
+            "displayName": "Progress",
+            "category": "drop-in",
+            "description": "A progress bar whose fill animates to its value.",
+            "tags": [
+              "progress",
+              "progress bar",
+              "进度条"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/progress",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/progress"
+          },
+          {
+            "name": "progress-bar",
+            "displayName": "Progress Bar",
+            "category": "drop-in",
+            "description": "React Aria's progress bar, its fill animating to its value.",
+            "tags": [
+              "progress bar",
+              "进度条"
+            ],
+            "bases": [
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/progress-bar",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion"
+          },
+          {
+            "name": "questionnaire",
+            "displayName": "Questionnaire",
+            "category": "form",
+            "description": "Drop-in for shadcn/ui's questionnaire; steps enter and leave, choices press.",
+            "tags": [
+              "questionnaire",
+              "multi-step form",
+              "wizard",
+              "问卷",
+              "分步表单"
+            ],
+            "import": "@animate-ui/react/primitives/questionnaire",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion",
+              "@shadcn/react"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/questionnaire"
+          },
+          {
+            "name": "radio",
+            "displayName": "Radio",
+            "category": "drop-in",
+            "description": "Base UI's radio button, its dot popping in.",
+            "tags": [
+              "radio",
+              "单选"
+            ],
+            "bases": [
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/radio",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion"
+          },
+          {
+            "name": "radio-group",
+            "displayName": "Radio Group",
+            "category": "drop-in",
+            "description": "Radio buttons whose dot pops in on selection.",
+            "tags": [
+              "radio group",
+              "单选组"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui",
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/radio-group",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/radio-group"
+          },
+          {
+            "name": "ripple-button",
+            "displayName": "Ripple Button",
+            "category": "button",
+            "description": "A ripple spreading from the click point.",
+            "tags": [
+              "ripple",
+              "涟漪",
+              "水波纹"
+            ],
+            "import": "@animate-ui/react/primitives/buttons/ripple",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/ripple-button"
+          },
+          {
+            "name": "rolling-text",
+            "displayName": "Rolling Text",
+            "category": "text",
+            "description": "Letters rolling over like a flip board.",
+            "tags": [
+              "rolling text",
+              "flip board",
+              "翻牌文字"
+            ],
+            "import": "@animate-ui/react/primitives/texts/rolling",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/rolling-text"
+          },
+          {
+            "name": "rotating-text",
+            "displayName": "Rotating Text",
+            "category": "text",
+            "description": "Words taking turns in place on a timer.",
+            "tags": [
+              "rotating text",
+              "word cycle",
+              "轮换文字",
+              "文字轮播"
+            ],
+            "import": "@animate-ui/react/primitives/texts/rotating",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/rotating-text"
+          },
+          {
+            "name": "scroll-fade",
+            "displayName": "Scroll Fade",
+            "category": "effect",
+            "description": "A scroll container whose edges fade where more content waits.",
+            "tags": [
+              "scroll fade",
+              "edge fade",
+              "滚动渐隐",
+              "边缘渐隐"
+            ],
+            "import": "@animate-ui/react/primitives/effects/scroll-fade",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/scroll-fade"
+          },
+          {
+            "name": "scroll-progress",
+            "displayName": "Scroll Progress",
+            "category": "feedback",
+            "description": "A bar that follows the scroll position.",
+            "tags": [
+              "scroll progress",
+              "reading progress",
+              "滚动进度",
+              "阅读进度"
+            ],
+            "import": "@animate-ui/react/primitives/scroll-progress",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/scroll-progress"
+          },
+          {
+            "name": "scrolling-number",
+            "displayName": "Scrolling Number",
+            "category": "text",
+            "description": "A wheel of numbers settling on a value.",
+            "tags": [
+              "scrolling number",
+              "number wheel",
+              "数字滚轮"
+            ],
+            "import": "@animate-ui/react/primitives/texts/scrolling-number",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/scrolling-number"
+          },
+          {
+            "name": "select",
+            "displayName": "Select",
+            "category": "drop-in",
+            "description": "A select whose list grows from its trigger, with a gliding highlight.",
+            "tags": [
+              "select",
+              "dropdown",
+              "下拉选择",
+              "选择器"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui",
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/select",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/select"
+          },
+          {
+            "name": "shimmering-text",
+            "displayName": "Shimmering Text",
+            "category": "text",
+            "description": "A glint running across text.",
+            "tags": [
+              "shimmer text",
+              "闪光文字"
+            ],
+            "import": "@animate-ui/react/primitives/texts/shimmering",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/shimmering-text"
+          },
+          {
+            "name": "shine",
+            "displayName": "Shine",
+            "category": "effect",
+            "description": "A light sweeping across an element.",
+            "tags": [
+              "shine",
+              "sheen",
+              "扫光",
+              "高光掠过"
+            ],
+            "import": "@animate-ui/react/primitives/effects/shine",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/shine"
+          },
+          {
+            "name": "sidebar",
+            "displayName": "Sidebar",
+            "category": "navigation",
+            "description": "The animated parts behind shadcn/ui's sidebar.",
+            "tags": [
+              "sidebar",
+              "侧边栏"
+            ],
+            "import": "@animate-ui/react/primitives/sidebar",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/sidebar"
+          },
+          {
+            "name": "slide",
+            "displayName": "Slide",
+            "category": "effect",
+            "description": "Elements sliding into place on load or in view.",
+            "tags": [
+              "slide in",
+              "滑入"
+            ],
+            "import": "@animate-ui/react/primitives/effects/slide",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/slide"
+          },
+          {
+            "name": "slider",
+            "displayName": "Slider",
+            "category": "drop-in",
+            "description": "A slider whose thumb and track follow the value on a spring.",
+            "tags": [
+              "slider",
+              "range",
+              "滑块"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui",
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/slider",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/slider"
+          },
+          {
+            "name": "sliding-number",
+            "displayName": "Sliding Number",
+            "category": "text",
+            "description": "Digits rolling to a new value like an odometer.",
+            "tags": [
+              "odometer",
+              "number ticker",
+              "sliding number",
+              "数字滚动",
+              "里程表"
+            ],
+            "import": "@animate-ui/react/primitives/texts/sliding-number",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/sliding-number"
+          },
+          {
+            "name": "sliding-text",
+            "displayName": "Sliding Text",
+            "category": "text",
+            "description": "A link or button label sliding out as a copy slides in, on hover or press.",
+            "tags": [
+              "sliding text",
+              "hover label",
+              "滑动文字"
+            ],
+            "import": "@animate-ui/react/primitives/texts/sliding",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/sliding-text"
+          },
+          {
+            "name": "splitting-text",
+            "displayName": "Splitting Text",
+            "category": "text",
+            "description": "Text entering by character, word or line.",
+            "tags": [
+              "split text",
+              "text reveal",
+              "逐字出现",
+              "逐词进场"
+            ],
+            "import": "@animate-ui/react/primitives/texts/splitting",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/splitting-text"
+          },
+          {
+            "name": "spring",
+            "displayName": "Spring",
+            "category": "pointer",
+            "description": "A draggable element pulled back to its place by a spring.",
+            "tags": [
+              "spring",
+              "drag",
+              "弹簧",
+              "拖拽回弹"
+            ],
+            "import": "@animate-ui/react/primitives/spring",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/spring"
+          },
+          {
+            "name": "stars-background",
+            "displayName": "Stars Background",
+            "category": "background",
+            "description": "Drifting dots of varying size and speed.",
+            "tags": [
+              "starfield",
+              "星空背景",
+              "animated background",
+              "动态背景"
+            ],
+            "registry": "@animate-ui/backgrounds-stars",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/backgrounds-stars",
+            "registryUrl": "https://animate-ui.com/r/backgrounds-stars.json",
+            "docUrl": "https://animate-ui.com/docs/backgrounds/stars"
+          },
+          {
+            "name": "swapping-text",
+            "displayName": "Swapping Text",
+            "category": "text",
+            "description": "A label changing to a new value letter by letter.",
+            "tags": [
+              "swapping text",
+              "label swap",
+              "文字替换"
+            ],
+            "import": "@animate-ui/react/primitives/texts/swapping",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/swapping-text"
+          },
+          {
+            "name": "switch",
+            "displayName": "Switch",
+            "category": "drop-in",
+            "description": "A switch whose thumb slides and squeezes when pressed.",
+            "tags": [
+              "switch",
+              "toggle",
+              "开关"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui",
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/switch",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/switch"
+          },
+          {
+            "name": "tabs",
+            "displayName": "Tabs",
+            "category": "drop-in",
+            "description": "Tabs with a selection indicator that slides between triggers.",
+            "tags": [
+              "tabs",
+              "标签页",
+              "选项卡"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui",
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/tabs",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/tabs"
+          },
+          {
+            "name": "tag-group",
+            "displayName": "Tag Group",
+            "category": "drop-in",
+            "description": "React Aria's removable tags, the rest closing the gap.",
+            "tags": [
+              "tag group",
+              "chips",
+              "标签组"
+            ],
+            "bases": [
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/tag-group",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion"
+          },
+          {
+            "name": "theme-toggler",
+            "displayName": "Theme Toggler",
+            "category": "effect",
+            "description": "A light and dark theme switch that wipes across the whole page with a view transition.",
+            "tags": [
+              "theme toggle",
+              "view transition",
+              "主题切换",
+              "深浅色切换"
+            ],
+            "import": "@animate-ui/react/primitives/effects/theme-toggler",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/theme-toggler"
+          },
+          {
+            "name": "theme-toggler-button",
+            "displayName": "Theme Toggler Button",
+            "category": "button",
+            "description": "A styled button for the theme switch.",
+            "tags": [
+              "theme toggle button",
+              "主题切换按钮"
+            ],
+            "registry": "@animate-ui/buttons-theme-toggler",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/buttons-theme-toggler",
+            "registryUrl": "https://animate-ui.com/r/buttons-theme-toggler.json",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/theme-toggler-button"
+          },
+          {
+            "name": "tilt",
+            "displayName": "Tilt",
+            "category": "pointer",
+            "description": "A card tilting toward the pointer.",
+            "tags": [
+              "tilt",
+              "3d tilt",
+              "倾斜",
+              "3D 倾斜"
+            ],
+            "import": "@animate-ui/react/primitives/effects/tilt",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/tilt"
+          },
+          {
+            "name": "toast",
+            "displayName": "Toast",
+            "category": "drop-in",
+            "description": "Base UI's toasts rising from an edge and stacking.",
+            "tags": [
+              "toast",
+              "notification",
+              "snackbar",
+              "通知",
+              "提示条"
+            ],
+            "bases": [
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/toast",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/base-ui/toast"
+          },
+          {
+            "name": "toggle",
+            "displayName": "Toggle",
+            "category": "drop-in",
+            "description": "A toggle button with press feedback.",
+            "tags": [
+              "toggle",
+              "切换按钮"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui",
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/toggle",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/toggle"
+          },
+          {
+            "name": "toggle-group",
+            "displayName": "Toggle Group",
+            "category": "drop-in",
+            "description": "Toggle buttons with a highlight sliding to the selected one.",
+            "tags": [
+              "toggle group",
+              "segmented control",
+              "分段控件"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/toggle-group",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/toggle-group"
+          },
+          {
+            "name": "tooltip",
+            "displayName": "Tooltip",
+            "category": "drop-in",
+            "description": "A tooltip that grows from its trigger and shows at once when another was just open.",
+            "tags": [
+              "tooltip",
+              "提示",
+              "工具提示"
+            ],
+            "bases": [
+              "radix-ui",
+              "base-ui",
+              "react-aria"
+            ],
+            "import": "@animate-ui/react/primitives/<base>/tooltip",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/radix-ui/tooltip"
+          },
+          {
+            "name": "topography-background",
+            "displayName": "Topography Background",
+            "category": "background",
+            "description": "Living contour lines with a hill under the pointer.",
+            "tags": [
+              "topography",
+              "contour lines",
+              "等高线背景",
+              "animated background",
+              "动态背景"
+            ],
+            "registry": "@animate-ui/backgrounds-topography",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "installCommand": "npx shadcn@latest add @animate-ui/backgrounds-topography",
+            "registryUrl": "https://animate-ui.com/r/backgrounds-topography.json",
+            "docUrl": "https://animate-ui.com/docs/backgrounds/topography"
+          },
+          {
+            "name": "typing-text",
+            "displayName": "Typing Text",
+            "category": "text",
+            "description": "Text typed out with a cursor.",
+            "tags": [
+              "typewriter",
+              "typing text",
+              "打字机",
+              "打字效果"
+            ],
+            "import": "@animate-ui/react/primitives/texts/typing",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/typing-text"
+          },
+          {
+            "name": "zoom",
+            "displayName": "Zoom",
+            "category": "effect",
+            "description": "Elements scaling up into place on load or in view.",
+            "tags": [
+              "zoom in",
+              "scale in",
+              "放大进场"
+            ],
+            "import": "@animate-ui/react/primitives/effects/zoom",
+            "dependencies": [
+              "@animate-ui/react",
+              "motion"
+            ],
+            "hasReducedMotion": true,
+            "installCommand": "npm install @animate-ui/react motion",
+            "docUrl": "https://animate-ui.com/docs/primitives/animate-ui/zoom"
+          }
+        ]
+      },
+      "alignment": {
+        "framework": "React, Vue",
+        "styling": [
+          "Tailwind CSS",
+          "shadcn/ui-compatible"
+        ],
+        "motion": [
+          "Motion",
+          "Motion for Vue"
+        ],
+        "quality": [
+          "keeps the base library's roles, focus and keyboard behavior",
+          "reduced-motion-aware",
+          "typed props"
+        ],
+        "peers": {
+          "react": {
+            "@base-ui/react": "^1.8.0",
+            "@floating-ui/react": "^0.27.20",
+            "@shadcn/react": "^0.3.1",
+            "embla-carousel": "^8.6.0",
+            "embla-carousel-react": "^8.6.0",
+            "input-otp": "^1.5.0",
+            "motion": "^14.0.0",
+            "radix-ui": "^1.6.0",
+            "react": "^19.0.0",
+            "react-aria-components": "^1.21.0",
+            "react-dom": "^19.0.0",
+            "shiki": "^4.5.0"
+          },
+          "vue": {
+            "@floating-ui/vue": "^2.0.0",
+            "embla-carousel": "^8.6.0",
+            "embla-carousel-vue": "^8.6.0",
+            "motion-v": "^2.8.0",
+            "reka-ui": "^2.11.0",
+            "shiki": "^4.5.0",
+            "vue": "^3.5.0",
+            "vue-input-otp": "^0.4.0"
+          }
+        },
+        "cli": {
+          "package": "@animate-ui/cli",
+          "commands": [
+            "animate",
+            "audit",
+            "migrate"
+          ]
+        },
+        "delivery": "npm package for primitives; shadcn registry files for backgrounds, styled buttons, page transitions and icons. design-pipeline does not auto-install or execute upstream code; installing follows the selected route after the user approves it."
+      },
+      "provenance": {
+        "source": "Animate UI",
+        "url": "https://animate-ui.com/docs",
+        "repository": "https://github.com/imskyleen/animate-ui",
+        "revision": "22a9236ae107328f8564edb7e3299375da3247af",
+        "sourceCode": "https://github.com/imskyleen/animate-ui/tree/22a9236ae107328f8564edb7e3299375da3247af/packages/react/src/primitives",
+        "license": "MIT + Commons Clause",
+        "licenseNotice": "Retain the copyright and license notice. Use in any application, website or product, commercial or not; do not sell or redistribute the components themselves in their original form, alone or in a bundle.",
+        "attribution": "imskyleen/animate-ui; names, import paths and install commands read at the locked revision, descriptions written for this index; no upstream component source is bundled"
+      }
     }
   ],
   "docs": [
@@ -7439,6 +9982,36 @@
         ]
       },
       "licenseScope": "2026-10-12 gh api repos/motiondivision/motion/license returned MIT, blob 81110442c72270dd317667cc52181522647401f2; root and packages/motion/LICENSE.md agree at the recorded revision. Copyright (c) 2024 Motion B.V.; retain copyright and permission notices when importing or copying. npm motion 14.1.0 exposes ESM motion and motion/react. This library grant does not license unrelated paid products or hosted-site assets."
+    },
+    {
+      "id": "source/imskyleen/animate-ui",
+      "sourceId": "imskyleen/animate-ui",
+      "recordType": "source",
+      "name": "animate-ui",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/imskyleen/animate-ui",
+        "https://animate-ui.com/",
+        "https://animate-ui.com/docs"
+      ],
+      "localPaths": {
+        "guide": "references/animate-ui.md"
+      },
+      "provenance": {
+        "source": "animate-ui",
+        "license": "MIT + Commons Clause",
+        "url": "https://github.com/imskyleen/animate-ui"
+      },
+      "license": {
+        "state": "verified",
+        "id": "LicenseRef-MIT-Commons-Clause",
+        "evidence": [
+          "https://github.com/imskyleen/animate-ui/blob/22a9236ae107328f8564edb7e3299375da3247af/LICENSE.md",
+          "https://github.com/imskyleen/animate-ui/blob/22a9236ae107328f8564edb7e3299375da3247af/README.md",
+          "2026-11-12 read at the locked revision: MIT text with a Commons Clause restriction; the published packages declare SEE LICENSE IN LICENSE.md."
+        ]
+      },
+      "licenseScope": "LICENSE.md at revision 22a9236ae107328f8564edb7e3299375da3247af is the MIT text limited to use \"as part of an application, website, or product\" plus a Commons Clause restriction: any commercial use is allowed, selling or redistributing the components themselves in their original form, alone or in a bundle, is not. Copyright (c) 2025 Elliot Sutton. It is never plain MIT. This package therefore ships names, import paths, install commands and its own descriptions only, and no upstream component source; a project installs the components itself from npm or the upstream registry."
     },
     {
       "id": "motion-reference/3d-coverflow",
@@ -61581,7 +64154,9 @@
             "tr-dissolve",
             "tx-fade-up-words"
           ],
-          "guides": []
+          "guides": [
+            "references/animate-ui.md#entrances-and-scroll-reveals"
+          ]
         }
       },
       "provenance": {
@@ -61652,7 +64227,8 @@
             "soft-rise"
           ],
           "guides": [
-            "references/ui-transition-rules.md#tr-07--direction-does-not-invent-meaning"
+            "references/ui-transition-rules.md#tr-07--direction-does-not-invent-meaning",
+            "references/animate-ui.md#entrances-and-scroll-reveals"
           ]
         }
       },
@@ -61732,7 +64308,8 @@
             "tx-random-tilt-scale-in"
           ],
           "guides": [
-            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#never-animate-from-scale0"
+            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#never-animate-from-scale0",
+            "references/animate-ui.md#entrances-and-scroll-reveals"
           ]
         }
       },
@@ -61971,7 +64548,8 @@
           "guides": [
             "references/ui-transition-rules.md#tr-04--entrance-and-exit-have-one-coordination-owner",
             "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#animate-enter-states-with-starting-style",
-            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#asymmetric-enterexit-timing"
+            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#asymmetric-enterexit-timing",
+            "references/animate-ui.md#drop-in-primitives"
           ]
         }
       },
@@ -62187,7 +64765,8 @@
             "catalog-ui-navigation-staggered-reveal"
           ],
           "guides": [
-            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#stagger-animations"
+            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#stagger-animations",
+            "references/animate-ui.md#entrances-and-scroll-reveals"
           ]
         }
       },
@@ -62882,7 +65461,8 @@
             "catalog-ui-navigation-card-flip"
           ],
           "guides": [
-            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#3d-transforms-for-depth"
+            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#3d-transforms-for-depth",
+            "references/animate-ui.md#pointer-effects"
           ]
         }
       },
@@ -63101,7 +65681,8 @@
           ],
           "guides": [
             "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#make-popovers-origin-aware",
-            "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff"
+            "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff",
+            "references/animate-ui.md#drop-in-primitives"
           ]
         }
       },
@@ -63418,7 +65999,8 @@
           ],
           "guides": [
             "references/ui-transition-rules.md#tr-02--continuity-preserves-logical-identity",
-            "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff"
+            "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff",
+            "references/animate-ui.md#page-and-theme-transitions"
           ]
         }
       },
@@ -63501,7 +66083,8 @@
             "tx-balanced-reflow"
           ],
           "guides": [
-            "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff"
+            "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff",
+            "references/animate-ui.md#shared-highlight-and-layout"
           ]
         }
       },
@@ -63573,7 +66156,8 @@
             "tx-expand-truncated"
           ],
           "guides": [
-            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#the-opacity--height-combination"
+            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#the-opacity--height-combination",
+            "references/animate-ui.md#drop-in-primitives"
           ]
         }
       },
@@ -63713,7 +66297,8 @@
             "tx-view-timeline-words"
           ],
           "guides": [
-            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#image-reveals-on-scroll"
+            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#image-reveals-on-scroll",
+            "references/animate-ui.md#entrances-and-scroll-reveals"
           ]
         }
       },
@@ -63931,7 +66516,8 @@
             "tr-wipe"
           ],
           "guides": [
-            "references/ui-transition-rules.md#tr-04--entrance-and-exit-have-one-coordination-owner"
+            "references/ui-transition-rules.md#tr-04--entrance-and-exit-have-one-coordination-owner",
+            "references/animate-ui.md#page-and-theme-transitions"
           ]
         }
       },
@@ -64007,7 +66593,8 @@
             "shared-element"
           ],
           "guides": [
-            "references/ui-transition-rules.md#tr-02--continuity-preserves-logical-identity"
+            "references/ui-transition-rules.md#tr-02--continuity-preserves-logical-identity",
+            "references/animate-ui.md#page-and-theme-transitions"
           ]
         }
       },
@@ -64160,7 +66747,8 @@
           ],
           "guides": [
             "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#buttons-must-feel-responsive",
-            "references/mobile-web.md#4-tap-latency-and-touch-action"
+            "references/mobile-web.md#4-tap-latency-and-touch-action",
+            "references/animate-ui.md#press-and-button-feedback"
           ]
         }
       },
@@ -64660,7 +67248,9 @@
             "ripple-reveal",
             "catalog-ui-material-chrome-ripple"
           ],
-          "guides": []
+          "guides": [
+            "references/animate-ui.md#press-and-button-feedback"
+          ]
         }
       },
       "provenance": {
@@ -66754,7 +69344,9 @@
             "tx-scramble-decode",
             "tx-flip-words-blur"
           ],
-          "guides": []
+          "guides": [
+            "references/animate-ui.md#changing-text"
+          ]
         }
       },
       "provenance": {
@@ -66896,7 +69488,9 @@
             "catalog-ui-feedback-number-ticker",
             "tx-score-update"
           ],
-          "guides": []
+          "guides": [
+            "references/animate-ui.md#numbers"
+          ]
         }
       },
       "provenance": {
@@ -67032,7 +69626,9 @@
             "tx-human-typewriter",
             "tx-terminal-typing"
           ],
-          "guides": []
+          "guides": [
+            "references/animate-ui.md#changing-text"
+          ]
         }
       },
       "provenance": {
@@ -68074,7 +70670,8 @@
           "guides": [
             "references/ui-transition-rules.md#tr-09--reduced-motion-preserves-the-result",
             "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#prefers-reduced-motion",
-            "references/motion-spec.md#accessibility-and-reduced-motion"
+            "references/motion-spec.md#accessibility-and-reduced-motion",
+            "references/animate-ui.md#reduced-motion"
           ]
         }
       },
