@@ -57,7 +57,8 @@ pipeline does not wrap `npx designmd-cli install`.
    (`colors` named primary, on-primary, background, surface, on-surface, outline ...; `typography`
    display, headline, title, body-lg, body, body-sm, label, code; `rounded`; `spacing`), derived
    from `tokens.css` with the correction overlay applied and `color-mix()`/`oklch()` computed to hex.
-   Values it cannot express are listed in `omittedTokens`. Compare systems through it; read
+   Values it cannot express are listed in `omittedTokens`; colours outside sRGB, whose hex is the
+   clamped colour, in `clampedTokens`. Compare systems through it; read
    DESIGN.md and `components.html` for the reasoning and the component treatment.
 
 4. Cite a bundled example or system from requirements-driven synthesis as attributed evidence.

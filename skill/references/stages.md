@@ -365,7 +365,9 @@ Read `references/pipeline-method.md` for the state, artifact, and invalidation c
   advisory and never a stage gate.
 - `emil-design-eng` is built in as a pinned source routed by
   [ui-craft-sources.md](ui-craft-sources.md), with five other UI craft sources and the React
-  Doctor reference; `ui-ux-pro-max` and `web-design-guidelines` add companion detail when installed.
+  Doctor reference. The same guide holds the rules of Vercel's `web-design-guidelines` list
+  ([record](web-interface-guidelines.md)), so that companion is not installed; `ui-ux-pro-max`
+  adds companion detail when installed.
 - For React/Next.js, use the governed Vercel/Next.js companions listed in
   `references/companion-skills.md`.
 - Use `references/capability-routing.md` and `references/job-registry.json` for motion, graphics,
