@@ -20,7 +20,7 @@ const FORBIDDEN_KEYS = new Set(["__proto__", "prototype", "constructor"]);
 const LOCAL_ID = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
 const NAMESPACE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const SOURCE_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)?$/;
-const RECORD_TYPES = new Set(["source", "component", "method", "template"]);
+const RECORD_TYPES = new Set(["source", "component", "method", "template", "term"]);
 // downloaded-implementation: the package carries the manifest and `sources fetch` installs the code
 // (MengTo, iart; skill/scripts/vendor-cache.cjs); search returns the installed paths.
 const AVAILABILITIES = new Set(["bundled-implementation", "downloaded-implementation", "reference-link", "metadata-only", "project-owned"]);
@@ -454,9 +454,125 @@ function searchCatalog(catalog, options = {}) {
     if (options.kind && entry.kind !== options.kind) return false;
     if (options.category && entry.category !== options.category) return false;
     if (options.status && entry.status !== options.status) return false;
-    return !query || canonicalJson(entry).toLowerCase().includes(query);
+    return true;
   });
-  return matches.slice(0, options.limit === undefined ? matches.length : options.limit).map((entry) => safeClone(entry));
+  const limited = (entries) => entries.slice(0, options.limit === undefined ? entries.length : options.limit).map((entry) => safeClone(entry));
+  if (!query) return limited(matches);
+  const literal = (entry) => canonicalJson(entry).toLowerCase().includes(query);
+  // Vocabulary terms answer descriptions, not only literal substrings: they are ranked by lexical
+  // overlap with their name, aliases and definition and listed before every other record. Records
+  // of any other type keep the literal match and their catalog order.
+  const terms = rankTerms(matches.filter((entry) => entry.recordType === "term"), query);
+  const ranked = new Set(terms);
+  return limited([
+    ...terms,
+    ...matches.filter((entry) => entry.recordType === "term" && !ranked.has(entry) && literal(entry)),
+    ...matches.filter((entry) => entry.recordType !== "term" && literal(entry)),
+  ]);
+}
+
+// Deterministic lexical matching for `recordType: "term"` records (the motion vocabulary). No
+// model and no embedding: tokens, field weights and the two coverage thresholds below.
+const TERM_STOP_WORDS = new Set(["a", "an", "the", "it", "its", "is", "are", "be", "that", "this", "these", "those", "there", "what", "whats", "which", "when", "where", "how", "do", "does", "you", "your", "i", "my", "we", "of", "to", "and", "or", "as", "at", "by", "for", "with", "so", "can", "call", "called", "name", "term", "word", "thing", "effect", "kind", "sort", "some", "something", "animation", "animate", "motion", "seem", "seems", "look", "looks", "like", "just", "one", "s", "t"]);
+const TERM_STOP_PHRASES_ZH = ["叫什么名字", "叫什么", "叫啥", "是什么", "什么", "怎么", "这个", "那个", "这种", "那种", "一个", "一种", "的时候", "时候", "效果", "动效", "动画", "好像", "就是", "可以", "的", "了", "地", "得", "是", "吗", "呢", "啊", "吧"];
+const TERM_FIELD_WEIGHTS = Object.freeze({ name: 3, alias: 2, keyword: 1.5, description: 1 });
+// A term is listed when it covers half of what the query says in words the vocabulary knows. The
+// three best may be listed from a quarter: the closest names for a description no term fits well.
+const TERM_COVERAGE = 0.5;
+const TERM_NEAR_COVERAGE = 0.25;
+const TERM_NEAR_COUNT = 3;
+
+function termStem(word) {
+  let stem = word;
+  if (stem.length > 4 && stem.endsWith("ies")) stem = `${stem.slice(0, -3)}y`;
+  else if (stem.length > 3 && stem.endsWith("s") && !stem.endsWith("ss")) stem = stem.slice(0, -1);
+  if (stem.length > 5 && stem.endsWith("ing")) stem = stem.slice(0, -3);
+  else if (stem.length > 4 && stem.endsWith("ed")) stem = stem.slice(0, -2);
+  else if (stem.length > 4 && stem.endsWith("ly")) stem = stem.slice(0, -2);
+  if (stem.length > 4 && /[ey]$/.test(stem)) stem = stem.slice(0, -1);
+  if (stem.length > 3 && /([b-df-hj-np-tv-z])\1$/.test(stem)) stem = stem.slice(0, -1);
+  return stem;
+}
+
+// Latin words are stemmed; each run of CJK characters becomes its bigrams (a single character
+// stays as it is) after the question and filler phrases are removed.
+function termTokens(text) {
+  const tokens = [];
+  const folded = String(text).toLowerCase().replace(/['’]/g, "");
+  for (const word of folded.match(/[a-z0-9]+/g) || []) {
+    if (!TERM_STOP_WORDS.has(word)) tokens.push(termStem(word));
+  }
+  for (const run of folded.match(/[㐀-鿿]+/g) || []) {
+    let rest = run;
+    for (const phrase of TERM_STOP_PHRASES_ZH) rest = rest.split(phrase).join(" ");
+    for (const part of rest.split(" ").filter(Boolean)) {
+      if (part.length === 1) tokens.push(part);
+      for (let index = 0; index + 1 < part.length; index += 1) tokens.push(part.slice(index, index + 2));
+    }
+  }
+  return tokens;
+}
+
+function termFields(entry) {
+  const names = typeof entry.name === "string" ? [entry.name] : isObject(entry.name) ? Object.values(entry.name).filter((value) => typeof value === "string") : [];
+  const list = (value) => (Array.isArray(value) ? value.filter((item) => typeof item === "string") : []);
+  return { names, aliases: list(entry.aliases), keywords: list(entry.keywords), description: typeof entry.description === "string" ? entry.description : "" };
+}
+
+function rankTerms(entries, query) {
+  const queryTokens = [...new Set(termTokens(query))];
+  if (!entries.length || !queryTokens.length) return [];
+  const indexed = entries.map((entry) => {
+    const fields = termFields(entry);
+    const weights = new Map();
+    const add = (text, weight) => { for (const token of termTokens(text)) if ((weights.get(token) || 0) < weight) weights.set(token, weight); };
+    fields.names.forEach((text) => add(text, TERM_FIELD_WEIGHTS.name));
+    fields.aliases.forEach((text) => add(text, TERM_FIELD_WEIGHTS.alias));
+    fields.keywords.forEach((text) => add(text, TERM_FIELD_WEIGHTS.keyword));
+    add(fields.description, TERM_FIELD_WEIGHTS.description);
+    // "Fade in / Fade out" answers to either half; a query that contains a whole name ranks first.
+    const nameSets = fields.names.flatMap((name) => [name, ...name.split("/")]).map((name) => [...new Set(termTokens(name))]).filter((tokens) => tokens.length);
+    const phrases = [...fields.names, ...fields.aliases].map((text) => [...new Set(termTokens(text))]).filter((tokens) => tokens.length);
+    return { entry, weights, nameSets, phrases };
+  });
+  const frequency = new Map();
+  for (const item of indexed) for (const token of item.weights.keys()) frequency.set(token, (frequency.get(token) || 0) + 1);
+  const rarity = (token) => Math.log(1 + indexed.length / frequency.get(token));
+  // Words no term knows carry no evidence either way, so coverage is measured over the rest: a
+  // long sentence is not penalised for its filler, and a query made only of unknown words finds
+  // no term.
+  const known = queryTokens.filter((token) => frequency.has(token));
+  const total = known.reduce((sum, token) => sum + rarity(token), 0);
+  if (!total) return [];
+  const asked = new Set(known);
+  const scored = [];
+  for (const item of indexed) {
+    let matched = 0;
+    let score = 0;
+    for (const token of known) {
+      const weight = item.weights.get(token);
+      if (!weight) continue;
+      matched += rarity(token);
+      score += weight * rarity(token);
+    }
+    if (!score || matched / total < TERM_NEAR_COVERAGE) continue;
+    // The closest single phrase decides between terms that share words: the share of that phrase
+    // the query covers, weighted by how rare the shared words are.
+    let phrase = 0;
+    for (const tokens of item.phrases) {
+      const shared = tokens.filter((token) => asked.has(token));
+      if (!shared.length) continue;
+      const value = shared.reduce((sum, token) => sum + rarity(token), 0) * (shared.length / tokens.length);
+      if (value > phrase) phrase = value;
+    }
+    const named = item.nameSets.some((tokens) => tokens.every((token) => asked.has(token)));
+    // A query that is exactly one of the term's names or aliases outranks a term whose name is only
+    // part of it ("shared layout animation" is an alias of one term and contains the name of another).
+    const exact = item.phrases.some((tokens) => tokens.length === asked.size && tokens.every((token) => asked.has(token)));
+    scored.push({ entry: item.entry, coverage: matched / total, score: score + 2 * phrase + (named ? 3 * total : 0) + (exact ? 4 * total : 0) });
+  }
+  scored.sort((left, right) => right.score - left.score || (left.entry.id < right.entry.id ? -1 : left.entry.id > right.entry.id ? 1 : 0));
+  return scored.filter((item, index) => item.coverage >= TERM_COVERAGE || index < TERM_NEAR_COUNT).map((item) => item.entry);
 }
 
 function serializeCatalog(catalog) {
@@ -499,7 +615,7 @@ const CAPABILITY_TERMS = Object.freeze({
   "interactive-card": ["interactive card", "tilt card", "hover card"],
   "dither-background": ["dither background", "dithering", "dither", "抖动背景", "抖动"],
   "animated-background": ["animated background", "动态背景"], "shader-background": ["shader background", "webgl background", "着色器背景"],
-  smoothui: ["smoothui", "smooth ui"], "react-bits": ["react bits", "reactbits"], "decrypted-text": ["decrypted text", "decryptedtext", "decrypting text"],
+  smoothui: ["smoothui", "smooth ui"], "animate-ui": ["animate-ui", "animate ui", "animateui"], "react-bits": ["react bits", "reactbits"], "decrypted-text": ["decrypted text", "decryptedtext", "decrypting text"],
   "spring-animation": ["spring animation", "spring physics", "spring"],
   "scroll-reveal": ["scroll reveal", "scroll animation", "scroll-triggered"],
   timeline: ["timeline", "animation timeline", "sequenced animation"],

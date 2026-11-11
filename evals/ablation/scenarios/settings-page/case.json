@@ -1,0 +1,10 @@
+{
+  "set": "product-ui",
+  "style": "broadsheet-app",
+  "packStyle": "broadsheet",
+  "outputs": [{ "files": ["settings.html"], "width": 1440, "height": 900 }],
+  "minFontPx": 13,
+  "hierarchy": { "levels": 3, "ratio": 2 },
+  "profile": "ui",
+  "controls": true
+}

@@ -177,7 +177,8 @@ Resolved conflicts:
   `playwright-cli` use (an absent trigger loads nothing); make motion decisions inside the motion
   gate's opportunity screen and record the tokens the audit will copy.
 - **Build:** choose components through `component-source-catalog.json` and `design-system route`
-  (SmoothUI's `npx shadcn@latest add <registry url>` is the shadcn-registry case) and express craft
+  (SmoothUI's `npx shadcn@latest add <registry url>` is the shadcn-registry case; [Animate UI](animate-ui.md)
+  is the package case, an import swap on primitives the project already has) and express craft
   details in the existing styling system. **Probe:** pass the audit. **Review:** walk the checklist.
 
 ## Execution boundary

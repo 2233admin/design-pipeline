@@ -36,6 +36,14 @@ runtime, workflow, remote prompt, or skill implementation is bundled or executed
   https://reactbits.dev/text-animations/decrypted-text and https://github.com/DavidHDev/react-bits,
   MIT + Commons Clause. The pipeline stores the DecryptedText behavioral and accessibility
   contract only; it does not redistribute the component library itself.
+- `imskyleen/animate-ui`, reviewed 2026-11-12 at commit
+  `22a9236ae107328f8564edb7e3299375da3247af` from https://github.com/imskyleen/animate-ui and
+  https://animate-ui.com/docs, MIT + Commons Clause, Copyright (c) 2025 Elliot Sutton. The pipeline
+  stores component names, import paths, install commands and its own descriptions
+  (`skill/references/component-source-catalog.json`, record `animate-ui/components`), a pinned
+  name inventory for tests (`tests/fixtures/animate-ui/upstream-inventory.json`) and a guide written
+  for this project (`skill/references/animate-ui.md`) that restates how the upstream agent skill
+  uses the library. No component source is bundled or redistributed, and nothing is auto-installed.
 - User-curated component references: Beautiful UI, beUI, Rare UI, Transitions.dev, shadcn/ui,
   Shadcnblocks, Magic UI, Aceternity UI, and AI SDK Elements. The catalog stores URL, routing,
   and compatibility metadata only; no upstream source code, runtime, or dependency is bundled.
@@ -745,6 +753,15 @@ the repository README and other root files are excluded.
 MIT, Copyright (c) 2026 Emil Kowalski. The complete original license is
 `skill/vendor/emil-design-eng/upstream/LICENSE`. `skill/vendor/emil-design-eng/manifest.json`
 records the scoped original Git blobs and hashes.
+
+The motion vocabulary (`skill/references/motion-vocabulary.json`, its generated
+`motion-vocabulary/*` records in `skill/references/component-source-catalog.json`, the quoted answer
+format in `skill/references/motion-vocabulary.md` and the pinned list
+`tests/fixtures/motion-vocabulary/upstream-terms.json`) quotes the glossary of
+`skills/animation-vocabulary/SKILL.md` from the same repository and commit verbatim: 91 terms, their
+one-sentence definitions and 12 category names. MIT, Copyright (c) 2026 Emil Kowalski; the license
+text is the one named above. Aliases, close-term notes, local links and the three anti-pattern
+records are project-owned.
 
 ## jakubkrehel/make-interfaces-feel-better
 

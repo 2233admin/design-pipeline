@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="reference-size" content="1440x900">
+<title>订阅管理</title>
+<style>
+  :root { --bg: #F3F4F1; --surface: #FFFFFF; --rule: #CDD2D0; --text: #121417; --muted: #565C61; --primary: #0B6E4F; --highlight: #F2C230; --danger: #B42318; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1440px; height: 900px; overflow: hidden; background: var(--bg); color: var(--text); font: 400 16px/1.6 "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; }
+  .serif { font-family: "Noto Serif SC", "Songti SC", SimSun, serif; }
+  header { height: 64px; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--rule); }
+  header .name { font-size: 20px; font-weight: 900; letter-spacing: 0.2em; }
+  header .who { font-size: 14px; color: var(--muted); }
+  .wrap { display: grid; grid-template-columns: 248px 640px 1fr; gap: 64px; padding: 48px 32px 0; }
+  nav a { display: flex; align-items: center; height: 40px; padding-left: 16px; font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: none; border-left: 2px solid var(--rule); }
+  nav a[aria-current] { color: var(--text); border-left-color: var(--primary); }
+  .kicker { font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: var(--primary); }
+  h1 { font-size: 40px; line-height: 1.2; font-weight: 700; margin: 8px 0 12px; }
+  .deck { color: var(--muted); max-width: 520px; }
+  .deck mark { background: linear-gradient(transparent 55%, var(--highlight) 55%); color: inherit; }
+  section { margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--rule); }
+  h2 { font-size: 28px; line-height: 1.3; font-weight: 700; }
+  .plan { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 12px; }
+  .plan p { font-size: 14px; color: var(--muted); }
+  .price { font-size: 28px; font-weight: 700; }
+  .price small { font: 400 14px/1 "Noto Sans SC", sans-serif; color: var(--muted); }
+  .row { display: grid; grid-template-columns: 120px 1fr 96px 56px; column-gap: 24px; align-items: center; height: 48px; border-bottom: 1px solid var(--rule); font-size: 14px; }
+  .row.head { height: 36px; color: var(--muted); font-weight: 500; }
+  .row a { color: var(--primary); }
+  .row .amt { text-align: right; font-variant-numeric: tabular-nums; }
+  aside { padding-top: 76px; }
+  .box { background: var(--surface); border: 1px solid var(--rule); padding: 24px; }
+  .box h3 { font-size: 20px; line-height: 1.4; font-weight: 700; }
+  .box p { font-size: 14px; color: var(--muted); margin: 8px 0 20px; }
+  button { height: 40px; padding: 0 20px; font: 500 14px/1 "Noto Sans SC", sans-serif; border: 1px solid var(--rule); background: var(--surface); color: var(--text); }
+  button.main { background: var(--primary); border-color: var(--primary); color: var(--surface); }
+  .quiet { margin-top: 16px; font-size: 13px; color: var(--muted); }
+  .quiet a { color: var(--danger); }
+</style>
+</head>
+<body>
+<header><div class="name serif">晨报周刊</div><div class="who">沈知微 · 读者编号 20418</div></header>
+<div class="wrap">
+  <nav>
+    <a href="#">阅读记录</a>
+    <a href="#" aria-current="page">订阅与账单</a>
+    <a href="#">收件地址</a>
+    <a href="#">赠阅名额</a>
+  </nav>
+  <main>
+    <div class="kicker">订阅与账单</div>
+    <h1 class="serif">你的订阅到明年三月</h1>
+    <p class="deck">下一次扣款在 <mark>2027 年 3 月 12 日</mark>。在那之前随时可以改成按月付，已付的部分不受影响。</p>
+    <section>
+      <h2 class="serif">年度订阅</h2>
+      <div class="plan">
+        <p>每周五一期电子刊，全年四本纸质特刊，可分享给两位家人。</p>
+        <div class="price serif">¥ 298 <small>/ 年</small></div>
+      </div>
+    </section>
+    <section>
+      <h2 class="serif">最近的账单</h2>
+      <div class="row head"><span>日期</span><span>项目</span><span class="amt">金额</span><span></span></div>
+      <div class="row"><span>2026-03-12</span><span>年度订阅续费</span><span class="amt">¥ 298.00</span><a href="#">收据</a></div>
+      <div class="row"><span>2025-11-02</span><span>特刊《河流》加印本</span><span class="amt">¥ 68.00</span><a href="#">收据</a></div>
+      <div class="row"><span>2025-03-12</span><span>年度订阅</span><span class="amt">¥ 268.00</span><a href="#">收据</a></div>
+    </section>
+  </main>
+  <aside>
+    <div class="box">
+      <h3>换成按月付</h3>
+      <p>每月 ¥ 32，从下个周期开始生效。年度订阅剩余的时间照常阅读。</p>
+      <button class="main">改为按月付</button>
+    </div>
+    <p class="quiet">不想续订了？<a href="#">关闭自动续费</a>，订阅会在到期日结束。</p>
+  </aside>
+</div>
+</body>
+</html>

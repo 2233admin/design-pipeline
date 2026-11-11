@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>工作台</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1440px; height: 900px; overflow: hidden; background: #0D0F11; color: #E8EAEC; font: 400 16px/1.5 "Noto Sans SC", sans-serif; }
+  .mono { font: 500 13px/1.4 "JetBrains Mono", monospace; }
+  .app { display: grid; grid-template-columns: 200px 1fr 360px; height: 900px; }
+  nav { border-right: 1px solid #2C333A; padding: 24px 0; }
+  .brand { padding: 0 24px 20px; font-size: 20px; font-weight: 500; }
+  nav a { display: flex; align-items: center; height: 44px; padding: 0 24px; font-size: 14px; font-weight: 500; color: #8B949C; text-decoration: none; }
+  nav a[aria-current] { color: #E8EAEC; background: #171B1F; }
+  main { padding: 24px 32px; }
+  h1 { font-size: 32px; line-height: 1.25; font-weight: 700; }
+  .filters { display: flex; gap: 8px; margin: 20px 0 16px; }
+  button, .action { display: inline-flex; align-items: center; justify-content: center; height: 36px; min-width: 64px; padding: 0 16px; font: 500 14px/1.4 "Noto Sans SC", sans-serif; color: #E8EAEC; background: #171B1F; border: 1px solid #2C333A; border-radius: 2px; text-decoration: none; }
+  button[aria-pressed="true"] { border-color: #E8EAEC; }
+  .head, .row { display: grid; grid-template-columns: 120px 1fr 140px 200px 120px; align-items: center; border-bottom: 1px solid #2C333A; }
+  .head { height: 36px; font-size: 14px; font-weight: 500; color: #8B949C; }
+  .row { height: 48px; }
+  .ok { color: #36C5C0; } .run { color: #F5A623; } .bad { color: #E5484D; }
+  aside { border-left: 1px solid #2C333A; padding: 24px; }
+  h2 { font-size: 24px; line-height: 1.3; font-weight: 700; margin-bottom: 16px; }
+  .empty { background: #171B1F; border: 1px solid #2C333A; padding: 24px; }
+  .empty p { margin-bottom: 8px; }
+  .empty p + p { color: #8B949C; font-size: 14px; margin-bottom: 20px; }
+  .action.main { background: #F5A623; border-color: #F5A623; color: #0D0F11; }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav>
+    <div class="brand">铸台</div>
+    <a href="#builds" aria-current="page">构建</a>
+    <a href="#pipelines">流水线</a>
+    <a href="#machines">机器</a>
+    <a href="#settings">设置</a>
+  </nav>
+  <main id="builds">
+    <h1>方舟计划</h1>
+    <div class="filters">
+      <button type="button" aria-pressed="true">全部</button>
+      <button type="button" aria-pressed="false">失败</button>
+      <button type="button" aria-pressed="false">进行中</button>
+    </div>
+    <div class="head"><span>编号</span><span>分支</span><span>状态</span><span>用时</span><span></span></div>
+    <div class="row"><span class="mono">#4821</span><span class="mono">main</span><span class="ok">成功</span><span class="mono">6 分 12 秒</span><span></span></div>
+    <div class="row"><span class="mono">#4820</span><span class="mono">feature/atlas</span><span class="bad">失败</span><span class="mono">2 分 40 秒</span><span><button type="button">重新运行</button></span></div>
+    <div class="row"><span class="mono">#4819</span><span class="mono">main</span><span class="run">进行中</span><span class="mono">已运行 3 分 05 秒</span><span></span></div>
+    <div class="row"><span class="mono">#4818</span><span class="mono">release/1.8</span><span class="ok">成功</span><span class="mono">7 分 01 秒</span><span></span></div>
+    <div id="pipelines"></div><div id="settings"></div>
+  </main>
+  <aside id="machines">
+    <h2>主机组 B</h2>
+    <div class="empty">
+      <p>这组机器还没有跑过构建。</p>
+      <p>把它接入流水线后，构建记录会出现在这里。</p>
+      <a class="action main" href="#connect" id="connect">接入流水线</a>
+    </div>
+  </aside>
+</div>
+</body>
+</html>

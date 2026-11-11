@@ -63,6 +63,14 @@ const sourceRefs = {
     reviewedAt: "2026-11-11T00:00:00.000Z",
     sourceFiles: ["skills/baseline-ui/SKILL.md", "skills/fixing-metadata/SKILL.md", "skills/fixing-motion-performance/SKILL.md"],
   },
+  "skill/references/animate-ui.md": {
+    sourceId: "animate-ui",
+    revision: "22a9236ae107328f8564edb7e3299375da3247af",
+    contentHash: "8ff98fece9000f75e9b97574a372ea07524e6676cb050b081fa65978ef561e2a",
+    license: "LicenseRef-MIT-Commons-Clause",
+    reviewedAt: "2026-11-12T00:00:00.000Z",
+    sourceFiles: ["skills/animate-ui/SKILL.md", "skills/animate-ui/references/catalog.md", "skills/animate-ui/references/vue.md", "skills/animate-ui/references/migrate.md", "skills/animate-ui/references/review.md", "LICENSE.md"],
+  },
 };
 const motionProfileSourceFiles = [
   "skills/improve-animations/SKILL.md",

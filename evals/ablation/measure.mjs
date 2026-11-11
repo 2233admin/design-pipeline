@@ -123,6 +123,23 @@ export function contentPieces(contentFile) {
 		.filter(Boolean);
 }
 
+/**
+ * 页面文字里找得到几段要求的文字。每段要有自己的一处：content.md 里重复出现的段（筛选里的“进行中”和某一行的“进行中”）
+ * 要出现同样多次；一段是另一段的一部分时（“删除账户”在“删除账户…”里），长的那处不能顶替短的。
+ * 做法：从长到短，每段在页面文字里占掉一处还没被占的出现。
+ */
+export function coveredPieces(pieces, joined) {
+	let text = joined;
+	let covered = 0;
+	for (const piece of [...pieces].sort((a, b) => b.length - a.length)) {
+		const at = text.indexOf(piece);
+		if (at < 0) continue;
+		covered++;
+		text = `${text.slice(0, at)}${"\u0000".repeat(piece.length)}${text.slice(at + piece.length)}`;
+	}
+	return covered;
+}
+
 // ---------- 交付物的静态检查 ----------
 
 // 自包含：除了 data:、blob:、页内锚点以外，不引用任何 URL 或文件
@@ -263,6 +280,21 @@ export function browserTools() {
 	return { puppeteer: resolvePuppeteer(REPO, puppeteerModule), executablePath: resolveBrowser() };
 }
 
+/** 把一个本地 HTML 页面在固定尺寸下截成 PNG（参考页用）：不量、不审计，只出图。 */
+export async function screenshot(file, { width, height }) {
+	const { puppeteer, executablePath } = browserTools();
+	const browser = await puppeteer.launch({ executablePath, headless: true, args: ["--allow-file-access-from-files"] });
+	try {
+		const tab = await browser.newPage();
+		await tab.setViewport({ width, height, deviceScaleFactor: 1 });
+		await tab.goto(pathToFileURL(file).href, { waitUntil: "networkidle0", timeout: 30000 });
+		await tab.evaluate(settle);
+		return Buffer.from(await tab.screenshot({ type: "png" }));
+	} finally {
+		await browser.close();
+	}
+}
+
 /**
  * 在固定尺寸下渲染交付物：截图、页面审计、文字与色块、减弱动态下的可见文字。
  * SVG 内联进一个只有它的 HTML 页面里量（SVG 文档没有 body，审计和文字提取都要 HTML）。
@@ -291,7 +323,8 @@ export async function render(file, { width, height, minFontPx, captureDir }) {
 		await tab.goto(url, { waitUntil: "networkidle0", timeout: 30000 });
 		await tab.evaluate(settle);
 		await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
-		const png = await tab.screenshot({ type: "png" });
+		// 新版 puppeteer 的截图是 Uint8Array，解 PNG 的代码只认 Buffer
+		const png = Buffer.from(await tab.screenshot({ type: "png" }));
 		writeFileSync(join(captureDir, "screenshot.png"), png);
 		const elements = await tab.evaluate(extract);
 		const options = auditOptions({ thresholds: { minFontPx } });
@@ -534,9 +567,11 @@ export function measureRender(rendered, { style, pieces, width, height, minFontP
 	const contrastFails = failed("audit.text-contrast");
 	const compositionErrors = composition.findings.filter((finding) => finding.severity === "error" && ["blank-frame", "low-contrast"].includes(finding.code)).length;
 
-	const covered = pieces.filter((piece) => rendered.facts.joined.includes(piece)).length;
+	const covered = coveredPieces(pieces, rendered.facts.joined);
 	const hiddenWithoutMotion = pieces.filter((piece) => rendered.facts.joined.includes(piece) && !rendered.stillJoined.includes(piece)).length;
 	const fakeControls = controls ? rendered.facts.fakeControls : 0;
+	// 点击区域太小的控件数（页面审计的 audit.target-size）：只写进 measure.json，不进综合分，也不是 results.tsv 的列
+	const targetSizeFails = controls ? failed("audit.target-size") : 0;
 
 	return {
 		image,
@@ -558,6 +593,7 @@ export function measureRender(rendered, { style, pieces, width, height, minFontP
 			contentCoverage: pieces.length ? Number((covered / pieces.length).toFixed(4)) : 1,
 			hiddenWithoutMotion,
 			fakeControls,
+			targetSizeFails,
 			antiSlopHard: hiddenWithoutMotion + fakeControls,
 			...rhythm(texts, rendered.facts.decorations, style?.unit ?? 8),
 		},
