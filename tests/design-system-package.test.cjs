@@ -220,6 +220,50 @@ test("contrast entries are validated, translucent colours refused and hsl measur
   assert.ok(result.contrast.some((pair) => pair.text === "sage" && pair.ratio > 4.5));
 });
 
+test("oklch colours are measured for contrast, and one outside sRGB is reported", () => {
+  const withPair = (ink, paper, min = 4.5) => {
+    const t = tokens();
+    t.color.tokens[0].value = paper;
+    t.color.tokens[1].value = ink;
+    t.contrast = [{ text: "ink", on: ["paper"], min }];
+    return writePackage({ "tokens.json": JSON.stringify(t) });
+  };
+  const exit = (root) => spawnSync(process.execPath, [cli, "design-system", "check", "--root", root, "--project-root", root], { encoding: "utf8" }).status;
+
+  const passRoot = withPair("oklch(0.2 0.02 260)", "oklch(0.98 0.01 260)");
+  const pass = checkDesignSystemPackage({ projectRoot: passRoot });
+  assert.equal(pass.status, "ready", messages(pass));
+  assert.equal(pass.contrast.length, 2);
+  assert.ok(pass.contrast.every((pair) => pair.ratio > 15), JSON.stringify(pass.contrast));
+  assert.equal(exit(passRoot), 0);
+
+  const failRoot = withPair("oklch(0.6 0.02 260)", "oklch(0.97 0.01 90)");
+  assert.match(messages(checkDesignSystemPackage({ projectRoot: failRoot })), /contrast ink on paper \(light\) is \d\.\d+:1, below 4\.5:1/);
+  assert.equal(exit(failRoot), 2);
+
+  // Greys written with a powerless hue, as the bundled Good CSS guidance asks, are measured like hue 0.
+  const neutral = checkDesignSystemPackage({ projectRoot: withPair("oklch(20% 0 none)", "oklch(1 0 none)") });
+  assert.equal(neutral.status, "ready", messages(neutral));
+  assert.deepEqual(neutral.contrast.map((pair) => pair.ratio), checkDesignSystemPackage({ projectRoot: withPair("oklch(20% 0 0)", "oklch(1 0 0)") }).contrast.map((pair) => pair.ratio));
+  assert.ok(neutral.contrast.every((pair) => pair.ratio > 15), JSON.stringify(neutral.contrast));
+
+  // The same pair written as hex and as its oklch() equivalent measures the same.
+  const ratioOf = (ink, paper) => checkDesignSystemPackage({ projectRoot: withPair(ink, paper, 3) }).contrast[0].ratio;
+  assert.ok(Math.abs(ratioOf("#ff0000", "#ffffff") - ratioOf("oklch(62.8% 0.2577 29.23)", "oklch(1 0 0)")) <= 0.05);
+
+  // Outside sRGB: one finding for the token (its alias `link` adds none), and the pair is still measured clamped.
+  const wide = checkDesignSystemPackage({ projectRoot: withPair("oklch(0.7 0.35 150)", "#101010", 3) });
+  const gamut = wide.findings.filter((finding) => finding.code === "out-of-gamut");
+  assert.equal(gamut.length, 1, messages(wide));
+  assert.match(gamut[0].message, /^color\.ink \(light, dark\): oklch\(0\.7 0\.35 150\) is outside sRGB/);
+  assert.ok(gamut[0].fix);
+  assert.equal(wide.status, "invalid");
+  assert.ok(wide.contrast.every((pair) => pair.ratio > 3), JSON.stringify(wide.contrast));
+
+  // A colour space the check still cannot measure says which ones it can.
+  assert.match(messages(checkDesignSystemPackage({ projectRoot: withPair("lab(20% 0 0)", "#ffffff") })), /must exist and be hex, rgb\(\), hsl\(\) or oklch\(\)/);
+});
+
 test("a non-object tokens.json is invalid, not ready or a crash", () => {
   for (const body of ["null", "3", "[]"]) {
     assert.match(messages(checkDesignSystemPackage({ projectRoot: writePackage({ "tokens.json": body }) })), /tokens\.json must be a JSON object/);
