@@ -120,6 +120,15 @@
       "kernel": ["foundation", "toolchain"]
     },
     {
+      "id": "refine-intents",
+      "activation": "scored",
+      "priority": 45,
+      "keywords": ["critique", "polish", "distill", "quieter", "too loud", "tone down", "tone it down", "declutter", "评审", "点评", "打磨", "抛光", "精简", "收一收", "太吵", "降噪", "克制"],
+      "primaryKnowledge": { "id": "refine-intents", "command": "toolchain", "action": "resolve", "admission": "ready" },
+      "secondaries": [],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
       "id": "product-design",
       "activation": "default",
       "priority": 0,
