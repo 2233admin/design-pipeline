@@ -1,0 +1,3801 @@
+{
+  "schema": "design-pipeline.motion-vocabulary.v1",
+  "note": "Terms and definitions are quoted verbatim from the upstream glossary; aliases, closeTerms, local and antiPatterns are this repository's. The motion-vocabulary/* records in component-source-catalog.json are generated from this file by scripts/refresh-motion-vocabulary.cjs --catalog.",
+  "source": {
+    "id": "emilkowalski-animation-review",
+    "repository": "https://github.com/emilkowalski/skills",
+    "revision": "f1090bec277140d02ed202440185ad9d02ac1490",
+    "path": "skills/animation-vocabulary/SKILL.md",
+    "license": "MIT"
+  },
+  "categories": [
+    {
+      "id": "entrances-and-exits",
+      "name": "Entrances & Exits",
+      "description": "how elements appear and disappear"
+    },
+    {
+      "id": "sequencing-and-timing",
+      "name": "Sequencing & Timing",
+      "description": "coordinating multiple elements or moments"
+    },
+    {
+      "id": "movement-and-transforms",
+      "name": "Movement & Transforms",
+      "description": "changing an element's position, size, or angle"
+    },
+    {
+      "id": "transitions-between-states",
+      "name": "Transitions Between States",
+      "description": "connecting one state, view, or element to another"
+    },
+    {
+      "id": "scroll",
+      "name": "Scroll",
+      "description": "motion tied to scrolling or navigating between views"
+    },
+    {
+      "id": "feedback-and-interaction",
+      "name": "Feedback & Interaction",
+      "description": "responding to the user's actions"
+    },
+    {
+      "id": "easing",
+      "name": "Easing",
+      "description": "how speed changes over an animation"
+    },
+    {
+      "id": "spring-animations",
+      "name": "Spring Animations",
+      "description": "physics-based motion as an alternative to fixed-duration easing"
+    },
+    {
+      "id": "looping-and-ambient-motion",
+      "name": "Looping & Ambient Motion",
+      "description": "animations that run on their own"
+    },
+    {
+      "id": "polish-and-effects",
+      "name": "Polish & Effects",
+      "description": "the small touches that separate good from great"
+    },
+    {
+      "id": "performance",
+      "name": "Performance",
+      "description": "what keeps motion smooth instead of stuttering"
+    },
+    {
+      "id": "principles-to-know",
+      "name": "Principles to Know",
+      "description": "concepts that guide when and how to animate"
+    }
+  ],
+  "terms": [
+    {
+      "id": "fade-in-fade-out",
+      "term": "Fade in / Fade out",
+      "category": "entrances-and-exits",
+      "definition": "Element appears or disappears by changing opacity.",
+      "aliases": {
+        "en": [
+          "gradually appears from transparent",
+          "fades away until it is invisible",
+          "opacity going from 0 to 1"
+        ],
+        "zh": [
+          "淡入淡出",
+          "慢慢浮现出来",
+          "逐渐变透明直到消失"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "crossfade",
+          "difference": "A crossfade is two elements trading places in one spot; a fade is one element changing opacity."
+        },
+        {
+          "id": "reveal",
+          "difference": "A reveal uncovers content along an edge with a clip or mask; a fade changes the opacity of the whole element at once."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "fade-slide",
+          "tr-dissolve",
+          "tx-fade-up-words"
+        ],
+        "guides": [
+          "references/animate-ui.md#entrances-and-scroll-reveals"
+        ]
+      }
+    },
+    {
+      "id": "slide-in",
+      "term": "Slide in",
+      "category": "entrances-and-exits",
+      "definition": "Element enters by sliding in from off-screen (left, right, top, or bottom).",
+      "aliases": {
+        "en": [
+          "comes in from the side of the screen",
+          "panel moves in from off-screen",
+          "drawer sliding in from the edge"
+        ],
+        "zh": [
+          "滑入",
+          "从屏幕边上滑进来",
+          "面板从侧面推进来"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "direction-aware-transition",
+          "difference": "A direction-aware transition picks the slide direction from forward or back navigation; a slide in has one fixed direction."
+        },
+        {
+          "id": "scroll-reveal",
+          "difference": "A scroll reveal is triggered by the element entering the viewport; a slide in is triggered by the element being added."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "route-slide",
+          "sidebar-reveal",
+          "fade-slide",
+          "soft-rise"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-07--direction-does-not-invent-meaning",
+          "references/animate-ui.md#entrances-and-scroll-reveals"
+        ]
+      }
+    },
+    {
+      "id": "scale-in",
+      "term": "Scale in",
+      "category": "entrances-and-exits",
+      "definition": "Element grows from smaller to full size as it appears, often paired with a fade.",
+      "aliases": {
+        "en": [
+          "grows from a bit smaller to full size while appearing",
+          "zooms up slightly as it shows"
+        ],
+        "zh": [
+          "缩放进入",
+          "从小一点放大到正常大小出现",
+          "由小变大地出现"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "pop-in",
+          "difference": "Pop in overshoots past full size and settles back; scale in stops exactly at full size."
+        },
+        {
+          "id": "origin-aware-animation",
+          "difference": "Scale in says how the element appears; origin-aware says where it grows from."
+        },
+        {
+          "id": "scale",
+          "difference": "Scale is the transform itself; scale in is an entrance that uses it."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "pop-scale",
+          "dropdown-origin",
+          "tx-random-tilt-scale-in"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#never-animate-from-scale0",
+          "references/animate-ui.md#entrances-and-scroll-reveals"
+        ]
+      }
+    },
+    {
+      "id": "pop-in",
+      "term": "Pop in",
+      "category": "entrances-and-exits",
+      "definition": "Element appears with a slight overshoot, like it bounces into place.",
+      "aliases": {
+        "en": [
+          "appears with a little overshoot and then settles",
+          "the bouncy thing when a popover opens",
+          "pops onto the screen slightly too big then comes back"
+        ],
+        "zh": [
+          "弹入",
+          "弹出来的时候稍微过头再回正",
+          "带一点回弹地蹦出来",
+          "先放大过头一点再缩回来"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "bounce",
+          "difference": "Bounce is the spring behaviour, overshoot and settle, on any motion; pop in is specifically an entrance that uses it."
+        },
+        {
+          "id": "scale-in",
+          "difference": "Scale in has no overshoot; it stops exactly at full size."
+        }
+      ],
+      "local": {
+        "primitives": [
+          "response.spring-settle"
+        ],
+        "recipes": [
+          "pop-scale",
+          "badge-pop",
+          "tx-scale-pop-in",
+          "overshoot",
+          "e-outback"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#never-animate-from-scale0"
+        ]
+      }
+    },
+    {
+      "id": "reveal",
+      "term": "Reveal",
+      "category": "entrances-and-exits",
+      "definition": "Content is uncovered gradually, often by animating a clip-path or mask.",
+      "aliases": {
+        "en": [
+          "content gets uncovered gradually like a curtain pulling back",
+          "wipes into view",
+          "unmasked bit by bit"
+        ],
+        "zh": [
+          "揭示",
+          "像拉开幕布一样慢慢露出来",
+          "擦除式地显现"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "clip-path",
+          "difference": "Clip-path is a tool with hard edges; reveal is the effect, whichever tool draws it."
+        },
+        {
+          "id": "mask",
+          "difference": "Mask is a tool with soft, fadeable edges; reveal is the effect."
+        },
+        {
+          "id": "scroll-reveal",
+          "difference": "A scroll reveal is triggered by entering the viewport and may only fade or slide; a reveal uncovers along an edge."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "mask-wipe",
+          "diagonal-wipe",
+          "split-reveal",
+          "iris-open",
+          "svg-mask-reveal",
+          "width-reveal"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#clip-path-for-animation"
+        ]
+      }
+    },
+    {
+      "id": "enter-exit",
+      "term": "Enter / Exit",
+      "category": "entrances-and-exits",
+      "definition": "The animation an element plays when it's added to or removed from the screen.",
+      "aliases": {
+        "en": [
+          "the animation when something is added to or removed from the page",
+          "mount and unmount animation",
+          "how it comes in and how it leaves"
+        ],
+        "zh": [
+          "进场与退场",
+          "元素出现和消失时播的动画",
+          "入场出场动画"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "page-transition",
+          "difference": "A page transition covers a whole route change; enter and exit belong to one element."
+        },
+        {
+          "id": "fade-in-fade-out",
+          "difference": "Fade is one way to enter or exit; enter and exit name the moment, not the look."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "discrete-exit",
+          "shrink-fade-exit",
+          "collapse-away",
+          "t-exit"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-04--entrance-and-exit-have-one-coordination-owner",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#animate-enter-states-with-starting-style",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#asymmetric-enterexit-timing",
+          "references/animate-ui.md#drop-in-primitives"
+        ]
+      }
+    },
+    {
+      "id": "keyframes",
+      "term": "Keyframes",
+      "category": "sequencing-and-timing",
+      "definition": "Defined points in an animation (0%, 50%, 100%) that the browser fills the gaps between.",
+      "aliases": {
+        "en": [
+          "the defined points at 0%, 50% and 100% of an animation",
+          "waypoints the browser fills in between"
+        ],
+        "zh": [
+          "关键帧",
+          "在 0%、50%、100% 定好的几个状态点"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "interpolation-tween",
+          "difference": "Keyframes are the fixed points; interpolation is the filling between them."
+        },
+        {
+          "id": "stepped-animation",
+          "difference": "A stepped animation jumps between points; keyframes are normally interpolated smoothly."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "waypoint-hop"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#use-css-transitions-over-keyframes-for-interruptible-ui"
+        ]
+      }
+    },
+    {
+      "id": "interpolation-tween",
+      "term": "Interpolation / Tween",
+      "category": "sequencing-and-timing",
+      "definition": "Generating all the in-between frames between a start and end value, so motion is continuous.",
+      "aliases": {
+        "en": [
+          "generating the in-between frames from start to end",
+          "smoothly filling the gap between two values",
+          "tweening"
+        ],
+        "zh": [
+          "补间",
+          "插值",
+          "自动算出起点和终点之间的中间帧"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "keyframes",
+          "difference": "Keyframes are the fixed points you define; interpolation generates what lies between them."
+        },
+        {
+          "id": "easing",
+          "difference": "Easing shapes the rate of the interpolation; it is not the interpolation itself."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "linear-travel",
+          "smooth-arrival"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "stagger",
+      "term": "Stagger",
+      "category": "sequencing-and-timing",
+      "definition": "Animate several items one after another with a small delay between each, creating a cascade.",
+      "aliases": {
+        "en": [
+          "items come in one after another",
+          "list items appear one by one with a small delay",
+          "a cascade where each element is slightly later than the last"
+        ],
+        "zh": [
+          "交错",
+          "错峰出现",
+          "一个接一个地依次出现",
+          "列表项挨个出来"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "orchestration",
+          "difference": "Stagger is one repeated delay across similar items; orchestration times different animations into one whole."
+        },
+        {
+          "id": "delay",
+          "difference": "A delay is one wait; a stagger is a delay that grows item by item."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "list-stagger",
+          "list-cascade",
+          "t-stagger-seq",
+          "t-stagger-grid",
+          "grid-wave",
+          "stagger-follow",
+          "catalog-ui-navigation-staggered-reveal"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#stagger-animations",
+          "references/animate-ui.md#entrances-and-scroll-reveals"
+        ]
+      }
+    },
+    {
+      "id": "orchestration",
+      "term": "Orchestration",
+      "category": "sequencing-and-timing",
+      "definition": "Deliberately timing multiple animations so they feel like one coordinated motion.",
+      "aliases": {
+        "en": [
+          "timing several animations so they read as one move",
+          "choreographing multiple elements together"
+        ],
+        "zh": [
+          "编排",
+          "把多个动画安排得像一个整体动作",
+          "多个元素的动效协同"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "stagger",
+          "difference": "Stagger is one tool of orchestration: the same delay repeated across similar items."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "t-overlap",
+          "command-palette-open",
+          "staging"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-04--entrance-and-exit-have-one-coordination-owner"
+        ]
+      }
+    },
+    {
+      "id": "delay",
+      "term": "Delay",
+      "category": "sequencing-and-timing",
+      "definition": "Time before an animation starts.",
+      "aliases": {
+        "en": [
+          "wait before the animation starts",
+          "pause before it begins moving"
+        ],
+        "zh": [
+          "延迟",
+          "动画开始前先等一会儿"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "stagger",
+          "difference": "A stagger is a delay that grows item by item across a group."
+        },
+        {
+          "id": "duration",
+          "difference": "Duration is how long the animation runs; delay is the wait before it runs."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "t-read",
+          "t-snaphold"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-05--project-timing-and-easing-govern-the-whole-change"
+        ]
+      }
+    },
+    {
+      "id": "duration",
+      "term": "Duration",
+      "category": "sequencing-and-timing",
+      "definition": "How long an animation takes.",
+      "aliases": {
+        "en": [
+          "how long the animation takes",
+          "length of the animation in milliseconds"
+        ],
+        "zh": [
+          "时长",
+          "持续时间",
+          "动画总共播多久"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "perceptual-duration",
+          "difference": "Perceptual duration is the spring counterpart: how long it feels finished, since a spring has no fixed end."
+        },
+        {
+          "id": "delay",
+          "difference": "Delay is the wait before the animation; duration is the animation itself."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "t-distance",
+          "t-size",
+          "timing-weight"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-05--project-timing-and-easing-govern-the-whole-change",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#4-how-fast-should-it-be"
+        ]
+      }
+    },
+    {
+      "id": "fill-mode",
+      "term": "Fill mode",
+      "category": "sequencing-and-timing",
+      "definition": "Whether an element keeps its first or last frame's styles before the animation starts or after it ends (e.g. forwards).",
+      "aliases": {
+        "en": [
+          "keeps the last frame's styles after the animation ends",
+          "stays at the end state instead of snapping back",
+          "animation-fill-mode forwards"
+        ],
+        "zh": [
+          "填充模式",
+          "动画播完后停在最后一帧不跳回去",
+          "动画开始前先套用第一帧的样式"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "delay",
+          "difference": "Fill mode decides what the element looks like during the delay and after the end; delay only sets the wait."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [],
+        "guides": []
+      }
+    },
+    {
+      "id": "stepped-animation",
+      "term": "Stepped animation",
+      "category": "sequencing-and-timing",
+      "definition": "An animation that is divided into discrete steps, like a countdown timer.",
+      "aliases": {
+        "en": [
+          "moves in discrete jumps instead of smoothly",
+          "ticks like a countdown timer",
+          "frame-by-frame sprite steps"
+        ],
+        "zh": [
+          "步进动画",
+          "一格一格跳着走而不是平滑过渡",
+          "像倒计时那样一下一下跳"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "linear",
+          "difference": "Linear is constant speed but still continuous; stepped has no in-between frames."
+        },
+        {
+          "id": "number-ticker",
+          "difference": "A number ticker rolls digits to a value; a stepped animation is any motion cut into jumps."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "e-steps",
+          "t-twos",
+          "tx-seven-segment"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "translate",
+      "term": "Translate",
+      "category": "movement-and-transforms",
+      "definition": "Move an element along the X or Y axis.",
+      "aliases": {
+        "en": [
+          "move an element along x or y",
+          "shift it sideways or up and down"
+        ],
+        "zh": [
+          "平移",
+          "位移",
+          "沿 X 或 Y 轴移动"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "slide-in",
+          "difference": "Slide in is an entrance built on translate."
+        },
+        {
+          "id": "drag",
+          "difference": "Drag is translation driven by the pointer."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "linear-travel",
+          "arc-travel",
+          "smooth-arrival"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#translatey-with-percentages"
+        ]
+      }
+    },
+    {
+      "id": "scale",
+      "term": "Scale",
+      "category": "movement-and-transforms",
+      "definition": "Make an element bigger or smaller.",
+      "aliases": {
+        "en": [
+          "make it bigger or smaller",
+          "resize it with a transform"
+        ],
+        "zh": [
+          "缩放",
+          "放大缩小"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "scale-in",
+          "difference": "Scale in is an entrance that uses scale."
+        },
+        {
+          "id": "press-tap-feedback",
+          "difference": "Press feedback is a small scale-down tied to a click or tap."
+        },
+        {
+          "id": "pulse",
+          "difference": "Pulse is a scale or opacity change that repeats."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "elastic-scale",
+          "soft-shrink",
+          "axis-stretch",
+          "center-punch"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#scale-scales-children-too"
+        ]
+      }
+    },
+    {
+      "id": "rotate",
+      "term": "Rotate",
+      "category": "movement-and-transforms",
+      "definition": "Spin an element around a point.",
+      "aliases": {
+        "en": [
+          "spin an element around a point",
+          "turn it by some degrees"
+        ],
+        "zh": [
+          "旋转",
+          "绕一个点转动"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "3d-tilt-flip",
+          "difference": "3D tilt or flip rotates around the X or Y axis for depth; rotate spins flat in the plane."
+        },
+        {
+          "id": "orbit",
+          "difference": "Orbit moves an element around another one; rotate spins it in place."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "simple-turn",
+          "coin-spin",
+          "spin-stop",
+          "rotate-reveal",
+          "counter-rotate"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "skew",
+      "term": "Skew",
+      "category": "movement-and-transforms",
+      "definition": "Slant an element along the X or Y axis, shearing it out of its rectangular shape.",
+      "aliases": {
+        "en": [
+          "slant the element so it looks sheared",
+          "tilts into a parallelogram"
+        ],
+        "zh": [
+          "倾斜",
+          "斜切",
+          "把矩形拉歪成平行四边形"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "rotate",
+          "difference": "Rotate keeps the rectangle; skew shears it."
+        },
+        {
+          "id": "3d-tilt-flip",
+          "difference": "A 3D tilt keeps right angles in its own plane and adds depth; skew distorts the shape in 2D."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "velocity-skew",
+          "tx-scroll-skew",
+          "tx-skew-swipe"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "3d-tilt-flip",
+      "term": "3D tilt / Flip",
+      "category": "movement-and-transforms",
+      "definition": "Rotate in 3D space (rotateX / rotateY) to add depth.",
+      "aliases": {
+        "en": [
+          "card flips over in 3D",
+          "tilts toward the cursor with depth",
+          "rotateX rotateY card flip"
+        ],
+        "zh": [
+          "3D 倾斜",
+          "翻转",
+          "卡片立体翻面",
+          "跟着鼠标立体倾斜"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "rotate",
+          "difference": "Rotate spins flat in the plane; tilt and flip turn around the X or Y axis."
+        },
+        {
+          "id": "perspective",
+          "difference": "Perspective sets how strong the depth of a tilt or flip looks."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "flip-card",
+          "pointer-tilt",
+          "tilt-reaction",
+          "tr-flip",
+          "3d-cube",
+          "catalog-ui-navigation-card-flip"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#3d-transforms-for-depth",
+          "references/animate-ui.md#pointer-effects"
+        ]
+      }
+    },
+    {
+      "id": "perspective",
+      "term": "Perspective",
+      "category": "movement-and-transforms",
+      "definition": "How strong the 3D effect looks — a lower value exaggerates depth, like the viewer is closer.",
+      "aliases": {
+        "en": [
+          "how strong the 3D depth looks",
+          "the viewer distance for a 3D transform"
+        ],
+        "zh": [
+          "透视",
+          "3D 效果的纵深强度",
+          "观察距离越近透视越夸张"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "3d-tilt-flip",
+          "difference": "Tilt and flip are the rotations; perspective is how deep they look."
+        },
+        {
+          "id": "parallax",
+          "difference": "Parallax fakes depth with layers moving at different speeds; perspective is real 3D projection."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "3d-depth",
+          "depth-zoom",
+          "depth-pullback",
+          "tx-layered-depth"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#3d-transforms-for-depth"
+        ]
+      }
+    },
+    {
+      "id": "transform-origin",
+      "term": "Transform origin",
+      "category": "movement-and-transforms",
+      "definition": "The anchor point a scale or rotation grows or spins from.",
+      "aliases": {
+        "en": [
+          "the anchor point it scales or rotates from",
+          "pivot point of the transform"
+        ],
+        "zh": [
+          "变换原点",
+          "缩放或旋转的锚点",
+          "从哪个点开始放大"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "origin-aware-animation",
+          "difference": "Transform origin is the CSS anchor; an origin-aware animation sets that anchor to the trigger."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "dropdown-origin",
+          "rotate-reveal"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#transform-origin",
+          "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff"
+        ]
+      }
+    },
+    {
+      "id": "origin-aware-animation",
+      "term": "Origin-aware animation",
+      "category": "movement-and-transforms",
+      "definition": "An element animates out of its trigger, like a popover growing from the button that opened it instead of from its own center which is the default in CSS.",
+      "aliases": {
+        "en": [
+          "popover grows out of the button that opened it",
+          "menu expands from its trigger instead of from its center",
+          "dropdown scales from where you clicked"
+        ],
+        "zh": [
+          "感知原点的动画",
+          "弹出层从触发它的按钮里长出来",
+          "菜单从点击的位置展开而不是从中心"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "transform-origin",
+          "difference": "Transform origin is the property; origin-aware is the decision to point it at the trigger."
+        },
+        {
+          "id": "scale-in",
+          "difference": "Scale in says how the surface appears; origin-aware says where it grows from."
+        },
+        {
+          "id": "shared-element-transition",
+          "difference": "In a shared element transition the trigger itself travels and becomes the new surface; origin-aware only anchors the new surface to the trigger."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "dropdown-origin",
+          "popover-transition",
+          "ui-tooltip",
+          "catalog-ui-control-bubble-expand"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#make-popovers-origin-aware",
+          "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff",
+          "references/animate-ui.md#drop-in-primitives"
+        ]
+      }
+    },
+    {
+      "id": "crossfade",
+      "term": "Crossfade",
+      "category": "transitions-between-states",
+      "definition": "One element fades out as another fades in, in the same spot.",
+      "aliases": {
+        "en": [
+          "one thing fades out while another fades in at the same place",
+          "two images dissolve into each other"
+        ],
+        "zh": [
+          "交叉淡化",
+          "叠化",
+          "一个淡出的同时另一个在原地淡入"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "morph",
+          "difference": "A morph changes the shape itself; a crossfade only blends opacity."
+        },
+        {
+          "id": "fade-in-fade-out",
+          "difference": "A fade is one element; a crossfade is two swapping in one spot."
+        },
+        {
+          "id": "view-transition",
+          "difference": "A view transition defaults to a crossfade but can also connect shared elements."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "view-crossfade",
+          "tr-dissolve",
+          "tx-blur-crossfade"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-04--entrance-and-exit-have-one-coordination-owner"
+        ]
+      }
+    },
+    {
+      "id": "continuity-transition",
+      "term": "Continuity transition",
+      "category": "transitions-between-states",
+      "definition": "A change that keeps the user oriented by visually connecting before and after. For example, making the same rectangle bigger and smaller.",
+      "aliases": {
+        "en": [
+          "the change keeps you oriented by connecting before and after",
+          "the same box just gets bigger instead of being replaced"
+        ],
+        "zh": [
+          "连续性过渡",
+          "变化前后在视觉上连得起来不让人迷失",
+          "同一个矩形变大变小而不是换一个"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "shared-element-transition",
+          "difference": "A shared element transition is one technique for continuity: an element travels between two places."
+        },
+        {
+          "id": "spatial-consistency",
+          "difference": "Spatial consistency is the principle; a continuity transition is a change that follows it."
+        },
+        {
+          "id": "layout-animation",
+          "difference": "A layout animation is continuity for one element whose box changed."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "detail-expand",
+          "modal-morph",
+          "tr-match"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-02--continuity-preserves-logical-identity"
+        ]
+      }
+    },
+    {
+      "id": "morph",
+      "term": "Morph",
+      "category": "transitions-between-states",
+      "definition": "One shape smoothly turns into another shape, e.g. Dynamic Island.",
+      "aliases": {
+        "en": [
+          "one shape smoothly turns into another shape",
+          "icon transforms into a different icon",
+          "one image turns into another image",
+          "the Dynamic Island changing shape"
+        ],
+        "zh": [
+          "形变",
+          "变形",
+          "一个形状平滑地变成另一个形状",
+          "一张图变成另一张图"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "crossfade",
+          "difference": "Crossfade if the two simply fade over each other in the same spot and nothing changes shape."
+        },
+        {
+          "id": "shared-element-transition",
+          "difference": "Shared element transition if an element travels and transforms from one position into another."
+        },
+        {
+          "id": "text-morph",
+          "difference": "Text morph is the same idea applied to characters when a label changes."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "icon-morph",
+          "svg-path-morph",
+          "liquid-morph",
+          "tr-morph",
+          "ui-island",
+          "ui-morph",
+          "toggle-morph",
+          "modal-morph"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-02--continuity-preserves-logical-identity"
+        ]
+      }
+    },
+    {
+      "id": "shared-element-transition",
+      "term": "Shared element transition",
+      "category": "transitions-between-states",
+      "definition": "An element travels and transforms from one position into another, like a thumbnail expanding into a card.",
+      "aliases": {
+        "en": [
+          "thumbnail expands into the full card",
+          "an element flies from the list into the detail page",
+          "shared layout animation",
+          "hero image travels to its place on the next screen"
+        ],
+        "zh": [
+          "共享元素过渡",
+          "缩略图放大成详情卡片",
+          "同一个元素从列表飞到详情页"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "layout-animation",
+          "difference": "A layout animation is one element reacting to its own change of size or position; a shared element transition links two elements in different places or views. Motion's \"shared layout animation\" (layoutId) is this term, not layout animation."
+        },
+        {
+          "id": "morph",
+          "difference": "A morph changes shape in place; a shared element also travels."
+        },
+        {
+          "id": "view-transition",
+          "difference": "A view transition is a browser mechanism that can carry a shared element."
+        },
+        {
+          "id": "continuity-transition",
+          "difference": "Continuity transition is the broader idea; a shared element is one way to get it."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "shared-element",
+          "detail-expand",
+          "catalog-ui-navigation-hero-expand",
+          "tr-match"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-02--continuity-preserves-logical-identity",
+          "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff",
+          "references/animate-ui.md#page-and-theme-transitions"
+        ]
+      }
+    },
+    {
+      "id": "layout-animation",
+      "term": "Layout animation",
+      "category": "transitions-between-states",
+      "definition": "When an element's size or position changes, it animates to the new spot instead of snapping.",
+      "aliases": {
+        "en": [
+          "items glide to their new position instead of jumping when the layout changes",
+          "the box animates to its new size",
+          "siblings smoothly shift when one is removed"
+        ],
+        "zh": [
+          "布局动画",
+          "布局变化时元素滑到新位置而不是瞬间跳过去",
+          "尺寸变了以后平滑过渡到新大小"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "shared-element-transition",
+          "difference": "A layout animation animates one element whose own size or position changed. A \"shared layout animation\" (Motion's layoutId) connects two different elements and is a shared element transition."
+        },
+        {
+          "id": "accordion-collapse",
+          "difference": "Accordion or collapse is the height-only case with content shown or hidden."
+        },
+        {
+          "id": "layout-thrashing",
+          "difference": "Layout thrashing is the cost when the effect is built by animating layout properties every frame."
+        },
+        {
+          "id": "drag-to-reorder",
+          "difference": "Drag to reorder uses a layout animation for the items that make room."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "flip-reorder",
+          "filter-reflow",
+          "tab-indicator",
+          "grid-shuffle",
+          "tx-balanced-reflow"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-03--geometry-is-coherent-at-the-handoff",
+          "references/animate-ui.md#shared-highlight-and-layout"
+        ]
+      }
+    },
+    {
+      "id": "accordion-collapse",
+      "term": "Accordion / Collapse",
+      "category": "transitions-between-states",
+      "definition": "A section smoothly expands and collapses its height to show or hide content.",
+      "aliases": {
+        "en": [
+          "section expands and collapses its height",
+          "FAQ row opens to show the answer",
+          "disclosure panel smoothly unfolding"
+        ],
+        "zh": [
+          "手风琴",
+          "折叠展开",
+          "点一下内容区域高度展开再点收起"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "layout-animation",
+          "difference": "A layout animation covers any size or position change; an accordion is the height of a section opening and closing."
+        },
+        {
+          "id": "reveal",
+          "difference": "A reveal uncovers content without moving what is below it; an accordion pushes the following content."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "accordion-open",
+          "auto-height-expand",
+          "list-expand",
+          "tx-expand-truncated"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#the-opacity--height-combination",
+          "references/animate-ui.md#drop-in-primitives"
+        ]
+      }
+    },
+    {
+      "id": "direction-aware-transition",
+      "term": "Direction-aware transition",
+      "category": "transitions-between-states",
+      "definition": "Content slides one way going forward and the opposite way going back, so navigation has a sense of direction.",
+      "aliases": {
+        "en": [
+          "slides one way going forward and the other way going back",
+          "next page comes from the right and going back comes from the left",
+          "tabs slide according to which way you moved"
+        ],
+        "zh": [
+          "方向感知过渡",
+          "前进往一边滑后退往反方向滑",
+          "根据切换方向决定从左还是从右进来"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "slide-in",
+          "difference": "A slide in has one fixed direction; this one chooses the direction from the navigation."
+        },
+        {
+          "id": "page-transition",
+          "difference": "A page transition is any animation between routes; direction-aware is one way to design it."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "route-slide",
+          "page-transition-stack",
+          "tr-push"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-07--direction-does-not-invent-meaning"
+        ]
+      }
+    },
+    {
+      "id": "scroll-reveal",
+      "term": "Scroll reveal",
+      "category": "scroll",
+      "definition": "Elements fade or slide into place as they enter the viewport.",
+      "aliases": {
+        "en": [
+          "elements fade or slide into place as you scroll down to them",
+          "sections appear when they enter the viewport"
+        ],
+        "zh": [
+          "滚动显现",
+          "滚动到的时候内容淡入或滑进来",
+          "进入视口时才出现"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "scroll-driven-animation",
+          "difference": "A scroll reveal fires once at a threshold and plays on its own clock; a scroll-driven animation is scrubbed by the scroll position."
+        },
+        {
+          "id": "reveal",
+          "difference": "A reveal uncovers along an edge whatever triggers it; a scroll reveal is defined by its viewport trigger."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "scroll-reveal",
+          "tx-view-timeline-words"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#image-reveals-on-scroll",
+          "references/animate-ui.md#entrances-and-scroll-reveals"
+        ]
+      }
+    },
+    {
+      "id": "scroll-driven-animation",
+      "term": "Scroll-driven animation",
+      "category": "scroll",
+      "definition": "An animation whose progress is tied directly to scroll position.",
+      "aliases": {
+        "en": [
+          "animation progress follows the scroll position",
+          "scrubs forward and backward as you scroll",
+          "scroll-linked progress bar"
+        ],
+        "zh": [
+          "滚动驱动动画",
+          "动画进度跟着滚动条走",
+          "往回滚动画也跟着倒放"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "scroll-reveal",
+          "difference": "A scroll reveal only starts on scroll and then plays by itself; a scroll-driven animation stops when the scroll stops."
+        },
+        {
+          "id": "parallax",
+          "difference": "Parallax is one scroll-driven effect: layers moving at different speeds."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "scroll-progress",
+          "horizontal-scrub",
+          "image-clip-scrub",
+          "text-scroll-scrub",
+          "pinned-story-steps",
+          "sticky-pin"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "parallax",
+      "term": "Parallax",
+      "category": "scroll",
+      "definition": "Background and foreground move at different speeds while scrolling, creating depth.",
+      "aliases": {
+        "en": [
+          "background moves slower than the foreground while scrolling",
+          "layers drift at different speeds to feel deep"
+        ],
+        "zh": [
+          "视差",
+          "滚动时背景比前景动得慢",
+          "前后层以不同速度移动产生纵深"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "scroll-driven-animation",
+          "difference": "Scroll-driven animation is the general mechanism; parallax is the depth effect built on it."
+        },
+        {
+          "id": "perspective",
+          "difference": "Perspective is real 3D projection; parallax fakes depth with speed differences."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "parallax-layers",
+          "tx-parallax-lines",
+          "scroll-depth-zoom",
+          "catalog-ui-navigation-parallax-push"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "page-transition",
+      "term": "Page transition",
+      "category": "scroll",
+      "definition": "An animation that plays when navigating from one page or route to another.",
+      "aliases": {
+        "en": [
+          "animation between one page and the next",
+          "route change animation"
+        ],
+        "zh": [
+          "页面过渡",
+          "页面切换动画",
+          "从一个路由跳到另一个时的转场"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "view-transition",
+          "difference": "A view transition is the browser feature that can produce a page transition."
+        },
+        {
+          "id": "direction-aware-transition",
+          "difference": "Direction-aware is a page transition whose direction follows forward and back."
+        },
+        {
+          "id": "shared-element-transition",
+          "difference": "A shared element transition carries one element across the page change."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "page-transition-stack",
+          "page-wipe",
+          "route-slide",
+          "tr-push",
+          "tr-wipe"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-04--entrance-and-exit-have-one-coordination-owner",
+          "references/animate-ui.md#page-and-theme-transitions"
+        ]
+      }
+    },
+    {
+      "id": "view-transition",
+      "term": "View transition",
+      "category": "scroll",
+      "definition": "The browser morphs between two states or pages, connecting shared elements.",
+      "aliases": {
+        "en": [
+          "the browser morphs between two page states",
+          "View Transitions API snapshot crossfade",
+          "old and new states get connected automatically"
+        ],
+        "zh": [
+          "视图过渡",
+          "浏览器自动在两个状态之间做变形衔接",
+          "用 View Transitions API 做的状态衔接"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "page-transition",
+          "difference": "A page transition is the effect between routes, however it is built; a view transition is the browser doing it."
+        },
+        {
+          "id": "shared-element-transition",
+          "difference": "A view transition connects shared elements when they are named; the shared element transition is that connection."
+        },
+        {
+          "id": "crossfade",
+          "difference": "With nothing named, a view transition is a crossfade of the two states."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "view-crossfade",
+          "view-transition-circle",
+          "shared-element"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-02--continuity-preserves-logical-identity",
+          "references/animate-ui.md#page-and-theme-transitions"
+        ]
+      }
+    },
+    {
+      "id": "hover-effect",
+      "term": "Hover effect",
+      "category": "feedback-and-interaction",
+      "definition": "Visual change when the cursor moves over an element.",
+      "aliases": {
+        "en": [
+          "changes when the mouse is over it",
+          "card lifts when you point at it"
+        ],
+        "zh": [
+          "悬停效果",
+          "鼠标移上去时的变化",
+          "鼠标悬浮时卡片抬起"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "press-tap-feedback",
+          "difference": "Hover answers the pointer being over the element; press feedback answers the click or tap itself."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "hover-lift",
+          "button-fill-hover",
+          "card-spotlight",
+          "magnetic-button",
+          "tx-hover-word-lift"
+        ],
+        "guides": [
+          "references/mobile-web.md#8-hover-only-affordances",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#touch-device-hover-states"
+        ]
+      }
+    },
+    {
+      "id": "press-tap-feedback",
+      "term": "Press / Tap feedback",
+      "category": "feedback-and-interaction",
+      "definition": "A subtle scale-down when an element is clicked, so it feels physical.",
+      "aliases": {
+        "en": [
+          "button shrinks slightly when you press it",
+          "subtle scale-down on click so it feels physical",
+          "squishes a bit on tap"
+        ],
+        "zh": [
+          "按压反馈",
+          "点按反馈",
+          "按钮按下去的时候缩小一点",
+          "点击时轻微缩一下"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "ripple",
+          "difference": "A ripple spreads from the touch point; press feedback scales the whole element."
+        },
+        {
+          "id": "hover-effect",
+          "difference": "A hover effect answers the pointer resting over the element, before any press."
+        },
+        {
+          "id": "squash-and-stretch",
+          "difference": "Squash and stretch deforms the shape unevenly; press feedback is a small uniform scale."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "press-feedback",
+          "ui-press",
+          "catalog-ui-button-inner-press",
+          "catalog-ui-button-bounce-press",
+          "catalog-ui-button-push-3d"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#buttons-must-feel-responsive",
+          "references/mobile-web.md#4-tap-latency-and-touch-action",
+          "references/animate-ui.md#press-and-button-feedback"
+        ]
+      }
+    },
+    {
+      "id": "hold-to-confirm",
+      "term": "Hold to confirm",
+      "category": "feedback-and-interaction",
+      "definition": "A progress effect that fills up while the user holds a button.",
+      "aliases": {
+        "en": [
+          "keep the button held and a bar fills until it confirms",
+          "press and hold to delete"
+        ],
+        "zh": [
+          "长按确认",
+          "按住按钮进度条慢慢填满才生效",
+          "按住不放才删除"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "press-tap-feedback",
+          "difference": "Press feedback answers a single press at once; hold to confirm needs the press to last."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "catalog-ui-button-hold-confirm",
+          "long-press-progress"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#hold-to-delete-pattern"
+        ]
+      }
+    },
+    {
+      "id": "drag",
+      "term": "Drag",
+      "category": "feedback-and-interaction",
+      "definition": "Moving an element by grabbing it, often with momentum when released.",
+      "aliases": {
+        "en": [
+          "grab an element and move it around",
+          "pick it up with the pointer and it keeps gliding when released"
+        ],
+        "zh": [
+          "拖拽",
+          "抓住元素拖着走",
+          "松手后还带着惯性滑一段"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "drag-to-reorder",
+          "difference": "Drag to reorder is a drag inside a list where the other items make room."
+        },
+        {
+          "id": "swipe-to-dismiss",
+          "difference": "Swipe to dismiss is a drag whose release closes the element."
+        },
+        {
+          "id": "momentum",
+          "difference": "Momentum is what the element does after the drag is released."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "drag-inertia",
+          "drag-snap",
+          "drag-pickup",
+          "bottom-sheet-drag"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#pointer-capture-for-drag"
+        ]
+      }
+    },
+    {
+      "id": "drag-to-reorder",
+      "term": "Drag to reorder",
+      "category": "feedback-and-interaction",
+      "definition": "Dragging items in a list to rearrange them, while the others shift to make room.",
+      "aliases": {
+        "en": [
+          "drag list items to rearrange them while the others move out of the way",
+          "sortable list"
+        ],
+        "zh": [
+          "拖拽排序",
+          "拖动列表项重新排列其他项自动让位"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "drag",
+          "difference": "Drag is the free gesture; reorder adds a list whose items shift."
+        },
+        {
+          "id": "layout-animation",
+          "difference": "The items that make room move with a layout animation."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "reorder-drag",
+          "flip-reorder",
+          "catalog-ui-spatial-depth-stack-reorder"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "swipe-to-dismiss",
+      "term": "Swipe to dismiss",
+      "category": "feedback-and-interaction",
+      "definition": "Dragging an element off-screen to close it, like a drawer or toast.",
+      "aliases": {
+        "en": [
+          "flick a toast off the screen to close it",
+          "drag the drawer down to dismiss it",
+          "swipe a card away"
+        ],
+        "zh": [
+          "滑动关闭",
+          "把通知往旁边一划就关掉",
+          "向下拖动抽屉把它收起"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "drag",
+          "difference": "Drag moves an element and leaves it there; swipe to dismiss closes it past a distance or speed."
+        },
+        {
+          "id": "rubber-banding",
+          "difference": "Rubber-banding resists in the direction that does not dismiss."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "swipe-dismiss",
+          "swipe-actions",
+          "bottom-sheet-drag",
+          "ui-toast"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#momentum-based-dismissal"
+        ]
+      }
+    },
+    {
+      "id": "rubber-banding",
+      "term": "Rubber-banding",
+      "category": "feedback-and-interaction",
+      "definition": "Resistance and snap-back when you drag past a boundary (the iOS overscroll feel).",
+      "aliases": {
+        "en": [
+          "resists and snaps back when you pull too far",
+          "the iOS overscroll stretch",
+          "elastic resistance past the edge of a list"
+        ],
+        "zh": [
+          "橡皮筋效果",
+          "拉过头有阻力松手弹回去",
+          "iOS 滚动到头还能拉一点再回弹"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "bounce",
+          "difference": "Bounce is a spring overshooting its target on the way in; rubber-banding is resistance while you drag beyond a limit."
+        },
+        {
+          "id": "momentum",
+          "difference": "Momentum carries motion after release; rubber-banding pushes back during the drag."
+        },
+        {
+          "id": "swipe-to-dismiss",
+          "difference": "Swipe to dismiss lets the element go; rubber-banding brings it back."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "rubber-band",
+          "drag-resistance",
+          "snap-back",
+          "pull-to-refresh",
+          "catalog-ui-button-elastic-drag"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#damping-at-boundaries",
+          "references/mobile-web.md#5-overscroll-and-pull-to-refresh"
+        ]
+      }
+    },
+    {
+      "id": "shake-wiggle",
+      "term": "Shake / Wiggle",
+      "category": "feedback-and-interaction",
+      "definition": "A quick side-to-side jitter signaling an error or rejected input.",
+      "aliases": {
+        "en": [
+          "jitters side to side when the password is wrong",
+          "quick horizontal shake for an error",
+          "the input shakes its head at you"
+        ],
+        "zh": [
+          "抖动",
+          "晃动",
+          "输错密码时输入框左右晃几下",
+          "表示拒绝的摇头动作"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "pulse",
+          "difference": "Pulse is a gentle repeating change that invites attention; a shake is one sharp rejection."
+        },
+        {
+          "id": "bounce",
+          "difference": "Bounce settles after reaching a target; a shake returns to where it started."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "error-shake",
+          "after-shake",
+          "catalog-ui-button-error-shake",
+          "wobble",
+          "inline-validation"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "ripple",
+      "term": "Ripple",
+      "category": "feedback-and-interaction",
+      "definition": "A circle expanding from the point of a tap, confirming the press.",
+      "aliases": {
+        "en": [
+          "a circle spreads out from where you tapped",
+          "Material-style ink ripple on click"
+        ],
+        "zh": [
+          "涟漪",
+          "水波纹",
+          "从点击的位置扩散出一个圆"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "press-tap-feedback",
+          "difference": "Press feedback scales the whole element; a ripple starts at the touch point."
+        },
+        {
+          "id": "pulse",
+          "difference": "Pulse repeats by itself; a ripple is one answer to one tap."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "click-ripple",
+          "catalog-ui-button-tap-ripple",
+          "ripple-reveal",
+          "catalog-ui-material-chrome-ripple"
+        ],
+        "guides": [
+          "references/animate-ui.md#press-and-button-feedback"
+        ]
+      }
+    },
+    {
+      "id": "easing",
+      "term": "Easing",
+      "category": "easing",
+      "definition": "The rate at which an animation speeds up or slows down.",
+      "aliases": {
+        "en": [
+          "how the speed changes during the animation",
+          "the acceleration curve of a motion"
+        ],
+        "zh": [
+          "缓动",
+          "动画过程中速度的变化方式",
+          "速度曲线"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "cubic-bezier",
+          "difference": "Cubic-bezier is one way to define an easing."
+        },
+        {
+          "id": "spring",
+          "difference": "A spring gets its speed changes from physics and has no fixed duration."
+        },
+        {
+          "id": "interpolation-tween",
+          "difference": "Interpolation produces the in-between values; easing decides how fast it moves through them."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "e-house",
+          "e-md3",
+          "slowinout"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-05--project-timing-and-easing-govern-the-whole-change",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#3-what-easing-should-it-use",
+          "references/motion-spec.md#easing-and-spatial-behavior"
+        ]
+      }
+    },
+    {
+      "id": "ease-out",
+      "term": "Ease-out",
+      "category": "easing",
+      "definition": "Starts fast, ends slow. The default for most UI and anything responding to the user.",
+      "aliases": {
+        "en": [
+          "starts fast and slows down at the end",
+          "decelerates into place"
+        ],
+        "zh": [
+          "缓出",
+          "开头快结尾慢",
+          "减速停下",
+          "先快后慢，慢慢停下来"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "ease-in",
+          "difference": "Ease-in is the reverse: slow start, fast end."
+        },
+        {
+          "id": "ease-in-out",
+          "difference": "Ease-in-out is slow at both ends."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "e-outexpo",
+          "e-quint",
+          "e-glide",
+          "smooth-arrival"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#3-what-easing-should-it-use"
+        ]
+      }
+    },
+    {
+      "id": "ease-in",
+      "term": "Ease-in",
+      "category": "easing",
+      "definition": "Starts slow, ends fast. Usually avoided; can feel sluggish.",
+      "aliases": {
+        "en": [
+          "starts slow and speeds up",
+          "accelerates away"
+        ],
+        "zh": [
+          "缓入",
+          "开头慢结尾快",
+          "加速离开"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "ease-out",
+          "difference": "Ease-out is the reverse: fast start, slow end."
+        },
+        {
+          "id": "ease-in-out",
+          "difference": "Ease-in-out also slows down again at the end."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "e-inexpo",
+          "e-inback"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#3-what-easing-should-it-use"
+        ]
+      }
+    },
+    {
+      "id": "ease-in-out",
+      "term": "Ease-in-out",
+      "category": "easing",
+      "definition": "Slow, fast, slow. Good for elements already on screen moving from A to B.",
+      "aliases": {
+        "en": [
+          "slow then fast then slow",
+          "accelerates then decelerates between two points"
+        ],
+        "zh": [
+          "缓入缓出",
+          "慢快慢",
+          "两头慢中间快"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "ease-out",
+          "difference": "Ease-out has no slow start, so it answers input sooner."
+        },
+        {
+          "id": "asymmetric-easing",
+          "difference": "Ease-in-out is the same at both ends; an asymmetric easing is not."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "e-inout",
+          "e-sine",
+          "e-inoutback",
+          "slowinout"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#3-what-easing-should-it-use"
+        ]
+      }
+    },
+    {
+      "id": "linear",
+      "term": "Linear",
+      "category": "easing",
+      "definition": "Constant speed. Avoid for UI; reserve for spinners or marquees.",
+      "aliases": {
+        "en": [
+          "moves at constant speed with no acceleration",
+          "robotic even pace"
+        ],
+        "zh": [
+          "线性",
+          "匀速",
+          "速度始终不变"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "easing",
+          "difference": "Easing is any change of speed; linear is the case with none."
+        },
+        {
+          "id": "stepped-animation",
+          "difference": "Stepped jumps between values; linear moves through them at an even rate."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "e-linear",
+          "linear-travel",
+          "spinner-arc"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "cubic-bezier",
+      "term": "Cubic-bezier",
+      "category": "easing",
+      "definition": "A custom easing curve you define for precise control.",
+      "aliases": {
+        "en": [
+          "a custom easing curve with four numbers",
+          "hand-tuned bezier timing function"
+        ],
+        "zh": [
+          "三次贝塞尔",
+          "用四个数值自定义的缓动曲线",
+          "贝塞尔曲线"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "easing",
+          "difference": "Easing is the concept; cubic-bezier is one notation for it."
+        },
+        {
+          "id": "spring",
+          "difference": "A spring is described by physics values and has no fixed duration; a cubic-bezier runs over a set duration."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "e-house",
+          "e-apple",
+          "e-md3e",
+          "e-custombounce"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-05--project-timing-and-easing-govern-the-whole-change"
+        ]
+      }
+    },
+    {
+      "id": "asymmetric-easing",
+      "term": "Asymmetric easing",
+      "category": "easing",
+      "definition": "A curve that accelerates and decelerates at different rates. Feels more alive than a symmetric one.",
+      "aliases": {
+        "en": [
+          "speeds up and slows down at different rates",
+          "curve that is quick to start but takes long to settle"
+        ],
+        "zh": [
+          "非对称缓动",
+          "加速和减速的快慢不一样",
+          "起步快收尾拖得长的曲线"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "ease-in-out",
+          "difference": "Ease-in-out mirrors its start and end; an asymmetric easing does not."
+        },
+        {
+          "id": "cubic-bezier",
+          "difference": "A cubic-bezier is how an asymmetric easing is usually written."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "e-whip",
+          "e-expo-scale",
+          "e-md3a"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "spring",
+      "term": "Spring",
+      "category": "spring-animations",
+      "definition": "Motion driven by physics (tension, mass, damping) rather than a set duration.",
+      "aliases": {
+        "en": [
+          "motion driven by physics instead of a fixed duration",
+          "springy natural movement",
+          "feels like it is attached to a spring"
+        ],
+        "zh": [
+          "弹簧动画",
+          "由物理参数驱动而不是固定时长",
+          "像被弹簧拉着一样自然"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "easing",
+          "difference": "Easing is a curve over a fixed duration; a spring has no fixed duration."
+        },
+        {
+          "id": "bounce",
+          "difference": "Bounce is the optional overshoot of a spring; a spring can also settle with none."
+        }
+      ],
+      "local": {
+        "primitives": [
+          "response.spring-settle"
+        ],
+        "recipes": [
+          "s-rsdefault",
+          "s-smooth",
+          "s-vs",
+          "spring-follow",
+          "switch-state-spring"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#spring-animations",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#spring-configuration"
+        ]
+      }
+    },
+    {
+      "id": "stiffness-tension",
+      "term": "Stiffness / Tension",
+      "category": "spring-animations",
+      "definition": "How strongly the spring pulls toward its target. Higher feels snappier.",
+      "aliases": {
+        "en": [
+          "how hard the spring pulls toward the target",
+          "a higher value makes it snappier"
+        ],
+        "zh": [
+          "刚度",
+          "张力",
+          "弹簧往目标拉的力度越大越干脆"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "damping",
+          "difference": "Damping decides how fast the spring settles; stiffness decides how hard it pulls."
+        },
+        {
+          "id": "mass",
+          "difference": "Mass is the weight being pulled."
+        }
+      ],
+      "local": {
+        "primitives": [
+          "response.spring-settle"
+        ],
+        "recipes": [
+          "s-snap",
+          "s-molasses"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#spring-configuration"
+        ]
+      }
+    },
+    {
+      "id": "damping",
+      "term": "Damping",
+      "category": "spring-animations",
+      "definition": "How quickly a spring settles. Lower damping means more bounce and oscillation.",
+      "aliases": {
+        "en": [
+          "how quickly the spring stops wobbling",
+          "less of it means more oscillation"
+        ],
+        "zh": [
+          "阻尼",
+          "弹簧多快停下来",
+          "阻尼越小晃得越久"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "stiffness-tension",
+          "difference": "Stiffness is the pull toward the target; damping is the brake."
+        },
+        {
+          "id": "bounce",
+          "difference": "Bounce is what low damping looks like."
+        }
+      ],
+      "local": {
+        "primitives": [
+          "response.spring-settle"
+        ],
+        "recipes": [
+          "s-critical",
+          "s-wobbly"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#spring-configuration"
+        ]
+      }
+    },
+    {
+      "id": "mass",
+      "term": "Mass",
+      "category": "spring-animations",
+      "definition": "How heavy the animated element feels. More mass makes it slower and more sluggish.",
+      "aliases": {
+        "en": [
+          "how heavy the element feels",
+          "a heavier object moves slower and more sluggishly"
+        ],
+        "zh": [
+          "质量",
+          "元素感觉有多重",
+          "越重动得越慢越迟钝"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "stiffness-tension",
+          "difference": "Stiffness is the force; mass is what the force has to move."
+        },
+        {
+          "id": "damping",
+          "difference": "Damping removes energy; mass stores it."
+        }
+      ],
+      "local": {
+        "primitives": [
+          "response.spring-settle"
+        ],
+        "recipes": [
+          "s-heavy",
+          "heavy-stop",
+          "timing-weight"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#spring-configuration"
+        ]
+      }
+    },
+    {
+      "id": "bounce",
+      "term": "Bounce",
+      "category": "spring-animations",
+      "definition": "A spring that overshoots and settles, adding playfulness.",
+      "aliases": {
+        "en": [
+          "overshoots the target and settles back",
+          "playful springy overshoot",
+          "wobbles a little before coming to rest"
+        ],
+        "zh": [
+          "回弹",
+          "弹跳",
+          "冲过头再弹回来停稳",
+          "停下前晃两下"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "pop-in",
+          "difference": "Pop in is an entrance with a slight overshoot; bounce is the spring behaviour and applies to any motion."
+        },
+        {
+          "id": "damping",
+          "difference": "Damping is the value that controls how much bounce there is."
+        },
+        {
+          "id": "rubber-banding",
+          "difference": "Rubber-banding is resistance while dragging past a limit, not overshoot on arrival."
+        }
+      ],
+      "local": {
+        "primitives": [
+          "response.spring-settle"
+        ],
+        "recipes": [
+          "s-bounce",
+          "s-framerbouncy",
+          "bounce-land",
+          "double-bounce",
+          "overshoot",
+          "e-bounce",
+          "e-outback"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#spring-configuration"
+        ]
+      }
+    },
+    {
+      "id": "perceptual-duration",
+      "term": "Perceptual duration",
+      "category": "spring-animations",
+      "definition": "How long a spring feels finished, even though it keeps micro-settling underneath.",
+      "aliases": {
+        "en": [
+          "how long a spring feels finished even though it is still settling",
+          "the visible length of a spring animation"
+        ],
+        "zh": [
+          "感知时长",
+          "弹簧看起来已经停了其实还在微调的那个时间",
+          "弹簧动画的体感时长"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "duration",
+          "difference": "Duration is exact and belongs to eased animations; perceptual duration is the felt length of a spring."
+        }
+      ],
+      "local": {
+        "primitives": [
+          "response.spring-settle"
+        ],
+        "recipes": [
+          "s-budget"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#spring-configuration"
+        ]
+      }
+    },
+    {
+      "id": "momentum",
+      "term": "Momentum",
+      "category": "spring-animations",
+      "definition": "Motion that carries velocity, especially after a drag or interruption.",
+      "aliases": {
+        "en": [
+          "keeps moving after you let go",
+          "carries its speed after a flick",
+          "inertia scrolling"
+        ],
+        "zh": [
+          "动量",
+          "惯性",
+          "松手后带着速度继续滑",
+          "甩出去还会滑一段"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "velocity",
+          "difference": "Velocity is the measured speed and direction; momentum is the motion that keeps carrying it."
+        },
+        {
+          "id": "drag",
+          "difference": "Drag is the part under the pointer; momentum is the part after release."
+        },
+        {
+          "id": "rubber-banding",
+          "difference": "Rubber-banding resists at a boundary; momentum continues freely."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "s-inertia",
+          "momentum-drift",
+          "drag-inertia",
+          "ty-inertia",
+          "s-projectile"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#momentum-based-dismissal"
+        ]
+      }
+    },
+    {
+      "id": "velocity",
+      "term": "Velocity",
+      "category": "spring-animations",
+      "definition": "How fast and in which direction an element is moving. A spring carries it into the next animation when interrupted, so a flicked element keeps its speed.",
+      "aliases": {
+        "en": [
+          "how fast and in which direction it is moving",
+          "the speed handed over when an animation is interrupted"
+        ],
+        "zh": [
+          "速度",
+          "元素移动的快慢和方向",
+          "被打断时带进下一个动画的速度"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "momentum",
+          "difference": "Momentum is motion that continues because of velocity."
+        },
+        {
+          "id": "interruptible-animation",
+          "difference": "An interruptible animation keeps the current velocity when it is redirected."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "s-track",
+          "velocity-skew",
+          "tx-scroll-velocity-marquee"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#interruptibility-advantage"
+        ]
+      }
+    },
+    {
+      "id": "interruptible-animation",
+      "term": "Interruptible animation",
+      "category": "spring-animations",
+      "definition": "An animation that can be smoothly redirected mid-flight instead of finishing first.",
+      "aliases": {
+        "en": [
+          "can be redirected halfway instead of finishing first",
+          "click again mid-animation and it reverses smoothly",
+          "does not lock out input while animating"
+        ],
+        "zh": [
+          "可打断动画",
+          "动到一半可以平滑改方向不用等播完",
+          "动画中途再点一次能顺滑反向"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "velocity",
+          "difference": "Velocity is what an interruptible animation carries into the new direction."
+        },
+        {
+          "id": "spring",
+          "difference": "Springs are the usual way to get one, because they continue from the current value and velocity."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "s-split",
+          "s-track",
+          "s-modal"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-06--the-newest-accepted-state-wins",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#interruptibility-advantage",
+          "references/motion-spec.md#state-machine-and-interruption"
+        ]
+      }
+    },
+    {
+      "id": "marquee",
+      "term": "Marquee",
+      "category": "looping-and-ambient-motion",
+      "definition": "Text or content that scrolls continuously in a loop.",
+      "aliases": {
+        "en": [
+          "text scrolls sideways forever",
+          "logo strip that keeps sliding in a loop",
+          "news-ticker style scrolling"
+        ],
+        "zh": [
+          "跑马灯",
+          "文字一直横向滚动循环",
+          "logo 墙无限滚动"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "loop",
+          "difference": "Loop is any repeating animation; a marquee is content travelling in one direction on repeat."
+        },
+        {
+          "id": "scroll-driven-animation",
+          "difference": "A marquee moves by itself; a scroll-driven animation moves only when the user scrolls."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "lp-marquee",
+          "scroll-marquee",
+          "tx-infinite-marquee",
+          "tx-curved-loop-marquee"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "loop",
+      "term": "Loop",
+      "category": "looping-and-ambient-motion",
+      "definition": "An animation that repeats, a set number of times or infinitely.",
+      "aliases": {
+        "en": [
+          "the animation repeats over and over",
+          "plays infinitely"
+        ],
+        "zh": [
+          "循环",
+          "动画反复播放",
+          "无限重复"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "alternate-yoyo",
+          "difference": "A plain loop jumps back to the start; alternate plays backward to get there."
+        },
+        {
+          "id": "idle-animation",
+          "difference": "An idle animation is a loop with a role: showing that a resting element is alive."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "lp-seamless",
+          "lp-holdcycle",
+          "tx-typewriter-loop"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "alternate-yoyo",
+      "term": "Alternate (yoyo)",
+      "category": "looping-and-ambient-motion",
+      "definition": "A loop that plays forward then reverses each iteration, instead of jumping back to the start.",
+      "aliases": {
+        "en": [
+          "plays forward then backward each time",
+          "goes there and back instead of jumping to the start",
+          "ping-pong loop"
+        ],
+        "zh": [
+          "往返循环",
+          "正着播完倒着播回来",
+          "来回摆动而不是跳回起点"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "loop",
+          "difference": "A loop restarts from the beginning each time; alternate reverses."
+        },
+        {
+          "id": "pulse",
+          "difference": "Pulse is usually an alternate loop of scale or opacity."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "tx-pendulum-swing",
+          "tx-hanging-sway",
+          "breathing"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "orbit",
+      "term": "Orbit",
+      "category": "looping-and-ambient-motion",
+      "definition": "An element circling around another in a continuous path.",
+      "aliases": {
+        "en": [
+          "one element circles around another",
+          "dots revolving around a center"
+        ],
+        "zh": [
+          "环绕",
+          "公转",
+          "一个元素绕着另一个转圈"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "rotate",
+          "difference": "Rotate spins an element in place; orbit moves it around something else."
+        }
+      ],
+      "local": {
+        "primitives": [
+          "transform.orbit"
+        ],
+        "recipes": [
+          "orbit",
+          "catalog-ui-loading-orbit-trail",
+          "catalog-ui-spatial-orbit-context",
+          "tx-circular-text-spin"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "pulse",
+      "term": "Pulse",
+      "category": "looping-and-ambient-motion",
+      "definition": "A gentle repeating scale or opacity change to draw attention.",
+      "aliases": {
+        "en": [
+          "gently grows and shrinks repeatedly to get attention",
+          "soft repeating glow on a notification dot",
+          "heartbeat-like throb"
+        ],
+        "zh": [
+          "脉冲",
+          "轻轻地反复放大缩小吸引注意",
+          "呼吸灯一样一明一暗"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "float",
+          "difference": "Float changes position; pulse changes scale or opacity."
+        },
+        {
+          "id": "shake-wiggle",
+          "difference": "A shake is one sharp rejection; a pulse is a gentle repeat."
+        },
+        {
+          "id": "ripple",
+          "difference": "A ripple answers one tap; a pulse repeats unprompted."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "pulse-focus",
+          "color-pulse",
+          "ld-pulse",
+          "catalog-ui-button-pulse-glow",
+          "catalog-ui-button-heartbeat",
+          "breathing"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "float",
+      "term": "Float",
+      "category": "looping-and-ambient-motion",
+      "definition": "A gentle, continuous up-and-down drift that makes a static element feel alive and weightless.",
+      "aliases": {
+        "en": [
+          "drifts gently up and down",
+          "hovers in place like it is weightless",
+          "bobbing illustration"
+        ],
+        "zh": [
+          "漂浮",
+          "轻轻地上下浮动",
+          "像没有重量一样悬着飘"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "pulse",
+          "difference": "Pulse changes scale or opacity in place; float changes position."
+        },
+        {
+          "id": "idle-animation",
+          "difference": "Float is one kind of idle animation."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "lp-float",
+          "tx-zero-gravity-drift"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "idle-animation",
+      "term": "Idle animation",
+      "category": "looping-and-ambient-motion",
+      "definition": "Subtle motion that plays while an element is just sitting there, waiting to be interacted with.",
+      "aliases": {
+        "en": [
+          "subtle motion while nothing is happening",
+          "moves a little while waiting to be clicked",
+          "ambient motion on a resting element"
+        ],
+        "zh": [
+          "待机动画",
+          "闲置动画",
+          "没人操作时自己轻微地动",
+          "静止状态下的小动作"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "loop",
+          "difference": "Loop is the mechanism; idle animation is the role."
+        },
+        {
+          "id": "float",
+          "difference": "Float is one idle animation: a slow vertical drift."
+        },
+        {
+          "id": "pulse",
+          "difference": "A pulse asks for attention; an idle animation only shows the element is alive."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "ambient-hold",
+          "lp-boil",
+          "lp-wobble",
+          "tx-weight-breathe"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "blur",
+      "term": "Blur",
+      "category": "polish-and-effects",
+      "definition": "A blur filter used to soften an element or mask tiny imperfections.",
+      "aliases": {
+        "en": [
+          "soften the element with a blur filter",
+          "goes out of focus during the transition"
+        ],
+        "zh": [
+          "模糊",
+          "用模糊滤镜把元素变柔",
+          "过渡时糊一下掩盖瑕疵"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "mask",
+          "difference": "A mask hides parts of an element; blur softens all of it."
+        },
+        {
+          "id": "fade-in-fade-out",
+          "difference": "A fade changes opacity; blur changes sharpness. They are often used together."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "tr-blur",
+          "blur-zoom",
+          "tx-blur-in-chars",
+          "tx-rack-focus"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#use-blur-to-mask-imperfect-transitions"
+        ]
+      }
+    },
+    {
+      "id": "clip-path",
+      "term": "Clip-path",
+      "category": "polish-and-effects",
+      "definition": "Clipping an element to a shape, used for reveals, masks, and before/after sliders.",
+      "aliases": {
+        "en": [
+          "cut the element to a shape with hard edges",
+          "crop it to a circle or an inset rectangle and animate the crop"
+        ],
+        "zh": [
+          "裁剪路径",
+          "把元素裁成某个形状",
+          "硬边裁切"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "mask",
+          "difference": "Clip-path cuts along a geometric shape with a hard edge; mask hides with an image or gradient, so its edge can be soft and fade."
+        },
+        {
+          "id": "reveal",
+          "difference": "Reveal is the effect; clip-path is one way to draw it."
+        },
+        {
+          "id": "before-after-slider",
+          "difference": "A before/after slider is a clip-path whose edge follows a draggable divider."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "iris-open",
+          "image-clip-scrub",
+          "view-transition-circle",
+          "tr-inset",
+          "tr-iris",
+          "tx-scroll-clip-write"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#clip-path-for-animation",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#the-inset-shape"
+        ]
+      }
+    },
+    {
+      "id": "mask",
+      "term": "Mask",
+      "category": "polish-and-effects",
+      "definition": "Hiding or revealing parts of an element using a shape or gradient — like clip-path, but with soft, fadeable edges.",
+      "aliases": {
+        "en": [
+          "hide parts of it with a soft gradient edge",
+          "content fades out toward the edge of a scroll area",
+          "feathered cutout"
+        ],
+        "zh": [
+          "遮罩",
+          "蒙版",
+          "用渐变把一部分柔和地藏起来",
+          "边缘羽化的显隐"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "clip-path",
+          "difference": "Mask hides with an image or gradient, so its edge can be soft and fade; clip-path cuts along a geometric shape with a hard edge."
+        },
+        {
+          "id": "reveal",
+          "difference": "Reveal is the effect; mask is one way to draw it."
+        },
+        {
+          "id": "blur",
+          "difference": "Blur softens the whole element; a mask hides part of it."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "mask-wipe",
+          "svg-mask-reveal",
+          "tx-soft-mask-wipe",
+          "tx-line-mask-rise",
+          "tx-shape-mask-cut"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "before-after-slider",
+      "term": "Before / after slider",
+      "category": "polish-and-effects",
+      "definition": "A draggable divider that wipes between two overlaid images to compare them.",
+      "aliases": {
+        "en": [
+          "drag a divider to compare two images",
+          "comparison slider wiping between before and after"
+        ],
+        "zh": [
+          "前后对比滑块",
+          "拖动中间的分割线对比两张图"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "clip-path",
+          "difference": "Clip-path is the technique underneath; the slider is the component."
+        },
+        {
+          "id": "drag",
+          "difference": "Drag is the gesture that moves the divider."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#comparison-sliders"
+        ]
+      }
+    },
+    {
+      "id": "line-drawing",
+      "term": "Line drawing",
+      "category": "polish-and-effects",
+      "definition": "An SVG path that draws itself in, like an invisible pen tracing it.",
+      "aliases": {
+        "en": [
+          "an SVG path draws itself",
+          "the outline traces itself like an invisible pen",
+          "a signature being written"
+        ],
+        "zh": [
+          "线条绘制",
+          "描线动画",
+          "SVG 路径自己画出来",
+          "像有支看不见的笔在描"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "reveal",
+          "difference": "A reveal uncovers finished content; line drawing grows a stroke along its path."
+        },
+        {
+          "id": "typewriter",
+          "difference": "Typewriter adds whole characters; line drawing traces a stroke."
+        }
+      ],
+      "local": {
+        "primitives": [
+          "reveal.trim-line"
+        ],
+        "recipes": [
+          "svg-stroke-draw",
+          "svg-trim-path",
+          "svg-signature",
+          "chart-draw",
+          "checkbox-stroke",
+          "tx-outline-draw",
+          "tx-handwriting",
+          "catalog-ui-button-border-draw"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "text-morph",
+      "term": "Text morph",
+      "category": "polish-and-effects",
+      "definition": "Text that animates character by character when it changes, drawing attention to the new value.",
+      "aliases": {
+        "en": [
+          "text changes character by character into the new value",
+          "label letters shuffle into the next word"
+        ],
+        "zh": [
+          "文字变形",
+          "文本变化时逐字过渡到新内容",
+          "字符一个个变成新的词"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "morph",
+          "difference": "Morph is one shape becoming another; text morph applies it per character when text changes."
+        },
+        {
+          "id": "number-ticker",
+          "difference": "A number ticker rolls digits to a value; text morph handles any text."
+        },
+        {
+          "id": "typewriter",
+          "difference": "Typewriter makes text appear; text morph replaces text that is already there."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "tx-gooey-morph",
+          "tx-diff-retype",
+          "tx-letter-cascade-swap",
+          "tx-scramble-decode",
+          "tx-flip-words-blur"
+        ],
+        "guides": [
+          "references/animate-ui.md#changing-text"
+        ]
+      }
+    },
+    {
+      "id": "skeleton-shimmer",
+      "term": "Skeleton / Shimmer",
+      "category": "polish-and-effects",
+      "definition": "A placeholder with a moving sheen shown while content loads.",
+      "aliases": {
+        "en": [
+          "grey placeholder with a sheen moving across while loading",
+          "loading skeleton blocks"
+        ],
+        "zh": [
+          "骨架屏",
+          "微光扫过",
+          "加载时灰色占位块上有一道光扫过去"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "pulse",
+          "difference": "A pulsing placeholder changes opacity as a whole; a shimmer moves a highlight across it."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "skeleton-shimmer",
+          "catalog-ui-loading-skeleton-shimmer",
+          "skeleton-resolve",
+          "highlight-sweep",
+          "catalog-ui-button-shine-sweep"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "number-ticker",
+      "term": "Number ticker",
+      "category": "polish-and-effects",
+      "definition": "Digits rolling or counting up to a value.",
+      "aliases": {
+        "en": [
+          "digits roll up to the value",
+          "counter counting up",
+          "odometer-style rolling numbers"
+        ],
+        "zh": [
+          "数字滚动",
+          "数字跳动",
+          "数字一位位滚到目标值",
+          "计数器往上数"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "tabular-numbers",
+          "difference": "Tabular numbers are the type setting that keeps a ticker from shifting sideways."
+        },
+        {
+          "id": "text-morph",
+          "difference": "Text morph handles any text; a ticker is for numbers and shows them counting."
+        },
+        {
+          "id": "stepped-animation",
+          "difference": "A stepped animation is any motion in jumps; a ticker counts toward a value."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "count-up",
+          "tx-count-up",
+          "tx-odometer-roll",
+          "catalog-ui-feedback-number-ticker",
+          "tx-score-update"
+        ],
+        "guides": [
+          "references/animate-ui.md#numbers"
+        ]
+      }
+    },
+    {
+      "id": "tabular-numbers",
+      "term": "Tabular numbers",
+      "category": "polish-and-effects",
+      "definition": "Fixed-width digits so numbers don't shift around as they change. Essential for tickers, timers, and counters.",
+      "aliases": {
+        "en": [
+          "fixed-width digits so numbers do not jiggle as they change",
+          "monospaced figures for timers"
+        ],
+        "zh": [
+          "等宽数字",
+          "数字变化时宽度不变不会左右抖",
+          "计时器用的定宽数字"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "number-ticker",
+          "difference": "A number ticker is the animation; tabular numbers keep its digits in place."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "tx-progress-percent",
+          "tx-countdown-zoom"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "typewriter",
+      "term": "Typewriter",
+      "category": "polish-and-effects",
+      "definition": "Text appearing one character at a time, as if being typed.",
+      "aliases": {
+        "en": [
+          "text appears one character at a time as if typed",
+          "typing effect with a blinking caret"
+        ],
+        "zh": [
+          "打字机效果",
+          "文字一个字一个字打出来",
+          "像有人在打字"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "text-morph",
+          "difference": "Text morph replaces existing text; typewriter adds text that was not there."
+        },
+        {
+          "id": "stagger",
+          "difference": "A per-character stagger animates characters that are all laid out already; typewriter appends them."
+        },
+        {
+          "id": "line-drawing",
+          "difference": "Line drawing traces strokes; typewriter adds whole characters."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "tx-typewriter",
+          "tx-caret-typewriter",
+          "tx-human-typewriter",
+          "tx-terminal-typing"
+        ],
+        "guides": [
+          "references/animate-ui.md#changing-text"
+        ]
+      }
+    },
+    {
+      "id": "frame-rate-fps",
+      "term": "Frame rate (FPS)",
+      "category": "performance",
+      "definition": "Frames drawn per second. 60fps is the baseline for smooth motion; 120fps on newer displays.",
+      "aliases": {
+        "en": [
+          "how many frames are drawn each second",
+          "60fps smoothness"
+        ],
+        "zh": [
+          "帧率",
+          "每秒画多少帧",
+          "60 帧"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "dropped-frame",
+          "difference": "A dropped frame is one frame missing from the rate."
+        },
+        {
+          "id": "jank",
+          "difference": "Jank is what an uneven frame rate looks like."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "t-twos"
+        ],
+        "guides": [
+          "references/animation-opportunity-and-review.md#measuring",
+          "references/motion-spec.md#performance-budget"
+        ]
+      }
+    },
+    {
+      "id": "jank",
+      "term": "Jank",
+      "category": "performance",
+      "definition": "Visible stutter when the browser drops frames because it can't keep up with the animation.",
+      "aliases": {
+        "en": [
+          "the animation stutters visibly",
+          "choppy laggy motion when the browser cannot keep up"
+        ],
+        "zh": [
+          "卡顿",
+          "动画一顿一顿不流畅",
+          "掉帧导致的抖动"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "dropped-frame",
+          "difference": "A dropped frame is a single missed frame; jank is the stutter you see from them."
+        },
+        {
+          "id": "layout-thrashing",
+          "difference": "Layout thrashing is a common cause of jank."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [],
+        "guides": [
+          "references/animation-opportunity-and-review.md#5-compositor-cost",
+          "references/animation-opportunity-and-review.md#measuring"
+        ]
+      }
+    },
+    {
+      "id": "dropped-frame",
+      "term": "Dropped frame",
+      "category": "performance",
+      "definition": "A frame the browser missed its deadline to draw, causing a tiny hitch in motion.",
+      "aliases": {
+        "en": [
+          "a frame the browser failed to draw in time",
+          "tiny hitch in the motion"
+        ],
+        "zh": [
+          "丢帧",
+          "掉帧",
+          "浏览器没赶上画的那一帧"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "jank",
+          "difference": "Jank is the visible result of dropped frames."
+        },
+        {
+          "id": "frame-rate-fps",
+          "difference": "Frame rate is the count per second; a dropped frame lowers it for a moment."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [],
+        "guides": [
+          "references/animation-opportunity-and-review.md#measuring"
+        ]
+      }
+    },
+    {
+      "id": "compositing",
+      "term": "Compositing",
+      "category": "performance",
+      "definition": "Letting the GPU move or fade an element on its own layer without redoing layout or paint.",
+      "aliases": {
+        "en": [
+          "the GPU moves a layer without redoing layout or paint",
+          "transform and opacity run on the compositor"
+        ],
+        "zh": [
+          "合成",
+          "交给 GPU 在独立图层上移动不重新布局重绘",
+          "合成器线程动画"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "hardware-acceleration",
+          "difference": "Hardware acceleration is the principle; compositing is the browser step that delivers it."
+        },
+        {
+          "id": "will-change",
+          "difference": "will-change asks for the layer ahead of time; compositing is what the layer allows."
+        },
+        {
+          "id": "layout-thrashing",
+          "difference": "Layout thrashing is the opposite path: layout recalculated every frame."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [],
+        "guides": [
+          "references/animation-opportunity-and-review.md#5-compositor-cost",
+          "references/animation-opportunity-and-review.md#property-tiers",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#only-animate-transform-and-opacity"
+        ]
+      }
+    },
+    {
+      "id": "will-change",
+      "term": "will-change",
+      "category": "performance",
+      "definition": "A CSS hint that an element is about to animate, so the browser can promote it to its own layer ahead of time.",
+      "aliases": {
+        "en": [
+          "CSS hint that an element is about to animate",
+          "promote it to its own layer ahead of time"
+        ],
+        "zh": [
+          "will-change 属性",
+          "提前告诉浏览器这个元素要动",
+          "预先提升为独立图层"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "compositing",
+          "difference": "Compositing is the work the GPU does on a layer; will-change only requests the layer early."
+        },
+        {
+          "id": "hardware-acceleration",
+          "difference": "Hardware acceleration comes from which properties animate; will-change is an optional hint on top."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [],
+        "guides": [
+          "references/animation-opportunity-and-review.md#will-change",
+          "references/ui-transition-rules.md#tr-10--motion-owns-and-releases-its-resources"
+        ]
+      }
+    },
+    {
+      "id": "layout-thrashing",
+      "term": "Layout thrashing",
+      "category": "performance",
+      "definition": "Animating properties like width, height, top, or left that force the browser to recalculate layout every frame, causing jank.",
+      "aliases": {
+        "en": [
+          "animating width, height, top or left forces layout every frame",
+          "reflow on every frame makes it janky"
+        ],
+        "zh": [
+          "布局抖动",
+          "强制重排",
+          "动画改宽高或 top left 导致每帧重新计算布局"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "jank",
+          "difference": "Jank is the symptom; layout thrashing is one cause."
+        },
+        {
+          "id": "layout-animation",
+          "difference": "A layout animation is the intended effect; thrashing is the expensive way to build it."
+        },
+        {
+          "id": "compositing",
+          "difference": "Compositing avoids layout; thrashing triggers it every frame."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [],
+        "guides": [
+          "references/animation-opportunity-and-review.md#property-tiers",
+          "references/animation-opportunity-and-review.md#rules",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#only-animate-transform-and-opacity"
+        ]
+      }
+    },
+    {
+      "id": "purposeful-animation",
+      "term": "Purposeful animation",
+      "category": "principles-to-know",
+      "definition": "Motion should serve a function — orient, give feedback, show relationships — not just decorate.",
+      "aliases": {
+        "en": [
+          "motion that has a job instead of decorating",
+          "animate only when it helps orient or gives feedback"
+        ],
+        "zh": [
+          "有目的的动画",
+          "动效要有功能而不是装饰",
+          "为了引导和反馈才动"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "frequency-of-use",
+          "difference": "Frequency of use decides how much of a purposeful animation survives repetition."
+        },
+        {
+          "id": "perceived-performance",
+          "difference": "Feeling faster is one purpose an animation can serve."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "staging",
+          "cause"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-01--motion-communicates-an-actual-change",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#2-what-is-the-purpose",
+          "references/animation-opportunity-and-review.md#1-opportunity-screen-before-implementation"
+        ]
+      }
+    },
+    {
+      "id": "anticipation",
+      "term": "Anticipation",
+      "category": "principles-to-know",
+      "definition": "A small wind-up in the opposite direction before a move, hinting at what's about to happen.",
+      "aliases": {
+        "en": [
+          "a small wind-up in the opposite direction before moving",
+          "pulls back before it launches"
+        ],
+        "zh": [
+          "预备动作",
+          "蓄力",
+          "动之前先往反方向收一下"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "follow-through",
+          "difference": "Anticipation comes before the main move; follow-through comes after it."
+        },
+        {
+          "id": "squash-and-stretch",
+          "difference": "Squash and stretch deforms the shape; anticipation moves it the other way first."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "anticipation",
+          "anticipation-move",
+          "e-inback",
+          "recoil"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "follow-through",
+      "term": "Follow-through",
+      "category": "principles-to-know",
+      "definition": "Parts of an element keep moving and settle slightly after the main motion stops, adding weight.",
+      "aliases": {
+        "en": [
+          "parts keep moving and settle after the main motion stops",
+          "trailing bits lag behind then catch up"
+        ],
+        "zh": [
+          "跟随动作",
+          "主体停了附属部分还继续动一下再停",
+          "尾巴甩过去再回来"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "anticipation",
+          "difference": "Anticipation is the wind-up before; follow-through is the settle after."
+        },
+        {
+          "id": "bounce",
+          "difference": "Bounce is the whole element overshooting; follow-through is parts of it arriving late."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "follow-through",
+          "follow",
+          "secondary",
+          "stagger-follow",
+          "settle-drop"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "squash-and-stretch",
+      "term": "Squash & stretch",
+      "category": "principles-to-know",
+      "definition": "Deforming an element as it moves to convey weight, speed, and flexibility.",
+      "aliases": {
+        "en": [
+          "deforms as it moves to show weight and speed",
+          "flattens on impact and elongates when fast",
+          "jelly-like squish"
+        ],
+        "zh": [
+          "挤压与拉伸",
+          "运动时形变表现重量和速度",
+          "落地压扁加速拉长",
+          "果冻一样"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "press-tap-feedback",
+          "difference": "Press feedback is a small uniform scale-down; squash and stretch changes width and height unevenly."
+        },
+        {
+          "id": "bounce",
+          "difference": "Bounce is overshoot in position or scale; squash and stretch is the shape deforming."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "squash",
+          "impact-squash",
+          "jelly-emphasis",
+          "catalog-ui-button-jelly-squash",
+          "tx-squash-landing",
+          "elastic-scale"
+        ],
+        "guides": []
+      }
+    },
+    {
+      "id": "perceived-performance",
+      "term": "Perceived performance",
+      "category": "principles-to-know",
+      "definition": "The right animation makes an interface feel faster, even when it isn't.",
+      "aliases": {
+        "en": [
+          "animation that makes the interface feel faster than it is",
+          "feels quick even though the wait is the same"
+        ],
+        "zh": [
+          "感知性能",
+          "动效让界面感觉更快",
+          "实际没变快但体感更快"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "purposeful-animation",
+          "difference": "Purposeful animation is the general rule; perceived performance is one purpose."
+        },
+        {
+          "id": "skeleton-shimmer",
+          "difference": "A skeleton with a shimmer is a common tool for it."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "optimistic-update",
+          "skeleton-resolve"
+        ],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#perceived-performance"
+        ]
+      }
+    },
+    {
+      "id": "frequency-of-use",
+      "term": "Frequency of use",
+      "category": "principles-to-know",
+      "definition": "The more often a user sees an animation, the shorter and subtler it should be.",
+      "aliases": {
+        "en": [
+          "the more often it is seen the shorter and subtler it should be",
+          "animations used a hundred times a day should nearly disappear"
+        ],
+        "zh": [
+          "使用频率",
+          "越常见的动画越要短越要轻",
+          "一天看上百次的动效应该几乎没有"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "purposeful-animation",
+          "difference": "Purpose decides whether to animate; frequency decides how much."
+        },
+        {
+          "id": "duration",
+          "difference": "Duration is the value that frequency of use shortens."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#1-should-this-animate-at-all",
+          "references/animation-opportunity-and-review.md#6-subtract-pass"
+        ]
+      }
+    },
+    {
+      "id": "spatial-consistency",
+      "term": "Spatial consistency",
+      "category": "principles-to-know",
+      "definition": "Animating so an element keeps its identity and position across states, so users never lose track of where things went.",
+      "aliases": {
+        "en": [
+          "elements keep their identity and position across states",
+          "you never lose track of where something went",
+          "things come back from where they left"
+        ],
+        "zh": [
+          "空间一致性",
+          "元素在状态之间保持位置和身份",
+          "不会让人找不到东西去哪了"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "continuity-transition",
+          "difference": "A continuity transition is a change that keeps spatial consistency."
+        },
+        {
+          "id": "shared-element-transition",
+          "difference": "A shared element transition is the strongest form: the element visibly travels."
+        },
+        {
+          "id": "direction-aware-transition",
+          "difference": "Direction-aware transitions keep the direction of navigation consistent."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [
+          "shared-element",
+          "detail-expand",
+          "catalog-ui-spatial-spatial-breadcrumb"
+        ],
+        "guides": [
+          "references/ui-transition-rules.md#tr-02--continuity-preserves-logical-identity",
+          "references/ui-transition-rules.md#tr-07--direction-does-not-invent-meaning"
+        ]
+      }
+    },
+    {
+      "id": "hardware-acceleration",
+      "term": "Hardware acceleration",
+      "category": "principles-to-know",
+      "definition": "Animating transform and opacity lets the GPU keep motion smooth.",
+      "aliases": {
+        "en": [
+          "animate transform and opacity so the GPU keeps it smooth",
+          "GPU-accelerated animation"
+        ],
+        "zh": [
+          "硬件加速",
+          "只动 transform 和 opacity 让 GPU 来跑",
+          "GPU 加速"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "compositing",
+          "difference": "Compositing is the browser step that makes hardware acceleration possible."
+        },
+        {
+          "id": "will-change",
+          "difference": "will-change is a hint that can prepare it; the property choice is what earns it."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [],
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#only-animate-transform-and-opacity",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#motion-hardware-acceleration-caveat",
+          "references/animation-opportunity-and-review.md#property-tiers"
+        ]
+      }
+    },
+    {
+      "id": "reduced-motion",
+      "term": "Reduced motion",
+      "category": "principles-to-know",
+      "definition": "Respecting the user's prefers-reduced-motion setting by toning down or removing motion.",
+      "aliases": {
+        "en": [
+          "respect the user's setting to tone motion down",
+          "prefers-reduced-motion fallback",
+          "turn animations off for people sensitive to motion"
+        ],
+        "zh": [
+          "减弱动态效果",
+          "尊重系统的减少动效设置",
+          "对晕动敏感的用户关掉或减弱动画"
+        ]
+      },
+      "closeTerms": [
+        {
+          "id": "purposeful-animation",
+          "difference": "Purposeful animation removes decoration for everyone; reduced motion tones down what remains for users who ask."
+        }
+      ],
+      "local": {
+        "primitives": [],
+        "recipes": [],
+        "guides": [
+          "references/ui-transition-rules.md#tr-09--reduced-motion-preserves-the-result",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#prefers-reduced-motion",
+          "references/motion-spec.md#accessibility-and-reduced-motion",
+          "references/animate-ui.md#reduced-motion"
+        ]
+      }
+    }
+  ],
+  "antiPatterns": [
+    {
+      "id": "scale-from-zero",
+      "name": "Scale from zero",
+      "description": "An entrance that starts at scale(0), so the element appears out of nothing instead of from a believable smaller size.",
+      "replacement": "scale-in",
+      "fix": "Start between scale(0.9) and scale(0.97) together with opacity 0; for a popover, also anchor the growth to its trigger.",
+      "terms": [
+        "scale-in",
+        "pop-in",
+        "origin-aware-animation"
+      ],
+      "aliases": {
+        "en": [
+          "grows from scale 0",
+          "starts at scale(0) and zooms up from nothing",
+          "pops up out of a single point"
+        ],
+        "zh": [
+          "从 0 开始放大",
+          "从无到有地放大出现",
+          "从一个点凭空长出来"
+        ]
+      },
+      "origin": "Name listed on aiforui.dev/skills/animation-vocabulary (2026-09-15); not in the public glossary at the locked revision. Description, fix and links are this repository's.",
+      "sources": {
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#never-animate-from-scale0"
+        ],
+        "upstream": [
+          {
+            "path": "skills/review-animations/STANDARDS.md",
+            "heading": "Physicality"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hover-flicker",
+      "name": "Hover flicker",
+      "description": "A hover animation that switches on and off in quick succession: the hovered element moves or scales out from under the pointer, or a touch tap fires a hover that was never meant to run.",
+      "replacement": "hover-effect",
+      "fix": "Keep the hit area still (listen on a parent, move the child) and gate hover motion behind (hover: hover) and (pointer: fine).",
+      "terms": [
+        "hover-effect"
+      ],
+      "aliases": {
+        "en": [
+          "hover state flickers on and off",
+          "card jitters when the mouse sits on its edge",
+          "hover animation keeps restarting"
+        ],
+        "zh": [
+          "悬停闪烁",
+          "鼠标放在边缘时元素来回抖",
+          "hover 状态反复触发"
+        ]
+      },
+      "origin": "Name listed on aiforui.dev/skills/animation-vocabulary (2026-09-15); not in the public glossary at the locked revision. Description, fix and links are this repository's.",
+      "sources": {
+        "guides": [
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#touch-device-hover-states",
+          "references/mobile-web.md#8-hover-only-affordances"
+        ],
+        "upstream": [
+          {
+            "path": "skills/review-animations/STANDARDS.md",
+            "heading": "Accessibility"
+          }
+        ]
+      }
+    },
+    {
+      "id": "layered-entry",
+      "name": "Layered entry",
+      "description": "Several entrance animations stacked on one arrival: a container and its children each fade, slide or scale on their own clocks, so one appearance reads as competing motions.",
+      "replacement": "orchestration",
+      "fix": "Give the arrival one owner: animate the container once, or stagger the children under a single timeline, not both.",
+      "terms": [
+        "orchestration",
+        "stagger",
+        "enter-exit"
+      ],
+      "aliases": {
+        "en": [
+          "too many entrance animations stacked on top of each other",
+          "parent and children all animate in at once",
+          "everything inside animates in separately while the container animates in"
+        ],
+        "zh": [
+          "叠加入场",
+          "容器和里面的内容各自都在做入场动画",
+          "入场动画叠了好几层"
+        ]
+      },
+      "origin": "Name listed on aiforui.dev/skills/animation-vocabulary (2026-09-15); not in the public glossary at the locked revision. Description, fix and links are this repository's.",
+      "sources": {
+        "guides": [
+          "references/ui-transition-rules.md#tr-04--entrance-and-exit-have-one-coordination-owner",
+          "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#stagger-animations"
+        ],
+        "upstream": []
+      }
+    }
+  ]
+}

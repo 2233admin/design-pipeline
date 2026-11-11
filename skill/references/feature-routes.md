@@ -185,7 +185,8 @@ For dynamic UI, interaction motion, and animation-specific work, apply these mot
 - `design-motion-principles`: primary create/audit workflow for purposeful UI motion.
 - `emil-design-eng`: built-in design-engineering judgment for animation and interaction polish
   ([ui-craft-sources.md](ui-craft-sources.md#emil-design-eng)).
-- `animation-vocabulary`: translate vague motion intent into precise timing, easing, choreography, and behavior language.
+- `animation-vocabulary`: built in as [motion-vocabulary.md](motion-vocabulary.md); look up the exact term for a loosely described effect with `design-system search --kind doc`, then use that term in `motion.md`.
+- `animate-ui`: built in as [animate-ui.md](animate-ui.md), a component source rather than a rule set; when the project uses shadcn/ui, Radix UI, Base UI, React Aria or reka-ui, or the brief names an effect it ships, find the component with `design-system route --query "animate-ui <need>"` and follow the guide's path, install and reduced-motion sections.
 - `review-animations`: strict post-implementation animation review.
 - `references/animation-opportunity-and-review.md`: project-owned gate for screening opportunities before implementation, naming vocabulary/curves, and recording review evidence.
 - `apple-design`: Apple HIG-inspired interface principles and fluid system UI motion for web (WWDC-informed).

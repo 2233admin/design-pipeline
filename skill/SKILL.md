@@ -134,6 +134,11 @@ Load only returned component-source entries and their needed pointers, not the w
 Start with `references/animation-thinking.md` and, when required by the route,
 `references/animation-opportunity-and-review.md`. For ordinary UI state changes, also read
 `references/ui-transition-rules.md` before selecting effects and during rendered review.
+To name an effect from a loose description ("what's it called when…", 这个动效叫什么), use
+`references/motion-vocabulary.md`; `route` selects it as the `motion-vocabulary` job.
+When the project already uses shadcn/ui, Radix UI, Base UI, React Aria or reka-ui, or the brief
+names Animate UI, read `references/animate-ui.md` before writing motion by hand: it lists the
+animated primitives and registry components that install into the project.
 For scenario/mechanism discovery, use `references/motion-recipes/README.md`: the full offline
 gallery covers basic/web/game/text/scene studies alongside the four state-owned specimens.
 

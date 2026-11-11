@@ -33,11 +33,16 @@ export function globalInstalls(home = homedir()) {
  * 把场景的 repo/ 和它的 DESIGN.md 复制到临时目录，写上项目规则，按变体装技能。目录名只用场景名，不透露在测什么。
  * 返回工作目录和装好的技能目录。
  */
-export function prepare({ base = tmpdir(), scenarioDir, name, designFile, agents, skillTree, skillDirs }) {
+export function prepare({ base = tmpdir(), scenarioDir, name, designFile, agents, skillTree, skillDirs, references = [] }) {
 	mkdirSync(base, { recursive: true });
 	const workdir = mkdtempSync(join(base, `${name}-`));
 	cpSync(join(scenarioDir, "repo"), workdir, { recursive: true });
 	if (designFile) cpSync(designFile, join(workdir, "DESIGN.md"));
+	// 参考图（只有带参考的变体有）：放在 references/ 下，文件名不带变体信息
+	for (const reference of references) {
+		mkdirSync(join(workdir, "references"), { recursive: true });
+		cpSync(reference.file, join(workdir, "references", reference.name));
+	}
 	writeFileSync(join(workdir, "AGENTS.md"), agents);
 	writeFileSync(join(workdir, "CLAUDE.md"), "@AGENTS.md\n");
 	const installed = [];
@@ -74,9 +79,14 @@ function killTree(child) {
 	else process.kill(-child.pid, "SIGKILL");
 }
 
+// Windows 上经 cmd.exe 调用（客户端多是 .cmd 垫片），node 不替参数加引号：带空格的路径（C:\Program Files\...）要自己括起来
+const shellQuote = (part) => (/[\s&|<>^()"]/.test(part) ? `"${part.replace(/"/g, '\\"')}"` : part);
+
 export function runAgent(command, workdir, prompt, timeoutSeconds, env = process.env) {
 	return new Promise((done) => {
-		const child = spawn(command[0], command.slice(1), { cwd: workdir, env, shell: process.platform === "win32", detached: process.platform !== "win32" });
+		const windows = process.platform === "win32";
+		const [program, ...args] = windows ? command.map(shellQuote) : command;
+		const child = spawn(program, args, { cwd: workdir, env, shell: windows, detached: !windows });
 		let stdout = "";
 		let stderr = "";
 		let timedOut = false;

@@ -64,6 +64,15 @@
       "kernel": ["foundation", "toolchain"]
     },
     {
+      "id": "motion-vocabulary",
+      "activation": "scored",
+      "priority": 46,
+      "keywords": ["what's it called", "what is it called", "whats it called", "what do you call", "name this animation", "name the animation", "name this effect", "name the effect", "name the motion", "name of the animation", "name of this animation", "name for this animation", "animation term", "motion term", "animation vocabulary", "motion vocabulary", "效果叫什么", "动效叫什么", "动画叫什么", "叫什么效果", "叫什么动效", "叫什么动画", "动效术语", "动画术语", "动效词表", "动效名称", "动画名称", "术语叫什么"],
+      "primaryKnowledge": { "id": "motion-vocabulary", "command": "design-system", "action": "search", "admission": "ready" },
+      "secondaries": [],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
       "id": "designmd-ingest",
       "activation": "explicit",
       "priority": 70,
