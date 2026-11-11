@@ -31,9 +31,12 @@
   1. A requested capability is a source name when it is the first id segment of a component record
      that advertises it (`smoothui/components` advertises `smoothui`). Records that advertise a
      named source sort before the others for every capability of the brief.
-  2. `routing.selectWhenNamed: true` marks a record that is selected only by rule 1. Unnamed, it
-     keeps its score among the alternatives, and the best record without the mark is moved to the
-     front. Removing the mark from the Animate UI record is all it takes to let it compete for
+  2. `routing.selectWhenNamed: true` marks a record that yields to every unmarked record until
+     rule 1 names it. Unnamed, it keeps its score among the alternatives, and the best record
+     without the mark is moved to the front. The mark orders candidates and does not withhold a
+     route: when only marked records advertise a capability (a custom snapshot, or a capability
+     no other source covers), the best of them is selected, since there is no default to protect
+     and `blocked` with a ready package unselected would be the worse answer. Removing the mark from the Animate UI record is all it takes to let it compete for
      defaults; that is the owner's call, so this change leaves every default where it was.
 
   Rule 1 also applies to SmoothUI and React Bits records; their existing route tests pass

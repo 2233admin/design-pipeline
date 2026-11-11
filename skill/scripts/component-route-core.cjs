@@ -172,8 +172,9 @@ function routeComponents(options = {}) {
   const routes = [];
   const unavailable = [];
   // Records of a source the brief names lead every capability they advertise; the score orders the
-  // rest. A record marked selectWhenNamed is selected only that way: unnamed, it is listed among the
-  // alternatives at its score and never displaces the route a brief had without it.
+  // rest. A record marked selectWhenNamed yields to every other record until it is named: unnamed,
+  // it is listed among the alternatives at its score and never displaces the route a brief had
+  // without it. The mark orders candidates; it does not withhold a route.
   const named = namedSources(entries, capabilities);
   const isNamed = (entry) => (entry.routing.capabilities.some((capability) => named.has(capability)) ? 1 : 0);
   const waitsForName = (entry) => entry.routing.selectWhenNamed === true && !isNamed(entry);
@@ -182,6 +183,9 @@ function routeComponents(options = {}) {
     const candidates = entries
       .filter((entry) => entry.routing.capabilities.includes(capability) && entry.routing.platforms.includes(platform))
       .sort((left, right) => isNamed(right) - isNamed(left) || candidateScore(right, capability) - candidateScore(left, capability) || left.id.localeCompare(right.id));
+    // The best record that is not waiting for its name moves to the front. When every candidate is
+    // waiting (first === -1) there is no other route to keep, so the order stands and the best of
+    // them is selected: a capability only such a source covers is routed, not reported as blocked.
     const first = candidates.findIndex((entry) => !waitsForName(entry));
     if (first > 0) candidates.unshift(...candidates.splice(first, 1));
     if (!candidates.length) {

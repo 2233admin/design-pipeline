@@ -226,6 +226,24 @@ test("a brief that does not name it keeps its route and lists animate-ui as an a
   assert.equal(routeComponents({ catalog: after, brief: "animate-ui tabs", platform: "expo" }).status, "blocked");
 });
 
+test("selectWhenNamed orders candidates and does not withhold a route", () => {
+  // A snapshot where the marked record is the only one for a capability: nothing to yield to.
+  const only = normalizeDesignSystemSnapshot({ ...JSON.parse(JSON.stringify(snapshot)), components: snapshot.components.filter((entry) => entry.id === RECORD) });
+  const result = routeComponents({ catalog: only, brief: "animated tabs", platform: "web" });
+  const tabs = result.routes.find((route) => route.capability === "tabs");
+  assert.equal(tabs.selected.id, RECORD_ID);
+  assert.equal(tabs.status, "ready");
+  assert.deepEqual(tabs.alternatives, []);
+  assert.equal(result.unavailable, undefined);
+  // With an unmarked record present, the marked one never leads, whatever the scores.
+  const two = JSON.parse(JSON.stringify(snapshot));
+  two.components = two.components.filter((entry) => [RECORD, "shadcn/ui"].includes(entry.id));
+  const pair = routeComponents({ catalog: normalizeDesignSystemSnapshot(two), brief: "tabs", platform: "web" }).routes.find((route) => route.capability === "tabs");
+  assert.equal(short(pair.selected.id), "shadcn/ui");
+  assert.equal(pair.status, "review");
+  assert.deepEqual(pair.alternatives.map((entry) => short(entry.id)), [RECORD]);
+});
+
 test("selectWhenNamed must be boolean", () => {
   const broken = JSON.parse(JSON.stringify(snapshot));
   broken.components.find((entry) => entry.id === RECORD).routing.selectWhenNamed = "yes";

@@ -41,13 +41,18 @@
 
 ### Requirement: A source marked selectWhenNamed does not replace a default route
 
-A component record with `routing.selectWhenNamed: true` SHALL be selected only when the brief names its source. For any other brief it SHALL be listed among the alternatives at its score and SHALL NOT be the selected route when another record advertises the capability. `selectWhenNamed` SHALL be boolean.
+A component record with `routing.selectWhenNamed: true` SHALL yield to every record without the mark unless the brief names its source: it SHALL be listed among the alternatives at its score and SHALL NOT be the selected route while an unmarked record advertises the capability. The mark SHALL NOT withhold a route. `selectWhenNamed` SHALL be boolean.
 
 #### Scenario: A brief that does not name the source
 
 - **WHEN** each known capability is routed on `web` with and without the `animate-ui/components` record
 - **THEN** the selected route and status SHALL be identical for every capability except `animate-ui`
 - **AND** `animated tabs` SHALL list `animate-ui/components` first among its alternatives.
+
+#### Scenario: Only marked records advertise the capability
+
+- **WHEN** a snapshot holds no unmarked record for a capability and the brief does not name the marked source
+- **THEN** the best marked record SHALL be selected with its own status, and the capability SHALL NOT be reported as unavailable.
 
 #### Scenario: The mark is not boolean
 

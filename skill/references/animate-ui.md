@@ -64,7 +64,8 @@ node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system route \
 `动效图标`). `route` selects this source for every capability it covers when the brief names
 `animate-ui` (also `animate ui`, `animateui`), and returns the package, the install command and,
 for each recommended component, its import and docs page. A brief that does not name it keeps its
-previous route and lists this source among the alternatives.
+previous route and lists this source among the alternatives; a capability no other source covers
+is still routed here.
 
 Props are on each component's docs page. Without network, read them from the installed package's
 types under `node_modules/@animate-ui/react/dist/primitives/<path>/index.d.ts`.

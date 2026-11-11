@@ -91,7 +91,8 @@ Use the public CLI for the complete lifecycle:
   package, or attributed reference routes for the decomposed component capabilities. A brief that
   names a catalog source (`SmoothUI`, `animate-ui`) gets that source for every capability it
   covers; a record marked `selectWhenNamed` (Animate UI, see [animate-ui.md](animate-ui.md)) is
-  otherwise listed as an alternative and does not replace the route a brief had before.
+  otherwise listed as an alternative and does not replace the route a brief had before; it is
+  still selected for a capability no unmarked record covers.
 - `design-system search` without `--platform` searches Astryx by default; pass `--snapshot`
   to search another index. With `--platform web`, it defaults to the component-source index
   and filters to web-reusable components/libraries, including when an index is supplied.
