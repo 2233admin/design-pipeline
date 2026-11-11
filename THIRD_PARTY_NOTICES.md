@@ -842,6 +842,48 @@ This package bundles none of its files. `skill/references/react-doctor.md` is a 
 reference-only record of a pinned revision; an optional run of the public CLI is a user-approved
 action in the user's own project.
 
+## vercel-labs/web-interface-guidelines and ibelick/ui-skills rule lists (quoted for comparison, not distributed)
+
+`skill/references/ui-rule-coverage.json` and the test fixture
+`tests/fixtures/ui-rule-coverage/upstream-rules.json` quote the one-line rules of two upstream
+rule lists so each can be compared with this project's own rules. No upstream file is distributed,
+and neither project is installed, executed or fetched at run time. The review rows `UC-30` to
+`UC-41` of `skill/references/ui-craft-sources.md` restate the adopted rules in this repository's
+words.
+
+- https://github.com/vercel-labs/web-interface-guidelines at reviewed commit
+  `434b7f91364665f2f733b310ec54809bf8f37937` (reviewed 2026-11-11): `command.md` and four rules of
+  `README.md`. MIT, Copyright (c) 2025 Vercel Labs. Record:
+  `skill/references/web-interface-guidelines.md`.
+- https://github.com/ibelick/ui-skills at reviewed commit
+  `73fb128d046d1f0d74c2909cd26eb616e3415567` (reviewed 2026-11-11): `skills/baseline-ui/SKILL.md`,
+  `skills/fixing-metadata/SKILL.md` and `skills/fixing-motion-performance/SKILL.md`. MIT,
+  Copyright (c) 2026 Julien Thibeaut. Record: `skill/references/ibelick-ui-skills.md`.
+
+MIT License
+
+Copyright (c) 2025 Vercel Labs
+
+Copyright (c) 2026 Julien Thibeaut
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 ## alchaincyf/huashu-design (design direction library)
 
 The byte-preserved text and HTML under `skill/vendor/huashu-design/upstream/` are from
