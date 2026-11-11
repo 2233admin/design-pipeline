@@ -741,6 +741,15 @@ MIT, Copyright (c) 2026 Emil Kowalski. The complete original license is
 `skill/vendor/emil-design-eng/upstream/LICENSE`. `skill/vendor/emil-design-eng/manifest.json`
 records the scoped original Git blobs and hashes.
 
+The motion vocabulary (`skill/references/motion-vocabulary.json`, its generated
+`motion-vocabulary/*` records in `skill/references/component-source-catalog.json`, the quoted answer
+format in `skill/references/motion-vocabulary.md` and the pinned list
+`tests/fixtures/motion-vocabulary/upstream-terms.json`) quotes the glossary of
+`skills/animation-vocabulary/SKILL.md` from the same repository and commit verbatim: 91 terms, their
+one-sentence definitions and 12 category names. MIT, Copyright (c) 2026 Emil Kowalski; the license
+text is the one named above. Aliases, close-term notes, local links and the three anti-pattern
+records are project-owned.
+
 ## jakubkrehel/make-interfaces-feel-better
 
 The byte-preserved scoped snapshot under `skill/vendor/make-interfaces-feel-better/upstream/` is

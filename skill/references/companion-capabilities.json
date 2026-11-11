@@ -31,12 +31,11 @@
       "level": "enhancement",
       "skills": [
         "design-motion-principles",
-        "animation-vocabulary",
         "review-animations",
         "apple-design",
         "vercel-react-view-transitions"
       ],
-      "fallback": "Validate project MOTION.md, then document trigger, primitive ids, purpose, duration, easing, interruption behavior, and reduced-motion substitution in change motion.md.",
+      "fallback": "Validate project MOTION.md, name each effect with the built-in references/motion-vocabulary.md, then document trigger, primitive ids, purpose, duration, easing, interruption behavior, and reduced-motion substitution in change motion.md.",
       "install": [
         "Install Emil motion skills from: https://github.com/emilkowalski/skills",
         "Install motion principles from: https://github.com/kylezantos/design-motion-principles"
