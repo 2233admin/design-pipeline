@@ -72,7 +72,9 @@ families; type style names start with a letter. Both become CSS names unescaped 
 - `contrast`: the text and mark colours with the grounds they sit on:
   `{"text": "ink-muted", "on": ["paper", "paper-deep"], "min": 4.5}`. Text needs 4.5:1 (3:1 at 24px
   and up); focus rings, borders and marks that carry meaning need 3:1. Pairs are checked in every
-  theme.
+  theme. Hex, `rgb()`, `hsl()` and `oklch()` colours are measured. An `oklch()` value outside sRGB
+  is reported as `out-of-gamut` and its pairs are measured on the colour clamped to sRGB: lower the
+  chroma until it fits, and keep the wider value in a `@media (color-gamut: p3)` override.
 - A `usage` note on every token and style: where it is used, and for a text colour which grounds.
 - Role colours follow two names and both are measured:
   - `on-<fill>`: the text and icon colour drawn on the fill `<fill>`, used whenever that colour is not

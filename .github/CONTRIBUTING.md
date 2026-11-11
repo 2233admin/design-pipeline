@@ -68,6 +68,10 @@ the result of the full QA. Green checks are the review and the owner merges. A s
 moved or removed a cited file, or changed a cited license text, fails loudly and stays put until a
 guide, route or importer is fixed; a source that needs a redesign is `held` in the lock with its
 follow-up issue. The `sources:import:*` commands remain for one importer on a local checkout.
+When a bump changes a tracked UI rule file (`web-interface-guidelines`, `ibelick-ui-skills-rules`),
+`tests/ui-rule-coverage.test.cjs` fails until
+`node scripts/refresh-ui-rule-fixture.cjs --source <source id>=<clean checkout>` regenerates the
+pinned rule list and each changed rule has a row in `skill/references/ui-rule-coverage.json`.
 An `npm` entry may name an importer for data derived from the release (the Astryx snapshot); its
 `{pack:<package>}` arguments are tarballs fetched with `npm pack --ignore-scripts` and only read.
 Runtime pins (GSAP, HyperFrames, Playwright, pixelmatch) are lock entries of kind `npm`. Comparison v1 reports now identify the installed pixelmatch version, OKLab/HyAB
