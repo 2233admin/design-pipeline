@@ -38,6 +38,9 @@ export const DEFAULT_PAIRS = [
 	["principles", "bare"],
 	["recipes", "bare"],
 	["principles", "decision-tree"],
+	// 参考加设计系统：对完整流水线、对不装技能
+	["full", "reference-system"],
+	["reference-system", "bare"],
 ];
 
 export const JUDGE_HEADER = ["pair", "judge", "scenario", "run", "left", "right", "winner", "reason", "transcript"];

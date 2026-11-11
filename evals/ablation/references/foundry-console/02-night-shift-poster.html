@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="reference-size" content="1080x1440">
+<title>夜班更新海报</title>
+<style>
+  :root { --bg: #0D0F11; --surface: #171B1F; --line: #2C333A; --text: #E8EAEC; --muted: #8B949C; --primary: #F5A623; --secondary: #36C5C0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1440px; overflow: hidden; background: var(--bg); color: var(--text); font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; }
+  .mono { font: 500 20px/1.2 "JetBrains Mono", Consolas, monospace; letter-spacing: 0.06em; }
+  .page { position: relative; height: 1440px; padding: 64px; display: flex; flex-direction: column; }
+  .top { display: flex; justify-content: space-between; color: var(--muted); padding-bottom: 24px; border-bottom: 2px solid var(--line); }
+  .top b { color: var(--primary); font-weight: 500; }
+  .ticks { position: absolute; left: 64px; right: 64px; top: 152px; height: 16px; background: repeating-linear-gradient(90deg, var(--line) 0 2px, transparent 2px 32px); }
+  .code { margin-top: 120px; color: var(--secondary); }
+  h1 { font: 700 112px/1 "Barlow Condensed", "Arial Narrow", sans-serif; letter-spacing: 0.02em; margin-top: 16px; }
+  h1 em { font-style: normal; color: var(--primary); }
+  .title { font-size: 72px; line-height: 1.1; font-weight: 700; margin-top: 24px; }
+  .lead { font-size: 32px; line-height: 1.3; font-weight: 500; color: var(--muted); margin-top: 32px; max-width: 760px; }
+  .panel { margin-top: auto; background: var(--surface); border: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr 1fr; }
+  .cell { padding: 32px; border-right: 1px solid var(--line); }
+  .cell:last-child { border-right: 0; }
+  .cell .mono { color: var(--muted); }
+  .cell strong { display: block; font: 700 72px/1.1 "Barlow Condensed", "Arial Narrow", sans-serif; margin: 16px 0 8px; }
+  .cell p { font-size: 24px; line-height: 1.6; }
+  .foot { display: flex; justify-content: space-between; margin-top: 32px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="top mono"><span>PATCH NOTES</span><span><b>●</b> LIVE 04.18 03:00</span></div>
+  <div class="ticks"></div>
+  <div class="code mono">UPDATE 2.4 / SHIFT C</div>
+  <h1>NIGHT <em>SHIFT</em></h1>
+  <div class="title">夜班上线</div>
+  <p class="lead">工厂在夜里不再停工。新的三班制让产线连续运转，照明和噪声成了要管的成本。</p>
+  <div class="panel">
+    <div class="cell"><span class="mono">SHIFTS</span><strong>3</strong><p>早、中、夜三班，各自排工</p></div>
+    <div class="cell"><span class="mono">OUTPUT</span><strong>+38%</strong><p>满负荷时的日产量</p></div>
+    <div class="cell"><span class="mono">NEW PARTS</span><strong>12</strong><p>探照灯、隔音墙等新部件</p></div>
+  </div>
+  <div class="foot mono"><span>FOUNDRY / FACTORY LINE</span><span>BUILD 2.4.0-1187</span></div>
+</div>
+</body>
+</html>

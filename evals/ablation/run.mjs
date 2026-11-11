@@ -4,7 +4,7 @@
 // 结构照搬 pstack-omp 的 evals/run.mjs：变体交替跑、每次一行 results.tsv、追加时列必须对得上。
 // 用法：node evals/ablation/run.mjs --client claude|codex|omp [--pilot] [--runs N] [--variants a,b] [--sets core,open]
 //       [--scenarios x,y] [--out <结果目录>] [--work-root <目录>] [--timeout 秒] [--command '<JSON 数组>']
-//       [--keep-workdir] [--allow-global-skill]
+//       [--references <目录>] [--keep-workdir] [--allow-global-skill]
 
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -14,7 +14,7 @@ import { parseArgs } from "node:util";
 import { CLIENTS, exposure, globalInstalls, prepare, runAgent, skillUsedIn, treeDigest } from "./lib.mjs";
 import { readTsv, summarize } from "./report.mjs";
 import { powerLines } from "./power.mjs";
-import { COLUMNS, DEFAULT_SETS, describe, grade, HEADER, loadCase, prompt, scenarios as listScenarios, SCENARIOS, SETS, VARIANTS, variantSetup } from "./suite.mjs";
+import { COLUMNS, DEFAULT_SETS, describe, grade, HEADER, loadCase, prompt, referenceImages, REFERENCES, referenceSources, scenarios as listScenarios, SCENARIOS, SETS, VARIANTS, variantSetup } from "./suite.mjs";
 import { buildVariants, LAYERS, REPO } from "./variants.mjs";
 
 const require = createRequire(import.meta.url);
@@ -30,6 +30,7 @@ const { values } = parseArgs({
 		out: { type: "string" },
 		"work-root": { type: "string" },
 		timeout: { type: "string", default: "3600" },
+		references: { type: "string" },
 		"keep-workdir": { type: "boolean", default: false },
 		"allow-global-skill": { type: "boolean", default: false },
 	},
@@ -46,6 +47,10 @@ const sets = values.sets ? values.sets.split(",") : DEFAULT_SETS;
 for (const set of sets) if (!SETS.includes(set)) throw new Error(`没有 ${set} 这组场景，可选：${SETS.join("、")}`);
 const scenarios = values.scenarios ? values.scenarios.split(",") : listScenarios(sets);
 for (const scenario of scenarios) loadCase(scenario);
+// 带参考的变体用哪套参考图：默认是仓库里原创的参考页；--references 指向自己的截图目录（按场景名或风格名分子目录）。
+// 跑之前先确认每个场景都找得到参考图，免得跑到一半才报错
+const referenceRoot = values.references ? resolve(values.references) : REFERENCES;
+if (variants.some((variant) => variantSetup(variant, scenarios[0]).references)) for (const scenario of scenarios) referenceSources(scenario, referenceRoot);
 
 // 结果和工作目录都放在 /tmp 以外的专门目录里；工作目录的上级不带“消融”字样，代理看得到自己的路径
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -70,6 +75,7 @@ const environment = {
 	globalInstalls: global,
 	cache: { root: cache, exists: existsSync(cache), entries: existsSync(cache) ? readdirSync(cache).sort() : [] },
 	workRoot,
+	references: referenceRoot,
 };
 appendFileSync(join(out, "environment.jsonl"), `${JSON.stringify(environment)}\n`);
 if (environment.cache.entries.length) console.log(`提醒：下载缓存 ${cache} 里有 ${environment.cache.entries.join("、")}，所有装了技能的变体都看得到它（已记在 environment.jsonl）`);
@@ -107,8 +113,8 @@ for (let run = 1; run <= runs; run++) {
 			let workdir = null;
 			try {
 				const setup = variantSetup(variant, scenario);
-				const spec = loadCase(scenario);
-				const prepared = prepare({ base: workRoot, scenarioDir: join(SCENARIOS, scenario), name: scenario, designFile: spec.designFile, agents: setup.agents, skillTree: setup.skill ? trees[setup.skill] : null, skillDirs: client.skillDirs });
+				const references = setup.references ? await referenceImages(scenario, { root: referenceRoot, cacheDir: join(out, "references") }) : [];
+				const prepared = prepare({ base: workRoot, scenarioDir: join(SCENARIOS, scenario), name: scenario, designFile: setup.designFile, agents: setup.agents, skillTree: setup.skill ? trees[setup.skill] : null, skillDirs: client.skillDirs, references });
 				workdir = prepared.workdir;
 				const before = prepared.installed.map(treeDigest);
 				const started = Date.now();

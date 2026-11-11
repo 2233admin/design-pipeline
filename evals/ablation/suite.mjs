@@ -2,24 +2,30 @@
 // 怎么渲染、怎么量在 measure.mjs，怎么打出减层的技能目录在 variants.mjs。数字用来比较变体，不用来给单次运行定性。
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { basename, dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { contentPieces, externalReferences, measureRender, readStyle, render, svgSize } from "./measure.mjs";
+import { contentPieces, externalReferences, measureRender, readStyle, render, screenshot, svgSize } from "./measure.mjs";
 import { VARIANTS as SKILL_VARIANTS } from "./variants.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const SCENARIOS = join(HERE, "scenarios");
 const STYLES = join(HERE, "styles");
 const RULE_PACKS = join(HERE, "rules");
+// 随仓库带的参考页（本实测原创）。按场景名或风格名分目录；run.mjs --references 可以换成自己的截图目录
+export const REFERENCES = join(HERE, "references");
+const REFERENCE_TYPES = [".png", ".jpg", ".jpeg", ".webp", ".html"];
 
 // 不装技能、只改项目规则的对照：形容词提示、if-else 规则包、关系型原则、固定像素配方
 export const PROMPT_VARIANTS = ["adjectives", "decision-tree", "principles", "recipes"];
-export const VARIANTS = ["bare", ...PROMPT_VARIANTS, ...SKILL_VARIANTS.filter((variant) => variant !== "bare")];
+// 不装技能，给参考图和项目设计系统：验证“先找参考、建项目设计系统”这条做法
+export const REFERENCE_VARIANT = "reference-system";
+export const VARIANTS = ["bare", ...PROMPT_VARIANTS, REFERENCE_VARIANT, ...SKILL_VARIANTS.filter((variant) => variant !== "bare")];
 
 // 场景分组：core 是带预设风格的四个，open 是不给 DESIGN.md 的两个（让基础、方向、品味几层真的有事做），
-// ignoredone 是从 ignoredone 站点调研来的四个（docs/research/ignoredone-arknights-design.md 的 S1–S4）
-export const SETS = ["core", "open", "ignoredone"];
-export const DEFAULT_SETS = ["core", "open"];
+// ignoredone 是从 ignoredone 站点调研来的四个（docs/research/ignoredone-arknights-design.md 的 S1–S4），
+// product-ui 是两个产品界面（工作台列表页、设置页），用同一套风格的产品字阶
+export const SETS = ["core", "open", "ignoredone", "product-ui"];
+export const DEFAULT_SETS = ["core", "open", "product-ui"];
 
 export const scenarios = (sets = SETS) => readdirSync(SCENARIOS).filter((name) => existsSync(join(SCENARIOS, name, "case.json")) && sets.includes(loadCase(name).set)).sort();
 
@@ -38,12 +44,56 @@ const BASE = ["- 没有人会回答问题：需要拍板的地方自己定，在
 /** 变体在工作目录里的样子：要不要装技能（装哪一份），AGENTS.md 写什么。 */
 export function variantSetup(variant, scenario) {
 	if (!VARIANTS.includes(variant)) throw new Error(`没有 ${variant} 这个变体，可选：${VARIANTS.join("、")}`);
-	const { packStyle } = loadCase(scenario);
+	const { packStyle, designFile } = loadCase(scenario);
 	const lines = [...BASE];
+	const reference = variant === REFERENCE_VARIANT;
+	if (reference) lines.push("- 参考图在 `references/` 里，动手前先逐张看：借它们的版式、层级、疏密和细节处理，不照抄里面的文字和图形。", "- 项目的设计系统是 `DESIGN.md`：颜色、字号、字体、间距只从里面取。");
 	if (variant === "adjectives") lines.push(JSON.parse(readFileSync(join(RULE_PACKS, "adjectives.json"), "utf8"))[packStyle]);
 	if (variant === "decision-tree") lines.push("", readFileSync(join(RULE_PACKS, `decision-tree.${packStyle}.md`), "utf8").trim());
 	if (variant === "principles" || variant === "recipes") lines.push("", readFileSync(join(RULE_PACKS, `${variant}.md`), "utf8").trim());
-	return { skill: variant === "bare" || PROMPT_VARIANTS.includes(variant) ? null : variant, agents: `# ${scenario}\n\n${lines.join("\n")}\n` };
+	return {
+		skill: variant === "bare" || reference || PROMPT_VARIANTS.includes(variant) ? null : variant,
+		agents: `# ${scenario}\n\n${lines.join("\n")}\n`,
+		references: reference,
+		// 开放场景本来不给 DESIGN.md；这个变体的主张就是自带一套设计系统，所以给它同一风格的那份
+		designFile: reference ? designFile ?? join(STYLES, `${packStyle}.DESIGN.md`) : designFile,
+	};
+}
+
+/** 场景用哪些参考文件：先找 <root>/<场景名>/，没有再找 <root>/<风格名>/。一张都没有就报错，不悄悄跑成 bare。 */
+export function referenceSources(scenario, root = REFERENCES) {
+	const { packStyle } = loadCase(scenario);
+	for (const key of [scenario, packStyle]) {
+		const dir = join(root, key);
+		if (!existsSync(dir)) continue;
+		const files = readdirSync(dir).filter((name) => REFERENCE_TYPES.includes(extname(name).toLowerCase())).sort();
+		if (files.length) return files.map((name) => join(dir, name));
+	}
+	throw new Error(`${scenario} 没有参考图：在 ${root} 下放 ${scenario}/ 或 ${packStyle}/，里面是 png、jpg、webp 或 html`);
+}
+
+/**
+ * 参考文件变成放进工作目录的图片：图片原样用；HTML 参考页按它声明的尺寸
+ * （<meta name="reference-size" content="1440x900">，没写就是 1440×900）截成 PNG，存在 cacheDir 里，同一轮只截一次。
+ * 返回 [{ name, file }]，name 是工作目录 references/ 下的文件名。
+ */
+export async function referenceImages(scenario, { root = REFERENCES, cacheDir }) {
+	const out = [];
+	for (const source of referenceSources(scenario, root)) {
+		if (extname(source).toLowerCase() !== ".html") {
+			out.push({ name: basename(source), file: source });
+			continue;
+		}
+		const name = `${basename(source, extname(source))}.png`;
+		const file = join(cacheDir, basename(dirname(source)), name);
+		if (!existsSync(file)) {
+			const size = /<meta\s+name=["']reference-size["']\s+content=["'](\d+)x(\d+)["']/i.exec(readFileSync(source, "utf8"));
+			mkdirSync(dirname(file), { recursive: true });
+			writeFileSync(file, await screenshot(source, { width: Number(size?.[1] ?? 1440), height: Number(size?.[2] ?? 900) }));
+		}
+		out.push({ name, file });
+	}
+	return out;
 }
 
 export const prompt = (scenario) => readFileSync(join(SCENARIOS, scenario, "prompt.md"), "utf8").trim();
