@@ -241,6 +241,12 @@ test("oklch colours are measured for contrast, and one outside sRGB is reported"
   assert.match(messages(checkDesignSystemPackage({ projectRoot: failRoot })), /contrast ink on paper \(light\) is \d\.\d+:1, below 4\.5:1/);
   assert.equal(exit(failRoot), 2);
 
+  // Greys written with a powerless hue, as the bundled Good CSS guidance asks, are measured like hue 0.
+  const neutral = checkDesignSystemPackage({ projectRoot: withPair("oklch(20% 0 none)", "oklch(1 0 none)") });
+  assert.equal(neutral.status, "ready", messages(neutral));
+  assert.deepEqual(neutral.contrast.map((pair) => pair.ratio), checkDesignSystemPackage({ projectRoot: withPair("oklch(20% 0 0)", "oklch(1 0 0)") }).contrast.map((pair) => pair.ratio));
+  assert.ok(neutral.contrast.every((pair) => pair.ratio > 15), JSON.stringify(neutral.contrast));
+
   // The same pair written as hex and as its oklch() equivalent measures the same.
   const ratioOf = (ink, paper) => checkDesignSystemPackage({ projectRoot: withPair(ink, paper, 3) }).contrast[0].ratio;
   assert.ok(Math.abs(ratioOf("#ff0000", "#ffffff") - ratioOf("oklch(62.8% 0.2577 29.23)", "oklch(1 0 0)")) <= 0.05);

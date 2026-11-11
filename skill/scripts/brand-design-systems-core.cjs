@@ -228,11 +228,13 @@ function parseColor(value, declarations, depth = 0) {
     const channel = (raw) => (raw.endsWith("%") ? Number.parseFloat(raw) / 100 : Number.parseFloat(raw) / 255);
     return { rgb: [channel(match[1]), channel(match[2]), channel(match[3])], alpha: alphaOf(match[4]) };
   }
-  match = text.match(/^oklch\(\s*([\d.]+%?)\s+([\d.]+)\s+([\d.]+)(?:deg)?\s*(?:\/\s*([\d.]+%?)\s*)?\)$/);
+  match = text.match(/^oklch\(\s*(none|[\d.]+%?)\s+(none|[\d.]+%?)\s+(none|-?[\d.]+(?:deg)?)\s*(?:\/\s*([\d.]+%?)\s*)?\)$/);
   if (match) {
-    const L = match[1].endsWith("%") ? Number.parseFloat(match[1]) / 100 : Number.parseFloat(match[1]);
-    const C = Number.parseFloat(match[2]);
-    const hue = (Number.parseFloat(match[3]) * Math.PI) / 180;
+    // `none` is a powerless component (the hue of a grey) and converts as 0; a chroma percentage is of 0.4.
+    const part = (raw, full) => (raw === "none" ? 0 : raw.endsWith("%") ? (Number.parseFloat(raw) / 100) * full : Number.parseFloat(raw));
+    const L = part(match[1], 1);
+    const C = part(match[2], 0.4);
+    const hue = (part(match[3], 1) * Math.PI) / 180;
     const raw = oklabToRgbRaw([L, C * Math.cos(hue), C * Math.sin(hue)]);
     const color = { rgb: raw.map(clampChannel), alpha: alphaOf(match[4]) };
     if (raw.some((channel) => channel < -GAMUT_TOLERANCE || channel > 1 + GAMUT_TOLERANCE)) color.outOfGamut = true;

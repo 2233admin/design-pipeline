@@ -21,6 +21,12 @@
 - **WHEN** a pair is written once as hex and once as the equivalent `oklch()` values
 - **THEN** the two measured ratios SHALL differ by at most 0.05.
 
+#### Scenario: A grey written with a powerless hue
+
+- **WHEN** a pair's colours are written as `oklch(20% 0 none)` and `oklch(1 0 none)`
+- **THEN** the check SHALL measure the pair with `none` converted as 0
+- **AND** the ratio SHALL equal the one for `oklch(20% 0 0)` on `oklch(1 0 0)`.
+
 #### Scenario: An oklch token outside sRGB
 
 - **WHEN** a colour token's own value is an `oklch()` colour outside the sRGB gamut

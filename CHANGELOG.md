@@ -6,7 +6,7 @@ All notable changes to Design Pipeline are documented here.
 
 ### Fixed
 
-- `design-system check` measures `oklch()` colour tokens in contrast pairs (change `oklch-token-contrast`, #357). The check accepted `oklch()` as a token value but could only measure hex, `rgb()` and `hsl()`, so a package that followed the bundled advice to write new systems in oklch failed every pair with "both colours must exist and be hex, rgb() or hsl()". It now reuses the oklch conversion of the brand design-system catalogue. An `oklch()` value outside sRGB is no longer clamped silently: the package check reports `out-of-gamut` for the token (once, with the themes) and measures its pairs on the clamped colour, and `designmd inspect` lists such catalogue tokens in `clampedTokens`.
+- `design-system check` measures `oklch()` colour tokens in contrast pairs (change `oklch-token-contrast`, #357). The check accepted `oklch()` as a token value but could only measure hex, `rgb()` and `hsl()`, so a package that followed the bundled advice to write new systems in oklch failed every pair with "both colours must exist and be hex, rgb() or hsl()". It now reuses the oklch conversion of the brand design-system catalogue, which also reads `none` for a powerless component (`oklch(98% 0 none)`, the form Good CSS asks for greys), a chroma percentage and a negative hue. An `oklch()` value outside sRGB is no longer clamped silently: the package check reports `out-of-gamut` for the token (once, with the themes) and measures its pairs on the clamped colour, and `designmd inspect` lists such catalogue tokens in `clampedTokens`.
 
 ### Added
 

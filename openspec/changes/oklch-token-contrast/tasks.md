@@ -9,6 +9,7 @@
 
 - [x] 2.1 `brand-design-systems-core.cjs`: `parseColor` marks an `oklch()` value outside sRGB (also through `color-mix()`), `normalizeTokens` lists such tokens in `clamped`, `inspect` returns `clampedTokens`; export `parseColor`.
 - [x] 2.2 `design-system-package-core.cjs`: `rgbaOf` measures `oklch()` through `parseColor`; `out-of-gamut` finding per token; the unmeasurable-colour message names oklch.
+- [x] 2.3 `parseColor` reads the oklch() forms the bundled guidance uses: `none` for a powerless component, a chroma percentage, a negative hue (review of #362).
 
 ## 3. Docs and tests
 
