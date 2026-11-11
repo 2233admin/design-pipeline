@@ -76,6 +76,7 @@
     "motion-foundation.test.cjs",
     "motion-verification.test.cjs",
     "full-motion-recipes.test.cjs",
+    "motion-vocabulary.test.cjs",
     "film-storyboard-values.test.cjs",
     "film-cuts.test.cjs",
     "film-gates.test.cjs",
