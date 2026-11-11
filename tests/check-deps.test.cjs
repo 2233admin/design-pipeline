@@ -255,7 +255,7 @@ test("reports INFO when the optional Anime.js skill is absent", () => {
   }
 });
 
-test("a clean packaged pipeline never reports bundled emil-design-eng as a missing companion", () => {
+test("a clean packaged pipeline never reports bundled emil-design-eng or the built-in web interface rules as a missing companion", () => {
   const root = makeRoot();
   try {
     installPipeline(root);
@@ -265,7 +265,15 @@ test("a clean packaged pipeline never reports bundled emil-design-eng as a missi
     assert.equal(core.status, "OK");
     for (const group of report.groups) {
       assert.equal((group.missing || []).includes("emil-design-eng"), false, group.name);
+      // The Vercel rule list is held in references/ui-craft-sources.md; its skill is not a companion.
+      assert.equal((group.missing || []).includes("web-design-guidelines"), false, group.name);
     }
+    // In an otherwise empty skill root Visual taste still lacks its real companions, so its install
+    // hints are printed: none of them sends the user to the Vercel skill repository.
+    const taste = report.groups.find((item) => item.name === "Visual taste");
+    assert.ok(taste.missing.includes("ui-ux-pro-max"));
+    assert.doesNotMatch(JSON.stringify(taste.install), /vercel-labs\/agent-skills/);
+    assert.match(taste.fallback, /references\/web-interface-guidelines\.md/);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

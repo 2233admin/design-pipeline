@@ -702,6 +702,17 @@
       "treeSha256": "2e4158ca0e38077098956c16eece1f3ea180f6f528b35b1a7d3cef83bf58904f"
     },
     {
+      "id": "ibelick-ui-skills-rules",
+      "kind": "adapted-reference",
+      "repo": "https://github.com/ibelick/ui-skills",
+      "revision": "73fb128d046d1f0d74c2909cd26eb616e3415567",
+      "reviewedAt": "2026-11-11",
+      "documents": [
+        "skill/references/ibelick-ui-skills.md"
+      ],
+      "committedAt": "2026-11-03T07:54:32+01:00"
+    },
+    {
       "id": "impeccable",
       "kind": "catalog-reference",
       "repo": "https://github.com/pbakaus/impeccable",
@@ -1123,6 +1134,17 @@
       "profiles": [
         "ui-ux-pro-max"
       ]
+    },
+    {
+      "id": "web-interface-guidelines",
+      "kind": "adapted-reference",
+      "repo": "https://github.com/vercel-labs/web-interface-guidelines",
+      "revision": "434b7f91364665f2f733b310ec54809bf8f37937",
+      "reviewedAt": "2026-11-11",
+      "documents": [
+        "skill/references/web-interface-guidelines.md"
+      ],
+      "committedAt": "2026-10-05T13:49:16-07:00"
     },
     {
       "id": "zhuque-fangsong",
