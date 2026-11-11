@@ -20,6 +20,12 @@ Source keys used below. `LA` is a lintapple rule id, adapted in `scripts/interac
 | `ID/` | `vendor/interface-discipline/upstream/skills/*/*.md` (domain skill, then file) |
 | `SC/` | `vendor/shadcn/upstream/skills/shadcn/rules/*.md` (only in a shadcn project) |
 
+Two more keys name upstream rule lists that are pinned but not vendored; the section cited after
+the key is a heading in that file. `WIG` is `command.md` of Vercel's Web Interface Guidelines
+(`README.md` where the row says so; [record](web-interface-guidelines.md)). `BU` is
+`skills/baseline-ui/SKILL.md` of ibelick/ui-skills ([record](ibelick-ui-skills.md)).
+[Rule coverage](#rule-coverage) maps every rule of those lists to a row here.
+
 ## Measured audit
 
 Add one entry with `"kind": "audit"` to the `probes` of `interaction.json`
@@ -115,6 +121,18 @@ finding status, removed signals) in [interface-discipline.md](interface-discipli
 | UC-27 | Squash, stretch and press deformation stays subtle: every scale axis stays within 0.95-1.05 (press feedback within the narrower 0.95-0.98 in [Precedence](#precedence)). Check: no `scale`, `scaleX` or `scaleY` keyframe or `whileTap` value outside that range on UI elements. | from the former 12-principles bundle (raphaelsalaja/skill, archived upstream) |
 | UC-28 | Layout, not motion: a modal or dialog dims what is behind it so focus goes to the layer. Check: the backdrop has a visible tint from a project token (not `transparent`), and a non-modal popover does not dim. | from the former 12-principles bundle (raphaelsalaja/skill, archived upstream) |
 | UC-29 | Layout, not motion: animated layers sit on the project's z-index scale, so tooltips, popovers, toasts and modals never render behind content while entering, moving or exiting. Check: each animated overlay takes a named stacking token (no ad hoc numbers), and a transform or `will-change` on an ancestor does not trap it in a lower stacking context. | from the former 12-principles bundle (raphaelsalaja/skill, archived upstream) |
+| UC-30 | React hydration: an input with `value` has `onChange` (or uses `defaultValue`); dates, times and other values that differ between server and client are rendered so both produce the same markup; `suppressHydrationWarning` sits only on the one node whose mismatch is intended, never to silence a general warning; hydration never resets a typed value or moves focus out of a field. | `WIG` Hydration Safety; `ID/better-accessibility/forms.md` |
+| UC-31 | Render cost: a list over 50 items is virtualized or uses `content-visibility: auto`; inputs are uncontrolled unless a controlled value is needed, and a controlled one stays cheap per keystroke; layout is not read during render (`getBoundingClientRect`, `offsetHeight`, `offsetWidth`, `scrollTop`) and DOM reads are batched before writes; long tasks run in a Web Worker, not on the main thread. | `WIG` Performance; `WIG` `README.md` Performance |
+| UC-32 | Media: moving pictures are `<video autoplay muted loop playsinline>` with a still alternative, not an animated GIF; a short non-essential loop also offers an H.264 MP4 `<picture>` source for Safari and a still under reduced motion (UC-06); meaningful media has captions, a transcript or a description; media controls work from the keyboard, and decorative media is hidden from assistive technology. | `WIG` Performance, Accessibility; `FA`, `ID/better-accessibility/screen-readers.md` |
+| UC-33 | Field attributes: `autoFocus` is rare, desktop only, on the single primary input of the view, and never on mobile, where the keyboard shifts the layout; a field that is not a credential but attracts the password manager sets `autocomplete="off"`. | `WIG` Touch & Interaction, Forms |
+| UC-34 | Platform-proof source: a native `<select>` sets `background-color` and `color` explicitly (Windows dark mode); an SVG transform sits on a `<g>` wrapper with `transform-box: fill-box; transform-origin: center`; layout comes from flex, grid and intrinsic sizing, not from JavaScript measurement; while an element is dragged, text selection is off and the dragged element is `inert`. | `WIG` Dark Mode & Theming, Animation, Safe Areas & Layout, Touch & Interaction |
+| UC-35 | Locale: the language comes from `Accept-Language` or `navigator.languages`, never from IP or location; brand names, code tokens and identifiers carry `translate="no"`. | `WIG` Locale & i18n; `ID/better-accessibility/semantics-and-aria.md` |
+| UC-36 | Sentence form: active voice ("Install the CLI", not "The CLI will be installed"); counts are numerals ("8 deployments"); `&` replaces "and" only where space is tight. | `WIG` Content & Copy |
+| UC-37 | Component source: keyboard and focus behavior comes from the project's existing accessible primitives, never rebuilt by hand; one interaction surface uses one primitive system; what render logic can express is not written in `useEffect`. | `BU` Components, Performance; `ID/better-accessibility/semantics-and-aria.md` |
+| UC-38 | Emphasis: one accent color per view, on the primary action, with its peers neutral; hover, active and focus states are more prominent than rest, never less. | `BU` Design; `WIG` Hover & Interactive States; `ID/better-colors/UPSTREAM-SKILL.md` |
+| UC-39 | Ellipsis as a promise: a menu item or button that opens a follow-up step before it acts ends with `…` ("Rename…"), and so does in-progress copy ("Saving…"). | `WIG` `README.md` Interactions; `WIG` Typography; `ID/better-writing/patterns.md` |
+| UC-40 | Writes: a submission carries an idempotency key and repeat clicks are ignored while it runs, so a retry cannot apply twice; a `POST`, `PATCH` or `DELETE` is budgeted to finish within 500ms, and a slower one shows feedback by the [waiting rule](interface-defaults.md#waiting). | `WIG` `README.md` Forms, Performance; `ID/better-accessibility/forms.md` |
+| UC-41 | Loading hints: a below-fold image sets `loading="lazy"`; the critical above-fold image sets `fetchpriority="high"` (or the framework's `priority`); critical fonts are self-hosted, preloaded with `<link rel="preload" as="font">` and use `font-display: swap`. | `WIG` Images, Performance; [cjk-typography.md](cjk-typography.md) |
 
 ## Precedence
 
@@ -236,6 +254,25 @@ lintapple file, policy file, CLI, Playwright helper or axe-core dependency ships
 come from probe inputs, selectors replace `data-ui-*` markers, the target floor is 24px instead of
 15px, tabular digits are measured, and the `copy` rule and axe-backed rules are not ported.
 
+### Rule coverage
+
+[`ui-rule-coverage.json`](ui-rule-coverage.json) lists every rule of four upstream rule lists
+(Vercel's Web Interface Guidelines `command.md`, and ibelick/ui-skills `baseline-ui`,
+`fixing-metadata` and `fixing-motion-performance`) with where this project holds it: an `audit.*`
+code, a `UC-` row, project or vendored text, `pending` with the issue that will add it, or
+`not-adopted` with the reason. It is comparison data for tests and maintenance: not a gate, not a
+receipt field and not something a review records. The two record documents,
+[web-interface-guidelines.md](web-interface-guidelines.md) and
+[ibelick-ui-skills.md](ibelick-ui-skills.md), carry the pinned revision and the hash of the rule
+files; neither source is vendored, installed or fetched at run time.
+
+Not adopted, with the governing rule: Title Case for headings and buttons (sentence case is the
+default, `ID/better-writing/UPSTREAM-SKILL.md`); `<link rel="preconnect">` for asset hosts (an
+external request fails the audit, see [Measured audit](#measured-audit)); and `baseline-ui`'s stack
+prescriptions (Tailwind defaults, `motion/react`, `tw-animate-css`, `cn`, Base UI, the Tailwind
+shadow scale, `size-*`), because craft details are expressed in the project's existing styling
+system ([Stage integration](#stage-integration)).
+
 ### Reading, motion and state sources
 
 `audit.line-length`, `audit.line-height`, `audit.heading-levels`, `audit.reduced-motion` and
@@ -267,3 +304,12 @@ Then run `tests/ui-craft-sources.test.cjs`, keep `references/package-resources.j
 exactly the vendored files, and update the third-party notices. Never execute vendored code,
 hand-edit `upstream/` bytes or refresh a manifest by rehashing arbitrary source. A lintapple update
 is a reviewed port at a new revision with its notice and the audit tests, never a dependency.
+
+The rule lists behind [Rule coverage](#rule-coverage) move with `npm run sources:update`, which
+rewrites the revision and the rule-file hash in each record document. When that hash changes,
+`tests/ui-rule-coverage.test.cjs` fails until the pinned rule list is regenerated from a clean
+checkout at the locked revision and every new or reworded rule has a row:
+
+```bash
+node scripts/refresh-ui-rule-fixture.cjs --source <source id>=<clean checkout>
+```

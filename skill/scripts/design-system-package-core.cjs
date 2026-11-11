@@ -9,6 +9,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { brandKey, declaredBrands, pathIsInside, resolveProjectRoot, sha256Text } = require("./design-synthesis-core.cjs");
+const { parseColor } = require("./brand-design-systems-core.cjs");
 
 const SCHEMA = "design-pipeline.design-system-check.v1";
 const DEFAULT_DIR = "design-system";
@@ -51,13 +52,20 @@ function resolveColor(byName, name, themeId, firstId, seen = new Set()) {
   return HEX.test(value) || COLOR_FUNCTION.test(value) ? value.toLowerCase() : null;
 }
 
-// [r, g, b, alpha] for hex, rgb[a]() and hsl[a](); null for colour spaces this check cannot measure.
+const OKLCH = /^oklch\(/i;
+
+// [r, g, b, alpha] for hex, rgb[a](), hsl[a]() and oklch() (clamped to sRGB); null for colour
+// spaces this check cannot measure.
 function rgbaOf(value) {
   if (HEX.test(value)) {
     let h = value.slice(1);
     if (h.length <= 4) h = [...h].map((c) => c + c).join("");
     const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
     return [r, g, b, h.length === 8 ? parseInt(h.slice(6, 8), 16) / 255 : 1];
+  }
+  if (OKLCH.test(value)) {
+    const color = parseColor(value);
+    return color ? [...color.rgb.map((channel) => channel * 255), color.alpha] : null;
   }
   const fn = value.match(/^(rgba?|hsla?)\(\s*([^()]*)\)$/i);
   if (!fn) return null;
@@ -135,8 +143,21 @@ function validateTokens(tokens, findings) {
     for (const field of ["brand", "source"]) {
       if (token[field] !== undefined && (typeof token[field] !== "string" || !token[field].trim())) add(`color.${token.name}: ${field} must be a non-empty string`);
     }
+    const outside = new Map(); // the token's own oklch() value -> themes it is outside sRGB in
     for (const theme of themes) {
       if (!resolveColor(byName, token.name, theme, firstId)) add(`color.${token.name}: no valid colour for theme ${theme} (hex, a colour function without nesting, or an alias of an existing colour)`);
+      const own = String(colorValue(token, theme, firstId) ?? "").trim();
+      const parsed = OKLCH.test(own) ? parseColor(own) : null;
+      if (parsed && parsed.outOfGamut) outside.set(own, [...(outside.get(own) || []), theme]);
+    }
+    for (const [value, where] of outside) {
+      findings.push({
+        file: "tokens.json",
+        code: "out-of-gamut",
+        severity: "error",
+        message: `color.${token.name} (${where.join(", ")}): ${value} is outside sRGB; contrast is measured on the colour clamped to sRGB`,
+        fix: "lower the chroma until the colour fits sRGB and keep the wider value in a @media (color-gamut: p3) override",
+      });
     }
   }
   const type = tokens.type;
@@ -176,7 +197,7 @@ function checkContrast(tokens, byName, themes, findings) {
         const bg = resolveColor(byName, ground, theme, themes[0]);
         const a = fg && rgbaOf(fg);
         const b = bg && rgbaOf(bg);
-        if (!a || !b) { add(`contrast ${pair.text} on ${ground} (${theme}): both colours must exist and be hex, rgb() or hsl()`); continue; }
+        if (!a || !b) { add(`contrast ${pair.text} on ${ground} (${theme}): both colours must exist and be hex, rgb(), hsl() or oklch()`); continue; }
         if (a[3] < 1 || b[3] < 1) { add(`contrast ${pair.text} on ${ground} (${theme}): translucent colours cannot be measured; declare an opaque colour for this pair`); continue; }
         const ratio = Math.round(contrastRatio(a, b) * 100) / 100;
         results.push({ text: pair.text, on: ground, theme, ratio, min });
