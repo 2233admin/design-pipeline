@@ -162,6 +162,29 @@ test("package resources list exactly every vendored UI craft file, its manifest 
   }
 });
 
+test("review checklist ids run UC-01 upward without a gap, and every row states its check and its sources", () => {
+  const lines = fs.readFileSync(path.join(skillRoot, GUIDES[0]), "utf8").split(/\r?\n/);
+  const start = lines.indexOf("## Review checklist");
+  const end = lines.indexOf("## Precedence");
+  assert.ok(start > 0 && end > start, "the guide has a review checklist before Precedence");
+  const isRow = line => /^\| UC-/.test(line);
+  const rows = lines.slice(start, end).filter(isRow).map(line => line.replace(/^\| /, "").replace(/ \|$/, "").split(" | "));
+  assert.ok(rows.length >= 41, "UC-01 to UC-41");
+  assert.deepEqual(rows.map(row => row[0]), rows.map((row, index) => `UC-${String(index + 1).padStart(2, "0")}`));
+  // The checklist is the one place a UC id is defined.
+  assert.equal(lines.filter(isRow).length, rows.length);
+  for (const [id, check, sources, ...rest] of rows) {
+    assert.deepEqual(rest, [], `${id} has exactly three cells`);
+    assert.ok(check.length > 40, `${id} states a check`);
+    // A source is a key or path in backticks, a link to a project guide, or the archived-bundle note.
+    assert.match(sources, /`[^`]+`|\]\([^)]+\)|^from the former /, `${id} names its source`);
+  }
+  // The rows added from the pinned rule lists cite them by key, and the guide explains the keys.
+  for (const [id, , sources] of rows.slice(29)) assert.match(sources, /`(WIG|BU)`/, `${id} cites the upstream rule list`);
+  const guide = lines.join("\n");
+  for (const key of ["WIG", "BU"]) assert.match(guide, new RegExp(`\`${key}\` is\\s`), `source key ${key} is explained`);
+});
+
 function rejectionFixture(t, name) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), `design-pipeline-ui-craft-import-${name}-`));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

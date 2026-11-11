@@ -163,15 +163,17 @@ Impeccable design contract: `references/impeccable-contract.md`.
 Impeccable product-design capability map: `references/impeccable-product-design.json` and
 `references/impeccable-product-design.md`.
 
-Use these design lenses in this order; external companions apply when installed, while Taste
-and `emil-design-eng` are built in:
+Use these design lenses in this order; external companions apply when installed, while Taste,
+the web interface rules and `emil-design-eng` are built in:
 
 1. `impeccable`: command vocabulary, surface modes, refinement semantics, bounded verification, and design-detector workflow.
 2. `frontend-design`: visual direction, composition, strong first impression, avoiding generic AI aesthetics.
 3. [Built-in Taste skill](taste-skill.md): select the route for a new site, redesign, app
    screens or critique; adapt its house rules within project contracts.
 4. `ui-ux-pro-max`: UX heuristics, design-system selection, color and type pairing, stable repeatability.
-5. `web-design-guidelines`: production UI rules, layout, semantics, accessibility, responsive behavior.
+5. [Built-in web interface rules](web-interface-guidelines.md) (Vercel's `web-design-guidelines`
+   list, held in [ui-craft-sources.md](ui-craft-sources.md)): production UI rules, layout,
+   semantics, accessibility, responsive behavior; no companion installation.
 6. [Built-in `emil-design-eng`](ui-craft-sources.md#emil-design-eng): motion, transitions, input
    feedback, perceived quality, interaction details; no companion installation.
 
