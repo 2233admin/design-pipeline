@@ -12,6 +12,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
+const { pathToFileURL } = require("node:url");
 const { resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
 const { resolveBrowser } = require("../skill/scripts/browser-locate.cjs");
 const { validateDesignFoundationText } = require("../skill/scripts/design-synthesis-core.cjs");
@@ -19,7 +20,8 @@ const { validateDesignFoundationText } = require("../skill/scripts/design-synthe
 const repoRoot = path.resolve(__dirname, "..");
 const evalRoot = path.join(repoRoot, "evals/ablation");
 const fixtures = path.join(__dirname, "fixtures/ablation");
-const load = (name) => import(path.join(evalRoot, name));
+// import() takes a URL: a bare Windows path (D:...) is read as the scheme "d:" and refused
+const load = (name) => import(pathToFileURL(path.join(evalRoot, name)).href);
 
 // 改这张表就是改 results.tsv 的列：旧结果目录将不能再追加，README 要一起改
 const FROZEN_HEADER = [
@@ -250,12 +252,15 @@ test("skill use, layer exposure and next come from tool calls, not from the skil
 });
 
 test("scenarios declare their set, style, fixed content and output contract; every variant's rules are well formed", async () => {
-  const { loadCase, scenarios, SETS, variantSetup, VARIANTS } = await load("suite.mjs");
+  const { DEFAULT_SETS, loadCase, referenceSources, scenarios, SETS, variantSetup, VARIANTS } = await load("suite.mjs");
   const { contentPieces, readStyle } = await load("measure.mjs");
   assert.deepEqual(scenarios(["core"]), ["cover-dark", "cover-light", "explainer-light", "hero-dark"]);
   assert.deepEqual(scenarios(["open"]), ["cover-dark-open", "hero-open"]);
   assert.deepEqual(scenarios(["ignoredone"]), ["qa-card", "strategy-cover", "stream-standby", "tutorial-steps"]);
-  assert.equal(scenarios(SETS).length, 10);
+  assert.deepEqual(scenarios(["product-ui"]), ["settings-page", "workbench-list"]);
+  assert.equal(scenarios(SETS).length, 12);
+  assert.ok(DEFAULT_SETS.includes("product-ui"), "product screens run by default");
+  assert.ok(VARIANTS.includes("reference-system"));
   for (const scenario of scenarios(SETS)) {
     const spec = loadCase(scenario);
     if (spec.set === "open") assert.equal(spec.designFile, null, `${scenario} gives no DESIGN.md`);
@@ -271,6 +276,27 @@ test("scenarios declare their set, style, fixed content and output contract; eve
       const setup = variantSetup(variant, scenario);
       assert.equal(Boolean(setup.skill), variant.startsWith("full"), `${variant} installs a skill only for full variants`);
       assert.ok(!/ablation|消融|variant|变体/.test(setup.agents), `${variant} rules do not reveal the experiment`);
+      // 只有 reference-system 带参考图；其余变体拿到的 DESIGN.md 就是场景自己的那份（开放场景没有）
+      assert.equal(setup.references, variant === "reference-system", `${variant} references`);
+      if (variant !== "reference-system") assert.equal(setup.designFile, spec.designFile, `${variant} gets the scenario's DESIGN.md or none`);
+    }
+    // reference-system：不装技能，有参考图，有一份合格的 DESIGN.md（开放场景用同一风格的那份），规则里点到这两样
+    const reference = variantSetup("reference-system", scenario);
+    assert.equal(reference.skill, null);
+    validateDesignFoundationText(fs.readFileSync(reference.designFile, "utf8"));
+    if (spec.designFile) assert.equal(reference.designFile, spec.designFile);
+    assert.match(reference.agents, /references\//);
+    assert.match(reference.agents, /DESIGN\.md/);
+    const sources = referenceSources(scenario);
+    assert.ok(sources.length >= 1 && sources.length <= 2, `${scenario} has one or two reference pages`);
+    for (const source of sources) {
+      const page = fs.readFileSync(source, "utf8");
+      assert.match(page, /<meta name="reference-size" content="\d+x\d+">/, `${source} declares its size`);
+      assert.ok(!/https?:\/\//.test(page), `${source} is self-contained`);
+    }
+    if (spec.set === "product-ui") {
+      assert.deepEqual([spec.profile, spec.controls, spec.minFontPx], ["ui", true, 13], `${scenario} is a product screen with real controls`);
+      assert.equal(Math.min(...readStyle(spec.designFile).sizes), 13, `${scenario} uses a product type scale`);
     }
     assert.match(variantSetup("decision-tree", scenario).agents, /出图前自检/);
     assert.match(variantSetup("principles", scenario).agents, /一侧安静、一侧热闹/);
@@ -413,6 +439,81 @@ test("scoring rewards hierarchy, ignores gradients and glows, and catches overfl
   assert.ok(similarity(prints.monotone, prints["layout-b"]).structure < threshold);
 });
 
+test("a missing reference folder fails instead of running without references", async (t) => {
+  const { referenceSources } = await load("suite.mjs");
+  const empty = tmp(t, "ablation-norefs-");
+  assert.throws(() => referenceSources("cover-dark", empty), /没有参考图/);
+  // 场景名的目录优先于风格名的目录
+  fs.mkdirSync(path.join(empty, "foundry-console"));
+  fs.writeFileSync(path.join(empty, "foundry-console", "style.png"), "");
+  fs.mkdirSync(path.join(empty, "cover-dark"));
+  fs.writeFileSync(path.join(empty, "cover-dark", "own.jpg"), "");
+  fs.writeFileSync(path.join(empty, "cover-dark", "notes.txt"), "");
+  assert.deepEqual(referenceSources("cover-dark", empty).map((file) => path.basename(file)), ["own.jpg"]);
+  assert.deepEqual(referenceSources("hero-dark", empty).map((file) => path.basename(file)), ["style.png"]);
+});
+
+test("the three questions are answered yes, no or not enough data, and the reference family appears only when that variant ran", async (t) => {
+  const { readTsv, summarize } = await load("report.mjs");
+  const dir = tmp(t, "ablation-questions-");
+  const rows = [];
+  const add = (variant, scenario, run, score) => {
+    const capture = `captures/${variant}-${scenario}-${run}`;
+    fs.mkdirSync(path.join(dir, capture), { recursive: true });
+    // 相邻两次的版式不一样，免得被判成套模板
+    fs.writeFileSync(path.join(dir, capture, "fingerprint.json"), JSON.stringify({ cols: 4, rows: 1, gray: [run, 0, 0, 0], mask: run % 2 ? [1, 0, 0, 0] : [0, 0, 0, 1] }));
+    const skill = variant.startsWith("full");
+    rows.push({ variant, scenario, run, status: "ok", score, capture, skillUsed: skill ? "true" : "", layersRead: skill ? "ui-craft" : "" });
+  };
+  for (const scenario of ["a", "b", "c", "d"]) {
+    for (let run = 1; run <= 6; run++) {
+      const noise = [-1, 1, -2, 2, 0, 0][run - 1];
+      add("bare", scenario, run, 70 + noise);
+      add("full", scenario, run, 80 + noise);
+      add("reference-system", scenario, run, 90 + noise);
+      add("full-minus-ui-craft", scenario, run, 88 + noise);
+    }
+  }
+  writeRows(dir, rows);
+  const games = (a, b, winsA, total) => Array.from({ length: total }, (_, index) => ({ pair: `j|s|${index}|${a}|${b}`, left: a, right: b, winner: index < winsA ? a : b }));
+  const parsed = readTsv(path.join(dir, "results.tsv"));
+  const none = summarize(parsed, [], dir).join("\n");
+  assert.match(none, /1\. 装了技能是否胜过不装：样本不足/, "measured scores alone decide nothing");
+  assert.match(none, /2\. 技能与“参考加设计系统”谁好：样本不足/);
+  assert.match(none, /3\. 单独拿掉 ui-craft 层.*：样本不足/);
+  const judged = summarize(parsed, [...games("full", "bare", 9, 12), ...games("full", "reference-system", 3, 12), ...games("full", "full-minus-ui-craft", 3, 12)], dir).join("\n");
+  assert.match(judged, /1\. 装了技能是否胜过不装：是/);
+  assert.match(judged, /2\. 技能与“参考加设计系统”谁好：参考加设计系统更好/);
+  assert.match(judged, /3\. 单独拿掉 ui-craft 层.*：变好，这一层在拖累/);
+  assert.match(judged, /参考加设计系统（不装技能/);
+  const without = summarize(parsed.filter((row) => row.variant !== "reference-system"), [], dir).join("\n");
+  assert.ok(!without.includes("参考加设计系统（不装技能"), "old result folders keep their report");
+  assert.match(without, /2\. 技能与“参考加设计系统”谁好：没跑 reference-system 变体/);
+});
+
+test("product screens are scored: a complete page passes, tiny targets and a dropped status label are caught", { skip: tools.skip }, async (t) => {
+  const { grade } = await load("suite.mjs");
+  const run = async (scenario, deliverable, source) => {
+    const workdir = tmp(t, "ablation-product-");
+    fs.writeFileSync(path.join(workdir, deliverable), source);
+    const scored = await grade(workdir, scenario, { captureDir: path.join(workdir, "capture") });
+    return { ...scored, ...JSON.parse(fs.readFileSync(path.join(workdir, "capture/measure.json"), "utf8")) };
+  };
+  const workbench = fs.readFileSync(path.join(fixtures, "workbench-good.html"), "utf8");
+  for (const [scenario, deliverable, source] of [["workbench-list", "workbench.html", workbench], ["settings-page", "settings.html", fs.readFileSync(path.join(fixtures, "settings-good.html"), "utf8")]]) {
+    const good = await run(scenario, deliverable, source);
+    assert.equal(good.contractOk, true, good.contractIssues.join("; "));
+    assert.deepEqual([good.contentCoverage, good.overflow, good.contrastFails, good.belowMinFont, good.hierarchyFails, good.fakeControls, good.targetSizeFails], [1, 0, 0, 0, 0, 0, 0], scenario);
+    assert.deepEqual([good.hygiene, good.adherence], [100, 100], scenario);
+  }
+  // 按钮缩到 16px 高：点击区域不够，记在 measure.json 里（不进综合分）
+  const tiny = await run("workbench-list", "workbench.html", workbench.replace("height: 36px; min-width: 64px; padding: 0 16px;", "height: 16px; min-width: 16px; padding: 0;"));
+  assert.ok(tiny.targetSizeFails > 0, "small hit areas are counted");
+  // 运行中的那一行只留颜色、去掉文字标签：文字覆盖不到 1
+  const colourOnly = await run("workbench-list", "workbench.html", workbench.replace('<span class="run">进行中</span>', '<span class="run"></span>').replace('<button type="button" aria-pressed="false">进行中</button>', ""));
+  assert.ok(colourOnly.contentCoverage < 1 && colourOnly.hygiene < 100, "a status carried by colour alone loses its label");
+});
+
 test("in-page anchors count as real controls only when their target id exists", { skip: tools.skip }, async (t) => {
   const { grade } = await load("suite.mjs");
   const page = (ids) => `<!DOCTYPE html><html><head><meta charset="utf-8"><style>html,body{margin:0;width:1440px;height:900px;overflow:hidden;background:#0D0F11;color:#E8EAEC;font:400 24px/32px sans-serif}a{color:#F5A623}</style></head><body><a href="#trial">免费试用 14 天</a> <a href="#demo">查看演示</a>${ids}</body></html>`;
@@ -431,6 +532,8 @@ test("the runner: frozen columns, failures score 0, relative paths, workdirs del
   const out = tmp(t, "ablation-run-");
   const work = tmp(t, "ablation-work-");
   const home = tmp(t, "ablation-home-");
+  // Windows: Chrome refuses to start under a profile folder that has no AppData\Local
+  if (process.platform === "win32") for (const dir of ["Local", "Roaming"]) fs.mkdirSync(path.join(home, "AppData", dir), { recursive: true });
   const cache = tmp(t, "ablation-cache-");
   fs.mkdirSync(path.join(cache, "design-direction-library"));
   const env = { ...process.env, HOME: home, USERPROFILE: home, DESIGN_PIPELINE_CACHE: cache };
@@ -461,6 +564,31 @@ test("the runner: frozen columns, failures score 0, relative paths, workdirs del
   const environment = JSON.parse(fs.readFileSync(path.join(out, "environment.jsonl"), "utf8").trim().split("\n")[0]);
   assert.deepEqual(environment.cache, { root: cache, exists: true, entries: ["design-direction-library"] });
   assert.match(run.stdout, /失败 1（100%）/);
+
+  // reference-system：工作目录里有截好的参考图和 DESIGN.md，没有技能；用的参考目录记在 environment.jsonl
+  const refOut = tmp(t, "ablation-ref-");
+  const ref = runner(["--variants", "reference-system", "--scenarios", "cover-dark-open", "--runs", "1", "--out", refOut, "--work-root", work]);
+  assert.equal(ref.status, 0, ref.stderr);
+  const [refRow] = readTsv(path.join(refOut, "results.tsv"));
+  assert.equal(refRow.status, "ok");
+  const listed = JSON.parse(fs.readFileSync(path.join(refOut, refRow.capture, "workdir-files.json"), "utf8"));
+  for (const file of ["references/01-release-console.png", "references/02-night-shift-poster.png", "DESIGN.md", "AGENTS.md"]) assert.ok(listed.includes(file), `the workdir has ${file}`);
+  assert.ok(!listed.some((file) => file.includes("skills/")), "no skill is installed");
+  const shot = fs.readFileSync(path.join(refOut, "references/foundry-console/01-release-console.png"));
+  assert.equal(shot.subarray(1, 4).toString("latin1"), "PNG", "the reference page is rendered to a PNG once per results folder");
+  assert.equal(JSON.parse(fs.readFileSync(path.join(refOut, "environment.jsonl"), "utf8").trim().split("\n")[0]).references, path.join(evalRoot, "references"));
+  // 自己的截图目录：按场景名放，原样复制；空目录在开跑前就报错
+  const own = tmp(t, "ablation-own-");
+  fs.mkdirSync(path.join(own, "cover-dark-open"));
+  fs.writeFileSync(path.join(own, "cover-dark-open", "my-shot.png"), shot);
+  const ownOut = tmp(t, "ablation-own-out-");
+  const ownRun = runner(["--variants", "reference-system", "--scenarios", "cover-dark-open", "--runs", "1", "--out", ownOut, "--work-root", work, "--references", own]);
+  assert.equal(ownRun.status, 0, ownRun.stderr);
+  const ownFiles = JSON.parse(fs.readFileSync(path.join(ownOut, readTsv(path.join(ownOut, "results.tsv"))[0].capture, "workdir-files.json"), "utf8"));
+  assert.deepEqual(ownFiles.filter((file) => file.startsWith("references/")), ["references/my-shot.png"]);
+  const noRefs = runner(["--variants", "reference-system", "--scenarios", "cover-dark-open", "--runs", "1", "--out", tmp(t, "ablation-norefs-out-"), "--work-root", work, "--references", tmp(t, "ablation-norefs-")]);
+  assert.notEqual(noRefs.status, 0);
+  assert.match(noRefs.stderr, /没有参考图/);
 
   const other = tmp(t, "ablation-wrong-");
   fs.writeFileSync(path.join(other, "results.tsv"), "client\tvariant\n");

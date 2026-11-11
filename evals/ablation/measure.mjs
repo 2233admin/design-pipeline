@@ -263,6 +263,21 @@ export function browserTools() {
 	return { puppeteer: resolvePuppeteer(REPO, puppeteerModule), executablePath: resolveBrowser() };
 }
 
+/** 把一个本地 HTML 页面在固定尺寸下截成 PNG（参考页用）：不量、不审计，只出图。 */
+export async function screenshot(file, { width, height }) {
+	const { puppeteer, executablePath } = browserTools();
+	const browser = await puppeteer.launch({ executablePath, headless: true, args: ["--allow-file-access-from-files"] });
+	try {
+		const tab = await browser.newPage();
+		await tab.setViewport({ width, height, deviceScaleFactor: 1 });
+		await tab.goto(pathToFileURL(file).href, { waitUntil: "networkidle0", timeout: 30000 });
+		await tab.evaluate(settle);
+		return Buffer.from(await tab.screenshot({ type: "png" }));
+	} finally {
+		await browser.close();
+	}
+}
+
 /**
  * 在固定尺寸下渲染交付物：截图、页面审计、文字与色块、减弱动态下的可见文字。
  * SVG 内联进一个只有它的 HTML 页面里量（SVG 文档没有 body，审计和文字提取都要 HTML）。
@@ -291,7 +306,8 @@ export async function render(file, { width, height, minFontPx, captureDir }) {
 		await tab.goto(url, { waitUntil: "networkidle0", timeout: 30000 });
 		await tab.evaluate(settle);
 		await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
-		const png = await tab.screenshot({ type: "png" });
+		// 新版 puppeteer 的截图是 Uint8Array，解 PNG 的代码只认 Buffer
+		const png = Buffer.from(await tab.screenshot({ type: "png" }));
 		writeFileSync(join(captureDir, "screenshot.png"), png);
 		const elements = await tab.evaluate(extract);
 		const options = auditOptions({ thresholds: { minFontPx } });
@@ -537,6 +553,8 @@ export function measureRender(rendered, { style, pieces, width, height, minFontP
 	const covered = pieces.filter((piece) => rendered.facts.joined.includes(piece)).length;
 	const hiddenWithoutMotion = pieces.filter((piece) => rendered.facts.joined.includes(piece) && !rendered.stillJoined.includes(piece)).length;
 	const fakeControls = controls ? rendered.facts.fakeControls : 0;
+	// 点击区域太小的控件数（页面审计的 audit.target-size）：只写进 measure.json，不进综合分，也不是 results.tsv 的列
+	const targetSizeFails = controls ? failed("audit.target-size") : 0;
 
 	return {
 		image,
@@ -558,6 +576,7 @@ export function measureRender(rendered, { style, pieces, width, height, minFontP
 			contentCoverage: pieces.length ? Number((covered / pieces.length).toFixed(4)) : 1,
 			hiddenWithoutMotion,
 			fakeControls,
+			targetSizeFails,
 			antiSlopHard: hiddenWithoutMotion + fakeControls,
 			...rhythm(texts, rendered.facts.decorations, style?.unit ?? 8),
 		},
