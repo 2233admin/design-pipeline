@@ -300,6 +300,13 @@ test("tokens.css normalises to Google DESIGN.md token groups, overlay first, det
   assert.equal(brand.hexColor("rgba(0, 0, 0, 0.5)"), "#00000080");
   assert.equal(brand.hexColor("color-mix(in srgb, #000000, #ffffff)"), "#808080");
   assert.equal(brand.hexColor("hsl(0 100% 50%)"), null);
+  // A colour outside sRGB keeps its clamped hex and is listed, also through a mix that uses it.
+  assert.equal(brand.parseColor("oklch(62.8% 0.2577 29.23)").outOfGamut, undefined);
+  assert.equal(brand.parseColor("oklch(0.7 0.35 150)").outOfGamut, true);
+  assert.deepEqual(first.clamped, []);
+  const wide = brand.normalizeTokens(TOKENS("oklch(0.7 0.35 150)", "#ffffff", "#222222"));
+  assert.equal(wide.colors.primary, "#00d100");
+  assert.deepEqual(wide.clamped, ["--accent", "--accent-hover"]);
   // Percentages under 100% make a translucent mix: omitted, not a wrong opaque colour.
   assert.equal(brand.hexColor("color-mix(in oklab, #ff0000 30%, #0000ff 30%)"), null);
   assert.equal(brand.hexColor("color-mix(in srgb, #000000 60%, #ffffff 60%)"), "#808080");

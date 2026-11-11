@@ -178,13 +178,18 @@ function rgbToOklab([r, g, b]) {
   const s = Math.cbrt(0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb);
   return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s, 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s];
 }
-function oklabToRgb([L, a, b]) {
+// Gamma-encoded sRGB channels before clamping; a channel outside 0..1 lies outside the sRGB gamut.
+function oklabToRgbRaw([L, a, b]) {
   const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
   const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
   const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
   return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s]
-    .map((channel) => Math.max(0, Math.min(1, fromLinear(channel))));
+    .map(fromLinear);
 }
+const clampChannel = (channel) => Math.max(0, Math.min(1, channel));
+const oklabToRgb = (lab) => oklabToRgbRaw(lab).map(clampChannel);
+// Half an 8-bit step: an oklch() value rounded to a few decimals from an sRGB colour stays inside it.
+const GAMUT_TOLERANCE = 0.5 / 255;
 
 // Splits top-level comma-separated arguments.
 function splitArguments(text) {
@@ -201,7 +206,8 @@ function splitArguments(text) {
 }
 
 // An opaque colour as [r, g, b] in 0..1 plus alpha, or null. Understands hex, rgb()/rgba(),
-// oklch(), black/white, var() aliases and color-mix(in oklab|srgb, A [p%], B [q%]).
+// oklch(), black/white, var() aliases and color-mix(in oklab|srgb, A [p%], B [q%]). An oklch()
+// value outside sRGB is clamped and marked `outOfGamut`.
 function parseColor(value, declarations, depth = 0) {
   if (typeof value !== "string" || depth > 8) return null;
   const text = value.trim().toLowerCase();
@@ -227,7 +233,10 @@ function parseColor(value, declarations, depth = 0) {
     const L = match[1].endsWith("%") ? Number.parseFloat(match[1]) / 100 : Number.parseFloat(match[1]);
     const C = Number.parseFloat(match[2]);
     const hue = (Number.parseFloat(match[3]) * Math.PI) / 180;
-    return { rgb: oklabToRgb([L, C * Math.cos(hue), C * Math.sin(hue)]), alpha: alphaOf(match[4]) };
+    const raw = oklabToRgbRaw([L, C * Math.cos(hue), C * Math.sin(hue)]);
+    const color = { rgb: raw.map(clampChannel), alpha: alphaOf(match[4]) };
+    if (raw.some((channel) => channel < -GAMUT_TOLERANCE || channel > 1 + GAMUT_TOLERANCE)) color.outOfGamut = true;
+    return color;
   }
   match = text.match(/^color-mix\(\s*in\s+(oklab|srgb)\s*,(.*)\)$/);
   if (match) {
@@ -247,7 +256,9 @@ function parseColor(value, declarations, depth = 0) {
     if (!(total > 0) || total < 0.9999) return null;
     const space = match[1] === "oklab" ? [rgbToOklab, oklabToRgb] : [(rgb) => rgb, (rgb) => rgb];
     const [a, b] = parts.map((part) => space[0](part.color.rgb));
-    return { rgb: space[1](a.map((value, index) => (value * p1 + b[index] * p2) / total)), alpha: 1 };
+    const mixed = { rgb: space[1](a.map((value, index) => (value * p1 + b[index] * p2) / total)), alpha: 1 };
+    if (parts.some((part) => part.color.outOfGamut)) mixed.outOfGamut = true;
+    return mixed;
   }
   return null;
 }
@@ -291,17 +302,21 @@ const ROUNDED_NAMES = [["xs", "radius-xs"], ["sm", "radius-sm"], ["md", "radius-
 
 // Token groups from tokens.css with an optional correction overlay (`:root` declarations that win).
 // Colours become hex (color-mix and oklch are computed); values that are neither a supported colour
-// nor a plain dimension are listed in `omitted`.
+// nor a plain dimension are listed in `omitted`, and colours outside sRGB, whose hex is the clamped
+// colour, in `clamped`.
 function normalizeTokens(tokensCss, overrideCss = null) {
   const declarations = rootDeclarations(tokensCss);
   for (const [name, value] of rootDeclarations(overrideCss)) declarations.set(name, value);
   const omitted = [];
+  const clamped = [];
   const colors = {};
   for (const [name, token] of COLOR_NAMES) {
     if (!declarations.has(token)) continue;
-    const color = hexColor(resolveValue(declarations, token), declarations);
+    const value = resolveValue(declarations, token);
+    const color = hexColor(value, declarations);
     if (color) colors[name] = color;
     else omitted.push(`--${token}`);
+    if (color && parseColor(value, declarations).outOfGamut) clamped.push(`--${token}`);
   }
   const typography = {};
   for (const [name, family, size, leading, tracking] of TYPE_STYLES) {
@@ -333,7 +348,7 @@ function normalizeTokens(tokensCss, overrideCss = null) {
     const value = resolveValue(declarations, token);
     if (DIMENSION.test(value || "")) spacing[name] = value;
   }
-  return { colors, typography, rounded, spacing, omitted };
+  return { colors, typography, rounded, spacing, omitted, clamped };
 }
 
 function luminance(hex) {
@@ -495,6 +510,7 @@ function inspectBrandDesignSystem(id, options = {}) {
     frontMatter: frontMatter(system, tokens, entry.source),
     tokens: { colors: tokens.colors, typography: tokens.typography, rounded: tokens.rounded, spacing: tokens.spacing },
     omittedTokens: tokens.omitted,
+    clampedTokens: tokens.clamped,
     instruction: INSTRUCTION,
   };
 }
@@ -511,6 +527,7 @@ module.exports = {
   loadManifest,
   normalizeTokens,
   paletteSignature,
+  parseColor,
   rootDeclarations,
   schema,
   scoreEntry,
