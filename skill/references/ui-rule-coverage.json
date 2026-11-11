@@ -1,0 +1,1849 @@
+{
+  "schema": "design-pipeline.ui-rule-coverage.v1",
+  "description": "Where this project holds each rule of the upstream UI rule lists it tracks. Comparison data for tests and maintenance: not a gate, not a receipt field, and not read by any command. One row per upstream rule line; `rule` quotes that line (MIT, see THIRD_PARTY_NOTICES.md). Targets are paths under the packaged skill root.",
+  "statuses": {
+    "audit": "Measured on the rendered page: `targets` has at least one audit.* code of scripts/interaction-audit.cjs.",
+    "uc": "A review-checklist row: `targets` has at least one UC- id of references/ui-craft-sources.md and no audit code.",
+    "local": "Project or bundled text only: every target is `<file>` or `<file>#<heading anchor>`.",
+    "pending": "Not held yet; `issue` is the design-pipeline issue that will add it. `targets` may name what exists so far.",
+    "not-adopted": "Deliberately not followed; `reason` names the governing local rule.",
+    "duplicate": "The same rule stated twice in one upstream file; `duplicateOf` is the row that carries the mapping."
+  },
+  "fields": {
+    "issue": "On a mapped row: the issue that will turn it into a measured audit code. Required on a pending row.",
+    "partial": "true when the local rule differs from the upstream one or covers part of it; `note` says how."
+  },
+  "sources": [
+    {
+      "id": "web-interface-guidelines",
+      "repo": "https://github.com/vercel-labs/web-interface-guidelines",
+      "revision": "434b7f91364665f2f733b310ec54809bf8f37937",
+      "license": "MIT",
+      "record": "references/web-interface-guidelines.md",
+      "files": [
+        {
+          "key": "command",
+          "path": "command.md",
+          "extract": "bullets",
+          "from": "## Rules",
+          "to": "## Output Format"
+        },
+        {
+          "key": "readme",
+          "path": "README.md",
+          "extract": "selected"
+        }
+      ],
+      "rules": [
+        {
+          "id": "command/accessibility/01",
+          "rule": "Icon-only buttons need `aria-label`",
+          "status": "uc",
+          "targets": [
+            "UC-11"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "command/accessibility/02",
+          "rule": "Form controls need `<label>` or `aria-label`",
+          "status": "uc",
+          "targets": [
+            "UC-12"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "command/accessibility/03",
+          "rule": "Interactive elements need keyboard handlers (`onKeyDown`/`onKeyUp`)",
+          "status": "uc",
+          "targets": [
+            "UC-08",
+            "vendor/interface-discipline/upstream/skills/better-accessibility/UPSTREAM-SKILL.md#full-keyboard-support"
+          ]
+        },
+        {
+          "id": "command/accessibility/04",
+          "rule": "`<button>` for actions, `<a>`/`<Link>` for navigation (not `<div onClick>`)",
+          "status": "uc",
+          "targets": [
+            "UC-11"
+          ]
+        },
+        {
+          "id": "command/accessibility/05",
+          "rule": "Images need `alt` (or `alt=\"\"` if decorative)",
+          "status": "uc",
+          "targets": [
+            "UC-13"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "command/accessibility/06",
+          "rule": "Decorative icons need `aria-hidden=\"true\"`",
+          "status": "uc",
+          "targets": [
+            "UC-11"
+          ]
+        },
+        {
+          "id": "command/accessibility/07",
+          "rule": "Async updates (toasts, validation) need `aria-live=\"polite\"`",
+          "status": "local",
+          "targets": [
+            "references/interface-defaults.md#forms-and-feedback",
+            "vendor/interface-discipline/upstream/skills/better-accessibility/screen-readers.md#live-regions"
+          ]
+        },
+        {
+          "id": "command/accessibility/08",
+          "rule": "Use semantic HTML (`<button>`, `<a>`, `<label>`, `<table>`) before ARIA",
+          "status": "uc",
+          "targets": [
+            "UC-11",
+            "UC-09"
+          ]
+        },
+        {
+          "id": "command/accessibility/09",
+          "rule": "Headings hierarchical `<h1>`–`<h6>`; include skip link for main content",
+          "status": "audit",
+          "targets": [
+            "audit.heading-levels",
+            "vendor/interface-discipline/upstream/skills/better-accessibility/focus-and-keyboard.md#skip-link"
+          ]
+        },
+        {
+          "id": "command/accessibility/10",
+          "rule": "`scroll-margin-top` on heading anchors",
+          "status": "local",
+          "targets": [
+            "vendor/good-css/upstream/PRACTICES.md#anchor-targets-that-clear-a-sticky-header",
+            "vendor/interface-discipline/upstream/skills/better-accessibility/UPSTREAM-SKILL.md#structure-is-navigation"
+          ]
+        },
+        {
+          "id": "command/accessibility/11",
+          "rule": "Meaningful media needs captions, transcripts, or descriptions as applicable",
+          "status": "uc",
+          "targets": [
+            "UC-32",
+            "vendor/interface-discipline/upstream/skills/better-accessibility/screen-readers.md#video-and-audio"
+          ]
+        },
+        {
+          "id": "command/accessibility/12",
+          "rule": "Media controls need keyboard support; decorative media needs assistive-tech hiding",
+          "status": "uc",
+          "targets": [
+            "UC-32"
+          ]
+        },
+        {
+          "id": "command/focus-states/01",
+          "rule": "Interactive elements need visible focus: `focus-visible:ring-*` or equivalent",
+          "status": "audit",
+          "targets": [
+            "audit.state-contrast",
+            "UC-08"
+          ]
+        },
+        {
+          "id": "command/focus-states/02",
+          "rule": "Never `outline-none` / `outline: none` without focus replacement",
+          "status": "audit",
+          "targets": [
+            "audit.state-contrast",
+            "UC-08"
+          ]
+        },
+        {
+          "id": "command/focus-states/03",
+          "rule": "Use `:focus-visible` over `:focus` (avoid focus ring on click)",
+          "status": "local",
+          "targets": [
+            "vendor/good-css/upstream/PRACTICES.md#one-focus-ring-with-focus-visible",
+            "vendor/interface-discipline/upstream/skills/better-accessibility/UPSTREAM-SKILL.md#visible-focus-rings"
+          ]
+        },
+        {
+          "id": "command/focus-states/04",
+          "rule": "Group focus with `:focus-within` for compound controls",
+          "status": "local",
+          "targets": [
+            "vendor/interface-discipline/upstream/skills/better-accessibility/focus-and-keyboard.md#focus-rings"
+          ]
+        },
+        {
+          "id": "command/focus-states/05",
+          "rule": "Sticky headers/footers/overlays must not cover the focused element",
+          "status": "uc",
+          "targets": [
+            "UC-08",
+            "vendor/interface-discipline/upstream/skills/better-accessibility/focus-and-keyboard.md#focus-not-obscured"
+          ]
+        },
+        {
+          "id": "command/forms/01",
+          "rule": "Inputs need `autocomplete` and meaningful `name`",
+          "status": "uc",
+          "targets": [
+            "UC-12",
+            "vendor/interface-discipline/upstream/skills/better-accessibility/forms.md#autocomplete-and-input-types"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "command/forms/02",
+          "rule": "Use correct `type` (`email`, `tel`, `url`, `number`) and `inputmode`",
+          "status": "uc",
+          "targets": [
+            "UC-12"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "command/forms/03",
+          "rule": "Never block paste (`onPaste` + `preventDefault`)",
+          "status": "uc",
+          "targets": [
+            "UC-12"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "command/forms/04",
+          "rule": "Labels clickable (`htmlFor` or wrapping control)",
+          "status": "local",
+          "targets": [
+            "references/interface-defaults.md#forms-and-feedback"
+          ]
+        },
+        {
+          "id": "command/forms/05",
+          "rule": "Disable spellcheck on emails, codes, usernames (`spellCheck={false}`)",
+          "status": "local",
+          "targets": [
+            "vendor/interface-discipline/upstream/skills/better-accessibility/forms.md#autocomplete-and-input-types"
+          ]
+        },
+        {
+          "id": "command/forms/06",
+          "rule": "Checkboxes/radios: label + control share single hit target (no dead zones)",
+          "status": "local",
+          "targets": [
+            "references/interface-defaults.md#forms-and-feedback",
+            "vendor/interface-discipline/upstream/skills/better-accessibility/forms.md#labels"
+          ]
+        },
+        {
+          "id": "command/forms/07",
+          "rule": "Submit button stays enabled until request starts; spinner during request",
+          "status": "local",
+          "targets": [
+            "references/interface-defaults.md#forms-and-feedback"
+          ]
+        },
+        {
+          "id": "command/forms/08",
+          "rule": "Errors inline next to fields; focus first error on submit",
+          "status": "uc",
+          "targets": [
+            "UC-12"
+          ]
+        },
+        {
+          "id": "command/forms/09",
+          "rule": "Placeholders end with `…` and show example pattern",
+          "status": "local",
+          "targets": [
+            "vendor/interface-discipline/upstream/skills/better-writing/UPSTREAM-SKILL.md#placeholders-show-an-example"
+          ],
+          "partial": true,
+          "note": "A placeholder shows a realistic example in the format the field accepts; the trailing ellipsis is not adopted."
+        },
+        {
+          "id": "command/forms/10",
+          "rule": "`autocomplete=\"off\"` on non-auth fields to avoid password manager triggers",
+          "status": "uc",
+          "targets": [
+            "UC-33"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "command/forms/11",
+          "rule": "Warn before navigation with unsaved changes (`beforeunload` or router guard)",
+          "status": "local",
+          "targets": [
+            "vendor/interface-discipline/upstream/skills/better-accessibility/forms.md#submit-behavior"
+          ]
+        },
+        {
+          "id": "command/animation/01",
+          "rule": "Honor `prefers-reduced-motion` (provide reduced variant or disable)",
+          "status": "audit",
+          "targets": [
+            "audit.reduced-motion",
+            "UC-06"
+          ]
+        },
+        {
+          "id": "command/animation/02",
+          "rule": "Animate `transform`/`opacity` only (compositor-friendly)",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#property-tiers"
+          ]
+        },
+        {
+          "id": "command/animation/03",
+          "rule": "Never `transition: all`—list properties explicitly",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#rules",
+            "references/interface-defaults.md#motion-details-not-in-the-motion-rules"
+          ],
+          "issue": 355
+        },
+        {
+          "id": "command/animation/04",
+          "rule": "Set correct `transform-origin`",
+          "status": "uc",
+          "targets": [
+            "UC-05"
+          ]
+        },
+        {
+          "id": "command/animation/05",
+          "rule": "SVG: transforms on `<g>` wrapper with `transform-box: fill-box; transform-origin: center`",
+          "status": "uc",
+          "targets": [
+            "UC-34"
+          ]
+        },
+        {
+          "id": "command/animation/06",
+          "rule": "Animations interruptible—respond to user input mid-animation",
+          "status": "uc",
+          "targets": [
+            "UC-04"
+          ]
+        },
+        {
+          "id": "command/animation/07",
+          "rule": "Autoplay motion >5 seconds alongside other content needs pause, stop, or hide controls",
+          "status": "uc",
+          "targets": [
+            "UC-06"
+          ]
+        },
+        {
+          "id": "command/animation/08",
+          "rule": "Muted decorative loops must stop under `prefers-reduced-motion`",
+          "status": "uc",
+          "targets": [
+            "UC-06",
+            "UC-32"
+          ]
+        },
+        {
+          "id": "command/typography/01",
+          "rule": "`…` not `...`",
+          "status": "local",
+          "targets": [
+            "vendor/interface-discipline/upstream/skills/better-typography/wrapping-and-punctuation.md#smart-punctuation"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "command/typography/02",
+          "rule": "Curly quotes `“` `”` not straight `\"`",
+          "status": "local",
+          "targets": [
+            "vendor/interface-discipline/upstream/skills/better-typography/wrapping-and-punctuation.md#smart-punctuation"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "command/typography/03",
+          "rule": "Non-breaking spaces: `10&nbsp;MB`, `⌘&nbsp;K`, brand names",
+          "status": "local",
+          "targets": [
+            "vendor/interface-discipline/upstream/skills/better-typography/wrapping-and-punctuation.md#smart-punctuation"
+          ]
+        },
+        {
+          "id": "command/typography/04",
+          "rule": "Loading states end with `…`: `\"Loading…\"`, `\"Saving…\"`",
+          "status": "uc",
+          "targets": [
+            "UC-39",
+            "vendor/interface-discipline/upstream/skills/better-writing/patterns.md#status-copy"
+          ]
+        },
+        {
+          "id": "command/typography/05",
+          "rule": "`font-variant-numeric: tabular-nums` for number columns/comparisons",
+          "status": "audit",
+          "targets": [
+            "audit.tabular-numbers"
+          ]
+        },
+        {
+          "id": "command/typography/06",
+          "rule": "Use `text-wrap: balance` or `text-pretty` on headings (prevents widows)",
+          "status": "local",
+          "targets": [
+            "vendor/interface-discipline/upstream/skills/better-typography/UPSTREAM-SKILL.md#wrap-deliberately"
+          ]
+        },
+        {
+          "id": "command/content-handling/01",
+          "rule": "Text containers handle long content: `truncate`, `line-clamp-*`, or `break-words`",
+          "status": "audit",
+          "targets": [
+            "audit.content-clipping",
+            "audit.content-overflow",
+            "vendor/good-css/upstream/PRACTICES.md#long-text-that-wraps-truncates-or-clamps"
+          ]
+        },
+        {
+          "id": "command/content-handling/02",
+          "rule": "Flex children need `min-w-0` to allow text truncation",
+          "status": "local",
+          "targets": [
+            "references/worst-case-content.md#content-length"
+          ]
+        },
+        {
+          "id": "command/content-handling/03",
+          "rule": "Handle empty states—don't render broken UI for empty strings/arrays",
+          "status": "uc",
+          "targets": [
+            "UC-18"
+          ]
+        },
+        {
+          "id": "command/content-handling/04",
+          "rule": "User-generated content: anticipate short, average, and very long inputs",
+          "status": "local",
+          "targets": [
+            "references/worst-case-content.md#content-length"
+          ]
+        },
+        {
+          "id": "command/images/01",
+          "rule": "`<img>` needs explicit `width` and `height` (prevents CLS)",
+          "status": "pending",
+          "issue": 354
+        },
+        {
+          "id": "command/images/02",
+          "rule": "Below-fold images: `loading=\"lazy\"`",
+          "status": "uc",
+          "targets": [
+            "UC-41"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "command/images/03",
+          "rule": "Above-fold critical images: `priority` or `fetchpriority=\"high\"`",
+          "status": "uc",
+          "targets": [
+            "UC-41"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "command/performance/01",
+          "rule": "Large lists (>50 items): virtualize (`virtua`, `content-visibility: auto`)",
+          "status": "uc",
+          "targets": [
+            "UC-31"
+          ]
+        },
+        {
+          "id": "command/performance/02",
+          "rule": "No layout reads in render (`getBoundingClientRect`, `offsetHeight`, `offsetWidth`, `scrollTop`)",
+          "status": "uc",
+          "targets": [
+            "UC-31"
+          ]
+        },
+        {
+          "id": "command/performance/03",
+          "rule": "Batch DOM reads/writes; avoid interleaving",
+          "status": "uc",
+          "targets": [
+            "UC-31"
+          ]
+        },
+        {
+          "id": "command/performance/04",
+          "rule": "Prefer uncontrolled inputs; controlled inputs must be cheap per keystroke",
+          "status": "uc",
+          "targets": [
+            "UC-31"
+          ]
+        },
+        {
+          "id": "command/performance/05",
+          "rule": "Add `<link rel=\"preconnect\">` for CDN/asset domains",
+          "status": "not-adopted",
+          "reason": "A request to another host fails the audit's external-request finding because the gate cannot hash it; fonts, styles and scripts are self-hosted, so there is no asset host to preconnect to (references/ui-craft-sources.md#measured-audit)."
+        },
+        {
+          "id": "command/performance/06",
+          "rule": "Critical fonts: `<link rel=\"preload\" as=\"font\">` with `font-display: swap`",
+          "status": "uc",
+          "targets": [
+            "UC-41"
+          ]
+        },
+        {
+          "id": "command/performance/07",
+          "rule": "Prefer `<video autoplay muted loop playsinline>` over animated GIF; provide a still alternative",
+          "status": "uc",
+          "targets": [
+            "UC-32"
+          ]
+        },
+        {
+          "id": "command/performance/08",
+          "rule": "Short non-essential loops: Safari H.264 MP4 `<picture>` source, `prefers-reduced-motion` media condition, and still fallback",
+          "status": "uc",
+          "targets": [
+            "UC-32"
+          ]
+        },
+        {
+          "id": "command/navigation-state/01",
+          "rule": "URL reflects state—filters, tabs, pagination, expanded panels in query params",
+          "status": "local",
+          "targets": [
+            "references/interface-defaults.md#navigation-and-state"
+          ]
+        },
+        {
+          "id": "command/navigation-state/02",
+          "rule": "Links use `<a>`/`<Link>` (Cmd/Ctrl+click, middle-click support)",
+          "status": "uc",
+          "targets": [
+            "UC-11",
+            "references/interface-defaults.md#navigation-and-state"
+          ]
+        },
+        {
+          "id": "command/navigation-state/03",
+          "rule": "Deep-link all stateful UI (if uses `useState`, consider URL sync via nuqs or similar)",
+          "status": "local",
+          "targets": [
+            "references/interface-defaults.md#navigation-and-state"
+          ]
+        },
+        {
+          "id": "command/navigation-state/04",
+          "rule": "Destructive actions need confirmation modal or undo window—never immediate",
+          "status": "uc",
+          "targets": [
+            "UC-16"
+          ]
+        },
+        {
+          "id": "command/touch-interaction/01",
+          "rule": "`touch-action: manipulation` (prevents double-tap zoom delay)",
+          "status": "local",
+          "targets": [
+            "references/mobile-web.md#4-tap-latency-and-touch-action"
+          ]
+        },
+        {
+          "id": "command/touch-interaction/02",
+          "rule": "`-webkit-tap-highlight-color` set intentionally",
+          "status": "local",
+          "targets": [
+            "references/mobile-web.md#2-tap-highlight"
+          ]
+        },
+        {
+          "id": "command/touch-interaction/03",
+          "rule": "`overscroll-behavior: contain` in modals/drawers/sheets",
+          "status": "local",
+          "targets": [
+            "references/mobile-web.md#5-overscroll-and-pull-to-refresh"
+          ]
+        },
+        {
+          "id": "command/touch-interaction/04",
+          "rule": "Page rubber-band suppression: `overscroll-behavior: none` on `<html>` inside `@media (pointer: fine)`; keep coarse-pointer page defaults for pull-to-refresh. Test hybrid touch devices: `pointer` describes the primary input, and `none` also disables scroll chaining and native swipe navigation",
+          "status": "local",
+          "targets": [
+            "vendor/good-css/upstream/PRACTICES.md#no-rubber-band-bounce-on-desktop",
+            "references/mobile-web.md#5-overscroll-and-pull-to-refresh"
+          ]
+        },
+        {
+          "id": "command/touch-interaction/05",
+          "rule": "During drag: disable text selection, `inert` on dragged elements",
+          "status": "uc",
+          "targets": [
+            "UC-34"
+          ]
+        },
+        {
+          "id": "command/touch-interaction/06",
+          "rule": "Drag/swipe/pinch/path gestures need tap/click and keyboard alternatives unless essential",
+          "status": "local",
+          "targets": [
+            "vendor/interface-discipline/upstream/skills/better-accessibility/hit-areas.md#gestures-and-dragging",
+            "references/interface-defaults.md#motion-details-not-in-the-motion-rules"
+          ]
+        },
+        {
+          "id": "command/touch-interaction/07",
+          "rule": "`autoFocus` sparingly—desktop only, single primary input; avoid on mobile",
+          "status": "uc",
+          "targets": [
+            "UC-33"
+          ]
+        },
+        {
+          "id": "command/safe-areas-layout/01",
+          "rule": "Full-bleed layouts need `env(safe-area-inset-*)` for notches",
+          "status": "local",
+          "targets": [
+            "references/mobile-web.md#6-safe-area-insets"
+          ]
+        },
+        {
+          "id": "command/safe-areas-layout/02",
+          "rule": "Avoid unwanted scrollbars: `overflow-x-hidden` on containers, fix content overflow",
+          "status": "audit",
+          "targets": [
+            "audit.horizontal-overflow"
+          ]
+        },
+        {
+          "id": "command/safe-areas-layout/03",
+          "rule": "Flex/grid over JS measurement for layout",
+          "status": "uc",
+          "targets": [
+            "UC-34"
+          ]
+        },
+        {
+          "id": "command/dark-mode-theming/01",
+          "rule": "`color-scheme: dark` on `<html>` for dark themes (fixes scrollbar, inputs)",
+          "status": "local",
+          "targets": [
+            "references/interface-defaults.md#surfaces"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "command/dark-mode-theming/02",
+          "rule": "`<meta name=\"theme-color\">` matches page background",
+          "status": "local",
+          "targets": [
+            "references/mobile-web.md#10-status-bar-and-verification",
+            "references/interface-defaults.md#surfaces"
+          ]
+        },
+        {
+          "id": "command/dark-mode-theming/03",
+          "rule": "Native `<select>`: explicit `background-color` and `color` (Windows dark mode)",
+          "status": "uc",
+          "targets": [
+            "UC-34"
+          ]
+        },
+        {
+          "id": "command/locale-i18n/01",
+          "rule": "Dates/times: use `Intl.DateTimeFormat` not hardcoded formats",
+          "status": "local",
+          "targets": [
+            "references/interface-defaults.md#code-tables-and-truncation"
+          ]
+        },
+        {
+          "id": "command/locale-i18n/02",
+          "rule": "Numbers/currency: use `Intl.NumberFormat` not hardcoded formats",
+          "status": "local",
+          "targets": [
+            "references/interface-defaults.md#code-tables-and-truncation"
+          ]
+        },
+        {
+          "id": "command/locale-i18n/03",
+          "rule": "Detect language via `Accept-Language` / `navigator.languages`, not IP",
+          "status": "uc",
+          "targets": [
+            "UC-35"
+          ]
+        },
+        {
+          "id": "command/locale-i18n/04",
+          "rule": "Brand names, code tokens, identifiers: wrap with `translate=\"no\"` to prevent garbled auto-translation",
+          "status": "uc",
+          "targets": [
+            "UC-35"
+          ]
+        },
+        {
+          "id": "command/hydration-safety/01",
+          "rule": "Inputs with `value` need `onChange` (or use `defaultValue` for uncontrolled)",
+          "status": "uc",
+          "targets": [
+            "UC-30"
+          ]
+        },
+        {
+          "id": "command/hydration-safety/02",
+          "rule": "Date/time rendering: guard against hydration mismatch (server vs client)",
+          "status": "uc",
+          "targets": [
+            "UC-30"
+          ]
+        },
+        {
+          "id": "command/hydration-safety/03",
+          "rule": "`suppressHydrationWarning` only where truly needed",
+          "status": "uc",
+          "targets": [
+            "UC-30"
+          ]
+        },
+        {
+          "id": "command/hover-interactive-states/01",
+          "rule": "Buttons/links need `hover:` state (visual feedback)",
+          "status": "uc",
+          "targets": [
+            "UC-38",
+            "references/impeccable-contract.md#craft-floor"
+          ]
+        },
+        {
+          "id": "command/hover-interactive-states/02",
+          "rule": "Interactive states increase contrast: hover/active/focus more prominent than rest",
+          "status": "uc",
+          "targets": [
+            "UC-38"
+          ]
+        },
+        {
+          "id": "command/content-copy/01",
+          "rule": "Active voice: \"Install the CLI\" not \"The CLI will be installed\"",
+          "status": "uc",
+          "targets": [
+            "UC-36"
+          ]
+        },
+        {
+          "id": "command/content-copy/02",
+          "rule": "Title Case for headings/buttons (Chicago style)",
+          "status": "not-adopted",
+          "reason": "Sentence case is the default where a project has no capitalization policy, and one case is kept per element type (vendor/interface-discipline/upstream/skills/better-writing/UPSTREAM-SKILL.md#one-capitalization-policy)."
+        },
+        {
+          "id": "command/content-copy/03",
+          "rule": "Numerals for counts: \"8 deployments\" not \"eight\"",
+          "status": "uc",
+          "targets": [
+            "UC-36"
+          ]
+        },
+        {
+          "id": "command/content-copy/04",
+          "rule": "Specific button labels: \"Save API Key\" not \"Continue\"",
+          "status": "uc",
+          "targets": [
+            "UC-14"
+          ]
+        },
+        {
+          "id": "command/content-copy/05",
+          "rule": "Error messages include fix/next step, not just problem",
+          "status": "uc",
+          "targets": [
+            "UC-16"
+          ]
+        },
+        {
+          "id": "command/content-copy/06",
+          "rule": "Second person; avoid first person",
+          "status": "local",
+          "targets": [
+            "vendor/interface-discipline/upstream/skills/better-writing/UPSTREAM-SKILL.md#address-the-reader-directly"
+          ]
+        },
+        {
+          "id": "command/content-copy/07",
+          "rule": "`&` over \"and\" where space-constrained",
+          "status": "uc",
+          "targets": [
+            "UC-36"
+          ]
+        },
+        {
+          "id": "command/anti-patterns/01",
+          "rule": "`user-scalable=no` or `maximum-scale=1` disabling zoom",
+          "status": "local",
+          "targets": [
+            "references/mobile-web.md#3-input-zoom-and-the-16px-rule",
+            "vendor/interface-discipline/upstream/skills/better-accessibility/UPSTREAM-SKILL.md#survive-zoom-and-text-resize"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "command/anti-patterns/02",
+          "rule": "`onPaste` with `preventDefault`",
+          "status": "duplicate",
+          "duplicateOf": "command/forms/03"
+        },
+        {
+          "id": "command/anti-patterns/03",
+          "rule": "`transition: all`",
+          "status": "duplicate",
+          "duplicateOf": "command/animation/03"
+        },
+        {
+          "id": "command/anti-patterns/04",
+          "rule": "`outline-none` without focus-visible replacement",
+          "status": "duplicate",
+          "duplicateOf": "command/focus-states/02"
+        },
+        {
+          "id": "command/anti-patterns/05",
+          "rule": "Inline `onClick` navigation without `<a>`",
+          "status": "duplicate",
+          "duplicateOf": "command/navigation-state/02"
+        },
+        {
+          "id": "command/anti-patterns/06",
+          "rule": "`<div>` or `<span>` with click handlers (should be `<button>`)",
+          "status": "duplicate",
+          "duplicateOf": "command/accessibility/04"
+        },
+        {
+          "id": "command/anti-patterns/07",
+          "rule": "Images without dimensions",
+          "status": "duplicate",
+          "duplicateOf": "command/images/01"
+        },
+        {
+          "id": "command/anti-patterns/08",
+          "rule": "Large arrays `.map()` without virtualization",
+          "status": "duplicate",
+          "duplicateOf": "command/performance/01"
+        },
+        {
+          "id": "command/anti-patterns/09",
+          "rule": "Form inputs without labels",
+          "status": "duplicate",
+          "duplicateOf": "command/accessibility/02"
+        },
+        {
+          "id": "command/anti-patterns/10",
+          "rule": "Icon buttons without `aria-label`",
+          "status": "duplicate",
+          "duplicateOf": "command/accessibility/01"
+        },
+        {
+          "id": "command/anti-patterns/11",
+          "rule": "Hardcoded date/number formats (use `Intl.*`)",
+          "status": "duplicate",
+          "duplicateOf": "command/locale-i18n/01"
+        },
+        {
+          "id": "command/anti-patterns/12",
+          "rule": "`autoFocus` without clear justification",
+          "status": "duplicate",
+          "duplicateOf": "command/touch-interaction/07"
+        },
+        {
+          "id": "command/anti-patterns/13",
+          "rule": "Animated GIF when compressed video is suitable",
+          "status": "duplicate",
+          "duplicateOf": "command/performance/07"
+        },
+        {
+          "id": "command/anti-patterns/14",
+          "rule": "Gesture-only action without tap/click and keyboard alternative",
+          "status": "duplicate",
+          "duplicateOf": "command/touch-interaction/06"
+        },
+        {
+          "id": "readme/01",
+          "rule": "**Ellipsis for further input & loading states.** Menu options that open a follow-up e.g., \"Rename…\" & loading/processing states e.g., \"Loading…\", \"Saving…\", \"Generating…\" end with an ellipsis.",
+          "status": "uc",
+          "targets": [
+            "UC-39"
+          ]
+        },
+        {
+          "id": "readme/02",
+          "rule": "**Submission rule.** Keep submit enabled until submission starts; then disable during the in-flight request, show a spinner, & include an idempotency key.",
+          "status": "uc",
+          "targets": [
+            "UC-40"
+          ]
+        },
+        {
+          "id": "readme/03",
+          "rule": "**Network latency budgets.** `POST/PATCH/DELETE` complete in <500ms.",
+          "status": "uc",
+          "targets": [
+            "UC-40",
+            "references/interface-defaults.md#waiting"
+          ]
+        },
+        {
+          "id": "readme/04",
+          "rule": "**Don’t use the main thread for expensive work.** Move especially long tasks to [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API) to avoid blocking interaction with the page.",
+          "status": "uc",
+          "targets": [
+            "UC-31"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ibelick-ui-skills-rules",
+      "repo": "https://github.com/ibelick/ui-skills",
+      "revision": "73fb128d046d1f0d74c2909cd26eb616e3415567",
+      "license": "MIT",
+      "record": "references/ibelick-ui-skills.md",
+      "files": [
+        {
+          "key": "baseline-ui",
+          "path": "skills/baseline-ui/SKILL.md",
+          "extract": "bullets",
+          "from": "## Stack",
+          "to": null
+        },
+        {
+          "key": "fixing-metadata",
+          "path": "skills/fixing-metadata/SKILL.md",
+          "extract": "bullets",
+          "from": "## quick reference",
+          "to": "## review guidance"
+        },
+        {
+          "key": "fixing-motion-performance",
+          "path": "skills/fixing-motion-performance/SKILL.md",
+          "extract": "bullets",
+          "from": "## quick reference",
+          "to": "## common fixes"
+        }
+      ],
+      "rules": [
+        {
+          "id": "baseline-ui/stack/01",
+          "rule": "MUST use Tailwind CSS defaults unless custom values already exist or are explicitly requested",
+          "status": "not-adopted",
+          "reason": "Stack prescription. The pipeline expresses craft details in the project's existing styling system and adds a design dependency only when the user asks or the repository already uses it (references/ui-craft-sources.md#stage-integration, references/stages.md#stage-5-implementation)."
+        },
+        {
+          "id": "baseline-ui/stack/02",
+          "rule": "MUST use `motion/react` (formerly `framer-motion`) when JavaScript animation is required",
+          "status": "not-adopted",
+          "reason": "Stack prescription. The pipeline expresses craft details in the project's existing styling system and adds a design dependency only when the user asks or the repository already uses it (references/ui-craft-sources.md#stage-integration, references/stages.md#stage-5-implementation)."
+        },
+        {
+          "id": "baseline-ui/stack/03",
+          "rule": "SHOULD use `tw-animate-css` for entrance and micro-animations in Tailwind CSS",
+          "status": "not-adopted",
+          "reason": "Stack prescription. The pipeline expresses craft details in the project's existing styling system and adds a design dependency only when the user asks or the repository already uses it (references/ui-craft-sources.md#stage-integration, references/stages.md#stage-5-implementation)."
+        },
+        {
+          "id": "baseline-ui/stack/04",
+          "rule": "MUST use `cn` utility (`clsx` + `tailwind-merge`) for class logic",
+          "status": "not-adopted",
+          "reason": "Stack prescription. The pipeline expresses craft details in the project's existing styling system and adds a design dependency only when the user asks or the repository already uses it (references/ui-craft-sources.md#stage-integration, references/stages.md#stage-5-implementation)."
+        },
+        {
+          "id": "baseline-ui/components/01",
+          "rule": "MUST use accessible component primitives for anything with keyboard or focus behavior (`Base UI`, `React Aria`, `Radix`)",
+          "status": "uc",
+          "targets": [
+            "UC-37",
+            "UC-09"
+          ]
+        },
+        {
+          "id": "baseline-ui/components/02",
+          "rule": "MUST use the project’s existing component primitives first",
+          "status": "uc",
+          "targets": [
+            "UC-37"
+          ]
+        },
+        {
+          "id": "baseline-ui/components/03",
+          "rule": "NEVER mix primitive systems within the same interaction surface",
+          "status": "uc",
+          "targets": [
+            "UC-37"
+          ]
+        },
+        {
+          "id": "baseline-ui/components/04",
+          "rule": "SHOULD prefer [`Base UI`](https://base-ui.com/react/components) for new primitives if compatible with the stack",
+          "status": "not-adopted",
+          "reason": "Stack prescription. The pipeline expresses craft details in the project's existing styling system and adds a design dependency only when the user asks or the repository already uses it (references/ui-craft-sources.md#stage-integration, references/stages.md#stage-5-implementation)."
+        },
+        {
+          "id": "baseline-ui/components/05",
+          "rule": "MUST add an `aria-label` to icon-only buttons",
+          "status": "uc",
+          "targets": [
+            "UC-11"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "baseline-ui/components/06",
+          "rule": "NEVER rebuild keyboard or focus behavior by hand unless explicitly requested",
+          "status": "uc",
+          "targets": [
+            "UC-37"
+          ]
+        },
+        {
+          "id": "baseline-ui/interaction/01",
+          "rule": "MUST use an `AlertDialog` for destructive or irreversible actions",
+          "status": "uc",
+          "targets": [
+            "UC-16"
+          ],
+          "note": "UC-16 asks for a confirmation, an undo or a distinct look; the AlertDialog component is a stack choice."
+        },
+        {
+          "id": "baseline-ui/interaction/02",
+          "rule": "SHOULD use structural skeletons for loading states",
+          "status": "local",
+          "targets": [
+            "references/interface-defaults.md#waiting"
+          ]
+        },
+        {
+          "id": "baseline-ui/interaction/03",
+          "rule": "NEVER use `h-screen`, use `h-dvh`",
+          "status": "local",
+          "targets": [
+            "references/mobile-web.md#1-viewport-units"
+          ]
+        },
+        {
+          "id": "baseline-ui/interaction/04",
+          "rule": "MUST respect `safe-area-inset` for fixed elements",
+          "status": "local",
+          "targets": [
+            "references/mobile-web.md#6-safe-area-insets"
+          ]
+        },
+        {
+          "id": "baseline-ui/interaction/05",
+          "rule": "MUST show errors next to where the action happens",
+          "status": "uc",
+          "targets": [
+            "UC-16",
+            "UC-12"
+          ]
+        },
+        {
+          "id": "baseline-ui/interaction/06",
+          "rule": "NEVER block paste in `input` or `textarea` elements",
+          "status": "uc",
+          "targets": [
+            "UC-12"
+          ],
+          "issue": 354
+        },
+        {
+          "id": "baseline-ui/animation/01",
+          "rule": "NEVER add animation unless it is explicitly requested",
+          "status": "uc",
+          "targets": [
+            "UC-01"
+          ],
+          "partial": true,
+          "note": "The local rule admits motion that names one purpose; it does not wait for an explicit request."
+        },
+        {
+          "id": "baseline-ui/animation/02",
+          "rule": "MUST animate only compositor props (`transform`, `opacity`)",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#property-tiers"
+          ]
+        },
+        {
+          "id": "baseline-ui/animation/03",
+          "rule": "NEVER animate layout properties (`width`, `height`, `top`, `left`, `margin`, `padding`)",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#property-tiers"
+          ],
+          "issue": 355
+        },
+        {
+          "id": "baseline-ui/animation/04",
+          "rule": "SHOULD avoid animating paint properties (`background`, `color`) except for small, local UI (text, icons)",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#property-tiers"
+          ]
+        },
+        {
+          "id": "baseline-ui/animation/05",
+          "rule": "SHOULD use `ease-out` on entrance",
+          "status": "uc",
+          "targets": [
+            "UC-03"
+          ]
+        },
+        {
+          "id": "baseline-ui/animation/06",
+          "rule": "NEVER exceed `200ms` for interaction feedback",
+          "status": "uc",
+          "targets": [
+            "UC-03",
+            "references/ui-craft-sources.md#precedence"
+          ],
+          "partial": true,
+          "note": "The local budget is under 300ms for user-initiated motion, with press feedback at 100-160ms; 200ms is not the limit."
+        },
+        {
+          "id": "baseline-ui/animation/07",
+          "rule": "MUST pause looping animations when off-screen",
+          "status": "pending",
+          "issue": 355
+        },
+        {
+          "id": "baseline-ui/animation/08",
+          "rule": "SHOULD respect `prefers-reduced-motion`",
+          "status": "audit",
+          "targets": [
+            "audit.reduced-motion",
+            "UC-06"
+          ]
+        },
+        {
+          "id": "baseline-ui/animation/09",
+          "rule": "NEVER introduce custom easing curves unless explicitly requested",
+          "status": "local",
+          "targets": [
+            "references/ui-craft-sources.md#precedence"
+          ]
+        },
+        {
+          "id": "baseline-ui/animation/10",
+          "rule": "SHOULD avoid animating large images or full-screen surfaces",
+          "status": "pending",
+          "issue": 355
+        },
+        {
+          "id": "baseline-ui/typography/01",
+          "rule": "MUST use `text-balance` for headings and `text-pretty` for body/paragraphs",
+          "status": "local",
+          "targets": [
+            "vendor/interface-discipline/upstream/skills/better-typography/UPSTREAM-SKILL.md#wrap-deliberately"
+          ]
+        },
+        {
+          "id": "baseline-ui/typography/02",
+          "rule": "MUST use `tabular-nums` for data",
+          "status": "audit",
+          "targets": [
+            "audit.tabular-numbers"
+          ]
+        },
+        {
+          "id": "baseline-ui/typography/03",
+          "rule": "SHOULD use `truncate` or `line-clamp` for dense UI",
+          "status": "uc",
+          "targets": [
+            "UC-23",
+            "vendor/good-css/upstream/PRACTICES.md#long-text-that-wraps-truncates-or-clamps"
+          ]
+        },
+        {
+          "id": "baseline-ui/typography/04",
+          "rule": "NEVER modify `letter-spacing` (`tracking-*`) unless explicitly requested",
+          "status": "not-adopted",
+          "reason": "Tracking follows size in the bundled typography rules (headings at 24px and up tighten, small uppercase labels open, body stays at 0), and CJK body text keeps 0 (vendor/interface-discipline/upstream/skills/better-typography/UPSTREAM-SKILL.md#letter-spacing-by-size, references/cjk-typography.md)."
+        },
+        {
+          "id": "baseline-ui/layout/01",
+          "rule": "MUST use a fixed `z-index` scale (no arbitrary `z-*`)",
+          "status": "uc",
+          "targets": [
+            "UC-29"
+          ]
+        },
+        {
+          "id": "baseline-ui/layout/02",
+          "rule": "SHOULD use `size-*` for square elements instead of `w-*` + `h-*`",
+          "status": "not-adopted",
+          "reason": "Stack prescription. The pipeline expresses craft details in the project's existing styling system and adds a design dependency only when the user asks or the repository already uses it (references/ui-craft-sources.md#stage-integration, references/stages.md#stage-5-implementation)."
+        },
+        {
+          "id": "baseline-ui/performance/01",
+          "rule": "NEVER animate large `blur()` or `backdrop-filter` surfaces",
+          "status": "local",
+          "targets": [
+            "references/ui-transition-rules.md#tr-10--motion-owns-and-releases-its-resources",
+            "references/animation-opportunity-and-review.md#rules"
+          ]
+        },
+        {
+          "id": "baseline-ui/performance/02",
+          "rule": "NEVER apply `will-change` outside an active animation",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#will-change"
+          ]
+        },
+        {
+          "id": "baseline-ui/performance/03",
+          "rule": "NEVER use `useEffect` for anything that can be expressed as render logic",
+          "status": "uc",
+          "targets": [
+            "UC-37"
+          ]
+        },
+        {
+          "id": "baseline-ui/design/01",
+          "rule": "NEVER use gradients unless explicitly requested",
+          "status": "local",
+          "targets": [
+            "references/impeccable-contract.md#defaults-to-challenge"
+          ],
+          "partial": true,
+          "note": "Gradient text and decorative gradients are anti-default signals that a confirmed brief can earn, not a ban."
+        },
+        {
+          "id": "baseline-ui/design/02",
+          "rule": "NEVER use purple or multicolor gradients",
+          "status": "local",
+          "targets": [
+            "references/stages.md#stage-5-implementation"
+          ]
+        },
+        {
+          "id": "baseline-ui/design/03",
+          "rule": "NEVER use glow effects as primary affordances",
+          "status": "local",
+          "targets": [
+            "references/impeccable-contract.md#defaults-to-challenge"
+          ],
+          "partial": true,
+          "note": "Neon glow is an anti-default signal; the affordance wording is not stated."
+        },
+        {
+          "id": "baseline-ui/design/04",
+          "rule": "SHOULD use Tailwind CSS default shadow scale unless explicitly requested",
+          "status": "not-adopted",
+          "reason": "Stack prescription. The pipeline expresses craft details in the project's existing styling system and adds a design dependency only when the user asks or the repository already uses it (references/ui-craft-sources.md#stage-integration, references/stages.md#stage-5-implementation)."
+        },
+        {
+          "id": "baseline-ui/design/05",
+          "rule": "MUST give empty states one clear next action",
+          "status": "uc",
+          "targets": [
+            "UC-18"
+          ]
+        },
+        {
+          "id": "baseline-ui/design/06",
+          "rule": "SHOULD limit accent color usage to one per view",
+          "status": "uc",
+          "targets": [
+            "UC-38"
+          ]
+        },
+        {
+          "id": "baseline-ui/design/07",
+          "rule": "SHOULD use existing theme or Tailwind CSS color tokens before introducing new ones",
+          "status": "local",
+          "targets": [
+            "references/interface-discipline.md#pipeline-stage-integration"
+          ]
+        },
+        {
+          "id": "fixing-metadata/correctness-and-duplication/01",
+          "rule": "define metadata in one place per page, avoid competing systems",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/correctness-and-duplication/02",
+          "rule": "do not emit duplicate title, description, canonical, or robots tags",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/correctness-and-duplication/03",
+          "rule": "metadata must be deterministic, no random or unstable values",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/correctness-and-duplication/04",
+          "rule": "escape and sanitize any user-generated or dynamic strings",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/correctness-and-duplication/05",
+          "rule": "every page must have safe defaults for title and description",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/title-and-description/01",
+          "rule": "every page must have a title",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/title-and-description/02",
+          "rule": "use a consistent title format across the site",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/title-and-description/03",
+          "rule": "keep titles short and readable, avoid stuffing",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/title-and-description/04",
+          "rule": "shareable or searchable pages should have a meta description",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/title-and-description/05",
+          "rule": "descriptions must be plain text, no markdown or quote spam",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/canonical-and-indexing/01",
+          "rule": "canonical must point to the preferred URL for the page",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/canonical-and-indexing/02",
+          "rule": "use noindex only for private, duplicate, or non-public pages",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/canonical-and-indexing/03",
+          "rule": "robots meta must match actual access intent",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/canonical-and-indexing/04",
+          "rule": "previews or staging pages should be noindex by default when possible",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/canonical-and-indexing/05",
+          "rule": "paginated pages must have correct canonical behavior",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/social-cards/01",
+          "rule": "shareable pages must set Open Graph title, description, and image",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/social-cards/02",
+          "rule": "Open Graph and Twitter images must use absolute URLs",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/social-cards/03",
+          "rule": "prefer correct image dimensions and stable aspect ratios",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/social-cards/04",
+          "rule": "og:url must match the canonical URL",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/social-cards/05",
+          "rule": "use a sensible og:type, usually website or article",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/social-cards/06",
+          "rule": "set twitter:card appropriately, summary_large_image by default",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/icons-and-manifest/01",
+          "rule": "include at least one favicon that works across browsers",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/icons-and-manifest/02",
+          "rule": "include apple-touch-icon when relevant",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/icons-and-manifest/03",
+          "rule": "manifest must be valid and referenced when used",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/icons-and-manifest/04",
+          "rule": "set theme-color intentionally to avoid mismatched UI chrome",
+          "status": "local",
+          "targets": [
+            "references/mobile-web.md#10-status-bar-and-verification",
+            "references/interface-defaults.md#surfaces"
+          ]
+        },
+        {
+          "id": "fixing-metadata/icons-and-manifest/05",
+          "rule": "icon paths should be stable and cacheable",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/structured-data/01",
+          "rule": "do not add JSON-LD unless it clearly maps to real page content",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/structured-data/02",
+          "rule": "JSON-LD must be valid and reflect what is actually rendered",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/structured-data/03",
+          "rule": "do not invent ratings, reviews, prices, or organization details",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/structured-data/04",
+          "rule": "prefer one structured data block per page unless required",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/locale-and-alternates/01",
+          "rule": "set the html lang attribute correctly",
+          "status": "uc",
+          "targets": [
+            "UC-11"
+          ]
+        },
+        {
+          "id": "fixing-metadata/locale-and-alternates/02",
+          "rule": "set og:locale when localization exists",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/locale-and-alternates/03",
+          "rule": "add hreflang alternates only when pages truly exist",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/locale-and-alternates/04",
+          "rule": "localized pages must canonicalize correctly per locale",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-metadata/tool-boundaries/01",
+          "rule": "prefer minimal changes, do not refactor unrelated code",
+          "status": "local",
+          "targets": [
+            "references/impeccable-contract.md#authority-and-intent"
+          ]
+        },
+        {
+          "id": "fixing-metadata/tool-boundaries/02",
+          "rule": "do not migrate frameworks or SEO libraries unless requested",
+          "status": "local",
+          "targets": [
+            "references/stages.md#stage-5-implementation"
+          ],
+          "partial": true,
+          "note": "Stage 5 forbids adding a design dependency the user did not ask for; metadata libraries are not named."
+        },
+        {
+          "id": "fixing-metadata/tool-boundaries/03",
+          "rule": "follow the project's existing metadata pattern (Next.js metadata API, react-helmet, manual head, etc.)",
+          "status": "pending",
+          "issue": 353
+        },
+        {
+          "id": "fixing-motion-performance/never-patterns/01",
+          "rule": "do not interleave layout reads and writes in the same frame",
+          "status": "uc",
+          "targets": [
+            "UC-31",
+            "references/ui-transition-rules.md#tr-10--motion-owns-and-releases-its-resources"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/never-patterns/02",
+          "rule": "do not animate layout continuously on large or meaningful surfaces",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#property-tiers"
+          ],
+          "issue": 355
+        },
+        {
+          "id": "fixing-motion-performance/never-patterns/03",
+          "rule": "do not drive animation from scrollTop, scrollY, or scroll events",
+          "status": "pending",
+          "issue": 355
+        },
+        {
+          "id": "fixing-motion-performance/never-patterns/04",
+          "rule": "no requestAnimationFrame loops without a stop condition",
+          "status": "local",
+          "targets": [
+            "references/ui-transition-rules.md#tr-10--motion-owns-and-releases-its-resources"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/never-patterns/05",
+          "rule": "do not mix multiple animation systems that each measure or mutate layout",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#4-routing-boundaries"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/choose-the-mechanism/01",
+          "rule": "default to transform and opacity for motion",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#property-tiers",
+            "references/ui-transition-rules.md#tr-10--motion-owns-and-releases-its-resources"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/choose-the-mechanism/02",
+          "rule": "use JS-driven animation only when interaction requires it",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#rules",
+            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#css-animations-beat-js-under-load"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/choose-the-mechanism/03",
+          "rule": "paint or layout animation is acceptable only on small, isolated surfaces",
+          "status": "local",
+          "targets": [
+            "references/ui-transition-rules.md#tr-10--motion-owns-and-releases-its-resources",
+            "references/animation-opportunity-and-review.md#property-tiers"
+          ],
+          "partial": true,
+          "note": "The local rule asks for a stated performance reason for layout, filter or mask work, not a size limit."
+        },
+        {
+          "id": "fixing-motion-performance/choose-the-mechanism/04",
+          "rule": "one-shot effects are acceptable more often than continuous motion",
+          "status": "pending",
+          "issue": 355
+        },
+        {
+          "id": "fixing-motion-performance/choose-the-mechanism/05",
+          "rule": "prefer downgrading technique over removing motion entirely",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#property-tiers"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/measurement/01",
+          "rule": "measure once, then animate via transform or opacity",
+          "status": "local",
+          "targets": [
+            "references/interface-defaults.md#motion-details-not-in-the-motion-rules",
+            "references/ui-transition-rules.md#tr-10--motion-owns-and-releases-its-resources"
+          ],
+          "partial": true,
+          "note": "Measuring an inner element to animate a container and stale measured widths are covered; measure-once is not stated as a rule."
+        },
+        {
+          "id": "fixing-motion-performance/measurement/02",
+          "rule": "batch all DOM reads before writes",
+          "status": "uc",
+          "targets": [
+            "UC-31"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/measurement/03",
+          "rule": "do not read layout repeatedly during an animation",
+          "status": "uc",
+          "targets": [
+            "UC-31",
+            "references/ui-transition-rules.md#tr-10--motion-owns-and-releases-its-resources"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/measurement/04",
+          "rule": "prefer FLIP-style transitions for layout-like effects",
+          "status": "pending",
+          "issue": 355
+        },
+        {
+          "id": "fixing-motion-performance/measurement/05",
+          "rule": "prefer approaches that batch measurement and writes",
+          "status": "uc",
+          "targets": [
+            "UC-31"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/scroll/01",
+          "rule": "prefer Scroll or View Timelines for scroll-linked motion when available",
+          "status": "pending",
+          "issue": 355
+        },
+        {
+          "id": "fixing-motion-performance/scroll/02",
+          "rule": "use IntersectionObserver for visibility and pausing",
+          "status": "pending",
+          "issue": 355
+        },
+        {
+          "id": "fixing-motion-performance/scroll/03",
+          "rule": "do not poll scroll position for animation",
+          "status": "pending",
+          "issue": 355
+        },
+        {
+          "id": "fixing-motion-performance/scroll/04",
+          "rule": "pause or stop animations when off-screen",
+          "status": "pending",
+          "issue": 355
+        },
+        {
+          "id": "fixing-motion-performance/scroll/05",
+          "rule": "scroll-linked motion must not trigger continuous layout or paint on large surfaces",
+          "status": "pending",
+          "issue": 355
+        },
+        {
+          "id": "fixing-motion-performance/paint/01",
+          "rule": "paint-triggering animation is allowed only on small, isolated elements",
+          "status": "local",
+          "targets": [
+            "references/ui-transition-rules.md#tr-10--motion-owns-and-releases-its-resources",
+            "references/animation-opportunity-and-review.md#property-tiers"
+          ],
+          "partial": true,
+          "note": "The local rule asks for a stated performance reason for paint-tier work, not a size limit."
+        },
+        {
+          "id": "fixing-motion-performance/paint/02",
+          "rule": "do not animate paint-heavy properties on large containers",
+          "status": "local",
+          "targets": [
+            "references/ui-transition-rules.md#tr-10--motion-owns-and-releases-its-resources",
+            "references/animation-opportunity-and-review.md#property-tiers"
+          ],
+          "partial": true,
+          "note": "The local rule asks for a stated performance reason for paint-tier work, not a size limit."
+        },
+        {
+          "id": "fixing-motion-performance/paint/03",
+          "rule": "do not animate CSS variables for transform, opacity, or position",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#rules"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/paint/04",
+          "rule": "do not animate inherited CSS variables",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#rules",
+            "vendor/emil-design-eng/upstream/skills/emil-design-eng/UPSTREAM-SKILL.md#css-variables-are-inheritable"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/paint/05",
+          "rule": "scope animated CSS variables locally and avoid inheritance",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#rules",
+            "vendor/good-css/upstream/PRACTICES.md#transition-a-custom-property-with-property"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/layers/01",
+          "rule": "compositor motion requires layer promotion, never assume it",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#will-change"
+          ],
+          "partial": true,
+          "note": "The local text says browsers promote an element that animates transform or opacity, and asks for an observed shift or a measured drop before a hint is added."
+        },
+        {
+          "id": "fixing-motion-performance/layers/02",
+          "rule": "use will-change temporarily and surgically",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#will-change"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/layers/03",
+          "rule": "avoid many or large promoted layers",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#will-change"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/layers/04",
+          "rule": "validate layer behavior with tooling when performance matters",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#measuring"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/blur-and-filters/01",
+          "rule": "keep blur animation small (<=8px)",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#rules"
+          ],
+          "partial": true,
+          "note": "The local limit is 2 to 5px to soften a crossfade and under 20px, not 8px."
+        },
+        {
+          "id": "fixing-motion-performance/blur-and-filters/02",
+          "rule": "use blur only for short, one-time effects",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#rules",
+            "references/interface-defaults.md#motion-details-not-in-the-motion-rules"
+          ],
+          "partial": true,
+          "note": "Blur is described only for crossfades and exits; one-time use is not stated as a rule."
+        },
+        {
+          "id": "fixing-motion-performance/blur-and-filters/03",
+          "rule": "never animate blur continuously",
+          "status": "pending",
+          "issue": 355
+        },
+        {
+          "id": "fixing-motion-performance/blur-and-filters/04",
+          "rule": "never animate blur on large surfaces",
+          "status": "local",
+          "targets": [
+            "references/ui-transition-rules.md#tr-10--motion-owns-and-releases-its-resources",
+            "references/animation-opportunity-and-review.md#will-change"
+          ],
+          "partial": true,
+          "note": "Expensive blur that breaks the target budget fails, and a large blurred layer is kept small; no surface size is named."
+        },
+        {
+          "id": "fixing-motion-performance/blur-and-filters/05",
+          "rule": "prefer opacity and translate before blur",
+          "status": "local",
+          "targets": [
+            "references/ui-transition-rules.md#tr-10--motion-owns-and-releases-its-resources"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/view-transitions/01",
+          "rule": "use view transitions only for navigation-level changes",
+          "status": "local",
+          "targets": [
+            "references/capability-routing.md#runtime-animation-decision"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/view-transitions/02",
+          "rule": "avoid view transitions for interaction-heavy UI",
+          "status": "local",
+          "targets": [
+            "references/capability-routing.md#runtime-animation-decision"
+          ],
+          "partial": true,
+          "note": "View Transitions are routed to navigation continuity and rejected as a general animation engine; interaction-heavy UI is not named."
+        },
+        {
+          "id": "fixing-motion-performance/view-transitions/03",
+          "rule": "avoid view transitions when interruption or cancellation is required",
+          "status": "pending",
+          "issue": 355
+        },
+        {
+          "id": "fixing-motion-performance/view-transitions/04",
+          "rule": "treat size changes as potentially layout-triggering",
+          "status": "pending",
+          "issue": 355
+        },
+        {
+          "id": "fixing-motion-performance/tool-boundaries/01",
+          "rule": "do not migrate or rewrite animation libraries unless explicitly requested",
+          "status": "local",
+          "targets": [
+            "references/animation-opportunity-and-review.md#4-routing-boundaries",
+            "references/stages.md#stage-5-implementation"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/tool-boundaries/02",
+          "rule": "apply these rules within the existing animation system",
+          "status": "local",
+          "targets": [
+            "references/ui-craft-sources.md#precedence"
+          ]
+        },
+        {
+          "id": "fixing-motion-performance/tool-boundaries/03",
+          "rule": "never partially migrate APIs or mix styles within the same component",
+          "status": "pending",
+          "issue": 355
+        }
+      ]
+    }
+  ]
+}

@@ -47,6 +47,22 @@ const sourceRefs = {
     reviewedAt: "2026-10-13T00:00:00.000Z",
     sourceFiles: ["skills/react-doctor/SKILL.md", "skills/react-doctor/references/explain.md"],
   },
+  "skill/references/web-interface-guidelines.md": {
+    sourceId: "web-interface-guidelines",
+    revision: "434b7f91364665f2f733b310ec54809bf8f37937",
+    contentHash: "af6d9829e75ca2d5ed28cc2ded53b81a321bfc905f36302c795c0bbcbf509238",
+    license: "MIT",
+    reviewedAt: "2026-11-11T00:00:00.000Z",
+    sourceFiles: ["command.md", "README.md"],
+  },
+  "skill/references/ibelick-ui-skills.md": {
+    sourceId: "ibelick-ui-skills-rules",
+    revision: "73fb128d046d1f0d74c2909cd26eb616e3415567",
+    contentHash: "d74377eed8c3234594d7236d216aeba4f7bb01dcbdd22139f2b69d094b5578bb",
+    license: "MIT",
+    reviewedAt: "2026-11-11T00:00:00.000Z",
+    sourceFiles: ["skills/baseline-ui/SKILL.md", "skills/fixing-metadata/SKILL.md", "skills/fixing-motion-performance/SKILL.md"],
+  },
 };
 const motionProfileSourceFiles = [
   "skills/improve-animations/SKILL.md",

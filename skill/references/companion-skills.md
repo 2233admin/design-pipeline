@@ -75,7 +75,7 @@ shadcn controls, or `gifenc` automatic project dependencies.
 | --- | --- | --- |
 | `impeccable` | `pbakaus/impeccable` | Surface modes, shape/critique/audit/polish vocabulary, anti-default craft floor, bounded browser iteration, and deterministic design detection |
 | `frontend-design` | `anthropics/skills` | Strong visual direction, composition, non-generic first impression |
-| `web-design-guidelines` | `vercel-labs/agent-skills` | Production web UI rules, responsive layout, accessibility |
+| `web-design-guidelines` | Built-in rules, pinned `vercel-labs/web-interface-guidelines` | [Rules held locally](web-interface-guidelines.md) in the audit, the `UC-` checklist and project guides; no companion installation |
 | `ui-ux-pro-max` | `nextlevelbuilder/ui-ux-pro-max-skill` | UX heuristics, searchable style/color/type system, repeatable choices |
 | `design-taste-frontend` | Built-in pinned `Leonxlnx/taste-skill` | [Local tasteskill v2.1.5](taste-skill.md#choose-the-route); no companion installation |
 | `emil-design-eng` | Built-in pinned `emilkowalski/skills` | [Local design-engineering source](ui-craft-sources.md#emil-design-eng); no companion installation |
@@ -137,7 +137,7 @@ GSAP, PixiJS, Next.js, visual-direction, motion-review, and gstack-style feedbac
 | Skill | Source | Pipeline role |
 | --- | --- | --- |
 | `vercel-react-best-practices` | `vercel-labs/agent-skills` | React and Next.js performance patterns, bundle size, waterfalls, rendering |
-| `web-design-guidelines` | `vercel-labs/agent-skills` | Web interface guidelines, accessibility, UX, production UI review |
+| `web-design-guidelines` | Built-in rules, pinned `vercel-labs/web-interface-guidelines` | [Rules held locally](web-interface-guidelines.md); the upstream skill only downloads the same rule list when it runs, so it is not installed |
 | `vercel-composition-patterns` | `vercel-labs/agent-skills` | Scalable React component composition and API design |
 | `vercel-react-view-transitions` | `vercel-labs/agent-skills` | React view transitions and navigation motion patterns |
 | `next-cache-components-adoption` | `vercel/next.js` | Adopt Next.js Cache Components and PPR patterns |
@@ -149,10 +149,9 @@ Note: `next-best-practices` is no longer distributed by Vercel as a standalone s
 ## Install Priority
 
 1. `impeccable`
-2. `web-design-guidelines`
-3. `frontend-design`
-4. `ui-ux-pro-max`
-5. `apple-design` — when the surface should feel Apple-like or use fluid system UI motion
+2. `frontend-design`
+3. `ui-ux-pro-max`
+4. `apple-design` — when the surface should feel Apple-like or use fluid system UI motion
 
 ## Built-In Taste Skill
 
