@@ -36,6 +36,10 @@ The ablation eval SHALL include product-interface scenarios in its default sets,
 - **WHEN** a deliverable drops the text label of a state and keeps only its colour
 - **THEN** its content coverage SHALL fall below complete and its hygiene score SHALL be reduced
 
+#### Scenario: The same word appears elsewhere on the page
+- **WHEN** the content requires a word more than once, such as a status that is both a filter and a row label, and the deliverable shows it fewer times
+- **THEN** each missing place SHALL count as missing content, and a longer required text SHALL NOT stand in for a shorter one it contains
+
 #### Scenario: Undersized hit areas
 - **WHEN** a deliverable of a scenario that requires real controls has controls below the audit's target size
 - **THEN** their count SHALL be written to the run's measure record and SHALL NOT change the composite score or the result columns
@@ -46,6 +50,10 @@ The ablation report SHALL end with three questions, each answered yes, no or not
 #### Scenario: Measured scores without a judge
 - **WHEN** the measured delta is significant and the blind judge has not reached the pre-registered number of pairs
 - **THEN** the answer SHALL be not enough data
+
+#### Scenario: Significant alone, not after correction
+- **WHEN** the comparison of the full skill with the reference variant is significant on its own and not after the Holm correction of its comparison family
+- **THEN** the second question SHALL be answered not enough data, the same verdict the family section shows
 
 #### Scenario: The reference variant did not run
 - **WHEN** the results contain no run of the `reference-system` variant

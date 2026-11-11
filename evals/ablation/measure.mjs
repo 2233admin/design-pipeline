@@ -123,6 +123,23 @@ export function contentPieces(contentFile) {
 		.filter(Boolean);
 }
 
+/**
+ * 页面文字里找得到几段要求的文字。每段要有自己的一处：content.md 里重复出现的段（筛选里的“进行中”和某一行的“进行中”）
+ * 要出现同样多次；一段是另一段的一部分时（“删除账户”在“删除账户…”里），长的那处不能顶替短的。
+ * 做法：从长到短，每段在页面文字里占掉一处还没被占的出现。
+ */
+export function coveredPieces(pieces, joined) {
+	let text = joined;
+	let covered = 0;
+	for (const piece of [...pieces].sort((a, b) => b.length - a.length)) {
+		const at = text.indexOf(piece);
+		if (at < 0) continue;
+		covered++;
+		text = `${text.slice(0, at)}${"\u0000".repeat(piece.length)}${text.slice(at + piece.length)}`;
+	}
+	return covered;
+}
+
 // ---------- 交付物的静态检查 ----------
 
 // 自包含：除了 data:、blob:、页内锚点以外，不引用任何 URL 或文件
@@ -550,7 +567,7 @@ export function measureRender(rendered, { style, pieces, width, height, minFontP
 	const contrastFails = failed("audit.text-contrast");
 	const compositionErrors = composition.findings.filter((finding) => finding.severity === "error" && ["blank-frame", "low-contrast"].includes(finding.code)).length;
 
-	const covered = pieces.filter((piece) => rendered.facts.joined.includes(piece)).length;
+	const covered = coveredPieces(pieces, rendered.facts.joined);
 	const hiddenWithoutMotion = pieces.filter((piece) => rendered.facts.joined.includes(piece) && !rendered.stillJoined.includes(piece)).length;
 	const fakeControls = controls ? rendered.facts.fakeControls : 0;
 	// 点击区域太小的控件数（页面审计的 audit.target-size）：只写进 measure.json，不进综合分，也不是 results.tsv 的列

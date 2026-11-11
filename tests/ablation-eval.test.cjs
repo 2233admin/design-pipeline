@@ -486,6 +486,27 @@ test("the three questions are answered yes, no or not enough data, and the refer
   assert.match(judged, /2\. 技能与“参考加设计系统”谁好：参考加设计系统更好/);
   assert.match(judged, /3\. 单独拿掉 ui-craft 层.*：变好，这一层在拖累/);
   assert.match(judged, /参考加设计系统（不装技能/);
+  // 第二个问题沿用两组一族校正后的结论：单看 p ≈ 0.03–0.04 显著，校正后（×2）不显著，答案是样本不足，和上面那一段一致
+  const close = tmp(t, "ablation-holm-");
+  const closeRows = [];
+  for (const scenario of ["a", "b", "c", "d"]) {
+    [-4, 4, -3, 3, -2, 2].forEach((noise, index) => {
+      for (const [variant, base] of [["bare", 78], ["reference-system", 78], ["full", 80]]) {
+        const capture = `captures/${variant}-${scenario}-${index + 1}`;
+        fs.mkdirSync(path.join(close, capture), { recursive: true });
+        fs.writeFileSync(path.join(close, capture, "fingerprint.json"), JSON.stringify({ cols: 4, rows: 1, gray: [index, 0, 0, 0], mask: index % 2 ? [1, 0, 0, 0] : [0, 0, 0, 1] }));
+        closeRows.push({ variant, scenario, run: index + 1, status: "ok", score: base + noise, capture, skillUsed: variant === "full" ? "true" : "", layersRead: "" });
+      }
+    });
+  }
+  writeRows(close, closeRows);
+  const closeReport = summarize(readTsv(path.join(close, "results.tsv")), games("full", "reference-system", 9, 12), close);
+  const familyLine = closeReport.find((text) => text.includes("full 对 reference-system"));
+  const adjusted = Number(/校正后 p = ([\d.]+)/.exec(familyLine)[1]);
+  assert.ok(adjusted > 0.05 && adjusted / 2 < 0.05, `the pair is significant alone and not after Holm (adjusted p = ${adjusted})`);
+  assert.match(familyLine, /待定/);
+  assert.match(closeReport.join("\n"), /2\. 技能与“参考加设计系统”谁好：样本不足/, "question two reuses the family's adjusted verdict");
+
   const without = summarize(parsed.filter((row) => row.variant !== "reference-system"), [], dir).join("\n");
   assert.ok(!without.includes("参考加设计系统（不装技能"), "old result folders keep their report");
   assert.match(without, /2\. 技能与“参考加设计系统”谁好：没跑 reference-system 变体/);
@@ -509,9 +530,20 @@ test("product screens are scored: a complete page passes, tiny targets and a dro
   // 按钮缩到 16px 高：点击区域不够，记在 measure.json 里（不进综合分）
   const tiny = await run("workbench-list", "workbench.html", workbench.replace("height: 36px; min-width: 64px; padding: 0 16px;", "height: 16px; min-width: 16px; padding: 0;"));
   assert.ok(tiny.targetSizeFails > 0, "small hit areas are counted");
-  // 运行中的那一行只留颜色、去掉文字标签：文字覆盖不到 1
-  const colourOnly = await run("workbench-list", "workbench.html", workbench.replace('<span class="run">进行中</span>', '<span class="run"></span>').replace('<button type="button" aria-pressed="false">进行中</button>', ""));
-  assert.ok(colourOnly.contentCoverage < 1 && colourOnly.hygiene < 100, "a status carried by colour alone loses its label");
+  // 运行中的那一行只留颜色、去掉文字标签，筛选里的“进行中”还在：筛选那一处不能顶替行里的那一处，文字覆盖不到 1
+  const colourOnly = await run("workbench-list", "workbench.html", workbench.replace('<span class="run">进行中</span>', '<span class="run"></span>'));
+  assert.ok(colourOnly.contentCoverage < 1 && colourOnly.hygiene < 100, "a row whose status is carried by colour alone loses coverage even though a filter has the same word");
+});
+
+test("content coverage wants one place per required piece: repeats count and a longer piece does not stand in for a shorter one", async () => {
+  const { coveredPieces } = await load("measure.mjs");
+  const pieces = ["全部", "失败", "进行中", "失败", "进行中", "删除账户", "删除账户…"];
+  assert.equal(coveredPieces(pieces, "全部失败进行中#4820失败#4819进行中删除账户删除账户…"), 7);
+  assert.equal(coveredPieces(pieces, "全部失败进行中#4820失败#4819删除账户删除账户…"), 6, "the second 进行中 is missing");
+  assert.equal(coveredPieces(pieces, "全部失败进行中#4820#4819删除账户删除账户…"), 5, "both row labels are missing");
+  assert.equal(coveredPieces(pieces, "全部失败进行中#4820失败#4819进行中删除账户…"), 6, "the button text alone does not cover the heading");
+  assert.equal(coveredPieces(["铸台", "铸台把日志汇成一块面板。"], "铸台把日志汇成一块面板。"), 1, "the brand needs its own place beside the sentence that starts with it");
+  assert.equal(coveredPieces(["a", "b"], ""), 0);
 });
 
 test("in-page anchors count as real controls only when their target id exists", { skip: tools.skip }, async (t) => {

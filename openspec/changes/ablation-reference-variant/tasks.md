@@ -37,6 +37,11 @@
 - [x] 6.4 Product screens scored from two complete fixture pages; small targets and a dropped status label are caught.
 - [x] 6.5 Runner: references and `DESIGN.md` in the working folder, no skill, own screenshot folder, empty folder refused.
 
-## 7. Not done here
+## 7. Review of #373
 
-- [ ] 7.1 Run the eval and commit the result table and verdicts under `docs/research/`. Owner triggers this: client, model, runs per cell and budget are the owner's call.
+- [x] 7.1 `report.mjs`: the second question reuses the Holm-corrected verdict of the reference family instead of deciding the pair alone.
+- [x] 7.2 `measure.mjs`: `coveredPieces` gives every required piece its own place, so a repeated word must appear as often as the content lists it and a longer piece does not cover a shorter one; the negative fixture keeps its filters.
+
+## 8. Not done here
+
+- [ ] 8.1 Run the eval and commit the result table and verdicts under `docs/research/`. Owner triggers this: client, model, runs per cell and budget are the owner's call.

@@ -227,9 +227,11 @@ export function summarize(rows, judgeRows = [], out = ".") {
 	for (const result of decide([["principles", "recipes"], ["principles", "bare"], ["recipes", "bare"], ["principles", "decision-tree"]].map(([a, b]) => compare(a, b, byCell, judgeRows, out)))) lines.push(`  ${line(result, PAIR_VERDICT)}`);
 
 	// 只有跑了这个变体才出这一段，旧结果目录的报告不变
-	if (variants.includes("reference-system")) {
+	// 这一族的结论留着：下面第二个问题用的就是这里校正过的那一条，不另算一遍
+	const referenceFamily = variants.includes("reference-system") ? decide([["full", "reference-system"], ["reference-system", "bare"]].map(([a, b]) => compare(a, b, byCell, judgeRows, out))) : null;
+	if (referenceFamily) {
 		lines.push("", "参考加设计系统（不装技能，给参考图和项目的 DESIGN.md；两组一族做 Holm 校正）：");
-		for (const result of decide([["full", "reference-system"], ["reference-system", "bare"]].map(([a, b]) => compare(a, b, byCell, judgeRows, out)))) lines.push(`  ${line(result, PAIR_VERDICT)}`);
+		for (const result of referenceFamily) lines.push(`  ${line(result, PAIR_VERDICT)}`);
 		lines.push("  开放场景里这个变体多拿到一份 DESIGN.md，完整流水线要自己写：这一组比的是“两种做法”，不是“同样输入下谁强”");
 	}
 
@@ -237,10 +239,8 @@ export function summarize(rows, judgeRows = [], out = ".") {
 	const answer = (result, yes, no) => (result.verdict === "better" ? yes : result.verdict === "worse" ? no : `样本不足（${PAIR_VERDICT[result.verdict]}${result.reason ? `：${result.reason}` : ""}）`);
 	lines.push("", "三个问题：");
 	lines.push(`  1. 装了技能是否胜过不装：${answer(pipeline, "是", "否，不装更好")}`);
-	if (variants.includes("reference-system")) {
-		const [versus] = decide([compare("full", "reference-system", byCell, judgeRows, out)]);
-		lines.push(`  2. 技能与“参考加设计系统”谁好：${answer(versus, "技能更好", "参考加设计系统更好")}`);
-	} else lines.push("  2. 技能与“参考加设计系统”谁好：没跑 reference-system 变体");
+	if (referenceFamily) lines.push(`  2. 技能与“参考加设计系统”谁好：${answer(referenceFamily[0], "技能更好", "参考加设计系统更好")}`);
+	else lines.push("  2. 技能与“参考加设计系统”谁好：没跑 reference-system 变体");
 	const craftIndex = LAYERS.findIndex((layer) => layer.id === "ui-craft");
 	const craft = craftIndex < 0 ? null : layered[craftIndex];
 	const craftExposed = craft && exposure["ui-craft"] >= RULES.exposure;
