@@ -225,6 +225,26 @@ export function summarize(rows, judgeRows = [], out = ".") {
 
 	lines.push("", "原则对配方（主人的假设：关系型原则胜过堆配方；四组一族做 Holm 校正）：");
 	for (const result of decide([["principles", "recipes"], ["principles", "bare"], ["recipes", "bare"], ["principles", "decision-tree"]].map(([a, b]) => compare(a, b, byCell, judgeRows, out)))) lines.push(`  ${line(result, PAIR_VERDICT)}`);
+
+	// 只有跑了这个变体才出这一段，旧结果目录的报告不变
+	// 这一族的结论留着：下面第二个问题用的就是这里校正过的那一条，不另算一遍
+	const referenceFamily = variants.includes("reference-system") ? decide([["full", "reference-system"], ["reference-system", "bare"]].map(([a, b]) => compare(a, b, byCell, judgeRows, out))) : null;
+	if (referenceFamily) {
+		lines.push("", "参考加设计系统（不装技能，给参考图和项目的 DESIGN.md；两组一族做 Holm 校正）：");
+		for (const result of referenceFamily) lines.push(`  ${line(result, PAIR_VERDICT)}`);
+		lines.push("  开放场景里这个变体多拿到一份 DESIGN.md，完整流水线要自己写：这一组比的是“两种做法”，不是“同样输入下谁强”");
+	}
+
+	// 三个要回答的问题（README“三个问题”）：每个只有 是 / 否 / 样本不足 三种答案
+	const answer = (result, yes, no) => (result.verdict === "better" ? yes : result.verdict === "worse" ? no : `样本不足（${PAIR_VERDICT[result.verdict]}${result.reason ? `：${result.reason}` : ""}）`);
+	lines.push("", "三个问题：");
+	lines.push(`  1. 装了技能是否胜过不装：${answer(pipeline, "是", "否，不装更好")}`);
+	if (referenceFamily) lines.push(`  2. 技能与“参考加设计系统”谁好：${answer(referenceFamily[0], "技能更好", "参考加设计系统更好")}`);
+	else lines.push("  2. 技能与“参考加设计系统”谁好：没跑 reference-system 变体");
+	const craftIndex = LAYERS.findIndex((layer) => layer.id === "ui-craft");
+	const craft = craftIndex < 0 ? null : layered[craftIndex];
+	const craftExposed = craft && exposure["ui-craft"] >= RULES.exposure;
+	lines.push(`  3. 单独拿掉 ui-craft 层（UI 工艺规则与 Impeccable 契约）：${!craft ? "layers.json 里没有这一层" : !craftExposed ? `样本不足（完整技能的运行里只有 ${fmt(exposure["ui-craft"] * 100, 0)}% 读到这一层）` : answer(craft, "变差，这一层有用", "变好，这一层在拖累")}`);
 	return lines;
 }
 

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="reference-size" content="1440x900">
+<title>发布控制台</title>
+<style>
+  :root { --bg: #0D0F11; --surface: #171B1F; --line: #2C333A; --text: #E8EAEC; --muted: #8B949C; --primary: #F5A623; --secondary: #36C5C0; --danger: #E5484D; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1440px; height: 900px; overflow: hidden; background: var(--bg); color: var(--text); font: 400 16px/1.5 "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; }
+  .mono { font-family: "JetBrains Mono", Consolas, monospace; font-size: 13px; }
+  .app { display: grid; grid-template-columns: 216px 1fr 344px; height: 900px; }
+  nav { border-right: 1px solid var(--line); padding: 24px 0; }
+  .brand { padding: 0 24px 24px; font-size: 20px; font-weight: 700; letter-spacing: 0.08em; }
+  .brand span { color: var(--primary); }
+  nav a { display: flex; align-items: center; height: 44px; padding: 0 24px; color: var(--muted); text-decoration: none; font-size: 14px; border-left: 2px solid transparent; }
+  nav a[aria-current] { color: var(--text); background: var(--surface); border-left-color: var(--primary); }
+  nav .group { padding: 24px 24px 8px; color: var(--muted); }
+  main { padding: 24px 32px; min-width: 0; }
+  .crumb { color: var(--muted); }
+  h1 { font-size: 32px; line-height: 1.25; font-weight: 700; margin: 4px 0 4px; }
+  .sub { color: var(--muted); font-size: 14px; }
+  .stages { display: grid; grid-template-columns: repeat(5, 1fr); margin: 28px 0 32px; border: 1px solid var(--line); }
+  .stage { padding: 16px; border-right: 1px solid var(--line); }
+  .stage:last-child { border-right: 0; }
+  .stage b { display: block; font-size: 16px; font-weight: 500; margin: 6px 0 2px; }
+  .stage .state { color: var(--muted); }
+  .stage.done .state { color: var(--secondary); }
+  .stage.live { background: var(--surface); box-shadow: inset 0 2px 0 var(--primary); }
+  .stage.live .state { color: var(--primary); }
+  h2 { font-size: 20px; font-weight: 500; line-height: 1.4; margin-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-weight: 500; font-size: 14px; color: var(--muted); height: 36px; border-bottom: 1px solid var(--line); }
+  td { height: 48px; border-bottom: 1px solid var(--line); }
+  td.num, th.num { text-align: right; }
+  .ok { color: var(--secondary); } .run { color: var(--primary); } .bad { color: var(--danger); }
+  .bar { height: 4px; background: var(--line); width: 160px; }
+  .bar i { display: block; height: 4px; background: var(--secondary); }
+  .bar.run i { background: var(--primary); } .bar.bad i { background: var(--danger); }
+  aside { border-left: 1px solid var(--line); padding: 24px; display: flex; flex-direction: column; }
+  aside h2 { margin-bottom: 4px; }
+  .check { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .check .mono { width: 44px; flex: none; padding-top: 2px; }
+  .note { margin-top: 20px; padding: 16px; background: var(--surface); border: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  .note strong { display: block; color: var(--text); font-weight: 500; font-size: 16px; margin-bottom: 4px; }
+  .actions { margin-top: auto; display: flex; gap: 12px; }
+  button { height: 40px; padding: 0 20px; font: 500 14px/1 inherit; font-family: inherit; border: 1px solid var(--line); background: var(--surface); color: var(--text); border-radius: 2px; }
+  button.main { background: var(--primary); border-color: var(--primary); color: var(--bg); flex: 1; }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav>
+    <div class="brand">REL<span>/</span>DECK</div>
+    <a href="#">总览</a>
+    <a href="#" aria-current="page">发布窗口</a>
+    <a href="#">回滚记录</a>
+    <a href="#">值班表</a>
+    <div class="group mono">ENV</div>
+    <a href="#">预发环境</a>
+    <a href="#">正式环境</a>
+  </nav>
+  <main>
+    <div class="crumb mono">WINDOW 0412 · 周四 21:00 — 23:30</div>
+    <h1>1.9.0 夜间发布</h1>
+    <div class="sub">负责人 周予安 · 五个区服分批放量，任一区失败自动停在当前批次</div>
+    <div class="stages">
+      <div class="stage done"><span class="mono">01</span><b>冻结分支</b><span class="state mono">完成 21:02</span></div>
+      <div class="stage done"><span class="mono">02</span><b>预发验证</b><span class="state mono">完成 21:26</span></div>
+      <div class="stage live"><span class="mono">03</span><b>分批放量</b><span class="state mono">进行中 3 / 5</span></div>
+      <div class="stage"><span class="mono">04</span><b>观察期</b><span class="state mono">等待</span></div>
+      <div class="stage"><span class="mono">05</span><b>解除冻结</b><span class="state mono">等待</span></div>
+    </div>
+    <h2>区服放量</h2>
+    <table>
+      <thead><tr><th>区服</th><th>批次</th><th>状态</th><th>进度</th><th class="num">错误率</th><th class="num">用时</th></tr></thead>
+      <tbody>
+        <tr><td>华东一区</td><td class="mono">B1</td><td class="mono ok">已完成</td><td><div class="bar"><i style="width:100%"></i></div></td><td class="num mono">0.02%</td><td class="num mono">08:14</td></tr>
+        <tr><td>华北一区</td><td class="mono">B1</td><td class="mono ok">已完成</td><td><div class="bar"><i style="width:100%"></i></div></td><td class="num mono">0.03%</td><td class="num mono">07:51</td></tr>
+        <tr><td>华南二区</td><td class="mono">B2</td><td class="mono run">放量中</td><td><div class="bar run"><i style="width:62%"></i></div></td><td class="num mono">0.04%</td><td class="num mono">04:37</td></tr>
+        <tr><td>西南一区</td><td class="mono">B2</td><td class="mono bad">已暂停</td><td><div class="bar bad"><i style="width:18%"></i></div></td><td class="num mono bad">1.90%</td><td class="num mono">01:22</td></tr>
+        <tr><td>海外一区</td><td class="mono">B3</td><td class="mono">排队</td><td><div class="bar"><i style="width:0"></i></div></td><td class="num mono">—</td><td class="num mono">—</td></tr>
+      </tbody>
+    </table>
+  </main>
+  <aside>
+    <h2>放行检查</h2>
+    <div class="sub">四项全过才能继续下一批</div>
+    <div class="check"><span class="mono ok">通过</span><span>登录成功率不低于 99.5%</span></div>
+    <div class="check"><span class="mono ok">通过</span><span>支付回调延迟低于 800 毫秒</span></div>
+    <div class="check"><span class="mono bad">未过</span><span>西南一区错误率超过 1%</span></div>
+    <div class="check"><span class="mono">待定</span><span>值班工程师确认</span></div>
+    <div class="note"><strong>西南一区已自动暂停</strong>错误集中在匹配服务。回滚只影响这一个区，其余区服保持当前版本。</div>
+    <div class="actions"><button>查看日志</button><button class="main">回滚西南一区</button></div>
+  </aside>
+</div>
+</body>
+</html>

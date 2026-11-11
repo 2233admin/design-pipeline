@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="reference-size" content="1080x1440">
+<title>周刊封面</title>
+<style>
+  :root { --bg: #F3F4F1; --rule: #CDD2D0; --text: #121417; --muted: #565C61; --primary: #0B6E4F; --highlight: #F2C230; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1440px; overflow: hidden; background: var(--bg); color: var(--text); font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; }
+  .serif { font-family: "Noto Serif SC", "Songti SC", SimSun, serif; }
+  .page { height: 1440px; padding: 88px; display: flex; flex-direction: column; }
+  .mast { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 24px; border-bottom: 2px solid var(--text); }
+  .mast .name { font-size: 44px; font-weight: 900; letter-spacing: 0.24em; }
+  .mast .issue { font-size: 22px; font-weight: 700; color: var(--muted); }
+  .kicker { margin-top: 88px; font-size: 22px; font-weight: 700; letter-spacing: 0.2em; color: var(--primary); }
+  h1 { font-size: 96px; line-height: 1.05; font-weight: 900; margin-top: 24px; }
+  h1 mark { background: linear-gradient(transparent 62%, var(--highlight) 62%); color: inherit; }
+  .deck { font-size: 44px; line-height: 1.3; font-weight: 400; margin-top: 40px; max-width: 800px; }
+  .quote { margin-top: auto; padding-left: 32px; border-left: 4px solid var(--primary); }
+  .quote p { font-size: 32px; line-height: 1.5; font-weight: 500; color: var(--primary); }
+  .quote span { display: block; margin-top: 12px; font-size: 22px; font-weight: 700; color: var(--muted); }
+  .foot { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; margin-top: 56px; padding-top: 24px; border-top: 2px solid var(--rule); }
+  .foot b { display: block; font-size: 22px; font-weight: 700; color: var(--primary); }
+  .foot p { font-size: 28px; line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="mast"><div class="name serif">晨报周刊</div><div class="issue">第 312 期 · 2026.11.13</div></div>
+  <div class="kicker">封面报道</div>
+  <h1 class="serif">一条河<br>的<mark>四十年</mark></h1>
+  <p class="deck serif">从排污口到候鸟栖息地，沿岸三代人怎样把水还给了河。</p>
+  <div class="quote">
+    <p>“我们没等来大工程，是一年一年把沟渠清出来的。”</p>
+    <span>下游护河队队长 · 许长河</span>
+  </div>
+  <div class="foot">
+    <div><b>城市</b><p>旧厂房里的夜校</p></div>
+    <div><b>科学</b><p>稻田为什么要养鸭</p></div>
+    <div><b>书评</b><p>读《慢地图》</p></div>
+  </div>
+</div>
+</body>
+</html>

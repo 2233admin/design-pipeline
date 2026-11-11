@@ -120,6 +120,24 @@
       "fallback": "Use the bundled React Bits DecryptedText reference contract and the project motion runtime."
     },
     {
+      "id": "imskyleen/animate-ui",
+      "capabilities": ["animated-ui", "component-source", "motion-design"],
+      "activation": "keyword",
+      "keywords": ["animate-ui", "animate ui", "animateui", "@animate-ui"],
+      "mode": "governed-candidate",
+      "status": "review",
+      "sourceId": "imskyleen/animate-ui",
+      "source": "https://animate-ui.com/docs",
+      "repository": "https://github.com/imskyleen/animate-ui",
+      "reviewedAt": "2026-11-12",
+      "license": "MIT + Commons Clause",
+      "licenseUrl": "https://github.com/imskyleen/animate-ui/blob/22a9236ae107328f8564edb7e3299375da3247af/LICENSE.md",
+      "interfaces": ["npm-package", "component-catalog", "shadcn-registry", "cli-codemod"],
+      "requirements": ["Select a named primitive or registry item and verify React 19 or Vue 3.5, Motion and the base library the component already uses", "Respect the Commons Clause; do not redistribute the components themselves"],
+      "constraints": ["Do not auto-install packages or run the upstream CLI during routing", "Run the upstream CLI with --dry-run first and apply it only on the approved route"],
+      "fallback": "Use the bundled component-source catalog record animate-ui/components and the project motion runtime through the motion gate."
+    },
+    {
       "id": "koboyo/icons",
       "capabilities": ["hand-drawn-icons", "icon-search"],
       "activation": "keyword",
