@@ -51,6 +51,13 @@ runtime, workflow, remote prompt, or skill implementation is bundled or executed
   that restates the method (document test, dialects, colour budgets, density budgets, size floors)
   and the rule `hue-budget` of `template check --browser`, written for the pipeline's own checker.
   No upstream script, stylesheet, template or example image is bundled, executed or redistributed.
+- `kosta4a/tactile-design`, reviewed 2026-11-12 at commit
+  `30495a2db7cb59a72bacea106118ffeab7af00d9` from https://github.com/kosta4a/tactile-design, MIT
+  License, Copyright (c) 2026 the tactile-design authors. The pipeline stores a guide written for
+  this project (`skill/references/tactile-product-ui.md`) that restates the direction (decision
+  order, parent-borrowed surfaces, token roles, control and motion defaults) as an opt-in design
+  direction. No upstream skill file, reference text, CSS template or Tailwind mapping is bundled,
+  executed or redistributed.
 - User-curated component references: Beautiful UI, beUI, Rare UI, Transitions.dev, shadcn/ui,
   Shadcnblocks, Magic UI, Aceternity UI, and AI SDK Elements. The catalog stores URL, routing,
   and compatibility metadata only; no upstream source code, runtime, or dependency is bundled.

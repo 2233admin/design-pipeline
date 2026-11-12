@@ -87,6 +87,24 @@ const sourceRefs = {
       "LICENSE",
     ],
   },
+  "skill/references/tactile-product-ui.md": {
+    sourceId: "tactile-design",
+    revision: "30495a2db7cb59a72bacea106118ffeab7af00d9",
+    contentHash: "155cc17823beda7a87d9f2b69197ba13d19dc78888fee5b7d25f9de9b4563fb6",
+    license: "MIT",
+    reviewedAt: "2026-11-12T00:00:00.000Z",
+    sourceFiles: [
+      "skills/tactile-design/SKILL.md",
+      "skills/tactile-design/references/tokens.md",
+      "skills/tactile-design/references/buttons-and-controls.md",
+      "skills/tactile-design/references/surfaces-and-layering.md",
+      "skills/tactile-design/references/layout-and-hierarchy.md",
+      "skills/tactile-design/references/motion.md",
+      "skills/tactile-design/references/mobile.md",
+      "skills/tactile-design/references/decisions.md",
+      "LICENSE",
+    ],
+  },
 };
 const motionProfileSourceFiles = [
   "skills/improve-animations/SKILL.md",

@@ -138,6 +138,15 @@
       "kernel": ["foundation", "toolchain"]
     },
     {
+      "id": "tactile-product-ui",
+      "activation": "scored",
+      "priority": 50,
+      "keywords": ["tactile-design", "tactile design", "tactile ui", "tactile interface", "tactile, layered", "layered, quiet", "触感界面", "触感设计", "触感风"],
+      "primaryKnowledge": { "id": "tactile-product-ui", "command": "toolchain", "action": "resolve", "admission": "ready" },
+      "secondaries": [],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
       "id": "product-design",
       "activation": "default",
       "priority": 0,
