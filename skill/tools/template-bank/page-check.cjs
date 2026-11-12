@@ -39,6 +39,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL, fileURLToPath } = require("node:url");
 const { decodePng } = require("../../scripts/png-core.cjs");
+const { rgbToOklab } = require("../../scripts/brand-design-systems-core.cjs");
 const coverage = require("./coverage.cjs");
 
 const PAGE_RULES = Object.freeze({
@@ -59,6 +60,12 @@ const PAGE_RULES = Object.freeze({
   contrastLarge: 3,
   largePx: 24,
   largeBoldPx: 18.66,
+  // hue-budget (opt-in: only a page that declares data-hue-brand / -counter / -alert / -timed on its root)
+  hueMinChroma: 0.08, // OKLab chroma from which a pixel counts as a saturated hue
+  hueMatchDeg: 25, // hue distance within which a pixel belongs to a declared role
+  hueCounterMax: 0.03, // share of the canvas the counter colour may paint
+  hueStatusMax: 0.01, // share of the canvas alert and timed may paint together
+  hueOtherMax: 0.001, // share of the canvas any undeclared saturated hue may paint
 });
 
 const STYLE = `
@@ -72,6 +79,7 @@ const STYLE = `
 [data-tc-hide][data-tc-bg]{background-image:none!important}
 :root[data-tc-iso] *{visibility:hidden!important}
 :root[data-tc-iso] [data-tc-solo],:root[data-tc-iso] [data-tc-solo] *{visibility:visible!important}
+:root[data-tc-hue] [data-deco],:root[data-tc-hue] [data-decor="1"]{visibility:hidden!important}
 `;
 
 // ---- runs in the page --------------------------------------------------------------------------
@@ -223,7 +231,22 @@ function discover() {
     }
   };
   for (const sheet of document.styleSheets) { try { collect(sheet.cssRules); } catch { /* cross-origin sheet */ } }
-  return { W, H, units, collage, images, layerSources, faces, noText: document.documentElement.hasAttribute("data-no-text") };
+  // Declared colour roles for the hue budget: data-hue-brand / -counter / -alert / -timed on the root,
+  // resolved to [r, g, b] by the browser (any CSS colour); null when the value is not a colour.
+  const hueRoles = {};
+  const root = document.documentElement;
+  const probe = root instanceof SVGSVGElement ? document.createElementNS("http://www.w3.org/2000/svg", "g") : document.createElement("i");
+  root.appendChild(probe);
+  for (const role of ["brand", "counter", "alert", "timed"]) {
+    const value = (root.getAttribute(`data-hue-${role}`) || "").trim();
+    if (!value) continue;
+    probe.style.color = "rgb(0 0 0 / 0)";
+    probe.style.color = value;
+    const parts = (getComputedStyle(probe).color.match(/[\d.]+/g) || []).map(Number);
+    hueRoles[role] = parts.length >= 3 && (parts.length < 4 || parts[3] > 0) ? parts.slice(0, 3) : null;
+  }
+  probe.remove();
+  return { W, H, units, collage, images, layerSources, faces, hueRoles, noText: root.hasAttribute("data-no-text") };
 }
 
 // ---- pixel helpers -----------------------------------------------------------------------------
@@ -244,6 +267,67 @@ function parseCss(value) {
 }
 const r1 = (v) => Math.round(v * 10) / 10;
 const box4 = (b) => [Math.round(b.x0), Math.round(b.y0), Math.round(b.x1), Math.round(b.y1)];
+
+// Saturated-hue budget of a page shot. roles maps brand, counter, alert and timed to [r, g, b] (or null
+// for a value that is not a colour). Each saturated pixel (OKLab chroma >= hueMinChroma) goes to the
+// declared role whose hue is nearest within hueMatchDeg (alert and timed count as one status share),
+// or else to a 10-degree hue bin; runs of occupied bins are the undeclared hues. Shares are of all
+// sampled pixels (every second pixel of a row). The brand share is reported, never limited.
+function hueBudget(shot, roles, rules = PAGE_RULES) {
+  const hueOf = (a, b) => (Math.atan2(b, a) * 180 / Math.PI + 360) % 360;
+  const declared = [];
+  const unmeasured = [];
+  for (const [role, rgb] of Object.entries(roles)) {
+    if (!rgb) { unmeasured.push(`${role} is not a colour`); continue; }
+    const [, a, b] = rgbToOklab(rgb.map((v) => v / 255));
+    if (Math.hypot(a, b) < rules.hueMinChroma) { unmeasured.push(`${role} ${hex(rgb)} is not saturated (OKLab chroma under ${rules.hueMinChroma}), so it has no hue to measure`); continue; }
+    declared.push({ role, group: role === "alert" || role === "timed" ? "status" : role, hue: hueOf(a, b) });
+  }
+  const BINS = 36;
+  const bins = Array.from({ length: BINS }, () => ({ n: 0, r: 0, g: 0, b: 0 }));
+  const count = { brand: 0, counter: 0, status: 0 };
+  const d = shot.data;
+  let total = 0;
+  for (let i = 0; i + 2 < d.length; i += 8) {
+    total += 1;
+    const r = d[i]; const g = d[i + 1]; const bl = d[i + 2];
+    if (Math.max(r, g, bl) - Math.min(r, g, bl) < 16) continue; // near grey: cannot reach the chroma floor
+    const [, a, b] = rgbToOklab([r / 255, g / 255, bl / 255]);
+    if (Math.hypot(a, b) < rules.hueMinChroma) continue;
+    const h = hueOf(a, b);
+    let best = null;
+    for (const dec of declared) {
+      const dist = Math.min(Math.abs(h - dec.hue), 360 - Math.abs(h - dec.hue));
+      if (dist <= rules.hueMatchDeg && (!best || dist < best.dist)) best = { group: dec.group, dist };
+    }
+    if (best) count[best.group] += 1;
+    else { const bin = bins[Math.floor(h / (360 / BINS)) % BINS]; bin.n += 1; bin.r += r; bin.g += g; bin.b += bl; }
+  }
+  const share = Object.fromEntries(Object.entries(count).map(([k, v]) => [k, total ? v / total : 0]));
+  // runs of occupied bins (circular), ignoring single-pixel noise
+  const on = bins.map((bin) => bin.n > total * 0.0001);
+  const others = [];
+  const start = on.findIndex((v, i) => v && !on[(i - 1 + BINS) % BINS]);
+  if (on.every(Boolean)) others.push({ hue: "all", n: bins.reduce((s, x) => s + x.n, 0), ...bins.reduce((s, x) => ({ r: s.r + x.r, g: s.g + x.g, b: s.b + x.b }), { r: 0, g: 0, b: 0 }) });
+  else if (start >= 0) {
+    for (let k = 0; k < BINS; k += 1) {
+      const i = (start + k) % BINS;
+      if (!on[i]) continue;
+      if (!on[(i - 1 + BINS) % BINS]) others.push({ h0: i, h1: i, n: 0, r: 0, g: 0, b: 0 });
+      const run = others[others.length - 1];
+      run.h1 = i; run.n += bins[i].n; run.r += bins[i].r; run.g += bins[i].g; run.b += bins[i].b;
+    }
+  }
+  return {
+    total, share, unmeasured,
+    declared: declared.map((x) => ({ role: x.role, hue: Math.round(x.hue) })),
+    others: others.map((o) => ({
+      hue: o.hue || `${o.h0 * (360 / BINS)}-${(o.h1 + 1) * (360 / BINS)}`,
+      share: total ? o.n / total : 0,
+      color: hex([o.r / o.n, o.g / o.n, o.b / o.n]),
+    })).sort((p, q) => q.share - p.share),
+  };
+}
 
 function clampRegion(b, W, H, pad = 0) {
   const x0 = Math.max(0, Math.floor(b.x0 - pad)); const y0 = Math.max(0, Math.floor(b.y0 - pad));
@@ -467,6 +551,14 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
       layer.visibleBox = layer.mask.count ? maskBox(layer.mask) : null;
     }
     await setState({ textOff: [], collageOff: [] });
+    // hue budget: the page as drawn, minus decoration marked data-deco / data-decor (colour control strips, ghost numerals)
+    let hue = null;
+    if (Object.keys(found.hueRoles || {}).length) {
+      await page.evaluate(() => document.documentElement.setAttribute("data-tc-hue", ""));
+      const hueShot = await shot();
+      await page.evaluate(() => document.documentElement.removeAttribute("data-tc-hue"));
+      hue = hueBudget(hueShot, found.hueRoles, rules);
+    }
 
     // a page that navigated away or lost its document is not the file asked for: the check broke
     const startUrl = pathToFileURL(absolute).href;
@@ -724,10 +816,43 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
         });
       }
     }
+    // 6. hue budget (opt-in): the counter colour, the status colours and any undeclared saturated hue
+    //    against their share of the canvas; the brand colour is reported and never limited
+    if (hue) {
+      const pct = (v) => `${Math.round(v * 1000) / 10}%`;
+      for (const reason of hue.unmeasured) notes.push(`hue-budget: ${reason}`);
+      notes.push(`hue-budget: brand ${pct(hue.share.brand)}, counter ${pct(hue.share.counter)}, status ${pct(hue.share.status)} of the canvas`);
+      const declare = "data-hue-brand, data-hue-counter, data-hue-alert and data-hue-timed on the root element";
+      if (hue.share.counter > rules.hueCounterMax) {
+        findings.push({
+          rule: "hue-budget", slot: "counter", measuredBy: "browser",
+          measured: { share: Math.round(hue.share.counter * 10000) / 10000 }, limit: { maxShare: rules.hueCounterMax },
+          message: `the counter colour paints ${pct(hue.share.counter)} of the canvas (limit ${pct(rules.hueCounterMax)})`,
+          fix: "Keep the counter colour to index numerals, emphasis words and hairlines: remove it from panels, fields and large shapes, or mark decoration data-deco.",
+        });
+      }
+      if (hue.share.status > rules.hueStatusMax) {
+        findings.push({
+          rule: "hue-budget", slot: "status", measuredBy: "browser",
+          measured: { share: Math.round(hue.share.status * 10000) / 10000 }, limit: { maxShare: rules.hueStatusMax },
+          message: `the alert and timed colours paint ${pct(hue.share.status)} of the canvas together (limit ${pct(rules.hueStatusMax)})`,
+          fix: "Use alert and timed colours only as small tags on the item whose state they report; remove them from fills, bars and decoration.",
+        });
+      }
+      for (const other of hue.others.filter((o) => o.share >= rules.hueOtherMax)) {
+        findings.push({
+          rule: "hue-budget", slot: `hue ${other.hue}`, measuredBy: "browser",
+          measured: { hueDeg: other.hue, color: other.color, share: Math.round(other.share * 10000) / 10000 }, limit: { maxShare: rules.hueOtherMax },
+          message: `a saturated hue near ${other.color} (${other.hue} degrees) paints ${pct(other.share)} of the canvas and matches no declared role`,
+          fix: `Desaturate it, shrink it to a tiny dot or a colour control strip marked data-deco, or declare it as the brand, counter, alert or timed colour if it is one (${declare}).`,
+        });
+      }
+    }
     return {
       status: findings.length ? "failed" : "passed",
       canvas: [W, H], measuredBy: "browser",
       summary: { textUnits: units.length, collageLayers: collage.length, findings: findings.length },
+      ...(hue ? { hue: { share: hue.share, declared: hue.declared, others: hue.others.filter((o) => o.share >= rules.hueOtherMax / 10) } } : {}),
       findings, notes: [...new Set(notes)], measured,
       collage: collage.map((l) => ({ id: l.id, frame: box4(l.rect), visibleBox: l.visibleBox ? box4(l.visibleBox) : null })),
       grounds: found.images.filter((i) => i.role === "ground" || (i.collage !== null && grounds.has(i.collage))).map((i) => ({ slot: i.slot, src: i.src ? i.src.split("/").pop() : "embedded", frame: box4(i.rect) })),
@@ -741,7 +866,7 @@ async function checkPage({ file, chrome, puppeteerModule, browser: shared = null
   }
 }
 
-module.exports = { PAGE_RULES, checkPage, launch };
+module.exports = { PAGE_RULES, checkPage, hueBudget, launch };
 
 if (require.main === module) {
   // kernel: page-check.cjs <file> [--size WxH] [--chrome exe] [--puppeteer-module dir]

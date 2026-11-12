@@ -59,6 +59,17 @@
       "committedAt": "2026-10-28T12:20:38-07:00"
     },
     {
+      "id": "arknights-printer",
+      "kind": "adapted-reference",
+      "repo": "https://github.com/AspldeZ/arknights-printer",
+      "revision": "20336d598f4848a257ce36002f339655c8655351",
+      "reviewedAt": "2026-11-12",
+      "documents": [
+        "skill/references/industrial-document-sheets.md"
+      ],
+      "committedAt": "2026-10-04T19:05:59+02:00"
+    },
+    {
       "id": "astryx",
       "kind": "npm",
       "package": "@astryxdesign/core",

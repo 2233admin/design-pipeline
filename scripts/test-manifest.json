@@ -190,6 +190,7 @@
     "template-frontier-survey.test.cjs",
     "ablation-eval.test.cjs",
     "template-bank-browser.test.cjs",
+    "template-hue-budget.test.cjs",
     "template-distill.test.cjs"
   ]
 }

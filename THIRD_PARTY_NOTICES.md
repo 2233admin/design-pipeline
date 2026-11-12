@@ -44,6 +44,13 @@ runtime, workflow, remote prompt, or skill implementation is bundled or executed
   name inventory for tests (`tests/fixtures/animate-ui/upstream-inventory.json`) and a guide written
   for this project (`skill/references/animate-ui.md`) that restates how the upstream agent skill
   uses the library. No component source is bundled or redistributed, and nothing is auto-installed.
+- `AspldeZ/arknights-printer`, reviewed 2026-11-12 at commit
+  `20336d598f4848a257ce36002f339655c8655351` from https://github.com/AspldeZ/arknights-printer, MIT
+  License, Copyright (c) AspldeZ (unofficial fan project, not affiliated with Hypergryph). The
+  pipeline stores a guide written for this project (`skill/references/industrial-document-sheets.md`)
+  that restates the method (document test, dialects, colour budgets, density budgets, size floors)
+  and the rule `hue-budget` of `template check --browser`, written for the pipeline's own checker.
+  No upstream script, stylesheet, template or example image is bundled, executed or redistributed.
 - User-curated component references: Beautiful UI, beUI, Rare UI, Transitions.dev, shadcn/ui,
   Shadcnblocks, Magic UI, Aceternity UI, and AI SDK Elements. The catalog stores URL, routing,
   and compatibility metadata only; no upstream source code, runtime, or dependency is bundled.

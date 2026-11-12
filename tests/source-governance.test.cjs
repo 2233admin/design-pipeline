@@ -71,6 +71,22 @@ const sourceRefs = {
     reviewedAt: "2026-11-12T00:00:00.000Z",
     sourceFiles: ["skills/animate-ui/SKILL.md", "skills/animate-ui/references/catalog.md", "skills/animate-ui/references/vue.md", "skills/animate-ui/references/migrate.md", "skills/animate-ui/references/review.md", "LICENSE.md"],
   },
+  "skill/references/industrial-document-sheets.md": {
+    sourceId: "arknights-printer",
+    revision: "20336d598f4848a257ce36002f339655c8655351",
+    contentHash: "e4ed7106ca0c081e6029c8b21806b21853a43b2eb8cb2c24ffd1dc4f18d8dcb3",
+    license: "MIT",
+    reviewedAt: "2026-11-12T00:00:00.000Z",
+    sourceFiles: [
+      "arknights-printer/SKILL.md",
+      "arknights-printer/references/techniques.md",
+      "arknights-printer/references/parameters.md",
+      "arknights-printer/references/outputs.md",
+      "arknights-printer/references/cjk-typography.md",
+      "arknights-printer/scripts/render_check.py",
+      "LICENSE",
+    ],
+  },
 };
 const motionProfileSourceFiles = [
   "skills/improve-animations/SKILL.md",

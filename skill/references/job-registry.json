@@ -129,6 +129,15 @@
       "kernel": ["foundation", "toolchain"]
     },
     {
+      "id": "industrial-document-sheets",
+      "activation": "scored",
+      "priority": 50,
+      "keywords": ["arknights", "endfield", "industrial sci-fi", "舟工业", "方舟风", "终末地", "工业风界面", "冷工业"],
+      "primaryKnowledge": { "id": "industrial-document-sheets", "command": "toolchain", "action": "resolve", "admission": "ready" },
+      "secondaries": [],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
       "id": "product-design",
       "activation": "default",
       "priority": 0,
