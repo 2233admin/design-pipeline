@@ -156,9 +156,18 @@ const {
 } = require("./designmd-core.cjs");
 const { canonicalJson, fail, jsonResult, pathInside, readJson, resolveInside, sha256 } = require("./contract-utils.cjs");
 const { inspectEnvironment, nodeAtLeast, renderDoctor } = require("./doctor-report.cjs");
+const {
+  describeCommand,
+  listHeadings,
+  listReferences,
+  readSection,
+  renderDescribe,
+  renderHeadingList,
+  renderReferenceList,
+} = require("./guide-core.cjs");
 
 const referencesRoot = path.resolve(__dirname, "../references");
-const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots", "--browser", "--commercial-use", "--discover", "--ablate"]);
+const BOOLEAN_OPTIONS = new Set(["--json", "--help", "-h", "--write", "--refresh", "--require-files", "--require-lifecycle", "--dry-run", "--unlock", "--legacy-events", "--replace", "--record-feedback", "--allow-canary", "--approve", "--all", "--study", "--later", "--shots", "--browser", "--commercial-use", "--discover", "--ablate", "--list"]);
 const REPEATABLE_OPTIONS = new Set(["--set", "--param", "--mix", "--taste", "--anti-goal", "--delegate", "--keep", "--promote", "--blocker", "--changed-file", "--construction-fixture", "--evidence", "--evidence-hash", "--file", "--next-action", "--ref", "--validation", "--tone"]);
 const KNOWN_OPTIONS = new Set([
   ...BOOLEAN_OPTIONS,
@@ -174,7 +183,7 @@ const KNOWN_OPTIONS = new Set([
   "--spec", "--stills", "--ffmpeg", "--ffprobe", "--medium", "--second", "--pool", "--east-pool",
   "--family", "--size", "--seed", "--png", "-o", "--font-dir", "--images", "--annotations", "--compare",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
-  "--target-id",
+  "--target-id", "--section",
   "--use", "--name", "--license", "--finish",
   "--generator", "--seed", "--reference",
   "--text", "--text-file", "--weight", "--contrast",
@@ -542,6 +551,8 @@ function publicHelp() {
     "    propose: --experience --evidence-hash --scope --proposer --skill --target-version --evaluation-manifest-sha256 --primary-metric --metric-direction --construction-fixture --rules",
     "    rule shape: { op, id, rule: { dimension, value, appliesTo?, excludes?, expiresAt? } }; each skill has at most one rule per dimension; see references/adaptation-contract.schema.json",
     "    evaluate: --candidate --replay --held-out --evaluator; promote: --candidate --receipt --skill --approve --approval",
+    "  skill --list | skill --reference <name> --list | skill --reference <name> --section <heading-or-anchor>   (a packaged guide under references/, <name> without .md: list the guides, list one guide's headings, or read one heading with its subsections instead of the whole file; the anchor is the one guide links use; prints Markdown, or the result with --json)",
+    "  describe <command> [<action>]   (the lines of this help that belong to one command, and the exit codes)",
     "",
     "All project paths are contained by --root. Exit 0 means success, 1 invalid/error, 2 blocked or gate failed, 3 measured fidelity mismatch.",
   ].join("\n");
@@ -2235,6 +2246,36 @@ function doctorCommand({ parsed, root }) {
   };
 }
 
+// Text for people and agents, the result object with --json (the doctor pattern).
+function withText(parsed, result, text) {
+  return { result, exitCode: 0, ...(option(parsed, "--json") === true ? {} : { text }) };
+}
+
+function skillCommand(parsed) {
+  const reference = option(parsed, "--reference");
+  const section = option(parsed, "--section");
+  const list = option(parsed, "--list") === true;
+  if (list && section !== null) fail("cli", "--list and --section cannot be combined", { code: "OPTION_CONFLICT" });
+  if (section !== null && reference === null) fail("cli", "--section needs --reference <name>", { code: "OPTION_REQUIRED" });
+  if (reference === null) {
+    if (!list) fail("cli", "skill needs --list, or --reference <name> with --list or --section", { code: "OPTION_REQUIRED" });
+    const references = listReferences(referencesRoot);
+    return withText(parsed, { references }, renderReferenceList(references));
+  }
+  if (list) {
+    const listing = listHeadings(referencesRoot, reference);
+    return withText(parsed, listing, renderHeadingList(listing));
+  }
+  if (section === null) fail("cli", `skill --reference ${reference} needs --list or --section <heading-or-anchor>`, { code: "OPTION_REQUIRED" });
+  const result = readSection(referencesRoot, { reference, section });
+  return withText(parsed, result, result.markdown);
+}
+
+function describeUsageCommand(parsed, command, action) {
+  const description = describeCommand(publicHelp(), command, action);
+  return withText(parsed, description, renderDescribe(description));
+}
+
 function tokensCheckCommand({ file }) {
   return { result: validateTokens(readJson(file("--artifact"), "design tokens")), exitCode: 0 };
 }
@@ -2993,6 +3034,8 @@ const COMMANDS = {
     },
   },
   doctor: { run: doctorCommand },
+  skill: { run: ({ parsed }) => skillCommand(parsed) },
+  describe: { operand: true, run: ({ parsed, action, operand }) => describeUsageCommand(parsed, action, operand) },
   status: { run: ({ parsed, root }) => ({ result: statusCommand(parsed, root), exitCode: 0 }) },
   plan: { run: ({ parsed, root }) => planCommand(parsed, root) },
   run: { run: ({ parsed, root }) => runControlCommand(parsed, root) },
@@ -3410,7 +3453,7 @@ function dispatch(argv) {
     fail("cli", `unexpected positional arguments: ${parsed.positionals.slice(2).join(" ")}`, { code: "UNKNOWN_ARGUMENT" });
   }
   const [command, action] = parsed.positionals;
-  if (action && ["doctor", "status", "route", "plan", "run", "resume", "explain-block", "package"].includes(command)) {
+  if (action && ["doctor", "status", "route", "plan", "run", "resume", "explain-block", "package", "skill"].includes(command)) {
     fail("cli", `${command} does not accept an action`, { code: "UNKNOWN_ARGUMENT" });
   }
   // --project-root is a known option for other commands; toolchain resolve/probe take the target
@@ -3434,4 +3477,4 @@ function execute(argv) {
   }
 }
 
-module.exports = { dispatch, execute, inspectDoctor, observeInteraction, parseArgs, preflightInteraction, publicHelp };
+module.exports = { COMMANDS, dispatch, execute, inspectDoctor, observeInteraction, parseArgs, preflightInteraction, publicHelp };

@@ -59,6 +59,7 @@
     "graphics-runtime-catalog.test.cjs",
     "good-css.test.cjs",
     "graybox-gate.test.cjs",
+    "guide-section-reads.test.cjs",
     "holosticker.test.cjs",
     "install-doctor.test.cjs",
     "install-local.test.cjs",

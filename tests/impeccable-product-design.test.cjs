@@ -3,6 +3,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 
+const { parseHeadings } = require("../skill/scripts/guide-core.cjs");
+
 const repoRoot = path.resolve(__dirname, "..");
 const map = JSON.parse(
   fs.readFileSync(
@@ -41,25 +43,9 @@ test("maps the complete Impeccable product-design command surface", () => {
 
 const references = path.join(repoRoot, "skill", "references");
 
-// GitHub heading anchors: lower-case, punctuation dropped, spaces to hyphens, repeats numbered.
+// Heading anchors come from the one rule the guide reader uses (skill/scripts/guide-core.cjs).
 function headingAnchors(file) {
-  const anchors = new Set();
-  const seen = new Map();
-  let fenced = false;
-  for (const line of fs.readFileSync(file, "utf8").split(/\r?\n/)) {
-    if (/^\s*(```|~~~)/.test(line)) {
-      fenced = !fenced;
-      continue;
-    }
-    const heading = fenced ? null : line.match(/^#{1,6}\s+(.+?)\s*$/);
-    if (!heading) continue;
-    const text = heading[1].replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/[`*]/g, "");
-    const slug = text.toLowerCase().replace(/[^\p{L}\p{N}\s_-]/gu, "").trim().replace(/\s/g, "-");
-    const count = seen.get(slug) ?? 0;
-    seen.set(slug, count + 1);
-    anchors.add(count ? `${slug}-${count}` : slug);
-  }
-  return anchors;
+  return new Set(parseHeadings(fs.readFileSync(file, "utf8")).map((heading) => heading.anchor));
 }
 
 function section(text, heading) {

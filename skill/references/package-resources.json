@@ -134,6 +134,7 @@
     "scripts/validate-evals.cjs",
     "scripts/designer-pipeline.cjs",
     "scripts/cli-core.cjs",
+    "scripts/guide-core.cjs",
     "scripts/plan-core.cjs",
     "scripts/artifact-core.cjs",
     "scripts/gate-core.cjs",
