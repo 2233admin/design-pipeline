@@ -144,7 +144,7 @@ function phaseBlockers(phase, records, artifactIndex, control, changeRoot) {
 
   const blockers = [];
   for (const dependency of phase.depends_on) {
-    if (!COMPLETE_PHASE_STATUSES.has(records[dependency]?.status)) blockers.push({ code: "DEPENDENCY_NOT_READY", phase: dependency, message: `${phase.id} depends on ${dependency}` });
+    if (!COMPLETE_PHASE_STATUSES.has(records[dependency]?.status)) blockers.push({ code: "DEPENDENCY_NOT_READY", phase: dependency, dependencyStatus: records[dependency]?.status || "missing", message: `${phase.id} depends on ${dependency}` });
   }
   for (const output of phase.outputs) {
     const artifact = artifactIndex.get(normalized(output));
@@ -197,7 +197,7 @@ function runTo(planFile, changeRoot, targetPhase, options = {}) {
     if (COMPLETE_PHASE_STATUSES.has(records[phase.id].status)) continue;
     const blockers = phaseBlockers(phase, records, freshIndex, control, changeRoot);
     if (blockers.length) {
-      const phaseStatus = blockers.some((item) => item.code === "ARTIFACT_HASH_DRIFT" || item.code === "ARTIFACT_MARKED_STALE" || item.code === "DEPENDENCY_NOT_READY" && /stale/i.test(item.message))
+      const phaseStatus = blockers.some((item) => item.code === "ARTIFACT_HASH_DRIFT" || item.code === "ARTIFACT_MARKED_STALE" || item.code === "DEPENDENCY_NOT_READY" && item.dependencyStatus === "stale")
         ? "stale"
         : blockers.some((item) => item.code === "ARTIFACT_INCONCLUSIVE" || item.code === "DEPENDENCY_INCONCLUSIVE") ? "inconclusive" : "blocked";
       records[phase.id] = { ...records[phase.id], status: phaseStatus, blockers, nextActions: blockers.map((item) => item.message) };

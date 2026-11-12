@@ -102,10 +102,18 @@ function webProject(t) {
   return dir;
 }
 
-test("the audit contract has 22 codes, eight optional checks and the documented defaults", () => {
-  assert.equal(audit.AUDIT_CODES.length, 22);
+test("the audit contract has 23 codes, eight optional checks and the documented defaults", () => {
+  assert.equal(audit.AUDIT_CODES.length, 23);
   assert.deepEqual([audit.AUDIT_CODES[0], audit.AUDIT_CODES[5], audit.AUDIT_CODES[11], audit.AUDIT_CODES[16]], ["audit.font-family", "audit.text-contrast", "audit.target-size", "audit.nested-radius"]);
-  assert.deepEqual(audit.AUDIT_CODES.slice(17), ["audit.line-length", "audit.line-height", "audit.heading-levels", "audit.reduced-motion", "audit.state-contrast"]);
+  assert.deepEqual(audit.AUDIT_CODES.slice(17), ["audit.line-length", "audit.line-height", "audit.heading-levels", "audit.reduced-motion", "audit.state-contrast", "audit.motion-properties"]);
+  assert.equal(audit.OPTIONAL_CODES.includes("audit.motion-properties"), false, "the motion check always runs");
+  const { essential, layout, blur } = audit.MOTION_PROPERTIES;
+  assert.equal(essential, audit.STILL_MOVING.essential, "loading indicators are exempt by the reduced-motion definition");
+  for (const property of ["width", "height", "top", "left", "margin", "padding", "inset", "margin-top", "padding-inline-start", "inline-size"]) assert.ok(layout.includes(property), property);
+  for (const property of ["transform", "opacity", "max-height", "border-width", "grid-template-rows"]) assert.equal(layout.includes(property), false, property);
+  assert.deepEqual([...blur], ["filter", "backdrop-filter"]);
+  assert.deepEqual(audit.auditPass("audit").motion, { essential, layout: [...layout], blur: [...blur] }, "the page receives the one definition");
+  assert.equal(Object.hasOwn(audit.auditPass("reduced-motion"), "motion"), false);
   assert.deepEqual(audit.OPTIONAL_CODES, ["audit.tabular-numbers", "audit.content-overflow", "audit.control-inset", "audit.layout-gap", "audit.layout-alignment", "audit.nested-radius", "audit.line-length", "audit.line-height"]);
   const { minFontPx, minTargetPx, minControlGapPx, minControlInsetPx, minLayoutGapPx, contrastNormal, contrastLarge, contrastFocus, maxLineCh, minLineHeight, fontSizes, tolerances } = audit.AUDIT_DEFAULTS;
   assert.deepEqual([minFontPx, minTargetPx, minControlGapPx, minControlInsetPx, minLayoutGapPx, contrastNormal, contrastLarge, contrastFocus, maxLineCh, minLineHeight], [12, 24, 8, 8, 8, 4.5, 3, 3, 80, 1.3]);
@@ -270,6 +278,10 @@ test("summaries fail on failed and indeterminate results, report not-declared wi
   assert.deepEqual(restored.findings.map((finding) => [finding.code, finding.urls]), [["external-request", [fileUrl(outsider, "wide.css")]]]);
 
   assert.throws(() => audit.summarizeAudit("page-audit", [{ viewport, result: { viewport, elements: 1, checks: passing(), contractErrors: [] } }], project), /has no request log/);
+  // A result from a page function that lacks a check is rejected, never passed without it.
+  const short = passing();
+  delete short["audit.motion-properties"];
+  assert.throws(() => audit.summarizeAudit("page-audit", [entry(short)], project), /did not report exactly the 23 audit checks/);
   const rejected = audit.summarizeAudit("page-audit", [{ viewport, result: { viewport, contractErrors: ['declare.stacks[0] "[" is not a selector this page accepts'] } }], project);
   assert.equal(rejected.status, "failed");
   assert.equal(rejected.contractErrors.length, 1);
@@ -314,6 +326,9 @@ test("an undeclared page passes with its eight optional checks reported as not-d
       assert.match(check.hint, /^Declare .*declare\./, `${code} at ${viewport}`);
     }
     for (const check of entry.checks.filter((item) => !audit.OPTIONAL_CODES.includes(item.code))) assert.ok(["passed", "not-applicable"].includes(check.status), `${check.code} at ${viewport}: ${check.status}`);
+    // The page has no transition and no animation: nothing to measure is not a pass.
+    const motion = entry.checks.find((item) => item.code === "audit.motion-properties");
+    assert.deepEqual([motion.status, motion.checked], ["not-applicable", 0], `audit.motion-properties at ${viewport}`);
   }
   const probe = validateProbeFile(probeDoc("undeclared", PROBES.undeclared)).probes[0];
   assert.equal(auditResultFailure(probe, row), null, "native completion accepts not-declared optional checks");
@@ -602,6 +617,83 @@ test("reduced motion: spinners and busy regions are essential motion, a carousel
     assert.deepEqual(findingsOf(result, "audit.reduced-motion"), [], name);
     assert.equal(statusAt(result, "audit.reduced-motion"), "passed", name);
   }
+});
+
+test("motion properties: transition all, a layout property, an endless blur and a loop running off screen fail; named compositor motion, a paused loop and a spinner pass", { skip: tools.skip }, async (t) => {
+  // Every pair is the defect and its repair. The transitions are never triggered: they are read
+  // from computed style. #far holds the loops 2400px below the fold.
+  const style = `
+@keyframes grow { to { height: 60px; } }
+@keyframes nudge { to { transform: translateX(12px); } }
+@keyframes haze { 50% { filter: blur(6px); } }
+@keyframes soften { from { filter: blur(6px); } }
+@keyframes turn { to { transform: rotate(360deg); } }
+p, span { margin: 0 0 8px; }
+span { display: inline-block; }
+html { transition: all 250ms; }
+#every { transition: all 200ms; }
+#named { transition: opacity 200ms, transform 200ms; }
+#instant { transition: all 0s; }
+#tall { transition: height 300ms ease-out, margin 300ms ease-out; }
+#moved { transition: transform 300ms ease-out; }
+#underline::after { content: ""; display: block; height: 2px; background: #18181b; transition: all 150ms, width 150ms; }
+#grow { height: 24px; animation: grow 2s infinite alternate; }
+#nudge { animation: nudge 2s infinite alternate; }
+#haze { animation: haze 3s infinite; }
+#soften { animation: soften 300ms both; }
+#far { margin-top: 2400px; }
+#loop { animation: turn 2s linear infinite; }
+#held { animation: turn 2s linear infinite paused; }
+#watched { animation: turn 2s linear infinite; }
+#lazy { content-visibility: auto; contain-intrinsic-size: auto 40px; }
+#skipped { animation: turn 2s linear infinite; }
+#deco::before { content: ""; position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: #18181b; animation: turn 2s linear infinite; }
+#busy span { animation: turn 1s linear infinite; }`;
+  const body = `<p id="every">Every property</p><p id="named">Named properties</p><p id="instant">No duration</p><p id="tall">Height and margin</p><p id="moved">Transform</p><p id="underline">Underline</p>
+<p id="grow">Grows</p><p><span id="nudge">Nudges</span></p><p id="haze">Hazes</p><p id="soften">Softens once</p>
+<div id="far"><p><span id="loop">Loops unseen</span></p><p><span id="held">Held</span></p><p><span id="watched">Watched</span></p><div id="lazy"><p><span id="skipped">Skipped</span></p></div><p id="deco">Decorated</p><p id="busy" role="status"><span>Loading</span></p></div>
+<script>new IntersectionObserver((entries) => { for (const entry of entries) entry.target.style.animationPlayState = entry.isIntersecting ? "running" : "paused"; }).observe(document.getElementById("watched"));</script>`;
+  const probe = { id: "motion", kind: "audit", thresholds: { fonts: ["sans-serif"] } };
+  const result = await measure(t, "motion", [probe], { html: page(style, body) });
+  const found = findingsOf(result, "audit.motion-properties");
+  assert.deepEqual(found.slice(0, -1).map((finding) => [finding.selector, finding.actual]), [
+    ["html", "transition-property: all over 250ms"],
+    ["#every", "transition-property: all over 200ms"],
+    ["#tall", "transition of height over 300ms, margin over 300ms"],
+    ["#underline::after", "transition-property: all over 150ms"],
+    ["#underline::after", "transition of width over 150ms"],
+    ["#grow", "animation grow animates height"],
+    ["#haze", "animation haze animates filter blur() in an infinite loop"],
+  ]);
+  assert.equal(found.at(-1).selector, "#loop", "the held loop, the watched loop, the loop skipped by content-visibility and the role=status spinner are not reported");
+  assert.match(found.at(-1).actual, /^animation turn runs in an infinite loop \d+(\.\d+)?px below the 1280x800 viewport$/);
+  assert.match(found[0].fix, /^Name the properties that change/);
+  assert.match(found[2].fix, /scale\(\) for width or height, translate\(\) for top, left or margin/);
+  assert.match(found[6].fix, /^Run the blur once/);
+  assert.match(found.at(-1).fix, /IntersectionObserver.*role="status"/);
+  assert.equal(statusAt(result, "audit.motion-properties"), "failed");
+  for (const finding of found) assert.equal(finding.severity, "error", finding.selector);
+  // #deco is 2400px below the fold but its ::before is fixed at the top of the viewport. A
+  // pseudo-element has no box the page can read, so its off-screen state is listed, never failed.
+  const unread = [{ selector: "#deco::before", actual: "off-screen state not measurable: animation turn runs in an infinite loop on ::before, whose box the page cannot read" }];
+  const motionCoverage = (measured) => measured.probes[0].coverage[0].checks.find((check) => check.code === "audit.motion-properties");
+  assert.deepEqual(motionCoverage(result).notMeasured, unread);
+
+  // The repaired page: named compositor properties, a one-shot blur, and loops paused out of view.
+  const repaired = style
+    .replace("html { transition: all 250ms; }", "html { transition: background-color 250ms; }")
+    .replace("#every { transition: all 200ms; }", "#every { transition: opacity 200ms; }")
+    .replace("#tall { transition: height 300ms ease-out, margin 300ms ease-out; }", "#tall { transition: transform 300ms ease-out; }")
+    .replace("transition: all 150ms, width 150ms;", "transform-origin: left; transition: transform 150ms;")
+    .replace("@keyframes grow { to { height: 60px; } }", "@keyframes grow { to { transform: scaleY(1.5); } }")
+    .replace("#haze { animation: haze 3s infinite; }", "#haze { animation: haze 600ms 1; }")
+    .replace("#loop { animation: turn 2s linear infinite; }", "#loop { animation: turn 2s linear infinite paused; }");
+  const clean = await measure(t, "motion-clean", [probe], { html: page(repaired, body) });
+  assert.deepEqual(findingsOf(clean, "audit.motion-properties"), []);
+  assert.equal(statusAt(clean, "audit.motion-properties"), "passed");
+  const coverage = motionCoverage(clean);
+  assert.ok(coverage.checked >= 10, `transitions and animations are counted (${coverage.checked})`);
+  assert.deepEqual(coverage.notMeasured, unread, "what cannot be measured is still listed on a passing page");
 });
 
 test("an inline link is exempt from target size only beside text in its own inline formatting context", { skip: tools.skip }, async (t) => {
