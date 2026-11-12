@@ -676,6 +676,13 @@ Follow reconstruction's existing permissions: graybox readiness releases optical
 if geometry is blocked; detail geometry and fidelity claims still require their own readiness.
 Creating files or passing engineering checks does not grant visual acceptance.
 
+When the owner will tune values such as colours, radius, density, copy or a motion duration after
+the build, declare them as [tunables](tunables.md): `tunables init`, include `tunables.js` first in
+`<head>`, and read each value where it is used (`var(--tn-accent)`, `[data-tn-density="compact"]`,
+`data-tn-text`, or `tunable("id")` in script). `tunables check` fails a declared value nothing
+reads; `tunables probe` warns when changing a value alters no frame; `tunables panel` is the
+editor. Expose what the owner decides by looking, not layout structure.
+
 ## probe
 
 In replicate mode the probe pass also binds `reference.md` and `reference-evidence.json`, and a

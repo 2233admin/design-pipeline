@@ -61,7 +61,9 @@ structure solely because it already exists.
 ## Determinism and motion
 
 - No `Date.now`, `performance.now`, render-time clocks, unseeded randomness, network dependence,
-  input-state dependence, or infinite repeats.
+  input-state dependence, or infinite repeats. `tunables.js` is data, not a clock: it holds the
+  owner's values and none of these, so reading `tunable("id")` while building a timeline keeps a
+  render repeatable (`references/tunables.md`).
 - Do not tween `display`, raw `visibility`, or layout properties such as `top`, `left`, `width`,
   and `height`; use seek-safe transform aliases and the framework's clip lifecycle. HyperFrames
   owns `.clip` visibility, so do not animate `autoAlpha` or `visibility` on the clip itself.
