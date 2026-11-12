@@ -6699,6 +6699,50 @@
       "licenseScope": "Unpinned inventory: current GitHub license response includes explicit MIT license text; observed license blob SHA 2d4522da97f437cd6ca6b73b589c40c62ab3407f (a blob identity, not a historical commit verification). Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings. Official documentation directly links vitejs/devtools; this verifies the devtools repository license, not all hosted-site assets or every ecosystem integration."
     },
     {
+      "id": "source/2233admin/answer-me-with-html",
+      "sourceId": "2233admin/answer-me-with-html",
+      "recordType": "source",
+      "name": "answer-me-with-html",
+      "availability": "bundled-implementation",
+      "aliases": [
+        "https://github.com/2233admin/answer-me-with-html",
+        "https://github.com/2233admin/answer-me-with-html/tree/4da5ae89ac435683110aa1b8707d9d4170184c55",
+        "https://github.com/QingYunA/answer-me-with-html"
+      ],
+      "localPaths": {
+        "guide": "tools/answer-me-with-html/README.md",
+        "manifest": "vendor/answer-me-with-html/manifest.json",
+        "implementation": "tools/answer-me-with-html/build-explanation.cjs"
+      },
+      "provenance": {
+        "source": "answer-me-with-html",
+        "license": "MIT AND BSD-3-Clause AND Apache-2.0",
+        "url": "https://github.com/2233admin/answer-me-with-html",
+        "revision": "4da5ae89ac435683110aa1b8707d9d4170184c55",
+        "gitTree": "e3684e39408d93ce89b12ebe4a5dc756f3571df1",
+        "contentHash": "612fdee283ec1b05b4be35de4bfef712ecfe3a4abab5c91f428aab57252413d8",
+        "hashScope": "Manifest snapshot scope; sorted POSIX path, NUL, SHA-256 blob hash, newline; not a Git tree hash."
+      },
+      "license": {
+        "state": "verified",
+        "id": "MIT AND BSD-3-Clause AND Apache-2.0",
+        "evidence": [
+          "https://github.com/2233admin/answer-me-with-html/blob/4da5ae89ac435683110aa1b8707d9d4170184c55/LICENSE",
+          "vendor/answer-me-with-html/manifest.json",
+          "vendor/answer-me-with-html/LICENSES.txt",
+          "vendor/answer-me-with-html/maintained/font-policy.json"
+        ]
+      },
+      "adoptionBoundary": {
+        "mode": "built-in-reference-adaptation",
+        "installsUpstreamDependencies": false,
+        "executesDeployment": false,
+        "changesProjectRuntime": false
+      },
+      "webRanking": false,
+      "licenseScope": "Reviewed repository code is MIT; pinned dependencies retain MIT, marked BSD and inherited KaTeX/React MIT and mhchem Apache-2.0 notices. The conflicting noncommercial Temml.woff2 is excluded; package MIT is not its font grant. Consumer helper uses local system MathML fonts and does not execute the upstream CLI, updater, home configuration or always-on skill instructions. Sharing output discloses original Markdown and included files; feedback is manual, not pipeline acceptance."
+    },
+    {
       "id": "source/vojtaholik/good-css",
       "sourceId": "vojtaholik/good-css",
       "recordType": "source",

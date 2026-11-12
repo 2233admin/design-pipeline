@@ -27,6 +27,7 @@ by the visual problem; using a helper does not create a film project or select a
 | DOM/SVG timelines, scroll, layout or existing Three.js property animation | [Runtime guidance](../references/capability-routing.md) | Local GSAP playbook, Anime.js construction/seek/cleanup methods; companions optional |
 | Layout/text checks, interactions, 3D and GPU materials | [Composition](../references/composition-gate.md), [runtime routing](../references/graphics-runtime-routing.md) | Existing capture, gates and project renderer |
 | Intrinsic layout, CSS tokens, content/overflow, control states and native CSS motion | [Good CSS](../references/good-css.md), [offline specimens](good-css/README.md) | Complete pinned practices and a Node-only builder for local live studies |
+| Complex explanation, architecture walkthrough, decision comparison or handoff | [Offline explanations](answer-me-with-html/README.md) | Node-only Markdown-to-HTML helper, default doc/paper; local includes, embedded-source disclosure and manual feedback only, not every answer or workflow acceptance |
 
 Read this index first, then one tool guide, then the needed function/example. Do not preload the
 whole source library. Existing adapters and receipts retain their authority.

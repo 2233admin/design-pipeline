@@ -6,6 +6,11 @@ All notable changes to Design Pipeline are documented here.
 
 ### Added
 
+- Bounded built-in answer-me-with-html helper for complex explanations, architecture decisions and
+  handoffs: doc/paper by default, optional wide board, offline local includes and manual feedback.
+  Raw active markup, remote assets and escaped file includes are rejected; the original draft is
+  deliberately embedded and disclosed. No automatic acceptance, new receipt or workflow mutation
+  (change `internalize-answer-me-with-html`).
 - The model-made candidate preview is removed (change `drop-candidate-previews`, #174). A required `direction-preview.json` is the three-sources form everywhere (medium, six cards, thumbnail board, exactly three versions), in OpenSpec changes and Stage 2 as in the ui and web brief flow; when the direction is clear, record a waiver (`single-user-direction`, `established-surface`, `narrow-change`, ...). **Breaking:** a plain two-to-four candidate receipt is rejected; there is no compatibility path or migration.
 
 - Real brands are named at intake (change `intake-real-brands`, #177). The ui and web playback card lists the real brands or products the conversation or brief names (`Real brands: ...` or `none`, marked as a guess when it is one), and the agent records it in DESIGN.md Product Context, so the brand-facts check no longer depends on remembering the declaration. Instruction text only: no new stage, gate or flag, and the ui playback validator does not require the line.

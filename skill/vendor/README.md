@@ -29,6 +29,7 @@ links: an upstream link to `SKILL.md` means the `UPSTREAM-SKILL.md` in the same 
 | `taste-skill/` | [Visual direction and interface recipes](../references/taste-skill.md) | `manifest.json`, source Git tree and snapshot hashes |
 | `design-direction-library/` | [Style specimens, directions, brand protocol, critique](../references/design-direction-library.md) | `manifest.json`, pinned Git tree; binaries fetched by `sources fetch --bundle design-direction-library` |
 | `good-css/` | [CSS practices and specimens](../references/good-css.md) | `manifest.json`, source Git tree, snapshot hashes and separate font notices |
+| `answer-me-with-html/` | [Offline explanations](../tools/answer-me-with-html/README.md) | `manifest.json`, pinned source/build/runtime hashes and complete dependency/font `LICENSES.txt`; original skill instructions inert |
 | `cinetic/` | [Film methods and techniques](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |
 | `product-film-skill/` | [Product film methods](../references/film-methods.md) | `manifest.json`, source Git tree and snapshot hashes |
 | `ff-tracking/` | [Tracking HUD film template](../references/film-tracking-hud-template.md) | `manifest.json`, source Git tree, snapshot hashes and separate font/MT19937 notices |
