@@ -83,6 +83,29 @@ putting text on a measurable solid surface or scrim. Findings carry code, select
 measured value, threshold and fix. A passing audit is Component Conformance evidence; it never
 stands in for Visual Acceptance.
 
+### Keep the report
+
+Deliver the audit in chat first: the score per dimension, the findings with their evidence and the
+recommended actions. Then keep a copy in the change's `qa.md` review record (outside a change, in
+the file the owner names) so the findings outlive the conversation. Saving never replaces
+delivering. When the brief or `PRODUCT.md` says not to keep audit reports, keep nothing and say
+nothing about it. There is no separate report store and no setting of its own.
+
+### Right-to-left pages
+
+Check the responsive dimension on right-to-left pages only when the page declares `dir="rtl"` on
+`<html>` or `<body>`. `lang` alone does not set direction; an RTL-script `lang` (`ar`, `fa`, `ur`,
+`he` and the like) without `dir` is worth one note. Each item below is a reason to look at the
+rendered page, not a defect by itself; report only what renders wrongly.
+
+- Physical `margin`, `padding`, `border`, `float`, `text-align` and `left`/`right` offsets where a
+  logical property (`*-inline-start/end`, `text-align: start/end`, `inset-inline-*`) is expected.
+  A `[dir="rtl"]` override is right only when it also clears the base side. `left: 50%` with
+  `translateX(-50%)` centers in both directions; do not replace it.
+- Arrows, chevrons and navigation icons that point against the reading order. An asset already
+  drawn for RTL needs no flip; look at the render.
+- Take one point off the responsive score when rendered RTL failures are pervasive.
+
 ## Review checklist
 
 Rules the audit does not measure. During web `review` and Stage 6, record each `UC-` id in `qa.md`
@@ -291,7 +314,7 @@ file is vendored or copied. Their rules follow
 `scripts/verify_reduced_motion.mjs` (render twice, content lost under reduce, motion still running)
 and `scripts/verify_states.mjs` (contrast per interaction state; MIT) for motion and states.
 Revisions read: hallmark `4f6a46c6dc325d40ab268c93e25c7b96676ebccd`, impeccable
-`9fadc41729c38fd47d7ae622b501558653f9d2e9`, ux-ui-agent-skills
+`b4bff1626c344067788c2679f048a20057c7cc5a`, ux-ui-agent-skills
 `def84a70fadc3490d80901295a4f1951fdb2cc69`. Changes from them: the state pass forces pseudo-classes
 through the DevTools protocol instead of focusing one element at a time, only text a state changes
 is measured again, the browser's `outline-style: auto` ring counts as an indicator, and reduced

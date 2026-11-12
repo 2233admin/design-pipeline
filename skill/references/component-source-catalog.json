@@ -9242,16 +9242,16 @@
         "source": "Impeccable design contract and bounded polish",
         "license": "Apache-2.0",
         "url": "https://github.com/pbakaus/impeccable",
-        "revision": "9fadc41729c38fd47d7ae622b501558653f9d2e9"
+        "revision": "b4bff1626c344067788c2679f048a20057c7cc5a"
       },
       "license": {
         "state": "verified",
         "id": "Apache-2.0",
         "evidence": [
-          "https://github.com/pbakaus/impeccable/blob/9fadc41729c38fd47d7ae622b501558653f9d2e9/LICENSE"
+          "https://github.com/pbakaus/impeccable/blob/b4bff1626c344067788c2679f048a20057c7cc5a/LICENSE"
         ]
       },
-      "licenseScope": "Explicit Apache-2.0 grant retrieved at requested revision 9fadc41729c38fd47d7ae622b501558653f9d2e9; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
+      "licenseScope": "Explicit Apache-2.0 grant retrieved at requested revision b4bff1626c344067788c2679f048a20057c7cc5a; applies to that repository snapshot, not later upstream revisions. Applies to repository software and its associated documentation under the explicit root license; retain required notices. Does not establish a blanket grant for hosted-site assets, separately licensed packages, linked implementations, trademarks, or paid/proprietary offerings."
     },
     {
       "id": "source/pixijs/pixijs-skills",
