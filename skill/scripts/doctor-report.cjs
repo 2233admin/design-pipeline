@@ -14,7 +14,7 @@ const { findBlender } = require("./blender-core.cjs");
 const { fetchCommand, installCommand } = require("./install-hints.cjs");
 
 const NODE_REQUIRED = "22.12.0";
-const INSTALL_DOC = "https://github.com/2233admin/design-pipeline/blob/main/docs/install.md";
+const INSTALL_DOC = "https://github.com/XartLab/design-pipeline/blob/main/docs/install.md";
 
 function nodeAtLeast(version, minimum = NODE_REQUIRED) {
   const have = String(version).split(".").map((part) => Number.parseInt(part, 10) || 0);

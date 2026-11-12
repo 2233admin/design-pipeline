@@ -4,6 +4,10 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- The repository moved to `XartLab/design-pipeline` (change `move-repository-to-xartlab`). Install with `/plugin marketplace add XartLab/design-pipeline`; the Release download URLs and `doctor`'s install link use the new address. The old address still redirects, so existing installs keep working.
+
 ### Fixed
 
 - `tests/ablation-eval.test.cjs` passes on Windows (change `ablation-reference-variant`, #372): the test imports the eval modules through `file://` URLs and gives its temporary profile the `AppData` folders Chrome needs, the eval wraps puppeteer's `Uint8Array` screenshot in a `Buffer` before decoding it, and `runAgent` quotes command parts that contain spaces when it goes through `cmd.exe`.
