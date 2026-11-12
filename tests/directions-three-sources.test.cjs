@@ -308,7 +308,7 @@ test("delivery writes the measured appearance and sources; the next direction st
   writeDirectionSet(root);
   decide(root, { by: "owner", stage: "concept", choice: "notebook,atlas", mix: ["layout=notebook", "colour=atlas"], answer: "Notebook's layout with atlas colour" });
   fs.writeFileSync(path.join(root, "index.html"), PAGE);
-  decide(root, { by: "owner", stage: "deliver", answer: "index.html, checked in a browser" });
+  decide(root, { by: "owner", stage: "deliver", answer: "index.html, checked in a browser", file: ["index.html"] });
   const entries = ledger.readLedger();
   assert.equal(entries.length, 1);
   const [entry] = entries;
@@ -340,7 +340,8 @@ test("delivery writes the measured appearance and sources; the next direction st
 test("a project with nothing to measure records nothing and says why; the ledger never blocks delivery", () => {
   reset();
   const root = project("quick");
-  decide(root, { by: "owner", stage: "deliver", answer: "the console, checked by hand" });
+  fs.writeFileSync(path.join(root, "console.png"), "screenshot");
+  decide(root, { by: "owner", stage: "deliver", answer: "the console, checked by hand", file: ["console.png"] });
   assert.equal(readState(root).decisions.ledger.status, "skipped");
   assert.match(readState(root).decisions.ledger.reason, /index\.html/);
   assert.equal(ledger.readLedger().length, 0);

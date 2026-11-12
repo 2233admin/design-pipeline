@@ -129,3 +129,26 @@ test("a recorded direction reopens when its receipt drifts or disappears", () =>
   fs.rmSync(path.join(root, "direction-preview.json"));
   assert.match(nextAction(root).instruction, /Stage 0/);
 });
+
+test("a ui delivery recorded through the CLI binds the --file bytes and reopens when they change", () => {
+  const root = project("quick");
+  write(root, "index.html", "<!doctype html><title>Console</title>");
+  write(root, "assets/app.css", "body{color:#111}");
+  const deliver = (...files) => execute(["decide", "--root", root, "--project-root", ".", "--stage", "deliver", "--by", "agent", "--answer", "index.html and assets checked in a browser", ...files.flatMap((file) => ["--file", file]), "--json"]);
+  const unbound = deliver();
+  assert.equal(unbound.exitCode, 1);
+  assert.match(unbound.output.error.message, /ui delivery needs --file/);
+  assert.equal(deliver("index.html", "assets").exitCode, 0);
+  assert.equal(nextAction(root).stage, "review");
+  write(root, "index.html", "<!doctype html><title>Console, edited</title>");
+  const changed = nextAction(root);
+  assert.equal(changed.stage, "work");
+  assert.match(changed.instruction, /changed: index\.html/);
+  write(root, "index.html", "<!doctype html><title>Console</title>");
+  assert.equal(nextAction(root).stage, "review", "the recorded bytes are back");
+  write(root, "assets/extra.css", "a{}");
+  assert.match(nextAction(root).instruction, /added: assets\/extra\.css/);
+  fs.rmSync(path.join(root, "assets/extra.css"));
+  fs.rmSync(path.join(root, "assets/app.css"));
+  assert.match(nextAction(root).instruction, /missing: assets\/app\.css/);
+});

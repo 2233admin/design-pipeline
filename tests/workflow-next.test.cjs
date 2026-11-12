@@ -2833,7 +2833,8 @@ test("film and edit delivery requires an existing contained file and quick may r
     decide(web, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
     assert.equal(decide(web, { by: "owner", stage: "deliver", answer: "https://example.test/page" }).next.type, "done");
     initState(ui, { deliverable: "ui", tier: "quick" });
-    const declared = decide(ui, { by: "agent", stage: "deliver", answer: "evidence.png" }).next;
+    touch(ui, "evidence.png", "screenshot");
+    const declared = decide(ui, { by: "agent", stage: "deliver", answer: "evidence.png", file: ["evidence.png"] }).next;
     assert.equal(declared.stage, "review", "ui work ends with the owner's acceptance of the delivered result");
     assert.equal(declared.type, "ask");
     assert.equal(decide(ui, { by: "owner", stage: "review", verdict: "accept" }).next.type, "done");
@@ -2955,14 +2956,16 @@ test("ui and quick work end with the owner's acceptance, and done renders the di
   const work = nextAction(ui);
   assert.match(work.command, / --by agent --stage deliver /);
   refuses(ui, { stage: "deliver", by: "agent" }, "INPUT_MISSING");
-  const review = decide(ui, { by: "agent", stage: "deliver", answer: "index.html checked in a browser" }).next;
+  touch(ui, "index.html", "<!doctype html><title>Console</title>");
+  const review = decide(ui, { by: "agent", stage: "deliver", answer: "index.html checked in a browser", file: ["index.html"] }).next;
   assert.equal(review.stage, "review");
   assert.match(review.why, /passing check/);
   assert.match(review.record, / --by owner --stage review /);
   assert.equal(nextAction(ui).diligence, undefined);
   decide(ui, { by: "owner", stage: "review", verdict: "reject", answer: "The header feels cramped on phones" });
   assert.equal(nextAction(ui).stage, "work", "a rejection sends the work back");
-  decide(ui, { by: "agent", stage: "deliver", answer: "index.html with a roomier header" });
+  touch(ui, "index.html", "<!doctype html><title>Console</title><header class=roomy></header>");
+  decide(ui, { by: "agent", stage: "deliver", answer: "index.html with a roomier header", file: ["index.html"] });
   const done = decide(ui, { by: "owner", stage: "review", verdict: "accept", answer: "That header looks right now" }).next;
   assert.equal(done.type, "done");
   assert.deepEqual(done.diligence, { path: ".design-pipeline/diligence.md", current: true });
@@ -2975,7 +2978,8 @@ test("ui and quick work end with the owner's acceptance, and done renders the di
   assert.match(statement, /Suggested trailer: Assisted-by: Claude Code \(test\)/);
   assert.match(statement, /## Delegation\n- Delivery: agent\n- Final acceptance: owner \(locked\)/);
   // A later decision makes the statement stale until done renders it again.
-  decide(ui, { by: "agent", stage: "deliver", answer: "index.html after a copy fix" });
+  touch(ui, "index.html", "<!doctype html><title>Console</title><header class=roomy>Fixed copy</header>");
+  decide(ui, { by: "agent", stage: "deliver", answer: "index.html after a copy fix", file: ["index.html"] });
   assert.equal(nextAction(ui).stage, "review");
   const rendered = diligence(ui);
   assert.equal(rendered.written, false);

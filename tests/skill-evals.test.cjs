@@ -184,7 +184,7 @@ test("quick Chinese page eval checks browser behavior and the public workflow", 
     assert.deepEqual(errors, []);
     assert.deepEqual(externalRequests, []);
     writeJson(root, "evidence.json", { browser: browser.version(), required, invalidEmail, success, saved, size, animationCount, errors, externalRequests });
-    runCli(root, ["decide", "--project-root", ".", "--stage", "deliver", "--by", "agent", "--answer", "index.html; evidence.json: browser behavior checked; Visual Acceptance not-evaluated"]);
+    runCli(root, ["decide", "--project-root", ".", "--stage", "deliver", "--by", "agent", "--answer", "index.html; evidence.json: browser behavior checked; Visual Acceptance not-evaluated", "--file", "index.html"]);
     const review = runCli(root, ["next", "--project-root", "."]);
     assert.equal(review.stage, "review", "browser checks are technical; the owner still accepts the page");
     runCli(root, ["decide", "--project-root", ".", "--stage", "review", "--by", "owner", "--verdict", "accept", "--answer", "The profile page reads clearly in Chinese"]);

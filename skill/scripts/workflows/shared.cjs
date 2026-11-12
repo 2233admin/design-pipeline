@@ -103,15 +103,76 @@ function extractionDigest(state) {
   return latest?.verdict === "accept" ? "sha256:" + sha256(canonicalJson(latest.inputs)) : null;
 }
 
+// The files a ui delivery names (--file, a file or a folder under the project root), expanded to every
+// file they hold with its sha256, keyed by project-relative "/" paths. Folders skip version control,
+// dependencies and the pipeline's own state.
+const DELIVERY_SKIP = new Set([".git", "node_modules", ".design-pipeline"]);
+function deliveredFileHashes(root, named) {
+  const hashes = {};
+  const add = (file) => { hashes[path.relative(path.resolve(root), file).split(path.sep).join("/")] = "sha256:" + sha256(fs.readFileSync(file)); };
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (DELIVERY_SKIP.has(entry.name) || entry.isSymbolicLink()) continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.isFile()) add(full);
+    }
+  };
+  for (const rel of named) {
+    const target = resolveInside(root, rel, "delivered file or folder (--file)", { scope: "workflow", mustExist: true });
+    const stat = fs.statSync(target);
+    if (stat.isDirectory()) walk(target);
+    else if (stat.isFile()) add(target);
+  }
+  return Object.fromEntries(Object.keys(hashes).sort().map((key) => [key, hashes[key]]));
+}
+
+// What changed since a ui delivery was recorded: null when every named file still holds the recorded
+// bytes; otherwise the changed, missing and added files. A delivery recorded without files (before
+// ui deliveries were bound to bytes) is never current.
+function uiDeliveryDrift(state, root) {
+  if (state.deliverable !== "ui" || !state.decisions?.delivered) return null;
+  const named = state.decisions.deliveredPaths;
+  const recorded = state.decisions.deliveredFiles;
+  if (!Array.isArray(named) || !named.length || !recorded || typeof recorded !== "object") {
+    return { message: "The recorded delivery names no files, so the owner's acceptance is not bound to what was delivered.", changed: [], missing: [], added: [] };
+  }
+  let current = {};
+  const missing = [];
+  for (const rel of named) {
+    try { Object.assign(current, deliveredFileHashes(root, [rel])); } catch { missing.push(rel); }
+  }
+  const changed = Object.keys(recorded).filter((file) => current[file] && current[file] !== recorded[file]);
+  missing.push(...Object.keys(recorded).filter((file) => !current[file] && !missing.some((rel) => file === rel || file.startsWith(`${rel.replace(/\/+$/, "")}/`))));
+  const added = Object.keys(current).filter((file) => !(file in recorded));
+  if (!changed.length && !missing.length && !added.length) return null;
+  const list = (label, files) => (files.length ? `${label}: ${files.slice(0, 5).join(", ")}${files.length > 5 ? ` and ${files.length - 5} more` : ""}` : null);
+  const parts = [list("changed", changed), list("missing", missing), list("added", added)].filter(Boolean);
+  return { message: `The delivered files changed after the delivery was recorded (${parts.join("; ")}).`, changed, missing, added };
+}
+
+function recordUiDelivery(state, root, named) {
+  const paths = [...new Set(named.map((rel) => String(rel).trim()).filter(Boolean))];
+  if (!paths.length) fail("workflow", "ui delivery needs --file naming each file or folder of the delivered interface; the owner's acceptance is bound to their bytes. Fix: add --file <path> for every delivered file or folder", { code: "INPUT_MISSING" });
+  const hashes = deliveredFileHashes(root, paths);
+  if (!Object.keys(hashes).length) fail("workflow", "the --file paths hold no files. Fix: name the delivered files or a folder that contains them", { code: "INPUT_MISSING" });
+  // The page at the project root is the one the appearance ledger measures and the owner opens first.
+  if (fs.existsSync(path.join(root, "index.html")) && !hashes["index.html"]) fail("workflow", "the project root has index.html but --file does not bind it. Fix: add --file index.html (or a folder that holds it)", { code: "INPUT_MISSING" });
+  state.decisions.deliveredPaths = paths.map((rel) => path.relative(path.resolve(root), resolveInside(root, rel, "delivered file or folder (--file)", { scope: "workflow", mustExist: true })).split(path.sep).join("/") || ".");
+  state.decisions.deliveredFiles = hashes;
+}
+
 // What a final review binds: the checked outputs, or for ui (which has no checking gate of its own)
-// the delivery evidence its work stage recorded.
+// the delivery its work stage recorded and the bytes of the files it named.
 function reviewInputHashes(state) {
-  if (state.deliverable === "ui") return state.decisions?.delivered ? { delivered: "sha256:" + sha256(String(state.decisions.delivered)), ...(extractionDigest(state) ? { extraction: extractionDigest(state) } : {}) } : null;
+  if (state.deliverable === "ui") return state.decisions?.delivered ? { delivered: "sha256:" + sha256(String(state.decisions.delivered)), ...(state.decisions.deliveredFiles ? { files: "sha256:" + sha256(canonicalJson(state.decisions.deliveredFiles)) } : {}), ...(extractionDigest(state) ? { extraction: extractionDigest(state) } : {}) } : null;
   const gate = { film: "film", edit: "edit", web: "interaction" }[state.deliverable];
   return state.gates?.[gate]?.inputHashes || null;
 }
 
 function deliveryRecorded(state, root) {
+  // A ui delivery holds while the files it named keep their recorded bytes.
+  if (state.deliverable === "ui") return Boolean(state.decisions?.delivered) && !uiDeliveryDrift(state, root);
   if (!state.decisions?.delivered || !state.decisions.deliveryInputHashes
       || canonicalJson(state.decisions.deliveryInputHashes) !== canonicalJson(reviewInputHashes(state))) return false;
   if (state.deliverable === "web") return true;
@@ -128,6 +189,8 @@ function invalidateCheckedEvidence(state) {
   delete state.decisions.deliveryInputHashes;
   delete state.decisions.deliveredSha256;
   delete state.decisions.deliveredExtraction;
+  delete state.decisions.deliveredPaths;
+  delete state.decisions.deliveredFiles;
 }
 
 const INTAKE = {
@@ -203,7 +266,9 @@ const REVIEW = {
   action: (state, root) => {
     if (state.deliverable === "ui") {
       const rejected = (state.decisions?.drafts || []).length ? `; ${state.decisions.drafts.length} earlier result(s) were rejected and their reasons are rules` : "";
-      return { type: "ask", question: `Look at the delivered interface (${state.decisions.delivered}) in a real browser. Accept it as it is, or reject it with one sentence on what is wrong?`, recommended: "Accept only when it looks and feels the way you want; passing checks show it works, not that it looks right.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject [--answer "<reason>"]`, why: `The owner's final acceptance: visual quality is not something a passing check can accept on the owner's behalf${rejected}.` };
+      const files = Object.keys(state.decisions?.deliveredFiles || {});
+      const bound = files.length ? ` Your answer is bound to these files as they are now: ${files.slice(0, 10).join(", ")}${files.length > 10 ? ` and ${files.length - 10} more` : ""}; changing any of them reopens the delivery.` : "";
+      return { type: "ask", question: `Look at the delivered interface (${state.decisions.delivered}) in a real browser. Accept it as it is, or reject it with one sentence on what is wrong?${bound}`, recommended: "Accept only when it looks and feels the way you want; passing checks show it works, not that it looks right.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage review --verdict accept|reject [--answer "<reason>"]`, why: `The owner's final acceptance: visual quality is not something a passing check can accept on the owner's behalf${rejected}.` };
     }
     const web = state.deliverable === "web";
     const outputs = Object.keys(reviewInputHashes(state) || {}).filter(file => (web ? /\.html?$/i : /\.mp4$/i).test(file));
@@ -248,4 +313,4 @@ function meaningful(answer, minimum, what, flag = "--answer", { cjkWeight = 0.5,
 const statement = (answer, what, flag) => meaningful(answer, 6, what, flag);
 const reason = (answer, what, flag) => meaningful(answer, 2, what, flag, { cjkWeight: 1, unit: "each CJK character counts as one" });
 
-module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, extractionDigest, invalidateCheckedEvidence, reason, reference, reviewInputHashes, statement };
+module.exports = { cliCommand, CONCEPTS, INTAKE, REVIEW, TOKEN_SOURCES, componentDecisionDigest, deliveryRecorded, exists, shellPath, gatePassed, gateStatus, extractionDigest, invalidateCheckedEvidence, reason, recordUiDelivery, reference, reviewInputHashes, statement, uiDeliveryDrift };

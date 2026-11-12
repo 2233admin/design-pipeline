@@ -105,7 +105,7 @@ function walk(deliverable, tier, mode) {
     check: () => (deliverable === "edit" ? recordGate(dir, "edit", "passed", ["edit.json", "edit/analysis.json", "renders/edit.mp4"]) : recordGate(dir, "film", "passed", ["storyboard.json", "out.mp4"])),
     review: () => decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" }),
     deliver: () => { if (deliverable !== "web") touch(dir, "final.mp4"); decide(dir, { by: "owner", stage: "deliver", answer: deliverable === "web" ? "https://example.test" : "final.mp4" }); },
-    work: () => decide(dir, { by: "owner", stage: "deliver", answer: "done" }),
+    work: () => { touch(dir, "index.html", "<!doctype html><title>Done</title>"); decide(dir, { by: "owner", stage: "deliver", answer: "done", file: ["index.html"] }); },
   };
   const seen = [];
   for (let step = 0; step < 40; step += 1) {

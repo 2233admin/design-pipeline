@@ -252,8 +252,11 @@ Quick workflows may record delivery after their applicable stages finish. Web co
 the description and section reviews default to the agent: `next` returns them as `selfCheck` runs
 unless the owner kept them with `--keep` at intake. Every deliverable and
 tier ends with the owner's final review (`decide --stage review --by owner`): UI records its work
-evidence with `decide --stage deliver --by agent`, then the owner accepts or rejects the delivered
-interface, and a rejection returns to the work stage. Reaching done renders
+evidence with `decide --stage deliver --by agent --file <file or folder>` (repeat `--file` for every
+delivered file or folder; a project-root `index.html` must be among them), then the owner accepts or
+rejects the delivered interface, and a rejection returns to the work stage. The delivery and the
+owner's review bind the bytes of the named files: a changed, missing or added file returns to the
+work stage. Reaching done renders
 `.design-pipeline/diligence.md` from the workflow state: owner decisions with their reasons,
 delegated agent decisions, records without an author, the owner's "no" in their own words with its origin and scope (bound to a section, the sample or the
 result under review, a project rule, or promoted at the final review), technical checks apart from

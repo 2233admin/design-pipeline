@@ -124,7 +124,8 @@ test("editing DESIGN.md after the confirmation reopens it, and a ui delivery and
   const dir = project({ deliverable: "ui", tier: "quick" });
   extractReplicate(dir);
   assert.equal(nextAction(dir).stage, "work");
-  decide(dir, { by: "owner", stage: "deliver", answer: "index.html at 390px and 1280px, checked" });
+  fs.writeFileSync(path.join(dir, "index.html"), "<!doctype html><title>Replica</title>");
+  decide(dir, { by: "owner", stage: "deliver", answer: "index.html at 390px and 1280px, checked", file: ["index.html"] });
   assert.equal(nextAction(dir).stage, "review");
   append(dir, "DESIGN.md", "\nAn edit after the owner confirmed.\n");
   const reopened = nextAction(dir);
@@ -134,7 +135,8 @@ test("editing DESIGN.md after the confirmation reopens it, and a ui delivery and
   confirmExtraction(dir);
   const rebuilt = nextAction(dir);
   assert.equal(rebuilt.stage, "work", "the delivery was bound to the old extraction");
-  decide(dir, { by: "owner", stage: "deliver", answer: "index.html rebuilt on the new extraction" });
+  fs.writeFileSync(path.join(dir, "index.html"), "<!doctype html><title>Replica rebuilt</title>");
+  decide(dir, { by: "owner", stage: "deliver", answer: "index.html rebuilt on the new extraction", file: ["index.html"] });
   assert.equal(nextAction(dir).stage, "review");
   decide(dir, { by: "owner", stage: "review", verdict: "accept", answer: "Looks right to me" });
   assert.equal(nextAction(dir).type, "done");
