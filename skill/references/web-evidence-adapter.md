@@ -62,3 +62,6 @@ designer-pipeline evidence capture --project-root . --adapter-path <skill>/adapt
   --agent-browser node_modules/agent-browser/bin/agent-browser.js --chrome <chrome-executable> \
   --output-root .design-pipeline/evidence/<id> --url http://localhost:5173/ --width 1440 --height 900 --timeout-ms 120000
 ```
+
+Adapter 与取证脚本的写法（不用固定等待、不一次性读状态放进断言、不按结构位置定位）见
+[browser-practices.md](browser-practices.md)，由 `skill/tools/browser-practice/lint.cjs` 检查。

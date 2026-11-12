@@ -1323,6 +1323,8 @@
     "references/interface-defaults.md",
     "references/timeline-deconstruction.md",
     "references/template-bank.md",
+    "tools/browser-practice/lint.cjs",
+    "references/browser-practices.md",
     "tools/template-bank/bank.cjs",
     "tools/template-bank/layouts.cjs",
     "tools/template-bank/lettering.cjs",
