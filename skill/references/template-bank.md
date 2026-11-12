@@ -183,6 +183,12 @@ contrast replaces the static estimate.
 Without it, the static check samples the rendered pixels under text on a real image slot (or
 takes a declared `--tone`).
 
+A finding that rests on a web platform rule rather than on a rule above (an HTML page a template
+check was run on) cites it as the guide id plus one line of conclusion, for example
+`persistent-toast-notifications: something that needs handling now is not a toast`, after
+retrieving the guide with `modern-web-guidance` (see `modern-web-guidance.md`). Guide text is never
+copied into the report, the template or the repository.
+
 ## Generated characters and layers (#311)
 
 Showcase renders stay character-free; characters come from an external image model and join the

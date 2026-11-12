@@ -129,6 +129,16 @@
       "kernel": ["foundation", "toolchain"]
     },
     {
+      "id": "modern-web-guidance",
+      "activation": "scored",
+      "priority": 44,
+      "keywords": ["modal dialog", "dialog element", "popover", "tooltip", "light dismiss", "focus trap", "form validation", "autofill", "date picker", "responsive table", "container quer", "anchor positioning", "view transition", "scroll-driven animation", "prefers-reduced-motion", "dark mode", "color-scheme", "passkey", "web component", "core web vitals", "web platform", "platform rule", "modern web guidance", "modern-web-guidance", "对话框", "弹窗", "浮层", "弹出层", "气泡提示", "表单校验", "表单验证", "暗色模式", "深色模式", "容器查询", "视图过渡", "锚点定位", "平台规则", "平台特性", "带出处"],
+      "excludeKeywords": ["follow the existing", "match the existing", "same as the existing", "copy the existing", "reuse the existing", "like the existing", "照抄现有", "沿用现有", "复用现有", "按现有", "和现有一致", "与现有一致", "backend", "api route", "database", "sql", "github actions", "ci/cd", "docker", "后端", "数据库"],
+      "primaryKnowledge": { "id": "modern-web-guidance", "command": "toolchain", "action": "resolve", "admission": "ready" },
+      "secondaries": [],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
       "id": "product-design",
       "activation": "default",
       "priority": 0,

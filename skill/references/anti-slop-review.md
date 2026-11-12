@@ -35,6 +35,14 @@ ideograph, kana or hangul syllable counting as 2 (about 12 Chinese characters). 
 same rationale, ignoring case, spacing and punctuation, on two or more of these waivers; `pass` notes
 may repeat. These checks prompt an explanation; they cannot prove one.
 
+A finding that rests on a web platform rule (a dialog, popover, form or table pattern, not a
+design preference) cites the rule as the `modern-web-guidance` guide id plus one line of
+conclusion in the reviewer's words, for example
+`persistent-toast-notifications: something that needs handling now is not a toast`. Retrieve the
+guide in the same run first (see `modern-web-guidance.md`); never copy the guide's text into the
+evidence file or the repository, and when the project's own rules override the guide, cite both and
+follow the project.
+
 `content-available-without-motion` is measured on web pages: the audit probe of `verify interaction`
 loads the page with `prefers-reduced-motion: reduce` and reports `audit.reduced-motion` for content
 that is visible without the preference but hidden under it (opacity 0, `visibility`, a transform

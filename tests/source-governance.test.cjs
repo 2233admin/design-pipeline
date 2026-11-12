@@ -71,6 +71,14 @@ const sourceRefs = {
     reviewedAt: "2026-11-12T00:00:00.000Z",
     sourceFiles: ["skills/animate-ui/SKILL.md", "skills/animate-ui/references/catalog.md", "skills/animate-ui/references/vue.md", "skills/animate-ui/references/migrate.md", "skills/animate-ui/references/review.md", "LICENSE.md"],
   },
+  "skill/references/modern-web-guidance.md": {
+    sourceId: "modern-web-guidance",
+    revision: "4dd968349e54ca45a05dd5c818fb035c9054b022",
+    contentHash: "74cd02cb89bfb177a00e0dfe0a0b3235b81272fa478ba188ed676aef2b2274e9",
+    license: "Apache-2.0",
+    reviewedAt: "2026-11-12T00:00:00.000Z",
+    sourceFiles: ["skills/modern-web-guidance/SKILL.md", "LICENSE"],
+  },
 };
 const motionProfileSourceFiles = [
   "skills/improve-animations/SKILL.md",

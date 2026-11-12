@@ -52,6 +52,10 @@ function validateJobRegistry(registry) {
     if (!Array.isArray(job.keywords) || job.keywords.some((keyword) => typeof keyword !== "string" || !keyword.trim())) {
       invalid(`jobs[${index}].keywords is invalid`);
     }
+    if (job.excludeKeywords !== undefined
+      && (!Array.isArray(job.excludeKeywords) || job.excludeKeywords.some((keyword) => typeof keyword !== "string" || !keyword.trim()))) {
+      invalid(`jobs[${index}].excludeKeywords is invalid`);
+    }
     validateKnowledge(job.primaryKnowledge, `jobs[${index}].primaryKnowledge`);
     if (!Array.isArray(job.secondaries)) invalid(`jobs[${index}].secondaries is invalid`);
     for (const [secondaryIndex, secondary] of job.secondaries.entries()) {
@@ -98,7 +102,9 @@ function classifyDeliverableForm(query) {
 }
 
 function scoreJob(job, text) {
-  const matchedKeywords = job.keywords.filter((keyword) => text.includes(fold(keyword)));
+  // A brief that names an exclusion keyword never selects this job, whatever else it matches.
+  const excluded = (job.excludeKeywords || []).some((keyword) => text.includes(fold(keyword)));
+  const matchedKeywords = excluded ? [] : job.keywords.filter((keyword) => text.includes(fold(keyword)));
   return { job, score: matchedKeywords.length, matchedKeywords, priority: job.priority };
 }
 

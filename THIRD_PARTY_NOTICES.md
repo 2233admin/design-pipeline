@@ -44,6 +44,13 @@ runtime, workflow, remote prompt, or skill implementation is bundled or executed
   name inventory for tests (`tests/fixtures/animate-ui/upstream-inventory.json`) and a guide written
   for this project (`skill/references/animate-ui.md`) that restates how the upstream agent skill
   uses the library. No component source is bundled or redistributed, and nothing is auto-installed.
+- `GoogleChrome/modern-web-guidance`, reviewed 2026-11-12 at commit
+  `4dd968349e54ca45a05dd5c818fb035c9054b022` from https://github.com/GoogleChrome/modern-web-guidance
+  (npm package `modern-web-guidance@1.0.0`), Apache-2.0. The pipeline stores a source record
+  (`skill/references/component-source-catalog.json`, record `googlechrome/modern-web-guidance`), a
+  companion profile and a guide written for this project (`skill/references/modern-web-guidance.md`)
+  that restates when and how to call the installed CLI. No upstream guide, script or search data is
+  bundled or redistributed, and nothing is auto-installed.
 - User-curated component references: Beautiful UI, beUI, Rare UI, Transitions.dev, shadcn/ui,
   Shadcnblocks, Magic UI, Aceternity UI, and AI SDK Elements. The catalog stores URL, routing,
   and compatibility metadata only; no upstream source code, runtime, or dependency is bundled.

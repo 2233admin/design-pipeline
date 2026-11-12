@@ -122,6 +122,17 @@
       "install": ["Install earshot (CLI, MCP server and the earshot and real-sound skills) from: https://github.com/Leonxlnx/earshot"]
     },
     {
+      "name": "Web platform guidance",
+      "level": "optional",
+      "skills": [
+        "modern-web-guidance"
+      ],
+      "fallback": "Use references/good-css.md and references/web-interface-guidelines.md, check the exact feature and its Baseline status on MDN or web.dev, test the fallback in the target browser, and record in qa.md that the companion was unavailable.",
+      "install": [
+        "Install Modern Web Guidance with: DISABLE_TELEMETRY=1 npx -y modern-web-guidance@latest install (interactive wizard; add -g -a <agent> -y for a non-interactive user-level install; in PowerShell set $env:DISABLE_TELEMETRY = \"1\" first). Source: https://github.com/GoogleChrome/modern-web-guidance"
+      ]
+    },
+    {
       "name": "React / Next.js engineering",
       "level": "optional",
       "skills": [
@@ -1131,6 +1142,59 @@
           "patterns": [
             {
               "source": "references/good-css\\.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modern-web-guidance-skill",
+      "name": "Modern Web Guidance search and retrieve loop",
+      "skill": "modern-web-guidance",
+      "level": "optional",
+      "sourceId": "googlechrome/modern-web-guidance",
+      "source": "https://github.com/GoogleChrome/modern-web-guidance",
+      "sourceMeta": {
+        "id": "modern-web-guidance-skill",
+        "kind": "github",
+        "url": "https://github.com/GoogleChrome/modern-web-guidance",
+        "reviewedRevision": "4dd968349e54ca45a05dd5c818fb035c9054b022",
+        "reviewedMarkers": [
+          "search-command",
+          "retrieve-command",
+          "browser-support-policy"
+        ],
+        "reviewedAt": "2026-11-12T00:00:00.000Z",
+        "freshnessDays": 30,
+        "license": "Apache-2.0",
+        "useBoundary": "companion; the pipeline runs the installed CLI and copies none of its guides, scripts or search data"
+      },
+      "fallback": "Use references/modern-web-guidance.md#when-it-is-not-installed: good-css.md, the web interface rules, MDN or web.dev for the exact feature, and a qa.md note that the companion was unavailable or stale.",
+      "requirements": [
+        {
+          "id": "search-command",
+          "skill": "modern-web-guidance",
+          "patterns": [
+            {
+              "source": "modern-web-guidance@latest search"
+            }
+          ]
+        },
+        {
+          "id": "retrieve-command",
+          "skill": "modern-web-guidance",
+          "patterns": [
+            {
+              "source": "modern-web-guidance@latest retrieve"
+            }
+          ]
+        },
+        {
+          "id": "browser-support-policy",
+          "skill": "modern-web-guidance",
+          "patterns": [
+            {
+              "source": "Browser Support"
             }
           ]
         }

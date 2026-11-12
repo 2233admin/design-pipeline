@@ -819,6 +819,20 @@
       "committedAt": "2026-11-01T18:39:39-08:00"
     },
     {
+      "id": "modern-web-guidance",
+      "kind": "adapted-reference",
+      "repo": "https://github.com/GoogleChrome/modern-web-guidance",
+      "revision": "4dd968349e54ca45a05dd5c818fb035c9054b022",
+      "reviewedAt": "2026-11-12",
+      "documents": [
+        "skill/references/modern-web-guidance.md"
+      ],
+      "committedAt": "2026-11-10T03:08:33Z",
+      "profiles": [
+        "modern-web-guidance-skill"
+      ]
+    },
+    {
       "id": "motion",
       "kind": "catalog-reference",
       "repo": "https://github.com/motiondivision/motion",

@@ -891,6 +891,16 @@ before implementation. Preserve project tokens, semantic controls and existing r
 test newer features and their fallbacks against the actual target browser. The local specimen
 builder in `tools/good-css/` provides bounded studies without an external skill installation.
 
+When the work produces or reviews one concrete platform pattern in a web interface (dialog,
+popover, form, table, accessibility behaviour, platform-dependent motion or layout), or a review
+needs a sourced platform rule, follow `references/modern-web-guidance.md`: with the
+`modern-web-guidance` companion installed, `search` then `retrieve` (with `DISABLE_TELEMETRY=1`)
+before writing the code; without it, check the feature on MDN or web.dev and say so in `qa.md`.
+Skip it when the change only follows the pattern the repository already has. Record the consulted
+guide ids and adopted fallbacks in `qa.md`; the project's own rules, tokens, existing components and
+recorded rejections win over a guide. A review cites a guide as its id plus one line of
+conclusion and copies none of its text.
+
 For components, interaction polish and accessibility, load only the matched built-in source from
 `references/ui-craft-sources.md`: shadcn rules only in a shadcn project or selected shadcn-registry
 route, polish in the existing styling system, and `fixing-accessibility` for new controls, forms

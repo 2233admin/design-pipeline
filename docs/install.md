@@ -71,7 +71,7 @@ node "<skill 目录>/scripts/check-design-foundation.cjs" --project-root . --jso
 
 `ready` 解锁实现。`synthesis-required` 需要补充设计。`invalid` 需要修复。
 
-可选的 companion skill 不会被静默安装。`node "<skill 目录>/scripts/check-deps.cjs"` 列出缺少或过期的 companion，并给出内置流程作为 fallback；只有必需资源缺失才会失败。它先查运行中的这份 skill 所在目录，再查 `~/.claude/skills`、`~/.agents/skills`、项目内的 `.agents/skills` 与 `.claude/skills`，最后是旧的 `~/.codex/skills`。
+可选的 companion skill 不会被静默安装。要用 Chrome 官方的 Modern Web Guidance（新 HTML/CSS/DOM 特性的写法与 fallback）时，由你决定是否安装：`DISABLE_TELEMETRY=1 npx modern-web-guidance@latest install` 是交互式向导，没有终端提示时用 `DISABLE_TELEMETRY=1 npx -y modern-web-guidance@latest install -g -a <agent> -y`（去掉 `-g` 装到当前项目；PowerShell 先运行 `$env:DISABLE_TELEMETRY = "1"`）。它默认会向 Google 发匿名使用数据，所以流水线里的每条 `modern-web-guidance` 命令都带 `DISABLE_TELEMETRY=1`；用法和何时才去查它见 [modern-web-guidance.md](../skill/references/modern-web-guidance.md)。`node "<skill 目录>/scripts/check-deps.cjs"` 列出缺少或过期的 companion，并给出内置流程作为 fallback；只有必需资源缺失才会失败。它先查运行中的这份 skill 所在目录，再查 `~/.claude/skills`、`~/.agents/skills`、项目内的 `.agents/skills` 与 `.claude/skills`，最后是旧的 `~/.codex/skills`。
 
 ## 附录 A：离线 Release 包
 

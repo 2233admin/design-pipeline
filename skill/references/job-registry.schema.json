@@ -25,6 +25,7 @@
           "activation": { "enum": ["explicit", "scored", "default"] },
           "priority": { "type": "integer", "minimum": 0 },
           "keywords": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "excludeKeywords": { "type": "array", "items": { "type": "string", "minLength": 1 } },
           "primaryKnowledge": {
             "type": "object",
             "additionalProperties": false,

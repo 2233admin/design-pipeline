@@ -4,6 +4,10 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Modern Web Guidance is a tracked optional companion (change `modern-web-guidance-companion`). `DISABLE_TELEMETRY=1 npx modern-web-guidance@latest install` installs Chrome's `modern-web-guidance` skill; `check-deps.cjs` now reports the group `Web platform guidance` (install hint, built-in fallback) and checks that the installed skill still has the `search` and `retrieve` commands and its browser-support section. The new guide `references/modern-web-guidance.md` is consulted on demand: when the work produces or reviews one concrete platform pattern in a web interface, or a review needs a sourced platform rule, never when the change only follows the repository's existing pattern or is backend, CI or tooling work. `designer-pipeline route` selects it as the job `modern-web-guidance` (a job may now list `excludeKeywords`, which keep a brief from being scored for it). Every command carries `DISABLE_TELEMETRY=1`, the project's own rules win over a guide, a review cites a guide as its id plus one line of conclusion without copying text, and guide ids go into `qa.md`. `sources.lock.json` records the guide as an `adapted-reference` with the reviewed npm package (`modern-web-guidance@1.0.0`), skill version (`2026_11_09-5bcc021b`) and a content hash of the upstream `SKILL.md` and `LICENSE`. No upstream guide, script or search data is bundled, and a missing skill stays `OK` with exit 0.
+
 ### Fixed
 
 - `tests/ablation-eval.test.cjs` passes on Windows (change `ablation-reference-variant`, #372): the test imports the eval modules through `file://` URLs and gives its temporary profile the `AppData` folders Chrome needs, the eval wraps puppeteer's `Uint8Array` screenshot in a `Buffer` before decoding it, and `runAgent` quotes command parts that contain spaces when it goes through `cmd.exe`.

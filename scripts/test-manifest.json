@@ -67,6 +67,7 @@
     "interoperability.test.cjs",
     "mengto-skills.test.cjs",
     "animate-ui-source.test.cjs",
+    "modern-web-guidance-companion.test.cjs",
     "animation-opportunity-reference.test.cjs",
     "design-system-package.test.cjs",
     "archive-terminal-wiki-kit.test.cjs",

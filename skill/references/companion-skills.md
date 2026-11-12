@@ -236,6 +236,19 @@ earshot is a Python package (CPU, local). Its readings are evidence for creative
 pass a gate or count as Visual Acceptance. Without it, `verify audio` and `references/audio-gate.md`
 stay the check, and the soundtrack is reported as measured, not listened to.
 
+## Web Platform Guidance Set
+
+| Skill | Source | Pipeline role |
+| --- | --- | --- |
+| `modern-web-guidance` | `GoogleChrome/modern-web-guidance` (Apache-2.0), installed with `DISABLE_TELEMETRY=1 npx modern-web-guidance@latest install` | [Local guide](modern-web-guidance.md): current HTML, CSS and DOM features with fallbacks, found by `search` and read by `retrieve` when the work produces or reviews a concrete platform pattern; optional, nothing bundled, no silent install |
+
+It decides the platform feature and its fallback only, and only when the task needs it: a change
+that follows the pattern the repository already has does not consult it. The project's own rules,
+`DESIGN.md`, tokens and recorded rejections win over a guide, and `good-css.md` plus the web
+interface rules stay the fallback when the skill is absent. Every command runs with
+`DISABLE_TELEMETRY=1`. `check-deps.cjs` reports the group and checks that the installed skill still
+has the `search` and `retrieve` commands and its browser-support section.
+
 ## Optional Later
 
 | Skill | Source | Use when |

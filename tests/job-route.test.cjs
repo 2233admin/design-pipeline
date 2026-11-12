@@ -161,6 +161,74 @@ test("a refine word does not take a brief from an explicit job or a stronger sco
   assert.equal(single.job, "refine-intents");
 });
 
+test("briefs that build or review one platform pattern route to the modern-web-guidance guide", () => {
+  const guide = "references/modern-web-guidance.md";
+  assert.ok(fs.existsSync(path.join(repoRoot, "skill", guide)), guide);
+  assert.ok(packageResources.required.includes(guide), guide);
+  for (const [query, keyword] of [
+    ["build a modal dialog that closes on outside click", "modal dialog"],
+    ["add a tooltip to the toolbar icons", "tooltip"],
+    ["position the popover with anchor positioning", "popover"],
+    ["review the form validation for the checkout", "form validation"],
+    ["add dark mode to the settings page", "dark mode"],
+    ["use container queries for the card grid", "container quer"],
+    ["这个对话框怎么做焦点管理", "对话框"],
+    ["表单校验用原生的方式", "表单校验"],
+    ["审查时给出平台规则的出处，带出处", "平台规则"],
+  ]) {
+    const result = run(["route", "--root", repoRoot, "--query", query]);
+    assert.equal(result.status, 0, `${query}: ${result.stderr || result.stdout}`);
+    assert.equal(result.output.status, "ready", query);
+    assert.equal(result.output.job, "modern-web-guidance", query);
+    assert.ok(result.output.candidates[0].matchedKeywords.includes(keyword), query);
+    assert.equal(`references/${result.output.primaryKnowledge.id}.md`, guide, query);
+    assert.equal(result.output.primaryKnowledge.admission, "ready", query);
+    // The guide is read, not executed: the route adds no step beyond the kernel.
+    assert.deepEqual(result.output.next.map((step) => step.role), ["kernel", "kernel"], query);
+  }
+});
+
+test("briefs that follow the existing pattern or are not web-interface work do not route to modern-web-guidance", () => {
+  for (const query of [
+    "add another tooltip to match the existing tooltip component",
+    "build a modal dialog the same as the existing one",
+    "copy the existing popover for the new menu",
+    "沿用现有的对话框写法加一个确认框",
+    "按现有弹窗再做一个",
+    "add form validation to the backend orders API route",
+    "fix the failing GitHub Actions workflow that builds the dialog package",
+    "add a SQL migration for the autofill preferences table",
+    "write a database index for the date picker settings",
+    "修后端的表单校验接口",
+    "make a quiet operations dashboard",
+  ]) {
+    const result = routeJob({ query });
+    assert.notEqual(result.job, "modern-web-guidance", query);
+    assert.ok(!result.candidates.some((candidate) => candidate.id === "modern-web-guidance" && candidate.score > 0), query);
+  }
+});
+
+test("modern-web-guidance does not take a brief from a job that owns it", () => {
+  assert.equal(routeJob({ query: "clone this page and add a tooltip" }).job, "website-clone");
+  assert.equal(routeJob({ query: "critique this modal dialog" }).job, "refine-intents");
+  assert.equal(routeJob({ query: "gsap scrolltrigger animation for the popover" }).job, "technique");
+  assert.equal(routeJob({ query: "what's it called when a popover scales in" }).job, "motion-vocabulary");
+  const film = routeJob({ query: "Create a product launch video with a tooltip on screen" });
+  assert.equal(film.job, "motion-graphics");
+  assert.equal(film.deliverableForm, "product-launch-video");
+});
+
+test("excludeKeywords must be a list of non-empty strings", () => {
+  assert.throws(() => validateJobRegistry(registry([job({ excludeKeywords: "backend" })])), /excludeKeywords is invalid/);
+  assert.throws(() => validateJobRegistry(registry([job({ excludeKeywords: [" "] })])), /excludeKeywords is invalid/);
+  const excluding = registry([
+    job(),
+    job({ id: "guide", activation: "scored", priority: 10, keywords: ["dialog"], excludeKeywords: ["existing"] }),
+  ]);
+  assert.equal(routeJob({ registry: excluding, query: "add a dialog" }).job, "guide");
+  assert.equal(routeJob({ registry: excluding, query: "add a dialog like the existing one" }).job, "product-design");
+});
+
 test("game VFX and shader briefs select graphics without a library name", () => {
   for (const query of [
     "制作游戏法术 VFX 效果，蓄力、冲击波、火花和消散，GPU shader，可重播和调整强度",

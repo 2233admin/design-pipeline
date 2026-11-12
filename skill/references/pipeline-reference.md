@@ -470,6 +470,14 @@ pinned practices, category references and offline specimens are built in, includ
 CSS, utility classes, StyleX and CSS-in-JS. Read the matching entries and preserve their conditions
 alongside project tokens, browser support, semantics and existing motion/evidence contracts.
 
+To produce or review one concrete platform pattern in a web interface, or to cite a platform rule in
+a review, use `references/modern-web-guidance.md`: the optional `modern-web-guidance` companion
+(`search`, then `retrieve`, with `DISABLE_TELEMETRY=1`) when installed, `good-css.md`, the web
+interface rules and MDN or web.dev when not. A change that only follows the pattern the repository
+already has does not consult it, and the project's own rules win when they disagree with a guide.
+It adds no gate or receipt; guide ids and adopted fallbacks go into `qa.md`, and a review cites a
+guide as its id plus one line of conclusion.
+
 Catalog CLIs are escape hatches. Open them only when `designer-pipeline route` selects that catalog
 as the primary knowledge door, or when a listed secondary is needed as reference. Do not search
 MengTo, Prism, Astryx, shadcnio, DesignMD, iart, and holosticker as peer Stage 0 searches.

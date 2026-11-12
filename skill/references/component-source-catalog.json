@@ -8108,6 +8108,33 @@
       "licenseScope": "Exact pinned LICENSE contains the full explicit MIT grant, notice-retention condition and warranty disclaimer, despite lacking a MIT License heading. Scope: Selected .claude/skills/gepa-optimize-anything/**, LICENSE, README.md and pyproject.toml; optimizer reference, outside web-component ranking."
     },
     {
+      "id": "source/googlechrome/modern-web-guidance",
+      "sourceId": "googlechrome/modern-web-guidance",
+      "recordType": "source",
+      "name": "Modern Web Guidance",
+      "availability": "reference-link",
+      "aliases": [
+        "https://github.com/GoogleChrome/modern-web-guidance"
+      ],
+      "localPaths": {
+        "guide": "references/modern-web-guidance.md"
+      },
+      "provenance": {
+        "source": "Modern Web Guidance",
+        "license": "Apache-2.0",
+        "url": "https://github.com/GoogleChrome/modern-web-guidance",
+        "revision": "4dd968349e54ca45a05dd5c818fb035c9054b022"
+      },
+      "license": {
+        "state": "verified",
+        "id": "Apache-2.0",
+        "evidence": [
+          "https://github.com/GoogleChrome/modern-web-guidance/blob/4dd968349e54ca45a05dd5c818fb035c9054b022/LICENSE"
+        ]
+      },
+      "licenseScope": "Apache License 2.0 at the root of revision 4dd968349e54ca45a05dd5c818fb035c9054b022; applies to that repository snapshot, not later upstream revisions. This package ships no upstream guide, script or search data: it is an optional companion installed by the user, and references/modern-web-guidance.md restates in this project words how the installed CLI is called. Retain the required notices if any upstream text is ever copied."
+    },
+    {
       "id": "source/greensock/gsap",
       "sourceId": "greensock/gsap",
       "recordType": "source",
