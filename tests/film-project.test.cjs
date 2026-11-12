@@ -45,7 +45,7 @@ test("scaffold writes a gate-passing storyboard, a composition wired to its beat
   try {
     const result = scaffoldFilm(dir, { id: "my-film" });
     assert.equal(result.status, "scaffolded");
-    for (const name of ["package.json", "storyboard.json", "index.html", "lib/patterns.js", "lib/timeline-probe.js", "reference.md", "sound.md", "qa.md", "FILM.md"]) assert.ok(fs.existsSync(path.join(dir, name)), name);
+    for (const name of ["package.json", "storyboard.json", "index.html", "lib/patterns.js", "lib/timeline-probe.js", "reference.md", "sound.md", "qa.md", "FILM.md", "tunables.json", "tunables.js"]) assert.ok(fs.existsSync(path.join(dir, name)), name);
     const board = JSON.parse(fs.readFileSync(path.join(dir, "storyboard.json"), "utf8"));
     assert.equal(board.id, "my-film");
     assert.equal(checkStoryboard(board).status, "passed");
@@ -111,7 +111,7 @@ test("film check reports skipped gates with the command that unblocks them", () 
     fs.rmSync(path.join(dir, "index.html"));
     const result = checkFilmProject(dir);
     assert.equal(result.status, "incomplete");
-    assert.deepEqual(result.steps.map((step) => [step.gate, step.status]), [["storyboard", "passed"], ["timeline", "skipped"], ["render", "skipped"], ["check", "passed"]]);
+    assert.deepEqual(result.steps.map((step) => [step.gate, step.status]), [["storyboard", "passed"], ["tunables", "passed"], ["timeline", "skipped"], ["render", "skipped"], ["check", "passed"]]);
     assert.match(result.next, /hyperframes render/);
     assert.equal(result.creativeAcceptance, "not-assessed");
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }

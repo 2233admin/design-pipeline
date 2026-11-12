@@ -198,6 +198,9 @@ workflow (`next --deliverable film --job-plan`), which has no stack choices to m
 - Note constraints such as no external images, single-file HTML, mobile-first, accessibility, or brand rules.
 - Resolve the surface mode (`Persuade`, `Operate`, `Read`, or `Experience`) and whether the work is
   an extension, refinement, or redesign before choosing a visual direction.
+- Propose no visual direction at this stage unless the owner pinned one. A pin names the look in
+  the owner's words; a product cited as a reference sets the craft bar and is recorded as such,
+  not as the world (see `references/impeccable-contract.md`).
 
 ### Direction and Copy Rules
 

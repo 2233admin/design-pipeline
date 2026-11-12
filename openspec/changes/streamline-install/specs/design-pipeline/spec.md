@@ -6,7 +6,7 @@ The repository SHALL ship `.claude-plugin/marketplace.json` with one plugin, `de
 
 #### Scenario: A user installs from the marketplace
 
-- **WHEN** a user runs `/plugin marketplace add 2233admin/design-pipeline` and `/plugin install design-pipeline@design-pipeline`
+- **WHEN** a user runs `/plugin marketplace add XartLab/design-pipeline` and `/plugin install design-pipeline@design-pipeline`
 - **THEN** Claude Code SHALL fetch the Release zip, not clone `skill/vendor`, and list one skill, `design-pipeline`.
 
 #### Scenario: The package is a valid plugin root

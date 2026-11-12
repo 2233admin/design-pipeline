@@ -69,6 +69,13 @@ button { min-height: 32px; padding: 0 12px; border: 0; background: #1d4ed8; colo
 .states { display: flex; gap: 12px; margin: 0 0 16px; }
 .states .pale:hover { color: #6b8cf0; }
 .states .bare:focus-visible { outline: none; }
+/* audit.motion-properties: a transition of every property, a transition of layout properties, a
+   blur that never ends, and a loop that keeps running far below the fold. */
+.every { transition: all 200ms ease-in; }
+.grow { transition: height 300ms, margin-top 300ms; }
+.glow { animation: glow 3s infinite; }
+@keyframes glow { 50% { filter: blur(4px); } }
+.far { margin-top: 2400px; }
 </style>
 </head>
 <body>
@@ -95,6 +102,10 @@ button { min-height: 32px; padding: 0 12px; border: 0; background: #1d4ed8; colo
   <p class="reveal">Text that only an animation reveals</p>
   <p><span class="spin">Turning</span></p>
   <div class="states"><button type="button" class="pale">Pale on hover</button><button type="button" class="bare">No focus ring</button></div>
+  <p class="every">Transitions every property</p>
+  <p class="grow">Transitions its height</p>
+  <p class="glow">Blurs without end</p>
+  <p class="far"><span class="spin">Turning below the fold</span></p>
 </main>
 </body>
 </html>

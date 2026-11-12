@@ -245,6 +245,7 @@ Pick the lowest-rung tool that reaches each beat:
 | Enamel, solid bevels, angle-dependent materials | WebGL/Three.js + GLSL or Blender | `film-materials.md` |
 | Music as code | `film score --project-root . --bpm <n> --template <name>` | `film-score.md` |
 | Virtual camera filming an agent's terminal while a tracker locks onto typed glyphs | `film scaffold --template tracking-hud --output <new-dir>`, edit `film.config.js`, `node build.cjs` | `film-tracking-hud-template.md` |
+| Values the owner may change without code (beat length, colours, copy) | `tunables init`, then read `tunable("id")` where the thing is built; `tunables panel` to edit | `tunables.md` |
 | Narration phrase timing | `film voiceover --project-root . --audio <take> --write` | this page, storyboard |
 | Loudness and fades | `audio master --input <audio> --output <wav>` | `audio-gate.md` |
 | Hit cues on their frames | `verify audio --audio <film> --storyboard storyboard.json` (`film check` runs it) | `audio-gate.md#hit-cues` |

@@ -39,7 +39,7 @@ test("marketplace.json lists the Release archive as one valid plugin entry", () 
   assert.match(entry.name, identifier);
   assert.equal(entry.name, "design-pipeline");
   assert.equal(entry.source.source, "archive");
-  assert.equal(entry.source.url, "https://github.com/2233admin/design-pipeline/releases/latest/download/design-pipeline-skill.zip");
+  assert.equal(entry.source.url, "https://github.com/XartLab/design-pipeline/releases/latest/download/design-pipeline-skill.zip");
   assert.equal(entry.version, undefined, "the version comes from the package's plugin.json");
   assert.equal(JSON.stringify(marketplace).includes(".."), false);
 });
