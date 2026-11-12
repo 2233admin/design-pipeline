@@ -630,6 +630,7 @@ test("motion properties: transition all, a layout property, an endless blur and 
 @keyframes turn { to { transform: rotate(360deg); } }
 p, span { margin: 0 0 8px; }
 span { display: inline-block; }
+html { transition: all 250ms; }
 #every { transition: all 200ms; }
 #named { transition: opacity 200ms, transform 200ms; }
 #instant { transition: all 0s; }
@@ -646,15 +647,17 @@ span { display: inline-block; }
 #watched { animation: turn 2s linear infinite; }
 #lazy { content-visibility: auto; contain-intrinsic-size: auto 40px; }
 #skipped { animation: turn 2s linear infinite; }
+#deco::before { content: ""; position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: #18181b; animation: turn 2s linear infinite; }
 #busy span { animation: turn 1s linear infinite; }`;
   const body = `<p id="every">Every property</p><p id="named">Named properties</p><p id="instant">No duration</p><p id="tall">Height and margin</p><p id="moved">Transform</p><p id="underline">Underline</p>
 <p id="grow">Grows</p><p><span id="nudge">Nudges</span></p><p id="haze">Hazes</p><p id="soften">Softens once</p>
-<div id="far"><p><span id="loop">Loops unseen</span></p><p><span id="held">Held</span></p><p><span id="watched">Watched</span></p><div id="lazy"><p><span id="skipped">Skipped</span></p></div><p id="busy" role="status"><span>Loading</span></p></div>
+<div id="far"><p><span id="loop">Loops unseen</span></p><p><span id="held">Held</span></p><p><span id="watched">Watched</span></p><div id="lazy"><p><span id="skipped">Skipped</span></p></div><p id="deco">Decorated</p><p id="busy" role="status"><span>Loading</span></p></div>
 <script>new IntersectionObserver((entries) => { for (const entry of entries) entry.target.style.animationPlayState = entry.isIntersecting ? "running" : "paused"; }).observe(document.getElementById("watched"));</script>`;
   const probe = { id: "motion", kind: "audit", thresholds: { fonts: ["sans-serif"] } };
   const result = await measure(t, "motion", [probe], { html: page(style, body) });
   const found = findingsOf(result, "audit.motion-properties");
   assert.deepEqual(found.slice(0, -1).map((finding) => [finding.selector, finding.actual]), [
+    ["html", "transition-property: all over 250ms"],
     ["#every", "transition-property: all over 200ms"],
     ["#tall", "transition of height over 300ms, margin over 300ms"],
     ["#underline::after", "transition-property: all over 150ms"],
@@ -665,14 +668,20 @@ span { display: inline-block; }
   assert.equal(found.at(-1).selector, "#loop", "the held loop, the watched loop, the loop skipped by content-visibility and the role=status spinner are not reported");
   assert.match(found.at(-1).actual, /^animation turn runs in an infinite loop \d+(\.\d+)?px below the 1280x800 viewport$/);
   assert.match(found[0].fix, /^Name the properties that change/);
-  assert.match(found[1].fix, /scale\(\) for width or height, translate\(\) for top, left or margin/);
-  assert.match(found[5].fix, /^Run the blur once/);
+  assert.match(found[2].fix, /scale\(\) for width or height, translate\(\) for top, left or margin/);
+  assert.match(found[6].fix, /^Run the blur once/);
   assert.match(found.at(-1).fix, /IntersectionObserver.*role="status"/);
   assert.equal(statusAt(result, "audit.motion-properties"), "failed");
   for (const finding of found) assert.equal(finding.severity, "error", finding.selector);
+  // #deco is 2400px below the fold but its ::before is fixed at the top of the viewport. A
+  // pseudo-element has no box the page can read, so its off-screen state is listed, never failed.
+  const unread = [{ selector: "#deco::before", actual: "off-screen state not measurable: animation turn runs in an infinite loop on ::before, whose box the page cannot read" }];
+  const motionCoverage = (measured) => measured.probes[0].coverage[0].checks.find((check) => check.code === "audit.motion-properties");
+  assert.deepEqual(motionCoverage(result).notMeasured, unread);
 
   // The repaired page: named compositor properties, a one-shot blur, and loops paused out of view.
   const repaired = style
+    .replace("html { transition: all 250ms; }", "html { transition: background-color 250ms; }")
     .replace("#every { transition: all 200ms; }", "#every { transition: opacity 200ms; }")
     .replace("#tall { transition: height 300ms ease-out, margin 300ms ease-out; }", "#tall { transition: transform 300ms ease-out; }")
     .replace("transition: all 150ms, width 150ms;", "transform-origin: left; transition: transform 150ms;")
@@ -682,8 +691,9 @@ span { display: inline-block; }
   const clean = await measure(t, "motion-clean", [probe], { html: page(repaired, body) });
   assert.deepEqual(findingsOf(clean, "audit.motion-properties"), []);
   assert.equal(statusAt(clean, "audit.motion-properties"), "passed");
-  const coverage = clean.probes[0].coverage[0].checks.find((check) => check.code === "audit.motion-properties");
+  const coverage = motionCoverage(clean);
   assert.ok(coverage.checked >= 10, `transitions and animations are counted (${coverage.checked})`);
+  assert.deepEqual(coverage.notMeasured, unread, "what cannot be measured is still listed on a passing page");
 });
 
 test("an inline link is exempt from target size only beside text in its own inline formatting context", { skip: tools.skip }, async (t) => {

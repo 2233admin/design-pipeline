@@ -16,8 +16,8 @@ plain JSON in `options` and `pass`. Each audit row must report exactly the codes
    `pass.motion`; `auditPage` throws when it is missing, so a caller that builds its own pass cannot
    skip the check. `evals/ablation/measure.mjs` builds its pass with `auditPass` and needs no edit.
 
-3. **Transitions are read from computed style.** For every element under `body`, and for its
-   `::before` and `::after` when they have content, `transition-property` and `transition-duration`
+3. **Transitions are read from computed style.** For the document element and every element under
+   `body`, and for the `::before` and `::after` of each when they have content, `transition-property` and `transition-duration`
    are paired (a shorter duration list repeats). An entry with a duration above zero is judged:
    `all` fails, a layout property fails. This judges a closed menu, a hidden dialog and an unhovered
    button without opening them, which the animations list cannot do. `transition: all 0s`, the
@@ -37,7 +37,11 @@ plain JSON in `options` and `pass`. Each audit row must report exactly the codes
    animation (`iterations` or `endTime` infinite): a `blur(` value in any `filter` or
    `backdrop-filter` keyframe fails; and when it is `running`, its target has a box, the target is
    not skipped by `content-visibility: auto` (`checkVisibility({ contentVisibilityAuto: true })`)
-   and the box lies wholly outside the viewport, it fails with the distance and the side.
+   and the box lies wholly outside the viewport, it fails with the distance and the side. An
+   animation on `::before` or `::after` is not judged for this: the page can read only the box of
+   the element that owns the pseudo-element, which says nothing about a fixed or absolute
+   pseudo-element. Such a loop is listed under `notMeasured` in the coverage and never fails; its
+   layout and blur findings do not depend on a box and still apply.
 
 6. **Exemption.** Motion on or inside `STILL_MOVING.essential` is counted as checked and not
    judged. A progress bar that transitions `width` inside `role="progressbar"` passes, as its
@@ -77,5 +81,7 @@ vercel-labs/web-interface-guidelines `command.md` (Animation; MIT, lock entry
 - A keyframe animation that has ended without a fill mode is gone at the reading and is not
   judged. Transitions do not have this gap.
 - A loop that is on screen at rest and scrolls out later is not followed (`UC-43`).
+- A loop on a pseudo-element is never failed for running off screen, so a decorative `::before`
+  blob below the fold passes this check; the coverage lists it and `UC-43` reviews it.
 - A stylesheet framework that ships `transition: all` on a class the page uses now fails the page.
   That is the rule; the fix is to name the properties.

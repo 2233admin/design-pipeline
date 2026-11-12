@@ -6,7 +6,7 @@ The audit probe SHALL report `audit.motion-properties`, which always runs. It SH
 
 #### Scenario: A transition names every property
 
-- **WHEN** an element, a hidden element or a `::before`/`::after` with content has `transition: all 200ms`
+- **WHEN** the document element, an element under `body`, a hidden element or a `::before`/`::after` with content has `transition: all 200ms`
 - **THEN** `audit.motion-properties` SHALL fail with the selector, the duration and a fix that names the properties to list
 - **AND** `transition: opacity 200ms, transform 200ms` and `transition: all 0s` SHALL pass.
 
@@ -29,6 +29,13 @@ The audit probe SHALL report `audit.motion-properties`, which always runs. It SH
 - **THEN** `audit.motion-properties` SHALL fail with the distance from the viewport and a fix that pauses the loop out of view
 - **AND** a paused loop, a loop an IntersectionObserver has paused and a loop skipped by `content-visibility: auto` SHALL pass
 - **AND** a loop that leaves the viewport only after scrolling SHALL NOT be measured; review row `UC-43` covers it.
+
+#### Scenario: A loop runs on a pseudo-element
+
+- **WHEN** an infinite animation is running on a `::before` or `::after`, wherever the element that owns it is
+- **THEN** `audit.motion-properties` SHALL NOT fail it for running off screen, because the page cannot read the box of a pseudo-element
+- **AND** the coverage SHALL list it under `notMeasured` with the animation and the pseudo-element
+- **AND** its layout-property and blur findings SHALL still apply.
 
 #### Scenario: Loading indicators are exempt
 

@@ -1527,7 +1527,8 @@ function auditPage(options, pass) {
     const durations = style.transitionDuration.split(",").map(milliseconds);
     return style.transitionProperty.split(",").map((property, index) => ({ property: property.trim(), ms: durations[index % durations.length] })).filter((item) => item.property !== "none" && item.ms > 0);
   };
-  for (const el of everything) {
+  // The document element is scanned too: a theme transition on html or :root is not under body.
+  for (const el of [root, ...everything]) {
     const subjects = [["", styleOf(el)]];
     for (const pseudo of ["::before", "::after"]) {
       const style = getComputedStyle(el, pseudo);
@@ -1565,8 +1566,15 @@ function auditPage(options, pass) {
     if (blurred.length) failed("audit.motion-properties", target, { selector, expected: "blur animated once, for a short effect", actual: `${name} animates ${blurred.join(", ")} blur() in an infinite loop`, message: "the element animates a blur without end", fix: FIX.motionBlur });
     // Off screen: no part of the box is in the viewport at this reading. Content skipped by
     // content-visibility: auto is not ticked by the browser, so it counts as paused.
+    if (animation.playState !== "running" || !target.checkVisibility({ contentVisibilityAuto: true })) continue;
+    // A pseudo-element has no box the page can read, and its host's box says nothing about a fixed
+    // or absolute ::before. Its off-screen state is listed as not measured and never fails.
+    if (effect.pseudoElement) {
+      notMeasured("audit.motion-properties", target, `off-screen state not measurable: ${name} runs in an infinite loop on ${effect.pseudoElement}, whose box the page cannot read`, selector);
+      continue;
+    }
     const box = target.getBoundingClientRect();
-    if (animation.playState !== "running" || !(box.width > 0 || box.height > 0) || !target.checkVisibility({ contentVisibilityAuto: true })) continue;
+    if (!(box.width > 0 || box.height > 0)) continue;
     const where = box.top >= viewport.height ? `${round2(box.top - viewport.height)}px below` : box.bottom <= 0 ? `${round2(-box.bottom)}px above` : box.left >= viewport.width ? `${round2(box.left - viewport.width)}px right of` : box.right <= 0 ? `${round2(-box.right)}px left of` : null;
     if (where) failed("audit.motion-properties", target, { selector, expected: "an infinite animation paused while its element is outside the viewport", actual: `${name} runs in an infinite loop ${where} the ${viewport.width}x${viewport.height} viewport`, message: "an infinite animation keeps running off screen", fix: FIX.motionOffscreen });
   }

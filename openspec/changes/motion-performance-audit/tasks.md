@@ -16,7 +16,13 @@
 - [x] 3.2 `ui-craft-sources.md` (measured-audit row, `UC-42` to `UC-44`, key `FMP`), `ui-rule-coverage.json` (17 rows), `ibelick-ui-skills.md`, `workflow-web.md`, `animation-opportunity-and-review.md`, `docs/features.md`, CHANGELOG.
 - [x] 3.3 `tests/ui-rule-coverage.test.cjs` (no row pending on #355) and `tests/ui-craft-sources.test.cjs` (`UC-44`, key `FMP`).
 
-## 4. Verification
+## 4. Review fixes (PR #381)
 
-- [x] 4.1 `node --test tests/interaction-audit.test.cjs tests/ui-rule-coverage.test.cjs tests/ui-craft-sources.test.cjs`.
-- [x] 4.2 `npm test` on Windows: 2190 of 2206 repository tests pass, 10 skip, 6 fail in `atomic-age-kit`, `browser-locate`, `measured-spec-drift` (2), `template-distill` and `template-style-pack`; none of them reads a file this change touches. Five fail the same way at the base commit `438b4654` (Windows fonts and path separators); the `browser-locate` one is a profile collision under the QA's concurrency and passes alone. Browser-tool self-tests 13 of 13.
+- [x] 4.1 The transition scan includes the document element, so `html { transition: all }` fails.
+- [x] 4.2 An infinite animation on `::before` or `::after` is not judged for running off screen; it is listed under `notMeasured`. Test: a fixed `::before` of an element below the fold is listed and not failed.
+
+## 5. Verification
+
+- [x] 5.1 `node --test tests/interaction-audit.test.cjs tests/ui-rule-coverage.test.cjs tests/ui-craft-sources.test.cjs`.
+- [x] 5.2 `npm test` on Windows, before the review fixes: 2190 of 2206 repository tests pass, 10 skip, 6 fail in `atomic-age-kit`, `browser-locate`, `measured-spec-drift` (2), `template-distill` and `template-style-pack`; none of them reads a file this change touches. Five fail the same way at the base commit `438b4654` (Windows fonts and path separators); the `browser-locate` one is a profile collision under the QA's concurrency and passes alone. Browser-tool self-tests 13 of 13.
+- [x] 5.3 After the review fixes, focused checks only (no second full QA): `node --test tests/interaction-audit.test.cjs tests/ui-rule-coverage.test.cjs tests/ui-craft-sources.test.cjs` 55 of 55, `npm run specs:check` 107 of 107.
