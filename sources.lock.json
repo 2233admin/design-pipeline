@@ -59,6 +59,17 @@
       "committedAt": "2026-10-28T12:20:38-07:00"
     },
     {
+      "id": "arknights-printer",
+      "kind": "adapted-reference",
+      "repo": "https://github.com/AspldeZ/arknights-printer",
+      "revision": "20336d598f4848a257ce36002f339655c8655351",
+      "reviewedAt": "2026-11-12",
+      "documents": [
+        "skill/references/industrial-document-sheets.md"
+      ],
+      "committedAt": "2026-10-04T19:05:59+02:00"
+    },
+    {
       "id": "astryx",
       "kind": "npm",
       "package": "@astryxdesign/core",
@@ -1088,6 +1099,17 @@
       ],
       "committedAt": "2025-08-25T07:53:37+03:00",
       "treeSha256": "7c198506533a7aea74de1f7e71bae2a09a2f090c5c039419e0582e84deb5242c"
+    },
+    {
+      "id": "tactile-design",
+      "kind": "adapted-reference",
+      "repo": "https://github.com/kosta4a/tactile-design",
+      "revision": "30495a2db7cb59a72bacea106118ffeab7af00d9",
+      "reviewedAt": "2026-11-12",
+      "documents": [
+        "skill/references/tactile-product-ui.md"
+      ],
+      "committedAt": "2026-11-02T00:16:25+01:00"
     },
     {
       "id": "taste-skill",
