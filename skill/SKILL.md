@@ -18,6 +18,9 @@ inside this skill (below: `designer-pipeline`).
 2. Never skip ahead, never repeat a finished step, never show the user a draft whose error gates
    failed: apply each finding's `fix` and rerun the check.
 3. `rules` in a `next` result are the user's earlier rejections. Obey them.
+4. `ui` work in a project that has `package.json` lists that project's rule files, check commands
+   and quoted constraint lines. The project's rules and checks govern: read those files before
+   editing and run those checks; no `DESIGN.md`/`MOTION.md` or pipeline gates are required there.
 
 First call in a new project: pick the deliverable and tier and pass them to `next`:
 
@@ -31,7 +34,7 @@ First call in a new project: pick the deliverable and tier and pass them to `nex
 | Tier | When | Ceremony |
 | --- | --- | --- |
 | `quick` | one motion, shot, component or fix | build, gates, evidence |
-| `standard` | one whole deliverable | brief, concepts, draft review (two user decisions) |
+| `standard` | one whole deliverable | brief, then the work; `film`, `edit` and `web` add concepts and a draft review (two user decisions); `ui` asks for the brief and goes to the work |
 | `full` | large or shared work | adds an OpenSpec change and full lineage |
 
 Add `--mode replicate` when the user gives a reference to reproduce, `--mode freeform` when they
@@ -42,8 +45,9 @@ give no direction. Choose the tier yourself from the request size; the user can 
 - Ask everything missing in one round, numbered, each with your recommendation; "default"
   accepts all. Ask only facts that change the result: product, audience, duration, assets and
   their licenses. Decide style from references and judgment.
-- The user decides twice in standard work: which of three concepts, and accept or reject the
-  draft. A rejection needs one sentence; it becomes a project rule.
+- The user decides twice in standard `film`, `edit` and `web` work: which of three concepts, and
+  accept or reject the draft. `ui` at standard asks for the brief and then goes to the work. A
+  rejection needs one sentence; it becomes a project rule.
 - Show drafts with the video, `evidence/contact-sheet.png` and a one-paragraph gate summary.
 - Name the tools on each concept card in one line (for example "3D shot in Blender, score in
   Strudel"). Raise missing licenses there, not at delivery.

@@ -22,11 +22,34 @@ const CLI = "designer-pipeline";
 // Sub-workflows by deliverable (Q5, Q7): film, edit and web have their own stage modules and
 // guides.
 const { INTAKE } = require("./workflows/shared.cjs");
+const { hostWorkCommand, inspectHost } = require("./existing-project-core.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 
+// The ui deliverable builds screens, not a film, so it asks about what is built. Stage id, finish
+// rule, record, question and why come from the shared intake.
+const UI_INTAKE = {
+  ...INTAKE,
+  action: () => ({
+    ...INTAKE.action(),
+    questions: [
+      { id: "product", ask: "What are we building (a screen, a set of components or a design system), and what should a person be able to do with it?", recommended: "Take it from the conversation so far." },
+      { id: "audience", ask: "Who uses it, and on which devices?", recommended: "People using a browser on desktop and phone." },
+      { id: "scope", ask: "Which screens, components or states are in scope, and what does a person do first?", recommended: "The smallest set that lets one person finish the first task." },
+      { id: "assets", ask: "Which existing code, design system, brand rules, copy or images can be used, and are they licensed for this use?", recommended: "Only what you own or may use; reuse what the project already has first." },
+    ],
+  }),
+};
+
+// In an existing project (a root package.json) the work action is host-first: the facts are found
+// again at every call and printed; nothing is written and no stage reads them back.
 function codeStages(tier) {
-  const work = { id: "work", finished: (state) => Boolean(state.decisions?.delivered), action: () => ({ type: "run", command: tier === "full" ? `Open an OpenSpec change under openspec/changes/<id>/ and follow references/pipeline-reference.md; when verified: ${CLI} decide --project-root . --stage deliver --answer <evidence>` : `Follow references/pipeline-reference.md at the ${tier} tier (no OpenSpec; create DESIGN.md/MOTION.md only at standard if missing), verify the rendered surface, then: ${CLI} decide --project-root . --stage deliver --answer <evidence>`, why: tier === "full" ? "Full tier keeps OpenSpec lineage." : "Lighter tiers skip specification ceremony but keep the gates." }) };
-  return tier === "quick" ? [work] : [INTAKE, work];
+  const deliver = `${CLI} decide --project-root . --stage deliver --answer <evidence>`;
+  const work = { id: "work", finished: (state) => Boolean(state.decisions?.delivered), action: (state, root) => {
+    const host = inspectHost(root);
+    if (host) return { type: "run", command: hostWorkCommand(host, tier, deliver), why: "The host project's own rules and checks govern the work; the facts are found again at every call and are a prompt, not a record or evidence." };
+    return { type: "run", command: tier === "full" ? `Open an OpenSpec change under openspec/changes/<id>/ and follow references/pipeline-reference.md; when verified: ${deliver}` : `Follow references/pipeline-reference.md at the ${tier} tier (no OpenSpec; create DESIGN.md/MOTION.md only at standard if missing), verify the rendered surface, then: ${deliver}`, why: tier === "full" ? "Full tier keeps OpenSpec lineage." : "Lighter tiers skip specification ceremony but keep the gates." };
+  } };
+  return tier === "quick" ? [work] : [UI_INTAKE, work];
 }
 
 function stagesFor(state) {
@@ -76,7 +99,7 @@ function nextAction(root) {
     const directed = state.director && action.type === "ask" && ["concepts", "review"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
     const rules = state.rules.length ? { rules: state.rules.map((rule) => rule.text) } : {};
     const guide = SUB_WORKFLOWS[state.deliverable] ? { guide: `references/workflow-${state.deliverable}.md#${stage.id}` } : {};
-    return { ...action, ...guide, ...directed, ...rules, stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${action.type === "ask" ? action.question : action.command}` };
+    return { ...action, ...guide, ...directed, ...rules, stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${action.type === "ask" ? action.question : String(action.command).split("\n")[0]}` };
   }
   return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, line: `${state.deliverable}/${state.tier}: done` };
 }

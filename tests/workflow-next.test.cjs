@@ -304,14 +304,14 @@ test("web concepts asks for a section arc and a treatment, then keeps the shared
   assert.equal(choose.record, shared.CONCEPTS.action({}, dir).record);
 });
 
-test("film, edit and ui prompts at intake and concepts equal the shared ones", () => {
-  for (const deliverable of ["film", "edit", "ui"]) {
+test("film and edit prompts at intake and concepts equal the shared ones", () => {
+  for (const deliverable of ["film", "edit"]) {
     const dir = tmp();
     initState(dir, { deliverable, tier: "standard" });
     const intake = nextAction(dir);
     assert.equal(intake.stage, "intake", deliverable);
     assert.deepEqual(promptOf(intake), promptOf(shared.INTAKE.action()), deliverable);
-    if (deliverable !== "ui") assert.ok(intake.questions.some((question) => question.id === "duration"), `${deliverable} intake keeps the duration question`);
+    assert.ok(intake.questions.some((question) => question.id === "duration"), `${deliverable} intake keeps the duration question`);
   }
 
   const film = tmp();
@@ -325,6 +325,46 @@ test("film, edit and ui prompts at intake and concepts equal the shared ones", (
   const choose = nextAction(film);
   assert.equal(choose.type, "ask");
   assert.deepEqual(promptOf(choose), promptOf(shared.CONCEPTS.action(readState(film), film)));
+});
+
+test("ui intake asks about what is built, with no duration or film wording, and keeps the shared record", () => {
+  const dir = tmp();
+  initState(dir, { deliverable: "ui", tier: "standard" });
+  const action = nextAction(dir);
+  const sharedIntake = shared.INTAKE.action();
+  assert.equal(action.stage, "intake");
+  assert.equal(action.type, "ask");
+  assert.deepEqual(action.questions.map((question) => question.id), ["product", "audience", "scope", "assets"]);
+  assert.ok(action.questions.every((question) => question.ask && question.recommended));
+  assert.doesNotMatch(JSON.stringify(action), /how long|duration|film|promo|video|footage|beat|music|launch event/i);
+  assert.equal(action.record, sharedIntake.record);
+  assert.equal(action.question, sharedIntake.question);
+  assert.equal(action.why, sharedIntake.why);
+});
+
+test("ui stages keep their ids and order: quick is work; standard and full are intake then work", () => {
+  const quick = tmp();
+  initState(quick, { deliverable: "ui", tier: "quick" });
+  const first = nextAction(quick);
+  assert.equal(first.stage, "work");
+  assert.equal(first.remaining, 1);
+  assert.deepEqual(first.completed, []);
+
+  for (const tier of ["standard", "full"]) {
+    const dir = tmp();
+    initState(dir, { deliverable: "ui", tier });
+    const intake = nextAction(dir);
+    assert.equal(intake.stage, "intake", tier);
+    assert.equal(intake.remaining, 2, tier);
+    decide(dir, { stage: "intake", answer: "a settings screen" });
+    assert.ok(fs.existsSync(path.join(dir, "brief.md")), tier);
+    const work = nextAction(dir);
+    assert.equal(work.stage, "work", tier);
+    assert.deepEqual(work.completed, ["intake"], tier);
+    assert.equal(work.remaining, 1, tier);
+    decide(dir, { stage: "deliver", answer: "checked in a browser" });
+    assert.deepEqual(nextAction(dir).completed, ["intake", "work"], tier);
+  }
 });
 
 test("web stage ids per tier keep their order", () => {
@@ -401,4 +441,76 @@ test("film and edit review actions equal the shared one", () => {
   assert.equal(editReview.stage, "review");
   assert.deepEqual(promptOf(editReview), promptOf(shared.REVIEW.action(readState(edit))));
   assert.deepEqual(editReview.show, shared.REVIEW.action(readState(edit)).show);
+});
+
+const existingProject = () => {
+  const dir = tmp();
+  touch(dir, "package.json", JSON.stringify({ scripts: { test: "vitest run", build: "next build", dev: "next dev" } }));
+  touch(dir, "tsconfig.json", "{}");
+  touch(dir, "AGENTS.md", "# Agents\n\nNever edit generated files.\n");
+  touch(dir, "CONTEXT.md", "# Context\n禁区：订单流 canvas 引擎、注册表/架构。\n```\ndo not quote fenced code\n```\n");
+  touch(dir, "docs/research/survey.md", "This library was never built for panels.\n");
+  touch(dir, "docs/ux/ORDERFLOW_ACCEPTANCE_GATES.md", "面板不得自建 setInterval 循环。\n");
+  touch(dir, "docs/ux/UX_DECISION_LEDGER.md", "# Ledger\n### D-005: panels must not start their own random walk\n");
+  touch(dir, "docs/a.md", "plain notes\n");
+  touch(dir, "docs/.drafts/hidden.md", "never\n");
+  touch(dir, "src/panel.ts", "// never read by the tool\n");
+  return dir;
+};
+
+test("ui work in an existing project prints its rule files, checks and constraint lines from rule, ledger and gate files, and writes nothing", () => {
+  const dir = existingProject();
+  initState(dir, { deliverable: "ui", tier: "quick" });
+  const stateBefore = fs.readFileSync(path.join(dir, ".design-pipeline/state.json"), "utf8");
+  const work = nextAction(dir);
+  assert.equal(work.stage, "work");
+  const lines = work.command.split("\n");
+  const listed = lines.filter((line) => /^- (?:(?:AGENTS|CLAUDE|CONTEXT)\.md|docs\/\S+\.md)$/.test(line));
+  assert.deepEqual(listed, ["- AGENTS.md", "- CONTEXT.md", "- docs/a.md", "- docs/research/survey.md", "- docs/ux/ORDERFLOW_ACCEPTANCE_GATES.md", "- docs/ux/UX_DECISION_LEDGER.md"]);
+  assert.ok(lines.includes("- test: npm run test  (package.json scripts.test: vitest run)"));
+  assert.ok(lines.some((line) => line.startsWith("- typecheck: npx tsc --noEmit")));
+  assert.ok(lines.some((line) => line.startsWith("- lint: missing")));
+  assert.ok(lines.includes("- build: npm run build  (package.json scripts.build: next build)"));
+  const quoted = lines.filter((line) => /^- \S+\.md:\d+: /.test(line));
+  assert.deepEqual(quoted, [
+    "- AGENTS.md:3: Never edit generated files.",
+    "- CONTEXT.md:2: 禁区：订单流 canvas 引擎、注册表/架构。",
+    "- docs/ux/UX_DECISION_LEDGER.md:2: ### D-005: panels must not start their own random walk",
+    "- docs/ux/ORDERFLOW_ACCEPTANCE_GATES.md:1: 面板不得自建 setInterval 循环。",
+  ], "root rule files, then decision ledgers, then acceptance gates; a research doc is listed, never quoted");
+  assert.doesNotMatch(work.command, /fenced code|hidden\.md|src\/panel\.ts|never built|DESIGN\.md\/MOTION\.md only at standard|follow references\/pipeline-reference\.md/i);
+  assert.doesNotMatch(work.line, /\n/);
+  assert.equal(fs.readFileSync(path.join(dir, ".design-pipeline/state.json"), "utf8"), stateBefore);
+  assert.equal(fs.existsSync(path.join(dir, "brief.md")), false);
+
+  touch(dir, "package.json", JSON.stringify({ scripts: { test: "vitest run", lint: "eslint .", typecheck: "tsc -p ." } }));
+  touch(dir, "pnpm-lock.yaml", "");
+  const again = nextAction(dir).command.split("\n");
+  assert.ok(again.includes("- lint: pnpm run lint  (package.json scripts.lint: eslint .)"), "the facts are found again at every call");
+  assert.ok(again.includes("- typecheck: pnpm run typecheck  (package.json scripts.typecheck: tsc -p .)"));
+  assert.ok(again.some((line) => line.startsWith("- build: missing")));
+});
+
+test("ui work in an existing project caps the listed docs and quotes and says how many it left out", () => {
+  const dir = tmp();
+  touch(dir, "package.json", "{}");
+  for (let index = 0; index < 30; index += 1) touch(dir, `docs/n${String(index).padStart(2, "0")}.md`, "never\n");
+  touch(dir, "docs/zz-RULES.md", "Never hard-code colours.\n");
+  touch(dir, "CONTEXT.md", ["never 1", "never 2", "never 3", "never 4", "never 5"].join("\n"));
+  const facts = require("../skill/scripts/existing-project-core.cjs").inspectHost(dir);
+  assert.equal(facts.ruleFiles.length, 26);
+  assert.equal(facts.ruleFiles.at(-2), "docs/n23.md");
+  assert.equal(facts.ruleFiles.at(-1), "docs/zz-RULES.md", "a quote source is listed even past the cap");
+  assert.equal(facts.docsOmitted, 6);
+  assert.deepEqual(facts.quotes.map((quote) => `${quote.path}:${quote.line}`), ["CONTEXT.md:1", "CONTEXT.md:2", "CONTEXT.md:3", "docs/zz-RULES.md:1"]);
+  assert.equal(facts.quotesOmitted, 2);
+  initState(dir, { deliverable: "ui", tier: "full" });
+  decide(dir, { stage: "intake", answer: "a settings screen" });
+  const command = nextAction(dir).command;
+  assert.match(command, /^Open an OpenSpec change/);
+  assert.doesNotMatch(command, /follow references\/pipeline-reference\.md|DESIGN\.md\/MOTION\.md only at standard/i);
+  assert.match(command, /and 6 more \.md under docs\/ not listed/);
+  assert.match(command, /and 2 more matching lines not shown/);
+  assert.ok(command.split("\n").includes("- lint: missing (no lint script in package.json)"));
+  assert.ok(command.split("\n").includes("- typecheck: missing (no typecheck script in package.json)"), "no tsconfig.json, no tsc fallback");
 });

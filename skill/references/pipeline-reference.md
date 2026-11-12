@@ -207,6 +207,7 @@ Default artifact root:
 Implementation is blocked until the applicable foundation and route gates are ready. A blocked geometry or source stage may allow only the explicitly documented work that does not depend on it; do not reinterpret a partial exception as completion.
 
 ## Stage 0 Minimum
+
 ## Static Reference Reconstruction Module
 
 When the user supplies an image and asks for an identical, exact, 1:1, pixel-accurate, cloned, or
@@ -550,12 +551,13 @@ designer-pipeline template adapt --receipt receipt.json --context context.json -
 designer-pipeline template review --plan plan.json --review review.json --json
 designer-pipeline template approve --plan plan.json --approval approval.json --json
 ```
+
 `template select` requires a `changeRoot` in the direction-preview proof and revalidates `direction-preview.json` plus all referenced files from that contained root. The approval artifact must include `planContentHash` equal to the reviewed plan's `contentHash`.
 
 The live design panel is the reviewable projection of this flow, not the chat transcript.
 The first wave supports project-contained Web and Mobile evidence and metadata; it does not claim
 screenshot, URL, visual embedding, or Game support.
-For pipeline control and hash-bound artifacts, use the `plan`, `run`, `resume`, `verify`, `status`, `explain-block`, and `package` commands exposed by the current CLI. Read `references/pipeline-method.md` for the state, artifact, and invalidation contract.
+For pipeline control and hash-bound artifacts, use the `plan`, `run`, `resume`, `verify`, `status`, `explain-block`, and `package` commands exposed by the current CLI. `references/pipeline-phases.json` lists the phases, gates, inputs, outputs, and what each one invalidates. Run `explain-block` to see why a phase is blocked.
 
 ## Specialist and Catalog Routing
 
