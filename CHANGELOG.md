@@ -4,11 +4,7 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
-### Changed
-
-- Impeccable catalog reference moved to upstream `b4bff16` (skill 4.8.2) (change `impeccable-upstream-catchup`). The lock, catalog record and companion profile come from `sources:update`. `impeccable-product-design.json` records the ten upstream reference files that were not mapped (`component-review`, `craft-floor`, `doctor`, `hooks`, `routing`, `region-map`, `visualize`, `mode-operate`, `mode-persuade`, `mode-read`) as adopted, partly adopted, mapped or not adopted with a reason, and lists the CLI and cloud features left out on purpose (agents engine, rule packs, login/logout/whoami, critique history upload, DESIGN.md viewer sync, Loop, audit report store). The contract gains a Mode rules table (what the chosen world may own per visitor mode), more craft-floor checks and refusals (the eyebrow is the one ban), no visual direction during intake, and "a cited product sets the craft bar, not a pin"; the audit guide keeps its report in `qa.md` and checks right-to-left pages when `dir="rtl"` is declared. Guidance only: no gate, receipt, CLI command or flag.
-
-- The repository moved to `XartLab/design-pipeline` (change `move-repository-to-xartlab`). Install with `/plugin marketplace add XartLab/design-pipeline`; the Release download URLs and `doctor`'s install link use the new address. The old address still redirects, so existing installs keep working.
+## [0.14.0] - 2026-11-13
 
 ### Fixed
 
@@ -49,6 +45,10 @@ All notable changes to Design Pipeline are documented here.
 - Ablation eval can test references plus a design system against the skill, on product screens (change `ablation-reference-variant`, #372). New variant `reference-system` installs no skill and gives the agent one or two reference images in `references/` and a project `DESIGN.md`; four original reference pages ship under `evals/ablation/references/`, rendered to PNG at run time, and `run.mjs --references <dir>` swaps in your own screenshots (kept local, the folder is recorded in `environment.jsonl`). New default scenario set `product-ui`: `workbench-list` and `settings-page`, each with a product type scale, states carried by text, real controls, and undersized hit areas counted as `targetSizeFails` in `measure.json` (the composite score and the `results.tsv` columns are unchanged). The report adds the family `full` against `reference-system` and `reference-system` against `bare`, and ends with three questions answered yes, no or not enough data: does the skill beat no skill, skill or references plus a design system, does removing the `ui-craft` layer make output better or worse. The README says what follows from each verdict: a layer judged worse is cut or reworked. No run has been made yet; running it is the owner's call. Nothing under `skill/` changes.
 
 ### Changed
+
+- Impeccable catalog reference moved to upstream `b4bff16` (skill 4.8.2) (change `impeccable-upstream-catchup`). The lock, catalog record and companion profile come from `sources:update`. `impeccable-product-design.json` records the ten upstream reference files that were not mapped (`component-review`, `craft-floor`, `doctor`, `hooks`, `routing`, `region-map`, `visualize`, `mode-operate`, `mode-persuade`, `mode-read`) as adopted, partly adopted, mapped or not adopted with a reason, and lists the CLI and cloud features left out on purpose (agents engine, rule packs, login/logout/whoami, critique history upload, DESIGN.md viewer sync, Loop, audit report store). The contract gains a Mode rules table (what the chosen world may own per visitor mode), more craft-floor checks and refusals (the eyebrow is the one ban), no visual direction during intake, and "a cited product sets the craft bar, not a pin"; the audit guide keeps its report in `qa.md` and checks right-to-left pages when `dir="rtl"` is declared. Guidance only: no gate, receipt, CLI command or flag.
+
+- The repository moved to `XartLab/design-pipeline` (change `move-repository-to-xartlab`). Install with `/plugin marketplace add XartLab/design-pipeline`; the Release download URLs and `doctor`'s install link use the new address. The old address still redirects, so existing installs keep working.
 
 - `web-design-guidelines` is no longer an optional companion (change `ui-rule-coverage-map`, #356): its rules are held locally, so self-check stops listing it under Visual taste and the companion docs point to `references/web-interface-guidelines.md`. Not adopted, with the reason recorded in the map: Title Case, `preconnect`, and `baseline-ui`'s stack prescriptions.
 

@@ -80,7 +80,7 @@ node "<skill 目录>/scripts/check-design-foundation.cjs" --project-root . --jso
 Git Bash / Unix：
 
 ```bash
-version=0.13.0
+version=0.14.0
 base="https://github.com/XartLab/design-pipeline/releases/download/v${version}"
 work="${TMPDIR:-/tmp}/design-pipeline-v${version}"
 mkdir -p "$work"
@@ -97,7 +97,7 @@ node "$work/design-pipeline/scripts/install-local.cjs" --source "$work/design-pi
 Windows PowerShell：
 
 ```powershell
-$version = "0.13.0"
+$version = "0.14.0"
 $base = "https://github.com/XartLab/design-pipeline/releases/download/v$version"
 $work = Join-Path $env:TEMP "design-pipeline-v$version"
 $archive = Join-Path $work "design-pipeline-skill.zip"
