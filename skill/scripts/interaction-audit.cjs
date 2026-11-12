@@ -49,6 +49,11 @@
  * (Apache-2.0) and plugin87/ux-ui-agent-skills verify_reduced_motion.mjs and verify_states.mjs (MIT);
  * no source text is copied. openspec/changes/interaction-reading-motion-states/design.md has the
  * credits and the decisions.
+ *
+ * The motion-properties check is this project's own code too. Its rules are the measurable ones of
+ * ibelick/ui-skills baseline-ui and fixing-motion-performance (MIT) and of Vercel's Web Interface
+ * Guidelines (MIT); no source text is copied. openspec/changes/motion-performance-audit/design.md
+ * has the decisions.
  */
 
 const { fileURLToPath } = require("node:url");
@@ -80,6 +85,7 @@ const AUDIT_CODES = Object.freeze([
   "audit.heading-levels",
   "audit.reduced-motion",
   "audit.state-contrast",
+  "audit.motion-properties",
 ]);
 
 // An optional check measures only what the probe declares. Without its declaration it reports
@@ -169,6 +175,23 @@ const STILL_MOVING = Object.freeze({
   settleMs: REDUCED_MOTION_SETTLE_MS,
   essential: '[role="status"], [role="progressbar"], [role="alert"], [aria-busy="true"]',
   fades: Object.freeze(["opacity", "fill-opacity", "stroke-opacity", "visibility", "color", "background-color", "border-color", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "border-block-start-color", "border-block-end-color", "border-inline-start-color", "border-inline-end-color", "outline-color", "text-decoration-color", "caret-color", "column-rule-color", "accent-color", "fill", "stroke", "stop-color", "flood-color", "lighting-color"]),
+});
+// What audit.motion-properties judges, as CSS property names. `layout` is the box size and position
+// set of the upstream rule (width, height, top, left, margin, padding) with the names the browser
+// reports for the same declarations: the other two insets, the longhands a shorthand expands to in
+// keyframes, the shorthands a transition-property keeps, and the logical aliases. min-/max- sizes,
+// border widths and grid tracks are not in it. `blur` are the properties whose blur() is judged.
+// Motion on or inside `essential` is exempt, as it is under reduced motion.
+const MOTION_SIDES = ["top", "right", "bottom", "left", "block", "block-start", "block-end", "inline", "inline-start", "inline-end"];
+const MOTION_PROPERTIES = Object.freeze({
+  essential: STILL_MOVING.essential,
+  layout: Object.freeze([
+    "width", "height", "inline-size", "block-size",
+    "top", "right", "bottom", "left", "inset", ...MOTION_SIDES.slice(4).map((side) => `inset-${side}`),
+    "margin", ...MOTION_SIDES.map((side) => `margin-${side}`),
+    "padding", ...MOTION_SIDES.map((side) => `padding-${side}`),
+  ]),
+  blur: Object.freeze(["filter", "backdrop-filter"]),
 });
 
 // ---------- probe contract ----------
@@ -296,7 +319,12 @@ function auditOptions(probe) {
 function auditPass(kind, extra = {}) {
   if (!PASS_KINDS.includes(kind)) fail(SCOPE, `unknown audit pass ${String(kind)}; allowed: ${PASS_KINDS.join(", ")}`);
   if (kind === "state" && !Object.hasOwn(STATE_PSEUDO_CLASSES, extra.state)) fail(SCOPE, `unknown state ${String(extra.state)}; allowed: ${Object.keys(STATE_PSEUDO_CLASSES).join(", ")}`);
-  return { kind, control: CONTROL_SELECTOR, ...(kind === "reduced-motion" ? { stillMoving: { essential: STILL_MOVING.essential, fades: [...STILL_MOVING.fades], settleMs: STILL_MOVING.settleMs } } : {}), ...extra };
+  return {
+    kind, control: CONTROL_SELECTOR,
+    ...(kind === "reduced-motion" ? { stillMoving: { essential: STILL_MOVING.essential, fades: [...STILL_MOVING.fades], settleMs: STILL_MOVING.settleMs } } : {}),
+    ...(kind === "audit" ? { motion: { essential: MOTION_PROPERTIES.essential, layout: [...MOTION_PROPERTIES.layout], blur: [...MOTION_PROPERTIES.blur] } } : {}),
+    ...extra,
+  };
 }
 
 // The state passes each return their audit.state-contrast check; the audit row holds their sum.
@@ -316,15 +344,15 @@ function combineStateChecks(parts) {
 // Runs in the page (page.evaluate). Self-contained by necessity: puppeteer ships this function as
 // source text, so every helper and constant it uses is defined inside it, except what arrives as
 // plain JSON in `options` and `pass` (see auditPass). `pass.kind` is "audit" for the full audit
-// (which needs `pass.reducedMotion`), "reduced-motion" for the snapshot of the reduce load, "rest"
-// for the resting styles of controls, and "state" for one forced state.
+// (which needs `pass.reducedMotion` and `pass.motion`), "reduced-motion" for the snapshot of the
+// reduce load, "rest" for the resting styles of controls, and "state" for one forced state.
 function auditPage(options, pass) {
   const CODES = [
     "audit.font-family", "audit.font-loading", "audit.font-size", "audit.tabular-numbers", "audit.numeric-alignment",
     "audit.text-contrast", "audit.root-background", "audit.horizontal-overflow", "audit.viewport-bounds",
     "audit.content-clipping", "audit.content-overflow", "audit.target-size", "audit.control-gap", "audit.control-inset",
     "audit.layout-gap", "audit.layout-alignment", "audit.nested-radius", "audit.line-length", "audit.line-height",
-    "audit.heading-levels", "audit.reduced-motion", "audit.state-contrast",
+    "audit.heading-levels", "audit.reduced-motion", "audit.state-contrast", "audit.motion-properties",
   ];
   const OPTIONAL = ["audit.tabular-numbers", "audit.content-overflow", "audit.control-inset", "audit.layout-gap", "audit.layout-alignment", "audit.nested-radius", "audit.line-length", "audit.line-height"];
   const MAX_ITEMS = 100;
@@ -368,6 +396,10 @@ function auditPage(options, pass) {
     stateContrast: "Keep the text readable in this state: change the :hover or :focus-visible text or background color so it meets the same contrast as the resting state.",
     focusMissing: "Give the control a visible :focus-visible indicator, for example outline: 2px solid <a color at least thresholds.contrastFocus:1 against the background beside it>; outline-offset: 2px. Never remove the outline without a replacement.",
     focusContrast: "Raise the contrast of the :focus-visible indicator against the background it sits on: change the outline, ring or border color, or move the ring off the control with outline-offset.",
+    transitionAll: "Name the properties that change, for example transition: transform 200ms, opacity 200ms. `all` also animates every layout and paint property that changes by accident.",
+    motionLayout: "Animate transform instead and leave the layout value fixed: scale() for width or height, translate() for top, left or margin. A layout property is measured again on every frame, with everything around it.",
+    motionOffscreen: "Pause the loop while its element is out of view: toggle animation-play-state (or Animation.pause()) from an IntersectionObserver, or put the section under content-visibility: auto. A loading indicator is exempt once it says so: role=\"status\" or role=\"progressbar\" on it, or aria-busy=\"true\" on the region it fills.",
+    motionBlur: "Run the blur once, for a short effect, and stop. For a lasting glow, blur the layer once and animate its opacity.",
   };
   const { thresholds, declare } = options;
   const tolerance = thresholds.tolerances;
@@ -1477,6 +1509,76 @@ function auditPage(options, pass) {
   for (const item of lost.values()) failed("audit.reduced-motion", null, { selector: item.cause, expected: "content shown without a motion preference stays visible with prefers-reduced-motion: reduce", actual: `${item.reason} with prefers-reduced-motion: reduce, hiding ${item.count} element${item.count === 1 ? "" : "s"} shown without it (first ${item.selector})`, message: "content disappears when the visitor asks for reduced motion", fix: FIX.reducedHidden });
   for (const item of snapshot.moving) failed("audit.reduced-motion", null, { selector: item.selector, expected: "no movement running 1s after load with prefers-reduced-motion: reduce; fades and color changes are allowed", actual: item.actual, message: "motion keeps running when the visitor asks for reduced motion", fix: FIX.reducedMoving });
 
+  // ---- motion properties: what the page animates. Transitions are read from computed style, so a
+  // closed menu or an unhovered button is judged without being opened; keyframe and script
+  // animations are the ones the document still holds at this reading. Loading indicators are exempt.
+  const motionProperties = checks["audit.motion-properties"];
+  const motion = pass.motion;
+  if (!motion || typeof motion.essential !== "string" || !motion.essential || !Array.isArray(motion.layout) || !Array.isArray(motion.blur)) throw new Error("the audit needs the motion property lists; build its pass with auditPass");
+  const LAYOUT = new Set(motion.layout);
+  const BLUR = new Set(motion.blur);
+  const hyphenated = (key) => (key.startsWith("--") ? key : key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`));
+  const milliseconds = (value) => {
+    const amount = parseFloat(value);
+    return Number.isFinite(amount) ? (/ms\s*$/.test(value) ? amount : amount * 1000) : 0;
+  };
+  // transition-property and transition-duration are parallel lists; a shorter duration list repeats.
+  const timedTransitions = (style) => {
+    const durations = style.transitionDuration.split(",").map(milliseconds);
+    return style.transitionProperty.split(",").map((property, index) => ({ property: property.trim(), ms: durations[index % durations.length] })).filter((item) => item.property !== "none" && item.ms > 0);
+  };
+  // The document element is scanned too: a theme transition on html or :root is not under body.
+  for (const el of [root, ...everything]) {
+    const subjects = [["", styleOf(el)]];
+    for (const pseudo of ["::before", "::after"]) {
+      const style = getComputedStyle(el, pseudo);
+      if (style.content !== "none" && style.content !== "normal") subjects.push([pseudo, style]);
+    }
+    for (const [pseudo, style] of subjects) {
+      const timed = timedTransitions(style);
+      if (!timed.length) continue;
+      motionProperties.checked += 1;
+      if (el.closest(motion.essential)) continue;
+      const selector = `${selectorOf(el)}${pseudo}`;
+      const every = timed.find((item) => item.property === "all");
+      if (every) failed("audit.motion-properties", el, { selector, expected: "a transition that names the properties it animates", actual: `transition-property: all over ${round2(every.ms)}ms`, message: "the element transitions every property (transition: all)", fix: FIX.transitionAll });
+      const layout = timed.filter((item) => LAYOUT.has(item.property));
+      if (layout.length) failed("audit.motion-properties", el, { selector, expected: "transitions of transform or opacity, never of a layout property", actual: `transition of ${layout.map((item) => `${item.property} over ${round2(item.ms)}ms`).join(", ")}`, message: `the element transitions a layout property (${layout.map((item) => item.property).join(", ")})`, fix: FIX.motionLayout });
+    }
+  }
+  for (const animation of document.getAnimations()) {
+    const effect = animation.effect;
+    const target = effect?.target;
+    // A running transition is one the computed style above already judged.
+    if (!(target instanceof Element) || typeof effect.getKeyframes !== "function" || animation.playState === "idle" || (typeof CSSTransition !== "undefined" && animation instanceof CSSTransition)) continue;
+    motionProperties.checked += 1;
+    if (target.closest(motion.essential)) continue;
+    const frames = effect.getKeyframes();
+    const keys = [...new Set(frames.flatMap((frame) => Object.keys(frame)))].filter((key) => !["offset", "computedOffset", "easing", "composite"].includes(key));
+    const timing = effect.getComputedTiming();
+    const loops = timing.iterations === Infinity || timing.endTime === Infinity;
+    const name = typeof CSSAnimation !== "undefined" && animation instanceof CSSAnimation ? `animation ${animation.animationName}` : `script animation ${animation.id || "(no id)"}`;
+    const selector = `${selectorOf(target)}${effect.pseudoElement || ""}`;
+    const layout = keys.map(hyphenated).filter((property) => LAYOUT.has(property));
+    if (layout.length) failed("audit.motion-properties", target, { selector, expected: "animations of transform or opacity, never of a layout property", actual: `${name} animates ${layout.join(", ")}`, message: `the element animates a layout property (${layout.join(", ")})`, fix: FIX.motionLayout });
+    if (!loops) continue;
+    const blurred = keys.filter((key) => BLUR.has(hyphenated(key)) && frames.some((frame) => /blur\(/.test(String(frame[key] ?? "")))).map(hyphenated);
+    if (blurred.length) failed("audit.motion-properties", target, { selector, expected: "blur animated once, for a short effect", actual: `${name} animates ${blurred.join(", ")} blur() in an infinite loop`, message: "the element animates a blur without end", fix: FIX.motionBlur });
+    // Off screen: no part of the box is in the viewport at this reading. Content skipped by
+    // content-visibility: auto is not ticked by the browser, so it counts as paused.
+    if (animation.playState !== "running" || !target.checkVisibility({ contentVisibilityAuto: true })) continue;
+    // A pseudo-element has no box the page can read, and its host's box says nothing about a fixed
+    // or absolute ::before. Its off-screen state is listed as not measured and never fails.
+    if (effect.pseudoElement) {
+      notMeasured("audit.motion-properties", target, `off-screen state not measurable: ${name} runs in an infinite loop on ${effect.pseudoElement}, whose box the page cannot read`, selector);
+      continue;
+    }
+    const box = target.getBoundingClientRect();
+    if (!(box.width > 0 || box.height > 0)) continue;
+    const where = box.top >= viewport.height ? `${round2(box.top - viewport.height)}px below` : box.bottom <= 0 ? `${round2(-box.bottom)}px above` : box.left >= viewport.width ? `${round2(box.left - viewport.width)}px right of` : box.right <= 0 ? `${round2(-box.right)}px left of` : null;
+    if (where) failed("audit.motion-properties", target, { selector, expected: "an infinite animation paused while its element is outside the viewport", actual: `${name} runs in an infinite loop ${where} the ${viewport.width}x${viewport.height} viewport`, message: "an infinite animation keeps running off screen", fix: FIX.motionOffscreen });
+  }
+
   // audit.state-contrast is measured by the state passes after this one; the driver puts their sum
   // here, and a summary that finds this placeholder instead rejects the row as incomplete.
   checks["audit.state-contrast"] = null;
@@ -1589,4 +1691,4 @@ function summarizeAudit(probeId, viewportResults, project, requests = [], option
   return { status, coverage, findings, contractErrors };
 }
 
-module.exports = { AUDIT_CODES, OPTIONAL_CODES, AUDIT_DEFAULTS, EXTERNAL_FIX, CONTROL_SELECTOR, STATE_PSEUDO_CLASSES, REDUCED_MOTION_SETTLE_MS, STILL_MOVING, validateAuditProbe, auditOptions, auditViewports, auditPass, auditPage, bindable, combineStateChecks, summarizeAudit };
+module.exports = { AUDIT_CODES, OPTIONAL_CODES, AUDIT_DEFAULTS, EXTERNAL_FIX, CONTROL_SELECTOR, STATE_PSEUDO_CLASSES, REDUCED_MOTION_SETTLE_MS, STILL_MOVING, MOTION_PROPERTIES, validateAuditProbe, auditOptions, auditViewports, auditPass, auditPage, bindable, combineStateChecks, summarizeAudit };

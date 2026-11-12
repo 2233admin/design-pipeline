@@ -152,6 +152,60 @@ test("refine intents route to the refine-intents guide in English and Chinese", 
   }
 });
 
+test("industrial sci-fi sheet briefs route to the industrial-document-sheets guide in English and Chinese", () => {
+  const guide = "references/industrial-document-sheets.md";
+  assert.ok(fs.existsSync(path.join(repoRoot, "skill", guide)), guide);
+  assert.ok(packageResources.required.includes(guide), guide);
+  for (const [query, keyword] of [
+    ["a poster about the Tay Bridge collapse in an Arknights style", "arknights"],
+    ["Endfield-style information sheet about a glacier", "endfield"],
+    ["industrial sci-fi poster about a measurement", "industrial sci-fi"],
+    ["做一张关于圭表测影的舟工业信息图", "舟工业"],
+    ["方舟风的海报，主题是三峡大坝", "方舟风"],
+    ["终末地风格的档案卡", "终末地"],
+    ["冷工业配色的信息图", "冷工业"],
+    ["做一个工业风界面的监控屏", "工业风界面"],
+  ]) {
+    const result = run(["route", "--root", repoRoot, "--query", query]);
+    assert.equal(result.status, 0, `${query}: ${result.stderr || result.stdout}`);
+    assert.equal(result.output.status, "ready", query);
+    assert.equal(result.output.job, "industrial-document-sheets", query);
+    assert.ok(result.output.candidates[0].matchedKeywords.includes(keyword), query);
+    assert.notEqual(result.output.confidence, "low", query);
+    assert.equal(`references/${result.output.primaryKnowledge.id}.md`, guide, query);
+    assert.deepEqual(result.output.next.map((step) => step.role), ["kernel", "kernel"], query);
+  }
+  // A stronger or explicit job still wins, and an unrelated "industrial" brief keeps the default job.
+  assert.equal(routeJob({ query: "clone this page in an Arknights style" }).job, "website-clone");
+  assert.equal(routeJob({ query: "make an industrial inventory dashboard" }).job, "product-design");
+});
+
+test("briefs that name tactile-design or ask for its look route to the tactile-product-ui direction", () => {
+  const guide = "references/tactile-product-ui.md";
+  assert.ok(fs.existsSync(path.join(repoRoot, "skill", guide)), guide);
+  assert.ok(packageResources.required.includes(guide), guide);
+  for (const [query, keyword] of [
+    ["build the settings page with tactile-design", "tactile-design"],
+    ["use the tactile design system for the billing dashboard", "tactile design"],
+    ["a tactile UI for the admin table", "tactile ui"],
+    ["a tactile, layered, quiet dashboard", "tactile, layered"],
+    ["做一个触感界面的设置页", "触感界面"],
+    ["触感设计的后台管理", "触感设计"],
+    ["触感风的控制台", "触感风"],
+  ]) {
+    const result = run(["route", "--root", repoRoot, "--query", query]);
+    assert.equal(result.status, 0, `${query}: ${result.stderr || result.stdout}`);
+    assert.equal(result.output.status, "ready", query);
+    assert.equal(result.output.job, "tactile-product-ui", query);
+    assert.ok(result.output.candidates[0].matchedKeywords.includes(keyword), query);
+    assert.equal(`references/${result.output.primaryKnowledge.id}.md`, guide, query);
+  }
+  // Opt-in: a plain product brief or a loose "tactile" word keeps its route, and the direction is not a default layer.
+  assert.equal(routeJob({ query: "design a settings page for the dashboard" }).job, "product-design");
+  assert.notEqual(routeJob({ query: "build a tactile keyboard prototype" }).job, "tactile-product-ui");
+  assert.equal(routeJob({ query: "clone this page in a tactile-design style" }).job, "website-clone");
+});
+
 test("a refine word does not take a brief from an explicit job or a stronger scored match", () => {
   assert.equal(routeJob({ query: "clone this page and polish it" }).job, "website-clone");
   assert.equal(routeJob({ query: "critique this three.js scene" }).job, "graphics-runtime");

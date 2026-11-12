@@ -6,6 +6,31 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { canonicalJson, fail, isObject, rejectExecutable, resolveInside, sha256 } = require("./contract-utils.cjs");
+const { defineMachine, moveStatus } = require("./state-machine-core.cjs");
+
+// 候选与晋升的合法转换。晋升记录在 prepared 阶段崩溃时按外部技能哈希恢复：abort 直接删记录，不是状态。
+const CANDIDATE_MACHINE = defineMachine("adaptation.candidate", {
+  initial: ["task-shadow", "proposed"],
+  transitions: {
+    "task-shadow": ["evaluated", "rejected"],
+    proposed: ["evaluated", "rejected"],
+    evaluated: ["promoted", "rejected"],
+    promoted: ["superseded", "rolled-back"],
+    superseded: ["promoted"],
+    "rolled-back": ["rejected"],
+    rejected: [],
+  },
+});
+const PROMOTION_MACHINE = defineMachine("adaptation.promotion", {
+  initial: ["prepared"],
+  transitions: {
+    prepared: ["promoted"],
+    promoted: ["superseded", "rollback-prepared"],
+    "rollback-prepared": ["rolled-back", "promoted"],
+    superseded: ["promoted"],
+    "rolled-back": [],
+  },
+});
 
 const SCOPES = new Set(["task", "project", "user"]);
 const RULE_OPS = new Set(["add", "replace", "delete"]);
@@ -244,43 +269,39 @@ function recoverPrepared(root, loaded) {
         delete loaded.state.promotions[promotionId];
         append(loaded.state, "promotion-recovery-abort", { promotionId, candidateId: promotion.candidateId }, recoveredAt);
       } else if (currentHash === promotion.afterHash) {
-        promotion.status = "promoted";
-        candidate.status = "promoted";
+        moveStatus(PROMOTION_MACHINE, promotion, "promoted", "adaptation");
+        moveStatus(CANDIDATE_MACHINE, candidate, "promoted", "adaptation");
         if (promotion.supersedes) {
           const predecessor = loaded.state.promotions[promotion.supersedes];
-          predecessor.status = "superseded";
-          loaded.state.candidates[predecessor.candidateId].status = "superseded";
+          moveStatus(PROMOTION_MACHINE, predecessor, "superseded", "adaptation");
+          moveStatus(CANDIDATE_MACHINE, loaded.state.candidates[predecessor.candidateId], "superseded", "adaptation");
         }
         append(loaded.state, "promotion-recovery-commit", { promotionId, candidateId: promotion.candidateId }, recoveredAt);
       } else {
-        fail("adaptation", `prepared promotion ${promotionId} cannot be recovered because the external skill drifted`, { code: "STATE_INTEGRITY" });
+        fail("adaptation", `prepared promotion ${promotionId} cannot be recovered: external skill ${promotion.skill} hash ${currentHash} matches neither beforeHash ${promotion.beforeHash} nor afterHash ${promotion.afterHash}; current state ${promotion.status}, legal next: restore the skill to the before or after content, then rerun`, { code: "STATE_INTEGRITY" });
       }
       changed = true;
       continue;
     }
     if (currentHash === promotion.afterHash) {
-      promotion.status = "promoted";
-      candidate.status = "promoted";
-      if (promotion.supersedes) {
-        const predecessor = loaded.state.promotions[promotion.supersedes];
-        predecessor.status = "superseded";
-        loaded.state.candidates[predecessor.candidateId].status = "superseded";
-      }
+      moveStatus(PROMOTION_MACHINE, promotion, "promoted", "adaptation");
+      if (candidate.status !== "promoted") moveStatus(CANDIDATE_MACHINE, candidate, "promoted", "adaptation");
+      // 回滚未落盘：前任在 rollback-prepare 时没动过，仍是 superseded。
       delete promotion.rollbackPreparedAt;
       append(loaded.state, "rollback-recovery-abort", { promotionId, candidateId: promotion.candidateId }, recoveredAt);
     } else if (currentHash === promotion.beforeHash) {
-      promotion.status = "rolled-back";
+      moveStatus(PROMOTION_MACHINE, promotion, "rolled-back", "adaptation");
       promotion.rolledBackAt ||= recoveredAt;
-      candidate.status = "rolled-back";
+      moveStatus(CANDIDATE_MACHINE, candidate, "rolled-back", "adaptation");
       if (promotion.supersedes) {
         const predecessor = loaded.state.promotions[promotion.supersedes];
-        predecessor.status = "promoted";
-        loaded.state.candidates[predecessor.candidateId].status = "promoted";
+        moveStatus(PROMOTION_MACHINE, predecessor, "promoted", "adaptation");
+        moveStatus(CANDIDATE_MACHINE, loaded.state.candidates[predecessor.candidateId], "promoted", "adaptation");
       }
       delete promotion.rollbackPreparedAt;
       append(loaded.state, "rollback-recovery-commit", { promotionId, candidateId: promotion.candidateId }, recoveredAt);
     } else {
-      fail("adaptation", `prepared rollback ${promotionId} cannot be recovered because the external skill drifted`, { code: "STATE_INTEGRITY" });
+      fail("adaptation", `prepared rollback ${promotionId} cannot be recovered: external skill ${promotion.skill} hash ${currentHash} matches neither beforeHash ${promotion.beforeHash} nor afterHash ${promotion.afterHash}; current state ${promotion.status}, legal next: restore the skill to the before or after content, then rerun`, { code: "STATE_INTEGRITY" });
     }
     changed = true;
   }
@@ -494,7 +515,7 @@ function evaluate(root, options) {
   receipt.hash = receiptDigest(receipt);
   receipt.id = id("receipt", receipt);
   loaded.state.receipts[receipt.id] = receipt;
-  candidate.status = passed ? "evaluated" : "rejected";
+  moveStatus(CANDIDATE_MACHINE, candidate, passed ? "evaluated" : "rejected", "adaptation");
   append(loaded.state, "evaluate", { candidateId: candidate.id, candidateHash: candidate.hash, receiptId: receipt.id, receiptHash: receipt.hash, passed }, receipt.evaluatedAt);
   save(loaded);
   return { status: passed ? "passed" : "blocked", receipt: { ...receipt } };
@@ -574,12 +595,12 @@ function promote(root, options) {
   triggerFailpoint(options, "promotion-after-prepare");
   atomicWrite(target.file, after);
   triggerFailpoint(options, "promotion-after-skill-write");
-  promotion.status = "promoted";
-  candidate.status = "promoted";
+  moveStatus(PROMOTION_MACHINE, promotion, "promoted", "adaptation");
+  moveStatus(CANDIDATE_MACHINE, candidate, "promoted", "adaptation");
   if (promotion.supersedes) {
     const predecessor = loaded.state.promotions[promotion.supersedes];
-    predecessor.status = "superseded";
-    loaded.state.candidates[predecessor.candidateId].status = "superseded";
+    moveStatus(PROMOTION_MACHINE, predecessor, "superseded", "adaptation");
+    moveStatus(CANDIDATE_MACHINE, loaded.state.candidates[predecessor.candidateId], "superseded", "adaptation");
   }
   append(loaded.state, "promote", { promotionId: promotion.id, candidateId: candidate.id, receiptHash: receipt.hash, skill: promotion.skill, scope: candidate.scope }, promotion.promotedAt);
   try { save(loaded); }
@@ -594,7 +615,7 @@ function reject(root, options) {
   const loaded = loadState(root, options.state); const candidate = need(loaded.state.candidates, options.candidate, "candidate");
   if (options.scope && scope(options.scope) !== candidate.scope) fail("adaptation", "scope does not match candidate");
   if (["promoted", "superseded"].includes(candidate.status)) fail("adaptation", "promoted or superseded candidate must be rolled back before rejection", { code: "BLOCKED" });
-  candidate.status = "rejected"; candidate.rejection = { reasonHash: hash({ kind: "adaptation-rejection", value: text(options.reason, "--reason") }), rejectedAt: now(options.timestamp) };
+  moveStatus(CANDIDATE_MACHINE, candidate, "rejected", "adaptation"); candidate.rejection = { reasonHash: hash({ kind: "adaptation-rejection", value: text(options.reason, "--reason") }), rejectedAt: now(options.timestamp) };
   append(loaded.state, "reject", { candidateId: candidate.id, scope: candidate.scope, reasonHash: candidate.rejection.reasonHash }, candidate.rejection.rejectedAt); save(loaded);
   return { status: "rejected", candidateId: candidate.id };
 }
@@ -608,21 +629,21 @@ function rollback(root, options) {
   if (hash(target.skill) !== promotion.afterHash) fail("adaptation", "skill has changed since promotion; refusing unsafe rollback", { code: "BLOCKED" });
   const promotedSkill = target.skill;
   const candidate = loaded.state.candidates[promotion.candidateId];
-  promotion.status = "rollback-prepared";
+  moveStatus(PROMOTION_MACHINE, promotion, "rollback-prepared", "adaptation");
   promotion.rollbackPreparedAt = now(options.timestamp);
   append(loaded.state, "rollback-prepare", { promotionId: promotion.id, candidateId: promotion.candidateId, scope: promotion.scope }, promotion.rollbackPreparedAt);
   save(loaded);
   triggerFailpoint(options, "rollback-after-prepare");
   atomicWrite(target.file, promotion.before);
   triggerFailpoint(options, "rollback-after-skill-write");
-  promotion.status = "rolled-back";
+  moveStatus(PROMOTION_MACHINE, promotion, "rolled-back", "adaptation");
   promotion.rolledBackAt = promotion.rollbackPreparedAt;
   delete promotion.rollbackPreparedAt;
-  if (candidate) candidate.status = "rolled-back";
+  if (candidate) moveStatus(CANDIDATE_MACHINE, candidate, "rolled-back", "adaptation");
   if (promotion.supersedes) {
     const predecessor = loaded.state.promotions[promotion.supersedes];
-    predecessor.status = "promoted";
-    loaded.state.candidates[predecessor.candidateId].status = "promoted";
+    moveStatus(PROMOTION_MACHINE, predecessor, "promoted", "adaptation");
+    moveStatus(CANDIDATE_MACHINE, loaded.state.candidates[predecessor.candidateId], "promoted", "adaptation");
   }
   append(loaded.state, "rollback", { promotionId: promotion.id, candidateId: promotion.candidateId, scope: promotion.scope }, promotion.rolledBackAt);
   try { save(loaded); }

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-pipeline.local/schemas/tunables.schema.json",
+  "title": "Design Pipeline Tunables",
+  "description": "tunables.json: what an owner may change in a film or a page without editing code. params are Playground controls (same vocabulary) plus unit, window and dynamic; values holds only the owner's changes. tunables.js is generated from the effective values by `tunables sync`; never edit it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "params", "values"],
+  "properties": {
+    "schema": { "const": "design-pipeline.tunables.v1" },
+    "params": {
+      "type": "array",
+      "maxItems": 64,
+      "items": { "$ref": "#/$defs/param" }
+    },
+    "values": {
+      "description": "id -> value for each param the owner changed; a value equal to its default is not stored. Each value must fit its param (checked by `tunables check`).",
+      "type": "object",
+      "additionalProperties": { "type": ["number", "string", "boolean"] }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+      "description": "Lower-case letters, digits and hyphens, at most 64 characters. The id is the name in tunable(\"id\"), --tn-<id>, data-tn-<id> and data-tn-text=\"id\"."
+    },
+    "param": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "group", "type", "default"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string", "minLength": 1, "description": "What the owner sees next to the control." },
+        "group": { "type": "string", "minLength": 1, "description": "Controls with the same group share a fieldset in the panel." },
+        "type": { "enum": ["range", "select", "checkbox", "color", "text"] },
+        "default": { "type": ["number", "string", "boolean"] },
+        "min": { "type": "number", "description": "range only" },
+        "max": { "type": "number", "description": "range only" },
+        "step": { "type": "number", "exclusiveMinimum": 0, "description": "range only" },
+        "options": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "select only" },
+        "unit": { "type": "string", "minLength": 1, "maxLength": 12, "description": "A label such as px, s or deg. A range param whose unit is a CSS unit (px rem em % s ms deg vw vh) gets that unit on its --tn-<id> custom property." },
+        "window": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["startSec", "endSec"],
+          "properties": {
+            "startSec": { "type": "number", "minimum": 0 },
+            "endSec": { "type": "number", "exclusiveMinimum": 0 }
+          },
+          "description": "Seconds in which the param is visible on a timeline. The probe samples there and the panel seeks to its middle when the control is focused."
+        },
+        "dynamic": { "type": "boolean", "description": "true when the project reads the id with a name built at run time, so `check` does not report param-unread." }
+      },
+      "allOf": [
+        { "if": { "properties": { "type": { "const": "range" } } }, "then": { "required": ["min", "max", "step"] } },
+        { "if": { "properties": { "type": { "const": "select" } } }, "then": { "required": ["options"] } },
+        { "if": { "properties": { "type": { "const": "color" } } }, "then": { "properties": { "default": { "type": "string", "pattern": "^#(?:[0-9a-f]{6}|[0-9a-f]{8})$" } } } }
+      ]
+    }
+  }
+}
