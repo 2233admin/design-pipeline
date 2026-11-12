@@ -134,3 +134,53 @@ test("the refine guide carries each intent's steps and the rules that must not b
   assert.ok(critique.includes("(design-review-dimensions.md#dimensions)"));
   assert.doesNotMatch(text, /Nielsen|cognitive load|persona walk/i);
 });
+
+test("every upstream reference file has a recorded disposition and a real target", () => {
+  const expected = [
+    "component-review", "craft-floor", "doctor", "hooks", "mode-operate", "mode-persuade",
+    "mode-read", "region-map", "routing", "visualize",
+  ];
+  assert.deepEqual(map.upstreamReferences.map((item) => item.id).sort(), expected);
+  assert.equal(map.coverage.upstreamReferenceCount, expected.length);
+  const capabilities = new Set(map.supportingCapabilities.map((item) => item.id));
+  for (const item of map.upstreamReferences) {
+    assert.ok(["adopted", "partly-adopted", "mapped", "not-adopted"].includes(item.disposition), item.id);
+    assert.ok(item.reason && item.reason.length > 20, `${item.id} has a reason`);
+    if (item.disposition === "not-adopted") {
+      assert.equal(item.target, undefined, `${item.id} names no target`);
+    } else if (item.target.includes("#")) {
+      const [file, anchor] = item.target.split("#");
+      assert.ok(headingAnchors(path.join(references, file)).has(anchor), `${item.id}: ${item.target}`);
+    } else {
+      assert.ok(capabilities.has(item.target), `${item.id}: capability ${item.target}`);
+    }
+  }
+  const ids = map.notAdopted.map((item) => item.id);
+  for (const id of ["agents-engine", "rule-packs", "login-logout-whoami", "critique-history-upload", "design-md-viewer-sync", "loop"]) {
+    assert.ok(ids.includes(id), `${id} recorded as not adopted`);
+  }
+  assert.ok(map.notAdopted.every((item) => item.reason));
+});
+
+test("the 4.8.2 behaviors and mode rules are in the packaged guides", () => {
+  const read = (file) => flat(fs.readFileSync(path.join(references, file), "utf8"));
+  const audit = read("ui-craft-sources.md");
+  assert.match(audit, /### Keep the report/);
+  assert.match(audit, /Saving never replaces delivering/);
+  assert.match(audit, /says not to keep audit reports, keep nothing/);
+  assert.match(audit, /### Right-to-left pages/);
+  assert.match(audit, /only when the page declares `dir="rtl"`/);
+  assert.match(audit, /`lang` alone does not set direction/);
+  assert.match(audit, /Take one point off the responsive score/);
+
+  const contract = read("impeccable-contract.md");
+  assert.match(contract, /Propose no visual direction while intake is open/);
+  assert.match(contract, /sets the craft bar, not the world/);
+  assert.match(contract, /a ban that no brief earns back/);
+  assert.match(contract, /## Mode rules/);
+  for (const mode of ["Operate", "Read", "Persuade", "Experience"]) {
+    assert.ok(contract.includes(`| \`${mode}\` |`), `${mode} row`);
+  }
+  assert.match(contract, /never a favorable verdict of your own/);
+  assert.match(read("stages.md"), /Propose no visual direction at this stage unless the owner pinned one/);
+});

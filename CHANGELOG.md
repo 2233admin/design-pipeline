@@ -4,6 +4,10 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- Impeccable catalog reference moved to upstream `b4bff16` (skill 4.8.2) (change `impeccable-upstream-catchup`). The lock, catalog record and companion profile come from `sources:update`. `impeccable-product-design.json` records the ten upstream reference files that were not mapped (`component-review`, `craft-floor`, `doctor`, `hooks`, `routing`, `region-map`, `visualize`, `mode-operate`, `mode-persuade`, `mode-read`) as adopted, partly adopted, mapped or not adopted with a reason, and lists the CLI and cloud features left out on purpose (agents engine, rule packs, login/logout/whoami, critique history upload, DESIGN.md viewer sync, Loop, audit report store). The contract gains a Mode rules table (what the chosen world may own per visitor mode), more craft-floor checks and refusals (the eyebrow is the one ban), no visual direction during intake, and "a cited product sets the craft bar, not a pin"; the audit guide keeps its report in `qa.md` and checks right-to-left pages when `dir="rtl"` is declared. Guidance only: no gate, receipt, CLI command or flag.
+
 ### Fixed
 
 - `tests/ablation-eval.test.cjs` passes on Windows (change `ablation-reference-variant`, #372): the test imports the eval modules through `file://` URLs and gives its temporary profile the `AppData` folders Chrome needs, the eval wraps puppeteer's `Uint8Array` screenshot in a `Buffer` before decoding it, and `runAgent` quotes command parts that contain spaces when it goes through `cmd.exe`.
