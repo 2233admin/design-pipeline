@@ -15,7 +15,7 @@
 
 ## 3. Checks
 
-- [x] 3.1 `tests/template-hue-budget.test.cjs` (registered in `scripts/test-manifest.json`): pixel
+- [x] 3.1 `tests/template-hue-budget.test.cjs` (registered in `scripts/test-manifest.json`; oklch and display-p3 declarations included): pixel
   measure on synthetic shots; browser pages inside budget, over budget, decoration exempt, undeclared
   page silent, non-colour value noted; guide numbers equal `PAGE_RULES`.
 - [x] 3.2 `tests/template-bank-browser.test.cjs` and `tests/composite-layers.test.cjs` unchanged and green.

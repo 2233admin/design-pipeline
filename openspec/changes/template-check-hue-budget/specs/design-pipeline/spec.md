@@ -29,3 +29,9 @@ brand colour and SHALL NOT measure a page that declares no role.
 
 - **WHEN** a declared value is not a colour or has OKLab chroma under 0.08
 - **THEN** the check SHALL say so in a note and SHALL NOT assign any pixel to that role.
+
+#### Scenario: A role declared in a non-RGB colour space
+
+- **WHEN** a role is declared as `oklch(0.87 0.18 95)` or `color(display-p3 0.1 0.2 0.8)` and the page paints that colour
+- **THEN** the declared value SHALL be converted to the 8-bit sRGB the screenshot holds before it is matched
+- **AND** the painted area SHALL count toward that role and SHALL NOT be reported as an undeclared hue.

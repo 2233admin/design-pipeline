@@ -232,18 +232,33 @@ function discover() {
   };
   for (const sheet of document.styleSheets) { try { collect(sheet.cssRules); } catch { /* cross-origin sheet */ } }
   // Declared colour roles for the hue budget: data-hue-brand / -counter / -alert / -timed on the root,
-  // resolved to [r, g, b] by the browser (any CSS colour); null when the value is not a colour.
+  // resolved to the 8-bit sRGB [r, g, b] the screenshot holds (oklch(), color(display-p3 ...) and the rest go
+  // through a canvas pixel, never read as RGB numbers); null when the value is not a colour or is transparent.
   const hueRoles = {};
   const root = document.documentElement;
   const probe = root instanceof SVGSVGElement ? document.createElementNS("http://www.w3.org/2000/svg", "g") : document.createElement("i");
   root.appendChild(probe);
+  const canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+  canvas.width = 1; canvas.height = 1;
+  const pen = canvas.getContext ? canvas.getContext("2d", { willReadFrequently: true }) : null;
+  const toRgb = (css) => {
+    if (pen) {
+      pen.clearRect(0, 0, 1, 1);
+      pen.fillStyle = "rgba(0, 0, 0, 0)";
+      pen.fillStyle = css;
+      pen.fillRect(0, 0, 1, 1);
+      const px = pen.getImageData(0, 0, 1, 1).data;
+      return px[3] > 0 ? [px[0], px[1], px[2]] : null;
+    }
+    const parts = (css.match(/[\d.]+/g) || []).map(Number);
+    return parts.length >= 3 && (parts.length < 4 || parts[3] > 0) ? parts.slice(0, 3) : null;
+  };
   for (const role of ["brand", "counter", "alert", "timed"]) {
     const value = (root.getAttribute(`data-hue-${role}`) || "").trim();
     if (!value) continue;
     probe.style.color = "rgb(0 0 0 / 0)";
     probe.style.color = value;
-    const parts = (getComputedStyle(probe).color.match(/[\d.]+/g) || []).map(Number);
-    hueRoles[role] = parts.length >= 3 && (parts.length < 4 || parts[3] > 0) ? parts.slice(0, 3) : null;
+    hueRoles[role] = toRgb(getComputedStyle(probe).color);
   }
   probe.remove();
   return { W, H, units, collage, images, layerSources, faces, hueRoles, noText: root.hasAttribute("data-no-text") };

@@ -127,6 +127,18 @@ test("the browser half applies the hue budget only to a page that declares colou
     // a declared value that is not a colour is said, not guessed
     const broken = await run(page("broken.html", 'data-hue-brand="#ffd400" data-hue-counter="not-a-colour"', within));
     assert.ok(broken.notes.some((note) => note === "hue-budget: counter is not a colour"), JSON.stringify(broken.notes));
+
+    // a role declared in a non-RGB colour space is converted to the sRGB the screenshot holds, not read as RGB numbers
+    const wide = 'data-hue-brand="oklch(0.87 0.18 95)" data-hue-counter="color(display-p3 0.1 0.2 0.8)"';
+    const modern = [box(0, 0, 100, 100, "oklch(0.87 0.18 95)"), box(300, 10, 20, 20, "color(display-p3 0.1 0.2 0.8)")].join("");
+    const converted = await run(page("wide.html", wide, modern));
+    assert.deepEqual(converted.findings.filter((f) => f.rule === "hue-budget"), [], JSON.stringify(converted.findings));
+    assert.deepEqual(converted.hue.declared.map((entry) => entry.role), ["brand", "counter"], JSON.stringify(converted.hue));
+    assert.deepEqual(converted.notes.filter((note) => /^hue-budget: .* is not /.test(note)), [], JSON.stringify(converted.notes));
+    // nothing above the undeclared-hue limit: the 16 px label's antialiased edge pixels may add a few stray ones below it
+    assert.ok(converted.hue.others.every((entry) => entry.share < PAGE_RULES.hueOtherMax), JSON.stringify(converted.hue.others));
+    near(converted.hue.share.brand, 100 * 100 / (400 * 300), 0.01);
+    near(converted.hue.share.counter, 20 * 20 / (400 * 300), 0.005);
   } finally {
     await browser.close();
   }
