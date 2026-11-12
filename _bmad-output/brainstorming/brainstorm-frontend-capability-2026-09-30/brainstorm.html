@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>109 条想法 · design-pipeline 前端能力头脑风暴</title>
+<style>:root{--bar:52px;--pad:clamp(20px,5vw,84px);--font:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei UI","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;--ease:cubic-bezier(.2,.8,.2,1)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--font);font-size:16px;line-height:1.65;background:#14110f;color:#f3ede0;padding-bottom:var(--bar);text-rendering:optimizeLegibility}
+p{margin:0}button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid #ff3b30;outline-offset:2px}
+a{color:inherit}
+.ch,.cover{position:relative;background:var(--bg);color:var(--fg);padding:clamp(72px,11vw,150px) var(--pad) clamp(72px,10vw,130px)}
+.cover{--bg:#14110f;--fg:#f3ede0;--ac:#ffb000;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:clamp(56px,8vw,96px);padding-bottom:clamp(40px,6vw,80px)}
+.c1{--bg:#e8e2d3;--fg:#111;--ac:#111}
+.c2{--bg:#fafaf7;--fg:#161616;--ac:#e5251b}
+.c3{--bg:#0c5a52;--fg:#f4ead0;--ac:#ffd166}
+.c4{--bg:#07120d;--fg:#bff5d0;--ac:#5dffa0}
+.c5{--bg:#f1eee3;--fg:#16202b;--ac:#e8590c}
+.c6{--bg:#eee3c4;--fg:#2a2416;--ac:#b3261e}
+.c7{--bg:#0a0a0a;--fg:#f2efe6;--ac:#ffb000}
+.c8{--bg:#ffb000;--fg:#120d00;--ac:#120d00}
+[data-dominant]{position:relative}
+body.review [data-dominant]{outline:3px dashed #ff3b30;outline-offset:-3px}
+body.review [data-dominant]::after{content:"支配元素：" attr(data-dom) " · driver：" attr(data-driver);position:absolute;left:0;top:0;z-index:40;background:#ff3b30;color:#fff;font-size:12px;font-weight:800;line-height:1;padding:6px 8px;letter-spacing:.04em;pointer-events:none}
+/* cover */
+.kicker{font-size:14px;letter-spacing:.14em;font-weight:700;margin-bottom:clamp(8px,2vw,20px)}
+.big{margin:0;display:flex;align-items:baseline;flex-wrap:wrap;gap:0 .18em;line-height:.82}
+.big .num{font-size:clamp(150px,24vw,380px);font-weight:900;letter-spacing:-.06em;color:var(--ac);font-variant-numeric:tabular-nums}
+.big .unit{font-size:clamp(28px,5vw,72px);font-weight:900;letter-spacing:-.02em}
+.facts{display:flex;flex-wrap:wrap;gap:8px 12px;margin:clamp(14px,2vw,26px) 0;font-weight:800;font-size:clamp(16px,1.7vw,22px)}
+.facts span{border:2px solid var(--fg);padding:2px 12px}
+.facts span:last-child{background:var(--ac);color:#14110f;border-color:var(--ac)}
+.topic{max-width:52em;font-size:clamp(15px,1.4vw,18px);color:#d8d0bf}
+.goal{max-width:52em;margin-top:6px;font-size:clamp(14px,1.3vw,16px);color:#a79f8e}
+.curve{position:relative;height:clamp(96px,14vw,150px);margin:clamp(34px,4vw,54px) 0 34px;border-bottom:2px solid var(--fg)}
+.curve svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.curve path{fill:none;stroke:var(--ac);stroke-width:4;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.curve .dot{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;background:var(--ac);border-radius:50%}
+.curve .dot b{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);font-size:13px;font-weight:800;color:var(--fg);white-space:nowrap}
+.curve .dot em{position:absolute;left:50%;top:22px;transform:translateX(-50%);font-style:normal;font-size:11px;color:#a79f8e;white-space:nowrap}
+.toc{list-style:none;margin:clamp(20px,3vw,34px) 0 0;padding:0;max-width:860px}
+.toc a{display:grid;grid-template-columns:3ch 1fr auto;gap:12px;padding:8px 0;border-top:1px solid #4a4238;text-decoration:none;font-weight:700}
+.toc a:hover{background:var(--ac);color:#14110f;padding-left:8px}
+.toc i{font-style:normal;font-variant-numeric:tabular-nums}
+/* heads */
+.head{display:grid;grid-template-columns:auto 1fr;gap:0 clamp(16px,3vw,48px);align-items:end;margin-bottom:clamp(36px,6vw,80px)}
+.head .no{grid-row:1;font-size:clamp(72px,15vw,220px);font-weight:900;line-height:.8;letter-spacing:-.05em;font-variant-numeric:tabular-nums;color:var(--ac)}
+.c1 .head .no{color:transparent;-webkit-text-stroke:3px #111}
+.head h2{margin:0;font-size:clamp(34px,7vw,104px);line-height:1.02;font-weight:900;letter-spacing:-.03em;position:relative}
+.head .en{font-size:13px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;margin-top:10px}
+.head .desc{grid-column:1/-1;margin-top:clamp(18px,3vw,32px);max-width:32em;font-size:clamp(17px,1.8vw,22px);font-weight:600}
+.head .tags{grid-column:1/-1;margin-top:14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;font-weight:700}
+.head .tags span{border-bottom:2px solid var(--ac)}
+.c8 .head .no{color:var(--fg)}
+.hint{font-size:14px;font-weight:600}
+.idea{margin:0}
+.n{font-variant-numeric:tabular-nums;font-weight:900}
+/* c1 */
+.c1 h2::after{content:attr(data-t);position:absolute;left:0;top:100%;transform:scaleY(-1);transform-origin:top;height:.5em;overflow:hidden;color:rgba(17,17,17,.2);pointer-events:none;line-height:1.02}
+.strip{list-style:none;margin:0;padding:clamp(14px,2vw,26px);background:#0b0b0b;display:flex;flex-wrap:wrap;gap:clamp(10px,1.4vw,18px)}
+.frame{flex:1 1 var(--w);position:relative;isolation:isolate;overflow:hidden;background:#0b0b0b;color:#f4f1ea;border:2px solid #f4f1ea;padding:38px 18px 20px;cursor:pointer;min-height:132px}
+.frame::before{content:"";position:absolute;left:10px;right:10px;top:12px;border-top:9px dotted currentColor}
+.frame::after{content:"";position:absolute;inset:0;background:#fff;mix-blend-mode:difference;transform:translateY(101%);transition:transform .5s var(--ease);pointer-events:none;z-index:3}
+.frame:hover::after,.frame:focus-visible::after,.frame.flip::after{transform:translateY(0)}
+.frame .n{position:absolute;right:14px;top:26px;font-size:34px;line-height:1;color:#f4f1ea}
+.frame .idea{font-size:clamp(16px,1.5vw,19px);font-weight:700;line-height:1.5;padding-right:44px;position:relative;z-index:1}
+.hint{margin-top:14px}
+/* c2 */
+.kjbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-bottom:16px}
+.cnt{font-weight:900;font-size:22px;font-variant-numeric:tabular-nums}
+#kreset{border:2px solid var(--fg);background:none;padding:2px 14px;font-weight:800}
+#kreset:hover{background:var(--fg);color:var(--bg)}
+.kjbar .hint{margin:0}
+.diff{list-style:none;margin:0;padding:0;border:2px solid var(--fg)}
+.line{display:grid;grid-template-columns:3rem 3rem 1fr;border-top:1px solid #d5d1c4;cursor:pointer}
+.line:first-child{border-top:0}
+.line .g{background:#fde3e0;color:var(--ac);font-weight:900;text-align:center;padding:11px 0;font-size:20px;line-height:1.5}
+.line .ln{padding:12px 10px;color:#8a867a;text-align:right;font-variant-numeric:tabular-nums}
+.line .idea{padding:11px 16px;font-size:clamp(16px,1.6vw,20px);font-weight:600;line-height:1.55;transition:transform .45s var(--ease),color .45s}
+.cut,.rest{background:linear-gradient(var(--ac),var(--ac)) 0 56%/0 3px no-repeat;transition:background-size .8s cubic-bezier(.7,0,.2,1)}
+.line.in .cut{background-size:100% 3px}
+.line.gone .rest{background-size:100% 3px}
+.line.gone .g{background:var(--ac);color:#fff}
+.line.gone .idea{color:#77736a;transform:translateX(10px)}
+.c2 h2::after{content:"";position:absolute;left:-1%;right:-1%;top:56%;height:.07em;background:var(--ac);transform:rotate(-2deg) scaleX(0);transform-origin:left;transition:transform .9s cubic-bezier(.7,0,.2,1) .3s}
+.c2 h2.in::after{transform:rotate(-2deg) scaleX(1)}
+/* c3 */
+.one{list-style:none;margin:0;padding:0;border-bottom:1px solid rgba(244,234,208,.45)}
+.one li{display:grid;grid-template-columns:clamp(40px,7vw,110px) 1fr;align-items:baseline;border-top:1px solid rgba(244,234,208,.45);padding:12px 0}
+.one.on li{cursor:pointer;font-size:15px;transition:font-size .6s var(--ease),padding .6s var(--ease),color .3s}
+.one.on li .idea{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.one.on li[aria-current="true"]{font-size:clamp(24px,4.4vw,60px);line-height:1.18;padding:clamp(20px,3vw,44px) 0;font-weight:800;color:var(--ac)}
+.one.on li[aria-current="true"] .idea{white-space:normal}
+.ctl{display:flex;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap}
+.ctl button,.mctl button{border:2px solid currentColor;background:none;padding:6px 18px;font-weight:900;font-size:18px}
+.ctl button:hover,.mctl button:hover{background:var(--fg);color:var(--bg)}
+.ctl .hint{margin:0}
+/* c4 */
+.notes{columns:2 340px;column-gap:clamp(16px,2.4vw,32px)}
+.note{break-inside:avoid;margin:0 0 clamp(16px,2.4vw,32px);border:1px solid #2f6b4a;position:relative;overflow:hidden;padding:18px 18px 22px;display:block}
+.note .lab{font-size:12px;font-weight:800;letter-spacing:.22em;color:var(--ac);margin-bottom:8px}
+.note .idea{font-size:clamp(16px,1.5vw,18px);font-weight:500;color:#8fd2a8}
+.note .q{display:block;font-size:clamp(20px,2.1vw,27px);font-weight:800;line-height:1.35;color:var(--fg)}
+.note .a{display:block;margin-top:8px}
+.note .enc{display:none}
+/* c5 */
+.c5{background-color:var(--bg);background-image:linear-gradient(rgba(22,32,43,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(22,32,43,.09) 1px,transparent 1px);background-size:28px 28px}
+.lead{max-width:38em;font-weight:600;margin-bottom:16px;font-size:clamp(16px,1.6vw,19px)}
+.mg{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));border:2px solid var(--fg);background:var(--bg)}
+.col{border-left:1px solid var(--fg)}.col:first-child{border-left:0}
+.col h3{margin:0;padding:10px;font-size:14px;line-height:1.3;font-weight:900;border-bottom:2px solid var(--fg);background:var(--fg);color:var(--bg)}
+.opts{display:flex;flex-direction:column}
+.opt{position:relative;text-align:left;border:0;border-top:1px solid rgba(22,32,43,.25);background:none;padding:10px 26px 10px 10px;font-size:14px;font-weight:600;line-height:1.35;min-height:44px}
+.opts .opt:first-child{border-top:0}
+.opt:hover{background:rgba(232,89,12,.14)}
+.opt .bd{position:absolute;right:4px;top:5px;display:flex;flex-direction:column;gap:2px}
+.opt .bd s{display:block;width:16px;height:16px;text-decoration:none;font-size:10px;line-height:16px;text-align:center;font-weight:900;color:#fff}
+.bd .a0{background:#e8590c}.bd .a1{background:#16202b}.bd .a2{background:#2b8a3e}
+.opt.act{background:#16202b;color:#fff}
+.mctl{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+.mctl .prime{background:var(--ac);border-color:var(--ac);color:#fff}
+.mctl .prime:hover{background:var(--fg);border-color:var(--fg)}
+.mctl button{font-size:16px}
+.mx{border-collapse:collapse;width:100%;max-width:980px;background:var(--bg);border:2px solid var(--fg)}
+.mx caption{text-align:left;font-size:13px;font-weight:700;padding-bottom:6px;caption-side:top}
+.mx th,.mx td{border:1px solid rgba(22,32,43,.35);padding:8px 10px;text-align:left;font-size:14px;line-height:1.4;vertical-align:top}
+.mx thead th{background:var(--fg);color:var(--bg);padding:0}
+.mx thead th:first-child{padding:8px 10px}
+.mx thead button{width:100%;border:0;background:none;color:inherit;padding:8px 10px;font-weight:900;text-align:left}
+.mx thead button[aria-pressed="true"]{background:var(--ac)}
+.mx tbody th{width:22%;font-weight:800;white-space:nowrap;background:rgba(22,32,43,.06)}
+.mx td.diff3{background:rgba(232,89,12,.18);font-weight:800}
+.mx td.empty{color:#8a8f96}
+.mx tfoot td,.mx tfoot th{font-weight:900;background:rgba(22,32,43,.06)}
+.verdict{margin-top:12px;font-weight:800;min-height:1.6em}
+.sub{margin:clamp(36px,5vw,64px) 0 12px;font-size:20px;font-weight:900}
+.src,.ledger{list-style:none;margin:0;padding:0}
+.src li{display:grid;grid-template-columns:3rem 1fr;gap:0 8px;padding:9px 0;border-top:1px solid rgba(22,32,43,.3);align-items:baseline}
+.src .idea{font-weight:600}
+.src .combo{cursor:pointer}
+.src .combo .apply{grid-column:2;font-size:12px;font-weight:800;color:var(--ac)}
+.src .combo:hover .idea{color:var(--ac)}
+/* c6 */
+.ledger{border:2px solid var(--fg);background:#f6efd9}
+.ledger li{position:relative;padding:12px 14px;border-top:1px solid #6d8f74}
+.ledger li.hd{display:grid;grid-template-columns:4rem 1fr 1.25fr;gap:0 16px;background:var(--fg);color:#f6efd9;font-weight:900;border-top:0}
+.ledger li.split{display:grid;grid-template-columns:4rem 1fr 1.25fr;gap:0 16px;align-items:baseline}
+.ledger li.split .idea{display:contents}
+.ledger .n{font-size:22px;color:var(--ac)}
+.ledger .fail{color:#7a3b2b;font-size:clamp(15px,1.4vw,17px)}
+.ledger .lesson{font-weight:800;font-size:clamp(15px,1.4vw,17px)}
+.ledger li:not(.hd)::after{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:100%;background:var(--ac);transform-origin:left}
+.tally{margin-top:22px;font-size:20px;font-weight:900;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.stamp{display:inline-block;border:4px solid var(--ac);color:var(--ac);padding:2px 16px;letter-spacing:.2em;transform:rotate(-6deg)}
+/* c7 */
+.c7{padding-bottom:0}
+.pin{position:relative;margin:0 calc(-1*var(--pad))}
+.view{position:relative;overflow-x:auto;overflow-y:hidden;padding:0 0 12px;--w:360px;--step:260px;--lh:158px;--px:clamp(24px,20vw,300px)}
+.track{position:relative;height:calc(56px + 3*(var(--lh) + 14px));width:calc(var(--px) + 20*var(--step) + var(--w) + 40px)}
+.tk{position:absolute;top:0;left:calc(var(--px) + var(--i)*var(--step));font-style:normal;font-size:11px;font-weight:800;color:var(--ac);border-left:2px solid var(--ac);padding:0 0 14px 6px;line-height:1;height:40px}
+.clip{position:absolute;left:calc(var(--px) + var(--i)*var(--step));top:calc(56px + var(--lane)*(var(--lh) + 14px));width:var(--w);min-height:var(--lh);border:2px solid var(--fg);background:#0a0a0a;padding:12px 14px 14px;transition:transform .5s var(--ease)}
+.clip .tc{display:block;font-size:12px;font-weight:800;color:var(--ac);letter-spacing:.14em;margin-bottom:6px;font-variant-numeric:tabular-nums}
+.clip .idea{font-weight:700;font-size:clamp(15px,1.3vw,17px);line-height:1.5}
+.ph{display:none;position:absolute;z-index:5;top:0;bottom:0;left:var(--px);width:3px;background:#ff3b30;margin-left:-1px}
+.ph::before{content:"";position:absolute;top:0;left:-7px;border:8px solid transparent;border-top:12px solid #ff3b30;border-bottom:0}
+.scrub{display:block;margin:14px var(--pad) clamp(40px,6vw,70px);font-size:14px;font-weight:700}
+.scrub input{display:block;width:100%;margin-top:8px;accent-color:var(--ac);height:28px}
+.scrub b{color:var(--ac);font-variant-numeric:tabular-nums}
+.pinned .pin{height:var(--ph)}
+.pinned .view{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding-bottom:calc(var(--bar) + 64px)}
+.pinned .ph{display:block}
+.pinned .clip.hot{transform:translateY(-10px);background:var(--ac);color:#0a0a0a;border-color:var(--ac)}
+.pinned .clip.hot .tc{color:#0a0a0a}
+.pinned .scrub{position:fixed;left:0;right:0;bottom:var(--bar);margin:0;padding:8px var(--pad) 6px;background:#0a0a0a;border-top:1px solid #3a3a3a;z-index:30;display:none}
+.pinned.on .scrub{display:block}
+.pinned .scrub input{margin-top:2px;height:22px}
+/* c8 */
+.ins{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:clamp(20px,4vw,64px);align-items:center;padding:clamp(28px,5vw,64px) 0;border-top:3px solid var(--fg)}
+.ins.i2{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}
+.ins.i2 .viz{order:-1}
+.ins.i3{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+.ins .k,.dec .k{display:inline-block;background:var(--fg);color:#ffb000;font-weight:900;font-size:13px;letter-spacing:.14em;padding:3px 10px;margin-bottom:12px}
+.ins .idea{font-size:clamp(20px,2.5vw,34px);font-weight:800;line-height:1.4;letter-spacing:-.01em}
+.i2 .idea{font-size:clamp(20px,2.2vw,30px)}
+.viz{width:100%;height:auto;max-width:520px;color:var(--fg);justify-self:center}
+.dec{border-top:3px solid var(--fg);padding:clamp(28px,5vw,64px) 0 0;position:relative}
+.dec .idea{font-size:clamp(20px,2.4vw,32px);font-weight:900;line-height:1.45;max-width:34em}
+.steps{list-style:none;margin:clamp(24px,4vw,44px) 0 0;padding:0;max-width:820px}
+.steps li{display:grid;grid-template-columns:3.2rem auto 1fr;gap:0 14px;align-items:baseline;padding:10px 0;border-top:2px solid var(--fg)}
+.steps b{font-size:clamp(34px,5vw,56px);line-height:1;font-weight:900}
+.steps span{font-size:clamp(18px,2vw,26px);font-weight:900}
+.steps i{font-style:normal;font-weight:600}
+.pending{display:inline-block;margin-top:clamp(28px,4vw,48px);border:5px double var(--fg);padding:8px 26px;font-size:clamp(22px,3.4vw,42px);font-weight:900;letter-spacing:.2em;transform:rotate(-3deg)}
+.colophon{margin-top:clamp(40px,6vw,80px);font-size:13px;font-weight:700}
+/* bar */
+#bar{position:fixed;left:0;right:0;bottom:0;height:var(--bar);z-index:50;background:#0d0b0a;color:#f3ede0;border-top:2px solid #f3ede0}
+#bar svg{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+#bar path{fill:none;stroke:#ffb000;stroke-width:2;vector-effect:non-scaling-stroke}
+#bar nav{position:relative;z-index:2;display:grid;grid-template-columns:repeat(9,1fr);height:100%}
+#bar nav a{display:flex;align-items:flex-end;justify-content:center;gap:6px;padding-bottom:5px;text-decoration:none;font-size:11px;font-weight:800;border-left:1px solid rgba(243,237,224,.2);white-space:nowrap;overflow:hidden}
+#bar nav a:first-child{border-left:0}
+#bar nav a .nm{display:none}
+#bar nav a[aria-current="true"]{color:#ffb000;box-shadow:inset 0 3px #ffb000}
+#bar nav a:hover{background:rgba(243,237,224,.12)}
+#bar .dots i{position:absolute;z-index:2;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#ffb000;pointer-events:none}
+#bar .pl{position:absolute;z-index:3;top:0;bottom:0;left:0;width:2px;background:#fff;pointer-events:none}
+#rvw{position:fixed;top:10px;right:10px;z-index:60;border:2px solid #120d00;background:#ffb000;color:#120d00;font-weight:900;font-size:13px;padding:5px 10px;line-height:1}
+body.review #rvw{background:#ff3b30;color:#fff;border-color:#fff}
+@media (min-width:900px){#bar nav a .nm{display:inline}#bar nav a{font-size:12px}}
+@media (max-width:860px){
+ .mg{grid-template-columns:1fr}
+ .col{border-left:0;border-top:1px solid var(--fg)}.col:first-child{border-top:0}
+ .col h3{border-bottom:0}
+ .opts{flex-direction:row;flex-wrap:wrap;padding:6px;gap:6px}
+ .opt{border:1px solid var(--fg);padding:8px 30px 8px 10px;min-height:40px}
+ .opts .opt:first-child{border-top:1px solid var(--fg)}
+ .opt .bd{flex-direction:row;top:auto;bottom:3px;right:3px}
+ .ins,.ins.i2,.ins.i3{grid-template-columns:1fr}
+ .ins.i2 .viz{order:0}
+ .ledger li.hd{display:none}
+ .ledger li.split{grid-template-columns:3rem 1fr;gap:4px 12px}
+ .ledger li.split .n{grid-row:1/3}
+ .ledger .fail,.ledger .lesson{grid-column:2}
+ .view{--w:250px;--step:186px;--lh:154px;--px:56px}
+ .line{grid-template-columns:2.4rem 2.2rem 1fr}
+}
+@media (max-width:520px){
+ .head .no{font-size:88px}
+ .steps li{grid-template-columns:2.4rem 1fr}.steps i{grid-column:2}
+ .frame{flex-basis:100%}
+ .curve .dot em{display:none}
+ .curve{margin-bottom:24px}
+}
+/* motion: reveals move, never fade */
+@media (prefers-reduced-motion:no-preference){
+ .js .rv{transform:translateY(34px);clip-path:inset(0 0 100% 0);transition:transform .85s var(--ease),clip-path .85s var(--ease);transition-delay:var(--d,0s)}
+ .js .rv.in{transform:none;clip-path:inset(-200px)}
+ .js .head .no.rv{transform:translateX(-40px);clip-path:inset(0 100% 0 0)}
+ .js .head .no.rv.in{transform:none;clip-path:inset(-200px)}
+ .js .note .enc{display:block;position:absolute;inset:0;z-index:5;background:#07120d;transition:transform 1.1s cubic-bezier(.7,0,.2,1) .25s;pointer-events:none}
+ .js .note .enc svg{width:100%;height:100%;display:block}
+ .js .note.in .enc{transform:translateX(102%)}
+ .js .ledger li:not(.hd)::after{transform:scaleX(0);transition:transform .9s cubic-bezier(.7,0,.2,1) .35s}
+ .js .ledger li.in::after{transform:scaleX(1)}
+ .js .curve path{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1.6s cubic-bezier(.6,0,.2,1) .2s}
+ .js .curve.in path{stroke-dashoffset:0}
+ .js .curve .dot{transform:scale(0);transition:transform .5s var(--ease);transition-delay:calc(.3s + var(--k)*.18s)}
+ .js .curve.in .dot{transform:scale(1)}
+ .js .curve.rv{clip-path:none;transform:none}
+}
+@media (prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ *,*::before,*::after{transition:none!important;animation:none!important}
+}
+</style></head>
+<body>
+<button type="button" id="rvw" aria-pressed="false" title="评审模式：框出每章支配元素">评审 R</button>
+<main>
+<header class="cover" id="c0" data-dominant data-dom="大数字 109" data-driver="时间"><p class="kicker rv">头脑风暴纪念页 · 2026-09-30 · 状态：complete</p><h1 class="big rv"><span class="num" id="num" data-to="109">109</span><span class="unit">条想法</span></h1><p class="facts rv"><span>7 种技法</span><span>3 条洞察</span><span>1 个待确认决策</span></p><p class="topic rv">design-pipeline frontend capability: what makes pages better, borrowing superpowers-style discipline (design first, plan, verify, review)</p><p class="goal rv">目标：ideas for mechanisms that make front-end output visibly better and more distinctive, not just more gates</p><div class="curve rv" id="curve" role="img" aria-label="每种技法的想法数量密度曲线"></div><ol class="toc rv"><li><a href="#c1"><b>01</b><span>假设反转</span><i>18</i></a></li><li><a href="#c2"><b>02</b><span>砍掉皇冠宝石</span><i>15</i></a></li><li><a href="#c3"><b>03</b><span>只留一个功能</span><i>12</i></a></li><li><a href="#c4"><b>04</b><span>外星人类学家</span><i>14</i></a></li><li><a href="#c5"><b>05</b><span>形态分析</span><i>16</i></a></li><li><a href="#c6"><b>06</b><span>失败复盘</span><i>13</i></a></li><li><a href="#c7"><b>07</b><span>未来与狂想</span><i>21</i></a></li></ol></header>
+<section class="ch c1" id="c1" aria-labelledby="h1"><div class="head"><div class="no rv">01</div><div class="ttl"><h2 id="h1" class="rv" data-t="假设反转">假设反转</h2><div class="en rv">Assumption Reversal</div></div><p class="desc rv">把页面制作里默认成立的前提逐条翻面，看反面站不站得住。</p><p class="tags rv"><span>driver：指针</span><span>支配元素：胶片帧条</span><span>18 条想法</span></p></div><ol class="strip stag" data-dominant data-dom="胶片帧条" data-driver="指针"><li class="frame rv" tabindex="0" style="--w:230px"><span class="n">01</span><p class="idea">反转“gate 只检查坏”：加一条正向要求，每页必须有一个可截图的标志性时刻</p></li><li class="frame rv" tabindex="0" style="--w:306px"><span class="n">02</span><p class="idea">先做封面帧：首屏一帧先被认可，才允许展开整页</p></li><li class="frame rv" tabindex="0" style="--w:382px"><span class="n">03</span><p class="idea">反转“agent 写页面”：agent 只写 treatment，页面骨架由确定性脚手架按 brief 生成，agent 只改 brief</p></li><li class="frame rv" tabindex="0" style="--w:268px"><span class="n">04</span><p class="idea">评审前置到 brief：三张概念卡先评分，再实现</p></li><li class="frame rv" tabindex="0" style="--w:344px"><span class="n">05</span><p class="idea">每章节有自己的 ground，但全站共享一张 STYLE 表（film 已验证）</p></li><li class="frame rv" tabindex="0" style="--w:230px"><span class="n">06</span><p class="idea">token 不是静态的：ground 与密度是滚动进度的函数</p></li><li class="frame rv" tabindex="0" style="--w:306px"><span class="n">07</span><p class="idea">动效必须回答一个具名 driver，没有 driver 就不许有动效</p></li><li class="frame rv" tabindex="0" style="--w:382px"><span class="n">08</span><p class="idea">参考不是输入而是“必须偏离清单”：列出三点必须与参考不同</p></li><li class="frame rv" tabindex="0" style="--w:268px"><span class="n">09</span><p class="idea">强制留白章节：空章节必须写明目的</p></li><li class="frame rv" tabindex="0" style="--w:344px"><span class="n">10</span><p class="idea">先交付 3 章节压缩版，过主观评审再扩成整页</p></li><li class="frame rv" tabindex="0" style="--w:230px"><span class="n">11</span><p class="idea">全页只允许一个违反设计系统的“叛逆组件”作为视觉重音</p></li><li class="frame rv" tabindex="0" style="--w:306px"><span class="n">12</span><p class="idea">响应式不是缩放：每个视口一份 brief，手机是另一种 plate 排列</p></li><li class="frame rv" tabindex="0" style="--w:382px"><span class="n">13</span><p class="idea">评审看 3 秒滚动录屏切片，而不只是静态截图</p></li><li class="frame rv" tabindex="0" style="--w:268px"><span class="n">14</span><p class="idea">先选“不许出现的模板模式”黑名单：等宽标签、三列卡片、渐变文字</p></li><li class="frame rv" tabindex="0" style="--w:344px"><span class="n">15</span><p class="idea">把 taste 拆成 7 个 yes/no 问题（W1 到 W7），取代 0 到 5 打分</p></li><li class="frame rv" tabindex="0" style="--w:230px"><span class="n">16</span><p class="idea">文案先于布局：标题决定支配元素</p></li><li class="frame rv" tabindex="0" style="--w:306px"><span class="n">17</span><p class="idea">用户看的不只是结果，还有每章节“为什么这样”的决策日志</p></li><li class="frame rv" tabindex="0" style="--w:382px"><span class="n">18</span><p class="idea">同 brief 出两页 A/B，盲评选一个</p></li></ol><p class="hint">指针移上去，或点一下，正片翻成底片。</p></section><section class="ch c2" id="c2" aria-labelledby="h2"><div class="head"><div class="no rv">02</div><div class="ttl"><h2 id="h2" class="rv" data-t="砍掉皇冠宝石">砍掉皇冠宝石</h2><div class="en rv">Kill the Crown Jewel</div></div><p class="desc rv">把页面上最引以为傲的部件一个个拿掉，看还剩下什么。</p><p class="tags rv"><span>driver：状态</span><span>支配元素：删除 diff</span><span>15 条想法</span></p></div><div class="kjbar"><span class="cnt" id="kcnt">已划掉 0 / 15</span><button type="button" id="kreset">还原</button><span class="hint">点一行，整行删掉；点了才算数。</span></div><ol class="diff stag" data-dominant data-dom="删除 diff" data-driver="状态"><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">01</span><p class="idea">删掉 hero 区：首屏就是产品在工作</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">02</span><p class="idea">删掉导航栏：导航就是页面自己的章节图标带</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">03</span><p class="idea">删掉卡片网格：并列信息改用队列、时间线或日志承载</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">04</span><p class="idea">删掉配图：只用产品自身 UI 当视觉</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">05</span><p class="idea">删掉渐变与玻璃：只用平涂加一条描边</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">06</span><p class="idea">删掉 CTA 堆砌：全页一个 CTA，出现三次，形态各不同</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">07</span><p class="idea">删掉设计系统库依赖：页面自带 4KB 风格表</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">08</span><p class="idea">删掉 hover 动效：全部改为滚动驱动</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">09</span><p class="idea">删掉滚动动效：全部改为点击或状态驱动</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">10</span><p class="idea">删掉字体多样性：单字体族，靠字重和宽度轴变化</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">11</span><p class="idea">删掉彩色：先做灰度版过评审，再上色</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">12</span><p class="idea">删掉标题：用一个大数字或产品状态当标题</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">13</span><p class="idea">删掉页脚模板：页脚是最后一个场景</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">14</span><p class="idea">删掉 gate 的通用告警：只保留三条会毁页的</p></li><li class="line rv" tabindex="0"><span class="g">−</span><span class="ln">15</span><p class="idea">删掉“三选一概念”：改成一个概念加一个反概念</p></li></ol></section><section class="ch c3" id="c3" aria-labelledby="h3"><div class="head"><div class="no rv">03</div><div class="ttl"><h2 id="h3" class="rv" data-t="只留一个功能">只留一个功能</h2><div class="en rv">One Feature Only</div></div><p class="desc rv">只留一个能力，其余全部放开，看单点能把味道推到多远。</p><p class="tags rv"><span>driver：状态</span><span>支配元素：被选中的那一条</span><span>12 条想法</span></p></div><ol class="one" id="one" data-dominant data-dom="被选中的那一条" data-driver="状态"><li class="rv"><span class="n">01</span><p class="idea">只保留“支配元素”约束，其余放开</p></li><li class="rv"><span class="n">02</span><p class="idea">只保留首屏评审，让首屏做到极致</p></li><li class="rv"><span class="n">03</span><p class="idea">只保留一个 driver 到 response 的映射，做出有手感的弹簧</p></li><li class="rv"><span class="n">04</span><p class="idea">只保留 STYLE 表：一个文件决定全站的味道</p></li><li class="rv"><span class="n">05</span><p class="idea">只保留节奏图：章节 density 的 sparse/dense 曲线</p></li><li class="rv"><span class="n">06</span><p class="idea">只保留 golden page，其他能力都用它反推</p></li><li class="rv"><span class="n">07</span><p class="idea">只保留一个签名交互，全站围绕它（例如光标变成整个产品导览）</p></li><li class="rv"><span class="n">08</span><p class="idea">只保留前后对比盲评</p></li><li class="rv"><span class="n">09</span><p class="idea">只保留 treatment 里的 Section arc 一张表</p></li><li class="rv"><span class="n">10</span><p class="idea">只保留 negative space 规则</p></li><li class="rv"><span class="n">11</span><p class="idea">只保留“必须偏离参考”规则</p></li><li class="rv"><span class="n">12</span><p class="idea">只保留“产品对象即视觉”规则：仪表必须是产品自己的东西</p></li></ol><div class="ctl"><button type="button" id="oprev" aria-label="上一条">←</button><button type="button" id="onext" aria-label="下一条">→</button><span class="hint" id="opos">1 / 12 · 只有一条被放大，其余压成一行</span></div></section><section class="ch c4" id="c4" aria-labelledby="h4"><div class="head"><div class="no rv">04</div><div class="ttl"><h2 id="h4" class="rv" data-t="外星人类学家">外星人类学家</h2><div class="en rv">Alien Anthropologist</div></div><p class="desc rv">假装刚落地的外星人类学家，对网站的“常识”逐条发问。</p><p class="tags rv"><span>driver：滚动</span><span>支配元素：译码后的观察笔记</span><span>14 条想法</span></p></div><div class="notes" data-dominant data-dom="译码后的观察笔记" data-driver="滚动"><article class="note rv"><div class="lab">观察 01</div><p class="idea">为什么每个网站都有三张一样的卡片？三列等宽卡片一出现就要写理由</p></article><article class="note rv"><div class="lab">观察 02</div><p class="idea">为什么要点一个字才翻页？滚动即叙事，章节边界靠 ground 变化</p></article><article class="note rv"><div class="lab">观察 03</div><p class="idea">为什么把产品藏在截图里？页面里放真实可交互的产品片段</p></article><article class="note rv"><div class="lab">观察 04</div><p class="idea">为什么每页开头都是口号？首屏第一句必须是产品状态或数字</p></article><article class="note rv"><div class="lab">观察 05</div><p class="idea">为什么按钮都是圆角？形状语汇必须写进 seed 并全站一致</p></article><article class="note rv"><div class="lab">观察 06</div><p class="idea">为什么所有动画都淡入？淡入禁用，只允许位移、遮罩、尺寸</p></article><article class="note rv"><div class="lab">观察 07</div><p class="idea">为什么每站都是紫蓝渐变？颜色由产品对象决定，例如库存用橙</p></article><article class="note rv"><div class="lab">观察 08</div><p class="idea">为什么滚动条没有意义？滚动进度条本身就是产品的一个仪表</p></article><article class="note rv"><div class="lab">观察 09</div><p class="idea">为什么手机页是缩小的桌面？手机用竖向长 plate，桌面用横向</p></article><article class="note rv"><div class="lab">观察 10</div><p class="idea">为什么页面不会结束？最后一章是落地，动效收束</p></article><article class="note rv"><div class="lab">观察 11</div><p class="idea">为什么页面无声？声音或触觉反馈作为可选 driver（远期）</p></article><article class="note rv"><div class="lab">观察 12</div><p class="idea">为什么每个人看到同一个首屏？按来源渠道换首屏 plate，不改结构</p></article><article class="note rv"><div class="lab">观察 13</div><p class="idea">为什么没人读设计文档？把 treatment 渲染成随页面交付的一页设计说明</p></article><article class="note rv"><div class="lab">观察 14</div><p class="idea">为什么评审靠人肉截图？自动出三视口 contact sheet</p></article></div></section><section class="ch c5" id="c5" aria-labelledby="h5"><div class="head"><div class="no rv">05</div><div class="ttl"><h2 id="h5" class="rv" data-t="形态分析">形态分析</h2><div class="en rv">Morphological Analysis</div></div><p class="desc rv">把页面拆成参数表，选项互相组合，看会长出哪些不同的页面。</p><p class="tags rv"><span>driver：状态</span><span>支配元素：参数表与差异矩阵</span><span>16 条想法</span></p></div><div class="mg-wrap" data-dominant data-dom="参数表与差异矩阵" data-driver="状态"><p class="lead">每列一个参数，每张概念卡每列只选一个。先选卡，再点选项；或者直接抽三张。</p><div class="mg" id="mg"><div class="col"><h3>支配元素</h3><div class="opts"><button type="button" class="opt" data-p="0" data-o="0">大数字</button><button type="button" class="opt" data-p="0" data-o="1">产品片段</button><button type="button" class="opt" data-p="0" data-o="2">队列</button><button type="button" class="opt" data-p="0" data-o="3">时间线</button><button type="button" class="opt" data-p="0" data-o="4">地图</button></div></div><div class="col"><h3>driver</h3><div class="opts"><button type="button" class="opt" data-p="1" data-o="0">滚动</button><button type="button" class="opt" data-p="1" data-o="1">指针</button><button type="button" class="opt" data-p="1" data-o="2">状态</button><button type="button" class="opt" data-p="1" data-o="3">时间</button></div></div><div class="col"><h3>ground 策略</h3><div class="opts"><button type="button" class="opt" data-p="2" data-o="0">每章换色</button><button type="button" class="opt" data-p="2" data-o="1">明暗交替</button><button type="button" class="opt" data-p="2" data-o="2">单色深浅</button></div></div><div class="col"><h3>密度曲线</h3><div class="opts"><button type="button" class="opt" data-p="3" data-o="0">递增</button><button type="button" class="opt" data-p="3" data-o="1">V 形</button><button type="button" class="opt" data-p="3" data-o="2">锯齿</button><button type="button" class="opt" data-p="3" data-o="3">平稳加一处爆发</button></div></div><div class="col"><h3>动效动词</h3><div class="opts"><button type="button" class="opt" data-p="4" data-o="0">推</button><button type="button" class="opt" data-p="4" data-o="1">揭</button><button type="button" class="opt" data-p="4" data-o="2">扫</button><button type="button" class="opt" data-p="4" data-o="3">翻</button><button type="button" class="opt" data-p="4" data-o="4">吸附</button></div></div><div class="col"><h3>字体声音</h3><div class="opts"><button type="button" class="opt" data-p="5" data-o="0">单族宽度轴</button><button type="button" class="opt" data-p="5" data-o="1">衬线加等宽</button><button type="button" class="opt" data-p="5" data-o="2">全等宽</button></div></div><div class="col"><h3>边界语言</h3><div class="opts"><button type="button" class="opt" data-p="6" data-o="0">细线</button><button type="button" class="opt" data-p="6" data-o="1">无线靠间距</button><button type="button" class="opt" data-p="6" data-o="2">粗块</button></div></div><div class="col"><h3>重音手法</h3><div class="opts"><button type="button" class="opt" data-p="7" data-o="0">一个叛逆组件</button><button type="button" class="opt" data-p="7" data-o="1">一种颜色</button><button type="button" class="opt" data-p="7" data-o="2">一次爆发</button></div></div></div><div class="mctl"><button type="button" id="mdraw" class="prime">抽三张不相邻的组合</button><button type="button" id="mclear">清空三张卡</button></div><table class="mx" id="mx"><caption>三张概念卡的差异矩阵（点表头选择当前卡）</caption><thead><tr><th scope="col">参数</th><th scope="col"><button type="button" data-card="0" aria-pressed="true">卡 A</button></th><th scope="col"><button type="button" data-card="1" aria-pressed="false">卡 B</button></th><th scope="col"><button type="button" data-card="2" aria-pressed="false">卡 C</button></th></tr></thead><tbody></tbody><tfoot></tfoot></table><p class="verdict" id="verdict" aria-live="polite"></p></div><h3 class="sub">16 条原始记录</h3><ol class="src stag"><li class="rv"><span class="n">01</span><p class="idea">参数：支配元素 = 大数字、产品片段、队列、时间线、地图</p></li><li class="rv"><span class="n">02</span><p class="idea">参数：driver = 滚动、指针、状态、时间</p></li><li class="rv"><span class="n">03</span><p class="idea">参数：ground 策略 = 每章换色、明暗交替、单色深浅</p></li><li class="rv"><span class="n">04</span><p class="idea">参数：密度曲线 = 递增、V 形、锯齿、平稳加一处爆发</p></li><li class="rv"><span class="n">05</span><p class="idea">参数：动效动词 = 推、揭、扫、翻、吸附</p></li><li class="rv combo" data-combo="0" tabindex="0" role="button"><span class="n">06</span><p class="idea">组合：数字加滚动加明暗交替加递增，得到仪表叙事页</p><span class="apply">套用到当前卡 →</span></li><li class="rv combo" data-combo="1" tabindex="0" role="button"><span class="n">07</span><p class="idea">组合：产品片段加指针加单色深浅加平稳，得到试玩页</p><span class="apply">套用到当前卡 →</span></li><li class="rv combo" data-combo="2" tabindex="0" role="button"><span class="n">08</span><p class="idea">组合：时间线加滚动加锯齿，得到日志叙事页</p><span class="apply">套用到当前卡 →</span></li><li class="rv combo" data-combo="3" tabindex="0" role="button"><span class="n">09</span><p class="idea">组合：地图加状态加 V 形，得到探索页</p><span class="apply">套用到当前卡 →</span></li><li class="rv"><span class="n">10</span><p class="idea">概念卡从参数表里抽三个不相邻的组合，保证三张卡真的不同</p></li><li class="rv"><span class="n">11</span><p class="idea">参数表按 deliverable 各一张，放进 workflow-web.md</p></li><li class="rv"><span class="n">12</span><p class="idea">参数：字体声音 = 单族宽度轴、衬线加等宽、全等宽</p></li><li class="rv"><span class="n">13</span><p class="idea">参数：边界语言 = 细线、无线靠间距、粗块</p></li><li class="rv"><span class="n">14</span><p class="idea">参数：重音手法 = 一个叛逆组件、一种颜色、一次爆发</p></li><li class="rv"><span class="n">15</span><p class="idea">维护互斥表：哪些组合已被验证有“通用模板味”</p></li><li class="rv"><span class="n">16</span><p class="idea">概念卡自动打差异分：至少 4 个参数不同（direction-preview 已有此规则，迁移到 concepts）</p></li></ol></section><section class="ch c6" id="c6" aria-labelledby="h6"><div class="head"><div class="no rv">06</div><div class="ttl"><h2 id="h6" class="rv" data-t="失败复盘">失败复盘</h2><div class="en rv">Failure Analysis</div></div><p class="desc rv">翻开这个项目已经付过学费的错误，每一笔都记下教训。</p><p class="tags rv"><span>driver：滚动</span><span>支配元素：失败账本</span><span>13 条想法</span></p></div><div class="ledger-wrap" data-dominant data-dom="失败账本" data-driver="滚动"><ol class="ledger" id="ledger"><li class="hd" aria-hidden="true"><span>№</span><span>失败（借）</span><span>教训（贷）</span></li><li class="rv"><span class="n">01</span><p class="idea">失败：film 首版被评“像 dashboard”。教训：产品对象必须可见，web 页面必须出现产品的真实结构</p></li><li class="rv"><span class="n">02</span><p class="idea">失败：web 被问“多长时间”。教训：共享 prompt 会夹带 film 味，每个 deliverable 要有语汇测试</p></li><li class="rv"><span class="n">03</span><p class="idea">失败：qa 先写“通过”后运行。教训：证据先于声称，评审记录只写已发生的事</p></li><li class="rv"><span class="n">04</span><p class="idea">失败：worker 覆盖共享测试文件。教训：共享文件单一 owner，并行派工的文件互斥</p></li><li class="rv"><span class="n">05</span><p class="idea">失败：gate 全绿但没人评美。教训：Conformance 与 Visual 分开报，Visual 默认 pending 并显示在首屏报告</p></li><li class="rv"><span class="n">06</span><p class="idea">失败：kit 的 until 语义让动画停在峰值。教训：动效收尾必须显式复位，写进作者契约</p></li><li class="rv"><span class="n">07</span><p class="idea">失败：golden case 只能用合成音频。教训：每个 eval 声明哪些环节是合成的</p></li><li class="rv"><span class="n">08</span><p class="idea">失败：本机没有 puppeteer。教训：把捕获工具链自检放最前，缺什么明说</p></li><li class="rv"><span class="n">09</span><p class="idea">失败：启发式阈值没校准。教训：首次真实渲染后必须回填阈值，留 pending 条目</p></li><li class="rv"><span class="n">10</span><p class="idea">失败：同一契约在 tasks、design、plan 里各写一遍导致互相矛盾。教训：单一事实源加交叉引用</p></li><li class="rv"><span class="n">11</span><p class="idea">失败：Multica 不可达导致无法留痕。教训：降级到本地 outbox，恢复后回放</p></li><li class="rv"><span class="n">12</span><p class="idea">失败：kit 中性到像通用 UI。教训：中性只是地板，风格必须靠强制填写的 STYLE 表</p></li><li class="rv"><span class="n">13</span><p class="idea">失败：被追问时我先执行再回答。教训：用户消息优先，先答再动</p></li></ol><p class="tally"><span class="stamp">已入账</span> 13 笔失败 · 13 条教训</p></div></section><section class="ch c7" id="c7" aria-labelledby="h7"><div class="head"><div class="no rv">07</div><div class="ttl"><h2 id="h7" class="rv" data-t="未来与狂想">未来与狂想</h2><div class="en rv">Future and Wild</div></div><p class="desc rv">放开约束：页面能不能自己评审自己、自己被拖拽检查？</p><p class="tags rv"><span>driver：时间</span><span>支配元素：时间轴与播放头</span><span>21 条想法</span></p></div><div class="pin" id="pin"><div class="view" id="view" data-dominant data-dom="时间轴与播放头" data-driver="时间"><div class="ph" aria-hidden="true"></div><div class="track" id="track"><i class="tk" style="--i:0" aria-hidden="true">00:00</i><i class="tk" style="--i:1" aria-hidden="true">00:05</i><i class="tk" style="--i:2" aria-hidden="true">00:10</i><i class="tk" style="--i:3" aria-hidden="true">00:15</i><i class="tk" style="--i:4" aria-hidden="true">00:20</i><i class="tk" style="--i:5" aria-hidden="true">00:25</i><i class="tk" style="--i:6" aria-hidden="true">00:30</i><i class="tk" style="--i:7" aria-hidden="true">00:35</i><i class="tk" style="--i:8" aria-hidden="true">00:40</i><i class="tk" style="--i:9" aria-hidden="true">00:45</i><i class="tk" style="--i:10" aria-hidden="true">00:50</i><i class="tk" style="--i:11" aria-hidden="true">00:55</i><i class="tk" style="--i:12" aria-hidden="true">01:00</i><i class="tk" style="--i:13" aria-hidden="true">01:05</i><i class="tk" style="--i:14" aria-hidden="true">01:10</i><i class="tk" style="--i:15" aria-hidden="true">01:15</i><i class="tk" style="--i:16" aria-hidden="true">01:20</i><i class="tk" style="--i:17" aria-hidden="true">01:25</i><i class="tk" style="--i:18" aria-hidden="true">01:30</i><i class="tk" style="--i:19" aria-hidden="true">01:35</i><i class="tk" style="--i:20" aria-hidden="true">01:40</i><article class="clip" style="--i:0;--lane:0"><span class="tc">00:00 · 车道 1</span><p class="idea">页面自带评审模式：按 R 键叠加 W1 到 W7 的证据，框出支配元素</p></article><article class="clip" style="--i:1;--lane:1"><span class="tc">00:05 · 车道 2</span><p class="idea">自动生成“删掉这个元素会怎样”的对比快照</p></article><article class="clip" style="--i:2;--lane:2"><span class="tc">00:10 · 车道 3</span><p class="idea">treatment 表直接生成 section 骨架 HTML</p></article><article class="clip" style="--i:3;--lane:0"><span class="tc">00:15 · 车道 1</span><p class="idea">骨架带 driver 占位：没有 driver 的章节在脚手架阶段就提示</p></article><article class="clip" style="--i:4;--lane:1"><span class="tc">00:20 · 车道 2</span><p class="idea">密度曲线可视化成一条折线，评审者一眼看节奏</p></article><article class="clip" style="--i:5;--lane:2"><span class="tc">00:25 · 车道 3</span><p class="idea">“一页一句话”检验：把页面压成一句话，检验支配元素是否一致</p></article><article class="clip" style="--i:6;--lane:0"><span class="tc">00:30 · 车道 1</span><p class="idea">盲评包：自动打乱 A/B 顺序并遮掉工具痕迹</p></article><article class="clip" style="--i:7;--lane:1"><span class="tc">00:35 · 车道 2</span><p class="idea">配对评审只问一句：哪个更想继续滚</p></article><article class="clip" style="--i:8;--lane:2"><span class="tc">00:40 · 车道 3</span><p class="idea">5 秒测试：截取首屏 5 秒，问评审者能否说出产品和一个动作</p></article><article class="clip" style="--i:9;--lane:0"><span class="tc">00:45 · 车道 1</span><p class="idea">标题里不许出现空泛词，靠 brief 强制写具体数字</p></article><article class="clip" style="--i:10;--lane:1"><span class="tc">00:50 · 车道 2</span><p class="idea">每章节一个证据物件：真实数据、日志或截图，不许纯文案</p></article><article class="clip" style="--i:11;--lane:2"><span class="tc">00:55 · 车道 3</span><p class="idea">章节有入场规则和退场规则，而不只是入场动画</p></article><article class="clip" style="--i:12;--lane:0"><span class="tc">01:00 · 车道 1</span><p class="idea">章节之间的转场是设计对象：切、推、遮罩三选一，写进 brief</p></article><article class="clip" style="--i:13;--lane:1"><span class="tc">01:05 · 车道 2</span><p class="idea">复用 film 的 hold-then-hit：用在价格或关键数字的停顿再重击</p></article><article class="clip" style="--i:14;--lane:2"><span class="tc">01:10 · 车道 3</span><p class="idea">复用 film 的 build-countdown：加载或演示进度用倒计时叙事</p></article><article class="clip" style="--i:15;--lane:0"><span class="tc">01:15 · 车道 1</span><p class="idea">复用 film 的 lane 规则：同一属性只有一条动画车道，避免滚动动效互相打架</p></article><article class="clip" style="--i:16;--lane:1"><span class="tc">01:20 · 车道 2</span><p class="idea">复用 seek-safe：滚动位置等于时间，页面动效可拖动检查</p></article><article class="clip" style="--i:17;--lane:2"><span class="tc">01:25 · 车道 3</span><p class="idea">页面提供时间轴拖拽评审，逐帧验证</p></article><article class="clip" style="--i:18;--lane:0"><span class="tc">01:30 · 车道 1</span><p class="idea">单文件页面 4KB 预算：限制迫使取舍</p></article><article class="clip" style="--i:19;--lane:1"><span class="tc">01:35 · 车道 2</span><p class="idea">无第三方请求、字体自带，评审可离线复现</p></article><article class="clip" style="--i:20;--lane:2"><span class="tc">01:40 · 车道 3</span><p class="idea">评审者上传一张参考截图，页面反向标注哪里偏离了参考</p></article></div></div></div><label class="scrub"><span>时间轴拖拽评审 · 滚动位置即时间 <b id="tcv">00:00</b></span><input type="range" id="range" min="0" max="20" step="0.01" value="0"></label></section>
+<section class="ch c8" id="c8" aria-labelledby="h8"><div class="head"><div class="no rv">∑</div><div class="ttl"><h2 id="h8" class="rv">收束</h2><div class="en rv">Synthesis</div></div>
+<p class="desc rv">109 条想法，落成三条洞察和一个等你点头的决定。</p></div>
+<article class="ins i1" data-dominant data-dom="三环交集" data-driver="滚动"><div class="itxt rv"><span class="k">洞察 1</span><p class="idea">主线：好看不来自更多 gate，而来自三件事的组合——每章一个支配元素且是产品对象、每个动效回答一个具名 driver、章节间有可读的密度曲线。前两条是 film 已验证的机制，第三条 web 还没有</p></div>
+<svg class="viz rv" viewBox="0 0 420 300" role="img" aria-label="三个圆的交集：支配元素、具名 driver、密度曲线" >
+<circle cx="150" cy="120" r="92" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="270" cy="120" r="92" fill="none" stroke="currentColor" stroke-width="3"/>
+<circle cx="210" cy="205" r="92" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="9 8"/>
+<g font-size="15" font-weight="800" text-anchor="middle" fill="currentColor"><text x="108" y="108">支配元素</text><text x="108" y="128" font-weight="500">是产品对象</text><text x="312" y="108">具名</text><text x="312" y="128">driver</text><text x="210" y="252">密度曲线</text><text x="210" y="272" font-weight="500">web 还没有</text><text x="210" y="150" font-size="20">好看</text><text x="110" y="18" font-weight="500">film 已验证</text><text x="310" y="18" font-weight="500">film 已验证</text></g></svg></article>
+<article class="ins i2" data-dominant data-dom="漏斗汇点" data-driver="滚动"><div class="itxt rv"><span class="k">洞察 2</span><p class="idea">三个想法其实是同一件事：先做封面帧、只保留首屏评审、5 秒测试。都是把评审提前并压缩到最小可判定单位</p></div>
+<svg class="viz rv" viewBox="0 0 420 260" role="img" aria-label="封面帧、首屏评审、5 秒测试汇入最小可判定单位"><g fill="none" stroke="currentColor" stroke-width="3"><path d="M110 50 L280 130"/><path d="M110 130 L280 130"/><path d="M110 210 L280 130"/></g>
+<rect x="268" y="118" width="24" height="24" fill="currentColor"/><g font-size="18" font-weight="800" fill="currentColor"><text x="10" y="56">封面帧</text><text x="10" y="136">首屏评审</text><text x="10" y="216">5 秒测试</text><text x="236" y="176" font-size="16">最小可判定单位</text></g></svg></article>
+<article class="ins i3" data-dominant data-dom="STYLE 表" data-driver="滚动"><div class="itxt rv"><span class="k">洞察 3</span><p class="idea">失败分析里最有价值的一条：中性 kit 会退化成通用 UI。所以 STYLE 表必须强制填写，且要有一条禁止清单和一条必须偏离参考的清单，二者才是味道的来源</p></div>
+<svg class="viz rv" viewBox="0 0 420 260" role="img" aria-label="STYLE 表强制填写：禁止清单与必须偏离参考产生味道；中性 kit 退化成通用 UI"><rect x="12" y="14" width="236" height="148" fill="none" stroke="currentColor" stroke-width="3"/>
+<g fill="currentColor" font-weight="800"><text x="28" y="44" font-size="16">STYLE 表 · 强制填写</text><text x="28" y="90" font-size="18">禁止清单</text><text x="28" y="140" font-size="18">必须偏离参考</text></g>
+<path d="M14 108 H248" stroke="currentColor" stroke-width="2"/><path d="M14 60 H248" stroke="currentColor" stroke-width="2"/><path d="M262 88 L316 88" stroke="currentColor" stroke-width="3"/><path d="M306 78 L318 88 L306 98" fill="none" stroke="currentColor" stroke-width="3"/>
+<circle cx="366" cy="88" r="44" fill="currentColor"/><text x="366" y="96" font-size="24" font-weight="900" text-anchor="middle" fill="#ffb000">味道</text>
+<text x="14" y="222" font-size="16" font-weight="700" fill="currentColor">中性 kit → 通用 UI</text><path d="M8 216 L176 216" stroke="currentColor" stroke-width="3"/><text x="196" y="224" font-size="34" font-weight="900" fill="currentColor">×</text></svg></article>
+<article class="dec" data-dominant data-dom="待确认的决定" data-driver="状态"><div class="dtxt rv"><span class="k">决定 · 待用户确认</span><p class="idea">推荐下一步方向（待用户确认）：1 概念卡用 morphological 参数表抽三个不相邻组合并自动打差异分；2 STYLE 表强制填写加黑名单；3 scroll=time 的时间轴评审；4 首屏 5 秒盲测协议</p></div>
+<ol class="steps rv"><li><b>1</b><span>概念卡</span><i>参数表抽三个不相邻组合，自动打差异分</i></li><li><b>2</b><span>STYLE 表</span><i>强制填写 + 黑名单</i></li><li><b>3</b><span>时间轴评审</span><i>scroll = time</i></li><li><b>4</b><span>5 秒盲测</span><i>首屏，盲测协议</i></li></ol>
+<div class="pending rv" aria-label="待用户确认">待用户确认</div></article>
+<p class="colophon">来源：.memlog.md，仅此一份 · 按 R 进入评审模式，框出每章的支配元素</p></section>
+</main>
+<div id="bar" role="navigation" aria-label="章节与密度曲线"><nav><a href="#c0"><b>封面</b></a><a href="#c1"><b>01</b><span class="nm">假设反转</span></a><a href="#c2"><b>02</b><span class="nm">砍掉皇冠宝石</span></a><a href="#c3"><b>03</b><span class="nm">只留一个功能</span></a><a href="#c4"><b>04</b><span class="nm">外星人类学家</span></a><a href="#c5"><b>05</b><span class="nm">形态分析</span></a><a href="#c6"><b>06</b><span class="nm">失败复盘</span></a><a href="#c7"><b>07</b><span class="nm">未来与狂想</span></a><a href="#c8"><b>收束</b></a></nav></div>
+<script type="application/json" id="data">{"params": [{"key": "支配元素", "opts": ["大数字", "产品片段", "队列", "时间线", "地图"]}, {"key": "driver", "opts": ["滚动", "指针", "状态", "时间"]}, {"key": "ground 策略", "opts": ["每章换色", "明暗交替", "单色深浅"]}, {"key": "密度曲线", "opts": ["递增", "V 形", "锯齿", "平稳加一处爆发"]}, {"key": "动效动词", "opts": ["推", "揭", "扫", "翻", "吸附"]}, {"key": "字体声音", "opts": ["单族宽度轴", "衬线加等宽", "全等宽"]}, {"key": "边界语言", "opts": ["细线", "无线靠间距", "粗块"]}, {"key": "重音手法", "opts": ["一个叛逆组件", "一种颜色", "一次爆发"]}], "combos": [{"name": "仪表叙事页", "set": {"支配元素": "大数字", "driver": "滚动", "ground 策略": "明暗交替", "密度曲线": "递增"}}, {"name": "试玩页", "set": {"支配元素": "产品片段", "driver": "指针", "ground 策略": "单色深浅", "密度曲线": "平稳加一处爆发"}}, {"name": "日志叙事页", "set": {"支配元素": "时间线", "driver": "滚动", "密度曲线": "锯齿"}}, {"name": "探索页", "set": {"支配元素": "地图", "driver": "状态", "密度曲线": "V 形"}}], "counts": [18, 15, 12, 14, 16, 13, 21], "zh": ["假设反转", "砍掉皇冠宝石", "只留一个功能", "外星人类学家", "形态分析", "失败复盘", "未来与狂想"]}</script>
+<script>(()=>{
+const d=document,$=(s,r=d)=>r.querySelector(s),$$=(s,r=d)=>[...r.querySelectorAll(s)];
+const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+d.documentElement.classList.add('js');
+const DATA=JSON.parse($('#data').textContent);
+/* reveal: things move into place, they never fade */
+$$('.stag').forEach(p=>$$(':scope > .rv',p).forEach((el,i)=>el.style.setProperty('--d',(i%7)*0.06+'s')));
+$$('.head').forEach(h=>$$('.rv',h).forEach((el,i)=>el.style.setProperty('--d',i*0.08+'s')));
+const rv=$$('.rv');
+if(reduce.matches||!('IntersectionObserver' in window)){rv.forEach(e=>e.classList.add('in'))}
+else{const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1,rootMargin:'0px 0px -4% 0px'});rv.forEach(e=>io.observe(e))}
+/* splitting keeps every character; it only wraps */
+function splitAt(p,sep,after,a,b){const t=p.textContent;const i=t.indexOf(sep);if(i<0)return false;const k=after?i+sep.length:i;
+ p.textContent='';const s1=d.createElement('span');s1.className=a;s1.textContent=t.slice(0,k);const s2=d.createElement('span');s2.className=b;s2.textContent=t.slice(k);p.append(s1,s2);return true}
+/* c1 frames: tap toggles on touch */
+$$('.frame').forEach(f=>{f.addEventListener('click',()=>f.classList.toggle('flip'));f.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f.classList.toggle('flip')}})});
+/* c2 */
+(()=>{const lines=$$('.line');lines.forEach(l=>splitAt($('.idea',l),'：',false,'cut','rest'));
+ const cnt=$('#kcnt');const upd=()=>cnt.textContent='已划掉 '+$$('.line.gone').length+' / '+lines.length;
+ const tog=l=>{l.classList.toggle('gone');upd()};
+ lines.forEach(l=>{l.addEventListener('click',()=>tog(l));l.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tog(l)}})});
+ $('#kreset').addEventListener('click',()=>{lines.forEach(l=>l.classList.remove('gone'));upd()})})();
+/* c3 */
+(()=>{const ol=$('#one'),rows=$$('li',ol);let cur=0;ol.classList.add('on');
+ const set=i=>{cur=(i+rows.length)%rows.length;rows.forEach((r,k)=>r.setAttribute('aria-current',k===cur?'true':'false'));$('#opos').textContent=(cur+1)+' / '+rows.length+' · 只有一条被放大，其余压成一行'};
+ rows.forEach((r,i)=>{r.tabIndex=0;r.addEventListener('click',()=>set(i));r.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();set(i)}else if(e.key==='ArrowDown'){e.preventDefault();set(i+1);rows[cur].focus()}else if(e.key==='ArrowUp'){e.preventDefault();set(i-1);rows[cur].focus()}})});
+ $('#oprev').addEventListener('click',()=>set(cur-1));$('#onext').addEventListener('click',()=>set(cur+1));set(0)})();
+/* c4: alien glyph cover + question/answer split */
+(()=>{const notes=$$('.note');let seed=7;const rnd=()=>(seed=(seed*1103515245+12345)&0x7fffffff)/0x7fffffff;
+ const NS='ht'+'tp://www.w3.org/2000/svg';
+ notes.forEach(n=>{splitAt($('.idea',n),'？',true,'q','a');
+  const enc=d.createElement('div');enc.className='enc';enc.setAttribute('aria-hidden','true');
+  const cols=22,rows=9,c=16;const svg=d.createElementNS(NS,'svg');svg.setAttribute('viewBox','0 0 '+cols*c+' '+rows*c);svg.setAttribute('preserveAspectRatio','xMidYMid slice');
+  let path='';for(let r=0;r<rows;r++)for(let k=0;k<cols;k++){if(rnd()<.14)continue;const x=k*c+3,y=r*c+3,s=c-6;const m=2+Math.floor(rnd()*3);
+   for(let j=0;j<m;j++){const pick=()=>[0,s/2,s][Math.floor(rnd()*3)];path+='M'+(x+pick())+' '+(y+pick())+'L'+(x+pick())+' '+(y+pick())}}
+  const p=d.createElementNS(NS,'path');p.setAttribute('d',path);p.setAttribute('fill','none');p.setAttribute('stroke','#5dffa0');p.setAttribute('stroke-width','2');p.setAttribute('stroke-linecap','square');svg.append(p);enc.append(svg);n.append(enc)})})();
+/* c5 morphological */
+(()=>{const P=DATA.params,C=DATA.combos;const cards=[{},{},{}];let act=0;
+ const opts=$$('.opt'),tb=$('#mx tbody'),tf=$('#mx tfoot'),vd=$('#verdict');
+ const L=['A','B','C'];
+ function name(c){const hit=C.filter(x=>Object.entries(x.set).every(([k,v])=>{const pi=P.findIndex(p=>p.key===k);return c[pi]===P[pi].opts.indexOf(v)}));return hit.length?'≈ '+hit[0].name:''}
+ function diffs(a,b){let n=0;P.forEach((_,i)=>{if(a[i]!==undefined&&b[i]!==undefined&&a[i]!==b[i])n++});return n}
+ function render(){
+  opts.forEach(b=>{const pi=+b.dataset.p,oi=+b.dataset.o;b.classList.toggle('act',cards[act][pi]===oi);const old=b.querySelector('.bd');if(old)old.remove();
+   const who=cards.map((c,i)=>c[pi]===oi?i:-1).filter(i=>i>=0);if(who.length){const w=d.createElement('span');w.className='bd';who.forEach(i=>{const s=d.createElement('s');s.className='a'+i;s.textContent=L[i];w.append(s)});b.append(w)}
+   b.setAttribute('aria-pressed',String(cards[act][pi]===oi))});
+  $$('#mx thead button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===act)));
+  tb.textContent='';P.forEach((p,pi)=>{const tr=d.createElement('tr');const th=d.createElement('th');th.scope='row';th.textContent=p.key;tr.append(th);
+   const distinct=new Set(cards.map(c=>c[pi]).filter(v=>v!==undefined));
+   cards.forEach(c=>{const td=d.createElement('td');if(c[pi]===undefined){td.textContent='—';td.className='empty'}else{td.textContent=p.opts[c[pi]];if(distinct.size===3)td.className='diff3'}tr.append(td)});tb.append(tr)});
+  tf.textContent='';const r1=d.createElement('tr'),h1=d.createElement('th');h1.scope='row';h1.textContent='组合名';r1.append(h1);cards.forEach(c=>{const td=d.createElement('td');td.textContent=name(c)||'—';r1.append(td)});tf.append(r1);
+  const pairs=[[0,1],[0,2],[1,2]];const sc=pairs.map(([a,b])=>diffs(cards[a],cards[b]));
+  const filled=cards.every(c=>Object.keys(c).length===P.length);
+  const ok=sc.every(s=>s>=4);
+  vd.textContent='两两不同参数数：A–B '+sc[0]+'，A–C '+sc[1]+'，B–C '+sc[2]+(filled?(ok?' · 每对至少 4 项不同，三张卡真的不同':' · 有一对低于 4 项，需要再拉开'):' · 填满 8 个参数后判定“至少 4 项不同”');
+ }
+ opts.forEach(b=>b.addEventListener('click',()=>{const pi=+b.dataset.p,oi=+b.dataset.o;const c=cards[act];if(c[pi]===oi)delete c[pi];else c[pi]=oi;render()}));
+ $$('#mx thead button').forEach(b=>b.addEventListener('click',()=>{act=+b.dataset.card;render()}));
+ $('#mclear').addEventListener('click',()=>{cards.forEach(c=>{for(const k in c)delete c[k]});render()});
+ $('#mdraw').addEventListener('click',()=>{for(let t=0;t<5000;t++){const cs=[0,1,2].map(()=>{const c={};P.forEach((p,i)=>c[i]=Math.floor(Math.random()*p.opts.length));return c});
+  if(diffs(cs[0],cs[1])>=4&&diffs(cs[0],cs[2])>=4&&diffs(cs[1],cs[2])>=4){cs.forEach((c,i)=>{for(const k in cards[i])delete cards[i][k];Object.assign(cards[i],c)});break}}render()});
+ $$('.combo').forEach(li=>{const go=()=>{const cb=C[+li.dataset.combo];const c=cards[act];for(const k in c)delete c[k];Object.entries(cb.set).forEach(([k,v])=>{const pi=P.findIndex(p=>p.key===k);c[pi]=P[pi].opts.indexOf(v)});render();$('#mg').scrollIntoView({block:'center'})};
+  li.addEventListener('click',go);li.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});
+ render()})();
+/* c6 ledger */
+$$('#ledger li:not(.hd)').forEach(li=>{if(splitAt($('.idea',li),'教训：',false,'fail','lesson'))li.classList.add('split')});
+/* density curves: cover (large) and bar (mini) */
+const counts=DATA.counts,maxc=Math.max(...counts),NS='ht'+'tp://www.w3.org/2000/svg';
+(()=>{const box=$('#curve'),N=counts.length;
+ const pp=counts.map((c,i)=>[(i+.5)/N,1-(c-8)/(maxc-8)*.8-.08]);
+ const svg=d.createElementNS(NS,'svg');svg.setAttribute('viewBox','0 0 1000 100');svg.setAttribute('preserveAspectRatio','none');
+ const p=d.createElementNS(NS,'path');p.setAttribute('pathLength','1');p.setAttribute('d','M'+pp.map(q=>(q[0]*1000).toFixed(1)+' '+(q[1]*100).toFixed(1)).join('L'));svg.append(p);box.append(svg);
+ pp.forEach((q,i)=>{const dot=d.createElement('div');dot.className='dot';dot.style.left=q[0]*100+'%';dot.style.top=q[1]*100+'%';dot.style.setProperty('--k',i);dot.innerHTML='<b>'+counts[i]+'</b><em>'+String(i+1).padStart(2,'0')+' '+DATA.zh[i]+'</em>';box.append(dot)});
+ const bar=$('#bar');const bs=d.createElementNS(NS,'svg');bs.setAttribute('viewBox','0 0 900 52');bs.setAttribute('preserveAspectRatio','none');bs.setAttribute('aria-hidden','true');
+ const bp=d.createElementNS(NS,'path');const bpts=counts.map((c,i)=>[(i+1.5)/9,30-(c-8)/(maxc-8)*22]);bp.setAttribute('d','M'+bpts.map(q=>(q[0]*900).toFixed(1)+' '+q[1].toFixed(1)).join('L'));bs.append(bp);bar.prepend(bs);
+ const dots=d.createElement('div');dots.className='dots';dots.setAttribute('aria-hidden','true');bpts.forEach(q=>{const i=d.createElement('i');i.style.left=q[0]*100+'%';i.style.top=q[1]+'px';dots.append(i)});bar.append(dots);
+ const pl=d.createElement('div');pl.className='pl';bar.append(pl)})();
+/* count up */
+(()=>{const el=$('#num');if(reduce.matches)return;const to=+el.dataset.to;const t0=performance.now();el.textContent='0';const f=t=>{const k=clamp((t-t0)/1300,0,1);el.textContent=Math.round(to*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)})();
+/* c7: scroll position is time */
+const sec7=$('#c7'),pin=$('#pin'),view=$('#view'),track=$('#track'),clips=$$('.clip'),range=$('#range'),tcv=$('#tcv');
+let pinned=false,step=260;
+function layout(){const want=!reduce.matches;step=clips[1].offsetLeft-clips[0].offsetLeft;
+ if(want!==pinned){pinned=want;sec7.classList.toggle('pinned',pinned);track.style.transform='';clips.forEach(c=>c.classList.remove('hot'));view.scrollLeft=0}
+ if(pinned)pin.style.setProperty('--ph',(innerHeight+(clips.length-1)*step*.9)+'px')}
+function pinTop(){return pin.getBoundingClientRect().top+scrollY}
+function pinRange(){return pin.offsetHeight-innerHeight}
+const tcOf=(p,N)=>{const s=Math.round(p*N*5);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function upd7(){const N=clips.length-1;
+ if(pinned){const p=clamp((scrollY-pinTop())/pinRange(),0,1);track.style.transform='translate3d('+(-p*N*step)+'px,0,0)';const idx=Math.round(p*N);clips.forEach((c,i)=>c.classList.toggle('hot',i===idx));
+  tcv.textContent=tcOf(p,N);if(d.activeElement!==range)range.value=p*N;
+  sec7.classList.toggle('on',sec7.getBoundingClientRect().top<innerHeight*.3&&pin.getBoundingClientRect().bottom>innerHeight*.95)}
+ else{const p=clamp(view.scrollLeft/Math.max(1,view.scrollWidth-view.clientWidth),0,1);tcv.textContent=tcOf(p,N);if(d.activeElement!==range)range.value=p*N}}
+range.addEventListener('input',()=>{const v=+range.value,N=clips.length-1;if(pinned)scrollTo({top:pinTop()+v/N*pinRange(),behavior:'instant'});else view.scrollLeft=v*step;upd7()});
+view.addEventListener('scroll',()=>{if(!pinned)upd7()},{passive:true});
+/* bar: chapter strip + scroll playhead */
+const secs=['c0','c1','c2','c3','c4','c5','c6','c7','c8'].map(id=>d.getElementById(id));const links=$$('#bar nav a');const pl=$('#bar .pl');
+function updBar(){const max=d.documentElement.scrollHeight-innerHeight;pl.style.left=(max>0?scrollY/max*100:0)+'%';
+ let cur=0;secs.forEach((s,i)=>{if(s.getBoundingClientRect().top<=innerHeight*.35)cur=i});links.forEach((a,i)=>a.setAttribute('aria-current',i===cur?'true':'false'))}
+let tick=false;const onScroll=()=>{if(tick)return;tick=true;requestAnimationFrame(()=>{tick=false;updBar();upd7()})};
+addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',()=>{layout();onScroll()});
+if(reduce.addEventListener)reduce.addEventListener('change',()=>{layout();onScroll()});
+layout();onScroll();
+/* review mode */
+const toggleRev=()=>{d.body.classList.toggle('review');$('#rvw').setAttribute('aria-pressed',String(d.body.classList.contains('review')))};
+$('#rvw').addEventListener('click',toggleRev);
+addEventListener('keydown',e=>{if((e.key==='r'||e.key==='R')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))toggleRev()});
+})();
+</script>
+</body></html>

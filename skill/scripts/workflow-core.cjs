@@ -24,9 +24,24 @@ const CLI = "designer-pipeline";
 const { INTAKE } = require("./workflows/shared.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
 
+// The ui deliverable builds screens, not a film, so it asks about what is built. Stage id, finish
+// rule, record, question and why come from the shared intake.
+const UI_INTAKE = {
+  ...INTAKE,
+  action: () => ({
+    ...INTAKE.action(),
+    questions: [
+      { id: "product", ask: "What are we building (a screen, a set of components or a design system), and what should a person be able to do with it?", recommended: "Take it from the conversation so far." },
+      { id: "audience", ask: "Who uses it, and on which devices?", recommended: "People using a browser on desktop and phone." },
+      { id: "scope", ask: "Which screens, components or states are in scope, and what does a person do first?", recommended: "The smallest set that lets one person finish the first task." },
+      { id: "assets", ask: "Which existing code, design system, brand rules, copy or images can be used, and are they licensed for this use?", recommended: "Only what you own or may use; reuse what the project already has first." },
+    ],
+  }),
+};
+
 function codeStages(tier) {
   const work = { id: "work", finished: (state) => Boolean(state.decisions?.delivered), action: () => ({ type: "run", command: tier === "full" ? `Open an OpenSpec change under openspec/changes/<id>/ and follow references/pipeline-reference.md; when verified: ${CLI} decide --project-root . --stage deliver --answer <evidence>` : `Follow references/pipeline-reference.md at the ${tier} tier (no OpenSpec; create DESIGN.md/MOTION.md only at standard if missing), verify the rendered surface, then: ${CLI} decide --project-root . --stage deliver --answer <evidence>`, why: tier === "full" ? "Full tier keeps OpenSpec lineage." : "Lighter tiers skip specification ceremony but keep the gates." }) };
-  return tier === "quick" ? [work] : [INTAKE, work];
+  return tier === "quick" ? [work] : [UI_INTAKE, work];
 }
 
 function stagesFor(state) {

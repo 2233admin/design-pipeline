@@ -4,14 +4,28 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- Wrong tool hints (`fix-tool-guidance-errors`): the `film-edit` hints and error labels said
+  `film edit`, a command that does not exist, so following them failed with `UNKNOWN_ARGUMENT`.
+  The `ui` deliverable's intake no longer asks a film-style duration: it asks product, audience,
+  scope and assets. The `film check` help line, `workflow-film.md` and `composition-gate.md` now
+  list every check `film check` runs (storyboard, score grid, timeline, render, audio, a picture
+  check of the frames, continuity between beats) and say when each one runs, and that the extra
+  `composition capture` step is optional and adds text checks. `SKILL.md` no longer promises a
+  concepts and review step for `ui` at standard: `ui` asks for the brief and goes to the work.
+  `pipeline-reference.md` only points to `pipeline-phases.json` and `explain-block` instead of a
+  document that lacks the state contract. `docs/cli-and-reference-providers.md` lists the
+  commands the help lists.
+
 ### Changed
 
 - Web `next` prompts (`add-web-treatment-and-section-briefs`): the web intake asks product,
   audience, scope and assets instead of a duration and no longer uses film wording; web concepts
   asks for a section arc and a first-viewport frame per card and says the chosen card is extended
   with `## Treatment`; web build at standard and full writes the treatment first; the web review
-  names the page and the 375x812, 768x1024 and 1440x900 screenshots. Film, edit and ui prompts are
-  unchanged. The `ui` deliverable's intake still asks for a duration.
+  names the page and the 375x812, 768x1024 and 1440x900 screenshots. Film and edit prompts are
+  unchanged.
 
 - Storyboard gate (`strengthen-film-cue-binding-and-song-map`): new warnings `cue-unbound` (a
   declared `downbeat`, `accent`, `impact` or `riser` cue that no beat lists in `soundCues`) and

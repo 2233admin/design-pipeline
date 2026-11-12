@@ -131,6 +131,88 @@ test("film check reviews each beat frame's composition after render", { skip: !h
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
+// The `film check` help line is a list of clauses split by ";". Each clause opens with the canonical name of a gate (the
+// words the gates are called in the spec), and a gate that only runs under a condition says that condition in plain words,
+// using the files and events checkFilmProject really looks at.
+function filmCheckHelpClauses() {
+  const help = spawnSync(process.execPath, [cli, "--help"], { encoding: "utf8", windowsHide: true });
+  assert.equal(help.status, 0, help.stderr);
+  const line = help.stdout.split("\n").find((entry) => entry.includes("film check "));
+  assert.ok(line, "--help has a film check line");
+  return line.slice(line.indexOf("(") + 1, line.lastIndexOf(")")).split(";").map((clause) => clause.trim());
+}
+const clauseAbout = (clauses, name) => {
+  const found = clauses.filter((clause) => new RegExp(`^(?:runs )?(?:the |after a render, the )${name}\\b`).test(clause));
+  assert.equal(found.length, 1, `exactly one film check help clause opens with "${name}": ${JSON.stringify(clauses)}`);
+  return found[0];
+};
+const fileNames = (text) => text.match(/[\w./*-]+\.(?:html|json|mp4)/g) || [];
+
+test("film check help says when the score grid, timeline and render checks run, matching what film check does", () => {
+  const dir = tmp();
+  try {
+    scaffoldFilm(dir);
+    fs.rmSync(path.join(dir, "index.html"));
+    const clauses = filmCheckHelpClauses();
+    // No index.html, timeline.json, video or score-grid.json: only the always-on checks report; the others skip or do not appear.
+    const bare = checkFilmProject(dir).steps;
+    assert.deepEqual(bare.map((step) => step.gate), ["storyboard", "timeline", "render", "check"]);
+    for (const gate of ["timeline", "render"]) {
+      const step = bare.find((entry) => entry.gate === gate);
+      assert.equal(step.status, "skipped");
+      const clause = clauseAbout(clauses, gate);
+      assert.match(clause, /only when/);
+      assert.ok(fileNames(step.reason).length > 0, `${gate} skip reason names files`);
+      for (const file of fileNames(step.reason)) assert.ok(clause.includes(file), `${gate} help clause names ${file}`);
+    }
+    // score-grid.json turns the score check on.
+    fs.writeFileSync(path.join(dir, "score-grid.json"), JSON.stringify({ beats: [0], events: [] }));
+    assert.ok(checkFilmProject(dir).steps.some((step) => step.gate === "score"));
+    const score = clauseAbout(clauses, "score grid");
+    assert.match(score, /only when/);
+    assert.ok(score.includes("score-grid.json"));
+    // The storyboard and continuity checks run every time, and the help does not tie them to a file.
+    assert.doesNotMatch(clauseAbout(clauses, "storyboard"), /only when/);
+    const carry = clauseAbout(clauses, "carry");
+    assert.doesNotMatch(carry, /only when/);
+    assert.match(carry, /continuity between beats/);
+    assert.ok(bare.some((step) => step.gate === "check"), "the carry gate is reported as step `check`");
+    assert.match(carry, /step `check`/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("film check help says the audio and composition checks follow a render, matching what film check does", { skip: !hasFfmpeg && "ffmpeg not installed" }, () => {
+  const dir = tmp();
+  try {
+    scaffoldFilm(dir);
+    fs.rmSync(path.join(dir, "index.html"));
+    const render = (audio) => {
+      const args = ["-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "color=c=0x101418:s=320x180:r=30:d=12", ...(audio ? ["-f", "lavfi", "-i", "sine=f=220:d=12", "-shortest", "-c:a", "aac"] : []), "-c:v", "libx264", "-pix_fmt", "yuv420p", path.join(dir, "out.mp4")];
+      const run = spawnSync("ffmpeg", args, { windowsHide: true, encoding: "utf8" });
+      assert.equal(run.status, 0, run.stderr);
+    };
+    const clauses = filmCheckHelpClauses();
+    const audioClause = clauseAbout(clauses, "audio");
+    const compositionClause = clauseAbout(clauses, "composition");
+    for (const clause of [audioClause, compositionClause]) assert.match(clause, /after a render/);
+    assert.match(audioClause, /sound/);
+    assert.match(compositionClause, /picture/);
+
+    render(true);
+    const withSound = checkFilmProject(dir).steps.map((step) => step.gate);
+    assert.ok(withSound.includes("audio") && withSound.includes("composition"));
+
+    // A silent storyboard with a render that has no audio track: the audio check does not run, the picture check still does.
+    const boardFile = path.join(dir, "storyboard.json");
+    const board = JSON.parse(fs.readFileSync(boardFile, "utf8"));
+    fs.writeFileSync(boardFile, JSON.stringify({ ...board, sound: { ...board.sound, mode: "silent", reason: "silent by design" } }));
+    render(false);
+    const silent = checkFilmProject(dir).steps.map((step) => step.gate);
+    assert.ok(!silent.includes("audio"), "no audio step for a silent film");
+    assert.ok(silent.includes("composition"));
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
 // ---------- nondeterministic-source scan ----------
 
 const { scanCompositionSource } = require("../skill/scripts/film-timeline-core.cjs");

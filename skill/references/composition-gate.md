@@ -20,7 +20,11 @@ Errors fail the gate: `blank-frame`, `low-contrast`, `text-contrast` (WCAG 4.5:1
 the composition deliberately does that (`--allow dead-band` for intended negative space) and say
 why in the change's qa record.
 
-`film check` runs the gate on each beat's midpoint frame with the `frame` profile.
+`film check` runs this gate as its composition (picture) check, on each beat's middle frame with
+the `frame` profile, and for beats driven by code also on a frame near the start and one near the
+end. It reads pixels only, so the text checks (`text-contrast`, `text-off-canvas`,
+`alignment-near-miss`, `flat-hierarchy`, `type-scale-sprawl`) need `--elements` and are not part
+of `film check`.
 
 The gate measures failure shapes; it does not judge taste. A passing frame still needs creative
 review, and a warning is not proof of a bad design.

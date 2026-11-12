@@ -8,7 +8,7 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { HINTS, analyzeMusic, autoEdit, checkEdit, storyboardFromEdit } = require("../skill/scripts/edit-core.cjs");
 const { checkStoryboard } = require("../skill/scripts/film-core.cjs");
-const { analyzeProject, autoProject, checkProject, renderProject } = require("../skill/scripts/edit-project-core.cjs");
+const { analyzeProject, autoProject, checkProject, renderProject, sourceList } = require("../skill/scripts/edit-project-core.cjs");
 
 const codes = (result) => result.findings.map((finding) => finding.code);
 const hasFfmpeg = spawnSync("ffmpeg", ["-version"], { windowsHide: true }).status === 0;
@@ -133,5 +133,73 @@ test("film edit end to end: analyze, auto, render and check generated footage", 
     // fail this step even though the render itself is clean.
     assert.equal(renderStep.status, "passed", JSON.stringify(renderStep));
     assert.equal(check.creativeAcceptance, "not-assessed");
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+// Every command a film-edit result or error tells the author to run must be one the CLI knows.
+const cli = path.join(__dirname, "..", "skill", "scripts", "designer-pipeline.cjs");
+const commandsIn = (text) => String(text).match(/\bfilm[ -]edit\s+[a-z]+/g) || [];
+function resolves(words) {
+  const run = spawnSync(process.execPath, [cli, ...words, "--root", os.tmpdir()], { encoding: "utf8", windowsHide: true });
+  const code = JSON.parse(run.stdout).error?.code;
+  return code !== "UNKNOWN_COMMAND" && code !== "UNKNOWN_ARGUMENT";
+}
+function thrown(action) {
+  try { action(); } catch (error) { return error.message; }
+  return assert.fail("expected the call to throw");
+}
+function assertNamed(source, text) {
+  const commands = commandsIn(text);
+  assert.ok(commands.length > 0, `${source} names a film-edit command`);
+  for (const command of commands) assert.ok(resolves(command.split(/\s+/)), `${source} names "${command}", which the CLI does not know`);
+}
+
+test("every command a film-edit error or next step names is one the CLI knows", () => {
+  const dir = tmp();
+  try {
+    const editList = () => autoEdit(music(), sources(), { style: "mad" });
+    const writeEdit = () => fs.writeFileSync(path.join(dir, "edit.json"), JSON.stringify(editList()));
+    const writeAnalysis = () => {
+      fs.mkdirSync(path.join(dir, "edit"), { recursive: true });
+      fs.writeFileSync(path.join(dir, "edit", "analysis.json"), JSON.stringify({ schema: "design-pipeline.edit-analysis.v1", music: music(), sources: sources() }));
+    };
+
+    // No analysis yet: auto and check both send the author to analyze.
+    const noAnalysis = thrown(() => autoProject(dir, {}));
+    assert.match(noAnalysis, /^film-edit:/);
+    assertNamed("auto without analysis", noAnalysis);
+    writeEdit();
+    const checkNoAnalysis = thrown(() => checkProject(dir, {}));
+    assert.match(checkNoAnalysis, /^film-edit:/);
+    assertNamed("check without analysis", checkNoAnalysis);
+    fs.rmSync(path.join(dir, "edit.json"));
+
+    // Every other message of the command carries the same label.
+    assert.match(thrown(() => sourceList(dir, "sources")), /^film-edit:/);
+    assert.match(thrown(() => analyzeProject(dir, {})), /^film-edit:/);
+    assert.match(thrown(() => analyzeProject(dir, { music: "missing.wav" })), /^film-edit:/);
+
+    // auto succeeds, then refuses to overwrite edit.json.
+    writeAnalysis();
+    assertNamed("auto next", autoProject(dir, { style: "mad" }).next);
+    const exists = thrown(() => autoProject(dir, { style: "mad" }));
+    assert.match(exists, /^film-edit:/);
+    assertNamed("auto over an existing edit", exists);
+
+    // render and check without a render both name the next command.
+    assertNamed("render next", renderProject(dir, { render: () => {} }).next);
+    const skipped = checkProject(dir, {}).steps.find((step) => step.gate === "render");
+    assert.equal(skipped.status, "skipped");
+    assertNamed("check without a render", skipped.next);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("film-edit analyze names the auto command it leads to", { skip }, () => {
+  const dir = tmp();
+  try {
+    fs.mkdirSync(path.join(dir, "sources"));
+    ff(["-f", "lavfi", "-i", "testsrc2=s=320x180:r=30", "-t", "6", "-pix_fmt", "yuv420p", path.join(dir, "sources", "bars.mp4")]);
+    clickTrack(path.join(dir, "music.wav"), 120, 0, 8);
+    assertNamed("analyze next", analyzeProject(dir, { music: "music.wav" }).next);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });

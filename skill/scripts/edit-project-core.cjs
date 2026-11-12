@@ -1,6 +1,6 @@
 "use strict";
 
-// `film edit`: the project workflow for music-led edits.
+// `film-edit`: the project workflow for music-led edits.
 //   analyze  music + sources/ -> edit/analysis.json (beat grid, bars, energy; shots and motion peaks)
 //   auto     analysis -> edit.json (shots placed on the grid, style mad or pv)
 //   render   edit.json -> renders/edit.mp4 (ffmpeg)
@@ -21,9 +21,9 @@ const ANALYSIS = path.join("edit", "analysis.json");
 
 function sourceList(root, sourcesDir) {
   const dir = path.join(root, sourcesDir);
-  if (!fs.existsSync(dir)) fail("film edit", `no ${sourcesDir}/ directory. Fix: put the footage clips (mp4, mov, webm) in ${sourcesDir}/`, { code: "INPUT_MISSING" });
+  if (!fs.existsSync(dir)) fail("film-edit", `no ${sourcesDir}/ directory. Fix: put the footage clips (mp4, mov, webm) in ${sourcesDir}/`, { code: "INPUT_MISSING" });
   const files = fs.readdirSync(dir).filter((name) => VIDEO.test(name)).sort();
-  if (!files.length) fail("film edit", `${sourcesDir}/ has no video files`, { code: "INPUT_MISSING" });
+  if (!files.length) fail("film-edit", `${sourcesDir}/ has no video files`, { code: "INPUT_MISSING" });
   const licensesFile = path.join(dir, "licenses.json");
   const licenses = fs.existsSync(licensesFile) ? readJson(licensesFile, "source licenses") : {};
   return files.map((name) => {
@@ -34,9 +34,9 @@ function sourceList(root, sourcesDir) {
 }
 
 function analyzeProject(root, options = {}) {
-  if (!options.music) fail("film edit", "--audio <music file> is required", { code: "OPTION_REQUIRED" });
+  if (!options.music) fail("film-edit", "--audio <music file> is required", { code: "OPTION_REQUIRED" });
   const musicPath = path.resolve(root, options.music);
-  if (!fs.existsSync(musicPath)) fail("film edit", `music not found: ${options.music}`);
+  if (!fs.existsSync(musicPath)) fail("film-edit", `music not found: ${options.music}`);
   const gridFile = path.join(root, "score-grid.json");
   const music = analyzeMusic(musicPath, { grid: fs.existsSync(gridFile) && !options.detect ? readJson(gridFile, "score grid") : null });
   const sources = sourceList(root, options.sources || "sources").map((source) => ({ ...analyzeSource(source.path), id: source.id, file: source.file, license: source.license, commercialUse: source.commercialUse }));
@@ -53,7 +53,7 @@ function analyzeProject(root, options = {}) {
     bars: music.bars.length,
     sources: sources.map(({ id, durationSec, segments, license }) => ({ id, durationSec, shots: segments.length, license })),
     next: [
-      `designer-pipeline film edit auto --project-root . --style mad|pv [--duration <sec>]`,
+      `designer-pipeline film-edit auto --project-root . --style mad|pv [--duration <sec>]`,
       unlicensed.length ? `Record licenses in sources/licenses.json for: ${unlicensed.join(", ")} ({"<file>": {"license": "...", "commercialUse": true}}); unrecorded footage is treated as non-commercial.` : "All sources record commercial-use licenses.",
     ],
   };
@@ -61,28 +61,28 @@ function analyzeProject(root, options = {}) {
 
 function autoProject(root, options = {}) {
   const analysisFile = path.join(root, ANALYSIS);
-  if (!fs.existsSync(analysisFile)) fail("film edit", "no edit/analysis.json. Fix: run film edit analyze first", { code: "INPUT_MISSING" });
+  if (!fs.existsSync(analysisFile)) fail("film-edit", "no edit/analysis.json. Fix: run film-edit analyze first", { code: "INPUT_MISSING" });
   const editFile = path.join(root, "edit.json");
-  if (fs.existsSync(editFile) && !options.replace) fail("film edit", "edit.json exists. Fix: edit it by hand and run film edit render, or pass --replace to regenerate", { code: "OUTPUT_EXISTS" });
+  if (fs.existsSync(editFile) && !options.replace) fail("film-edit", "edit.json exists. Fix: edit it by hand and run film-edit render, or pass --replace to regenerate", { code: "OUTPUT_EXISTS" });
   const analysis = readJson(analysisFile, "edit analysis");
   const edit = autoEdit(analysis.music, analysis.sources, { style: options.style, durationSec: options.durationSec, musicFile: analysis.music.file, width: options.width, height: options.height, id: options.id });
   fs.writeFileSync(editFile, `${JSON.stringify(edit, null, 2)}\n`);
   const check = checkEdit(edit, analysis.music, Object.fromEntries(analysis.sources.map((source) => [source.id, source])));
-  return { status: "edited", edit: "edit.json", style: edit.style, shots: edit.clips.length, durationSec: edit.durationSec, check, next: ["designer-pipeline film edit render --project-root .", "Adjust edit.json by hand where the automatic choice is wrong; every cut must stay on a beat."] };
+  return { status: "edited", edit: "edit.json", style: edit.style, shots: edit.clips.length, durationSec: edit.durationSec, check, next: ["designer-pipeline film-edit render --project-root .", "Adjust edit.json by hand where the automatic choice is wrong; every cut must stay on a beat."] };
 }
 
 function renderProject(root, options = {}) {
   const edit = readJson(path.join(root, "edit.json"), "edit list");
   const output = path.join(root, options.output || path.join("renders", "edit.mp4"));
   (options.render || renderEdit)(edit, root, output);
-  return { status: "rendered", output: path.relative(root, output).split(path.sep).join("/"), next: ["designer-pipeline film edit check --project-root ."] };
+  return { status: "rendered", output: path.relative(root, output).split(path.sep).join("/"), next: ["designer-pipeline film-edit check --project-root ."] };
 }
 
 function checkProject(root, options = {}) {
   const edit = readJson(path.join(root, "edit.json"), "edit list");
   validateEdit(edit);
   const analysis = fs.existsSync(path.join(root, ANALYSIS)) ? readJson(path.join(root, ANALYSIS), "edit analysis") : null;
-  if (!analysis) fail("film edit", "no edit/analysis.json. Fix: run film edit analyze first", { code: "INPUT_MISSING" });
+  if (!analysis) fail("film-edit", "no edit/analysis.json. Fix: run film-edit analyze first", { code: "INPUT_MISSING" });
   const steps = [];
   const rules = checkEdit(edit, analysis.music, Object.fromEntries(analysis.sources.map((source) => [source.id, source])));
   steps.push({ gate: "edit", status: rules.status, findings: rules.findings, metrics: rules.metrics });
@@ -105,7 +105,7 @@ function checkProject(root, options = {}) {
     });
     steps.push({ gate: "composition", status: frames.some((frame) => frame.status === "failed") ? "failed" : "passed", findings: frames.flatMap((frame) => frame.findings.map((finding) => ({ ...finding, shot: frame.shot }))) });
   } else {
-    steps.push({ gate: "render", status: "skipped", next: "Run film edit render, then check again." });
+    steps.push({ gate: "render", status: "skipped", next: "Run film-edit render, then check again." });
   }
   const failed = steps.some((step) => step.status === "failed");
   const skipped = steps.some((step) => step.status === "skipped");

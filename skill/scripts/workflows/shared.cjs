@@ -1,6 +1,6 @@
 "use strict";
 
-// Stages and helpers shared by the deliverable sub-workflows (film, edit).
+// Stages and helpers shared by the deliverable sub-workflows (film, edit, web and ui).
 // A stage is { id, finished(state, root), action(state, root) }; `next` walks a sub-workflow's
 // stages and returns the first unfinished one's action.
 

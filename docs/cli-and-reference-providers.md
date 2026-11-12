@@ -40,7 +40,16 @@ design-skill route|manifest|run|select|promote
 reconciliation check
 feedback record|prepare|reconcile
 evidence check|capture
-verify motion|components
+verify motion|components|audio|composition|interaction|film-storyboard|film-timeline|film-render
+verify --gate state-coverage|interaction-states|artifact|plan
+audio master
+composition capture
+next
+decide
+film scaffold|capture-timeline|blender|score|blocks|check
+film-edit analyze|auto|render|check
+film-eval measure
+source audit
 patterns search|audit|tokens check|ui-ir check|design-code-map check
 component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decide|verify
 design-system options|resolve-stack|profiles|normalize|acquire|search|decompose|route|project-tokens|decide

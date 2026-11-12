@@ -76,9 +76,23 @@ Then render the draft: `npx hyperframes render --output out.mp4`.
 
 ## check
 
-`film check --project-root .` runs the storyboard, timeline and render gates. Apply each
-finding's `fix` and rerun. Frame layout: `composition capture` then `verify composition`
-(`composition-gate.md`). A re-render reopens this stage.
+`film check --project-root .` runs these gates. Some only run when their input exists:
+
+- storyboard always runs.
+- score grid runs only when `score-grid.json` exists.
+- timeline runs only when `index.html` or `timeline.json` exists; until then it is skipped.
+- render runs only when a render exists (`out.mp4` or `renders/*.mp4`); until then it is skipped.
+- audio runs after a render, when the film has sound.
+- composition (the picture check) runs after a render. It checks each beat's middle frame and,
+  for beats driven by code, a frame near the start and one near the end. It looks at pixels only
+  and does not read text.
+- carry (continuity between beats) always runs. It is reported as step `check` in the output.
+
+Apply each finding's `fix` and rerun. Optional extra step for text: run `composition capture` on
+the page to save its state, then `verify composition --image <png> --elements <elements.json>`.
+That adds five text checks that `film check` does not run: `text-contrast`, `text-off-canvas`,
+`alignment-near-miss`, `flat-hierarchy` and `type-scale-sprawl` (see `composition-gate.md`).
+A re-render reopens this stage.
 
 ## review
 

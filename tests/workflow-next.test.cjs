@@ -304,14 +304,14 @@ test("web concepts asks for a section arc and a treatment, then keeps the shared
   assert.equal(choose.record, shared.CONCEPTS.action({}, dir).record);
 });
 
-test("film, edit and ui prompts at intake and concepts equal the shared ones", () => {
-  for (const deliverable of ["film", "edit", "ui"]) {
+test("film and edit prompts at intake and concepts equal the shared ones", () => {
+  for (const deliverable of ["film", "edit"]) {
     const dir = tmp();
     initState(dir, { deliverable, tier: "standard" });
     const intake = nextAction(dir);
     assert.equal(intake.stage, "intake", deliverable);
     assert.deepEqual(promptOf(intake), promptOf(shared.INTAKE.action()), deliverable);
-    if (deliverable !== "ui") assert.ok(intake.questions.some((question) => question.id === "duration"), `${deliverable} intake keeps the duration question`);
+    assert.ok(intake.questions.some((question) => question.id === "duration"), `${deliverable} intake keeps the duration question`);
   }
 
   const film = tmp();
@@ -325,6 +325,46 @@ test("film, edit and ui prompts at intake and concepts equal the shared ones", (
   const choose = nextAction(film);
   assert.equal(choose.type, "ask");
   assert.deepEqual(promptOf(choose), promptOf(shared.CONCEPTS.action(readState(film), film)));
+});
+
+test("ui intake asks about what is built, with no duration or film wording, and keeps the shared record", () => {
+  const dir = tmp();
+  initState(dir, { deliverable: "ui", tier: "standard" });
+  const action = nextAction(dir);
+  const sharedIntake = shared.INTAKE.action();
+  assert.equal(action.stage, "intake");
+  assert.equal(action.type, "ask");
+  assert.deepEqual(action.questions.map((question) => question.id), ["product", "audience", "scope", "assets"]);
+  assert.ok(action.questions.every((question) => question.ask && question.recommended));
+  assert.doesNotMatch(JSON.stringify(action), /how long|duration|film|promo|video|footage|beat|music|launch event/i);
+  assert.equal(action.record, sharedIntake.record);
+  assert.equal(action.question, sharedIntake.question);
+  assert.equal(action.why, sharedIntake.why);
+});
+
+test("ui stages keep their ids and order: quick is work; standard and full are intake then work", () => {
+  const quick = tmp();
+  initState(quick, { deliverable: "ui", tier: "quick" });
+  const first = nextAction(quick);
+  assert.equal(first.stage, "work");
+  assert.equal(first.remaining, 1);
+  assert.deepEqual(first.completed, []);
+
+  for (const tier of ["standard", "full"]) {
+    const dir = tmp();
+    initState(dir, { deliverable: "ui", tier });
+    const intake = nextAction(dir);
+    assert.equal(intake.stage, "intake", tier);
+    assert.equal(intake.remaining, 2, tier);
+    decide(dir, { stage: "intake", answer: "a settings screen" });
+    assert.ok(fs.existsSync(path.join(dir, "brief.md")), tier);
+    const work = nextAction(dir);
+    assert.equal(work.stage, "work", tier);
+    assert.deepEqual(work.completed, ["intake"], tier);
+    assert.equal(work.remaining, 1, tier);
+    decide(dir, { stage: "deliver", answer: "checked in a browser" });
+    assert.deepEqual(nextAction(dir).completed, ["intake", "work"], tier);
+  }
 });
 
 test("web stage ids per tier keep their order", () => {

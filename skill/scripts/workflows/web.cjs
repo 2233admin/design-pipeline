@@ -8,7 +8,7 @@ const { CLI, REVIEW: SHARED_REVIEW, exists, gatePassed, reference } = require(".
 const REFERENCE = reference("Study 1-3 moving web references and write reference.md (observed motion, timing, easing, structure; what to transfer).");
 
 // Web intake and concepts: same stage ids, finished predicates and record strings as the shared
-// ones (film, edit and ui keep those), with prompts about a page instead of a picture.
+// ones (film and edit keep those), with prompts about a page instead of a picture.
 const INTAKE = {
   id: "intake",
   finished: (state, root) => exists(root, "brief.md"),
