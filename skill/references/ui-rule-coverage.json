@@ -300,12 +300,12 @@
         {
           "id": "command/animation/03",
           "rule": "Never `transition: all`—list properties explicitly",
-          "status": "local",
+          "status": "audit",
           "targets": [
+            "audit.motion-properties",
             "references/animation-opportunity-and-review.md#rules",
             "references/interface-defaults.md#motion-details-not-in-the-motion-rules"
-          ],
-          "issue": 355
+          ]
         },
         {
           "id": "command/animation/04",
@@ -1084,11 +1084,11 @@
         {
           "id": "baseline-ui/animation/03",
           "rule": "NEVER animate layout properties (`width`, `height`, `top`, `left`, `margin`, `padding`)",
-          "status": "local",
+          "status": "audit",
           "targets": [
+            "audit.motion-properties",
             "references/animation-opportunity-and-review.md#property-tiers"
-          ],
-          "issue": 355
+          ]
         },
         {
           "id": "baseline-ui/animation/04",
@@ -1120,8 +1120,13 @@
         {
           "id": "baseline-ui/animation/07",
           "rule": "MUST pause looping animations when off-screen",
-          "status": "pending",
-          "issue": 355
+          "status": "audit",
+          "targets": [
+            "audit.motion-properties",
+            "UC-43"
+          ],
+          "partial": true,
+          "note": "Measured for a loop whose element is outside the viewport when the page is read; a loop that scrolls out of view later is reviewed under UC-43."
         },
         {
           "id": "baseline-ui/animation/08",
@@ -1143,8 +1148,10 @@
         {
           "id": "baseline-ui/animation/10",
           "rule": "SHOULD avoid animating large images or full-screen surfaces",
-          "status": "pending",
-          "issue": 355
+          "status": "uc",
+          "targets": [
+            "UC-43"
+          ]
         },
         {
           "id": "baseline-ui/typography/01",
@@ -1519,17 +1526,21 @@
         {
           "id": "fixing-motion-performance/never-patterns/02",
           "rule": "do not animate layout continuously on large or meaningful surfaces",
-          "status": "local",
+          "status": "audit",
           "targets": [
+            "audit.motion-properties",
             "references/animation-opportunity-and-review.md#property-tiers"
           ],
-          "issue": 355
+          "partial": true,
+          "note": "The audit fails any animated layout property; it does not weigh the size or meaning of the surface."
         },
         {
           "id": "fixing-motion-performance/never-patterns/03",
           "rule": "do not drive animation from scrollTop, scrollY, or scroll events",
-          "status": "pending",
-          "issue": 355
+          "status": "uc",
+          "targets": [
+            "UC-42"
+          ]
         },
         {
           "id": "fixing-motion-performance/never-patterns/04",
@@ -1579,8 +1590,10 @@
         {
           "id": "fixing-motion-performance/choose-the-mechanism/04",
           "rule": "one-shot effects are acceptable more often than continuous motion",
-          "status": "pending",
-          "issue": 355
+          "status": "uc",
+          "targets": [
+            "UC-43"
+          ]
         },
         {
           "id": "fixing-motion-performance/choose-the-mechanism/05",
@@ -1621,8 +1634,10 @@
         {
           "id": "fixing-motion-performance/measurement/04",
           "rule": "prefer FLIP-style transitions for layout-like effects",
-          "status": "pending",
-          "issue": 355
+          "status": "uc",
+          "targets": [
+            "UC-44"
+          ]
         },
         {
           "id": "fixing-motion-performance/measurement/05",
@@ -1635,32 +1650,45 @@
         {
           "id": "fixing-motion-performance/scroll/01",
           "rule": "prefer Scroll or View Timelines for scroll-linked motion when available",
-          "status": "pending",
-          "issue": 355
+          "status": "uc",
+          "targets": [
+            "UC-42"
+          ]
         },
         {
           "id": "fixing-motion-performance/scroll/02",
           "rule": "use IntersectionObserver for visibility and pausing",
-          "status": "pending",
-          "issue": 355
+          "status": "uc",
+          "targets": [
+            "UC-42"
+          ]
         },
         {
           "id": "fixing-motion-performance/scroll/03",
           "rule": "do not poll scroll position for animation",
-          "status": "pending",
-          "issue": 355
+          "status": "uc",
+          "targets": [
+            "UC-42"
+          ]
         },
         {
           "id": "fixing-motion-performance/scroll/04",
           "rule": "pause or stop animations when off-screen",
-          "status": "pending",
-          "issue": 355
+          "status": "audit",
+          "targets": [
+            "audit.motion-properties",
+            "UC-43"
+          ],
+          "partial": true,
+          "note": "Measured for a loop whose element is outside the viewport when the page is read; a loop that scrolls out of view later is reviewed under UC-43."
         },
         {
           "id": "fixing-motion-performance/scroll/05",
           "rule": "scroll-linked motion must not trigger continuous layout or paint on large surfaces",
-          "status": "pending",
-          "issue": 355
+          "status": "uc",
+          "targets": [
+            "UC-42"
+          ]
         },
         {
           "id": "fixing-motion-performance/paint/01",
@@ -1768,8 +1796,10 @@
         {
           "id": "fixing-motion-performance/blur-and-filters/03",
           "rule": "never animate blur continuously",
-          "status": "pending",
-          "issue": 355
+          "status": "audit",
+          "targets": [
+            "audit.motion-properties"
+          ]
         },
         {
           "id": "fixing-motion-performance/blur-and-filters/04",
@@ -1811,14 +1841,18 @@
         {
           "id": "fixing-motion-performance/view-transitions/03",
           "rule": "avoid view transitions when interruption or cancellation is required",
-          "status": "pending",
-          "issue": 355
+          "status": "uc",
+          "targets": [
+            "UC-44"
+          ]
         },
         {
           "id": "fixing-motion-performance/view-transitions/04",
           "rule": "treat size changes as potentially layout-triggering",
-          "status": "pending",
-          "issue": 355
+          "status": "uc",
+          "targets": [
+            "UC-44"
+          ]
         },
         {
           "id": "fixing-motion-performance/tool-boundaries/01",
@@ -1840,8 +1874,10 @@
         {
           "id": "fixing-motion-performance/tool-boundaries/03",
           "rule": "never partially migrate APIs or mix styles within the same component",
-          "status": "pending",
-          "issue": 355
+          "status": "uc",
+          "targets": [
+            "UC-44"
+          ]
         }
       ]
     }

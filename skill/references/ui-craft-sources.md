@@ -20,10 +20,11 @@ Source keys used below. `LA` is a lintapple rule id, adapted in `scripts/interac
 | `ID/` | `vendor/interface-discipline/upstream/skills/*/*.md` (domain skill, then file) |
 | `SC/` | `vendor/shadcn/upstream/skills/shadcn/rules/*.md` (only in a shadcn project) |
 
-Two more keys name upstream rule lists that are pinned but not vendored; the section cited after
+Three more keys name upstream rule lists that are pinned but not vendored; the section cited after
 the key is a heading in that file. `WIG` is `command.md` of Vercel's Web Interface Guidelines
 (`README.md` where the row says so; [record](web-interface-guidelines.md)). `BU` is
-`skills/baseline-ui/SKILL.md` of ibelick/ui-skills ([record](ibelick-ui-skills.md)).
+`skills/baseline-ui/SKILL.md` of ibelick/ui-skills and `FMP` is
+`skills/fixing-motion-performance/SKILL.md` of the same repository ([record](ibelick-ui-skills.md)).
 [Rule coverage](#rule-coverage) maps every rule of those lists to a row here.
 
 ## Measured audit
@@ -57,14 +58,15 @@ A token may raise a floor, never lower it below the WCAG values (24px targets, 4
 | `audit.heading-levels` | In document order, no heading (`h1`-`h6`, `role="heading"` with `aria-level`, screen-reader-only ones included; `hidden`, `display: none` and `aria-hidden` ones excluded) is more than one level below the heading before it | none | none | [reading sources](#reading-motion-and-state-sources); `FA` |
 | `audit.reduced-motion` | Loaded once with `prefers-reduced-motion: reduce` and once without, both read 1s after load: no content (text or media) visible without the preference at that moment is hidden under it by opacity 0, `visibility`, or a transform or clip that puts it out of view or to zero size, and no running animation or transition moves anything but opacity or color; motion on or inside `role="status"`, `role="progressbar"`, `role="alert"` or `aria-busy="true"` (spinners, progress, skeletons) is essential motion and exempt | 1s | none | [motion sources](#reading-motion-and-state-sources); `FA`, `ID/better-accessibility/motion-and-zoom.md` |
 | `audit.state-contrast` | With `:hover` and `:focus-visible` forced on every control (CDP `CSS.forcePseudoState`), text whose color or background color the state changes meets the text-contrast floors, and each focusable control shows a `:focus-visible` outline, ring, border or background change of at least `contrastFocus` against what it sits on (the browser's two-tone `outline-style: auto` ring passes). A state drawn with a filter, translucency or a gradient that cannot be measured is listed under `notMeasured` in the coverage and does not fail. `:active` is not measured: it lasts only as long as a press, and an unstyled link's `:active` is the browser's activelink red | 3:1 | `colors` roles; stricter → `thresholds.contrastFocus`, `contrastNormal`, `contrastLarge` | [state sources](#reading-motion-and-state-sources); `FA`, `ID/better-accessibility/focus-and-keyboard.md` |
+| `audit.motion-properties` | No element (the document element included), `::before` or `::after` has a timed `transition-property: all` or a timed transition of a layout property (`width`, `height`, the four insets, `margin`, `padding`, their longhands and logical forms); transitions are read from computed style, so one that never fires is still judged. No keyframe or script animation the document holds a second after load animates a layout property; no infinite one animates `filter` or `backdrop-filter` `blur()`; no infinite one is running on an element wholly outside the viewport at that reading (paused, or skipped by `content-visibility: auto`, passes; a loop on a pseudo-element, whose box cannot be read, is listed under `notMeasured` and does not fail). Motion on or inside `role="status"`, `role="progressbar"`, `role="alert"` or `aria-busy="true"` is exempt. `min-`/`max-` sizes, border widths and grid tracks are not judged | none | none | `BU` Animation; `FMP`; `WIG` Animation; [compositor cost](animation-opportunity-and-review.md#5-compositor-cost) |
 
 `audit.font-family` and every check without a `declare` input always run; `thresholds.fonts` is
 required. The optional selector checks are `audit.tabular-numbers` (declared numbers, plus inferred
 numeric cells), `audit.content-overflow`, `audit.control-inset`, `audit.layout-gap`,
 `audit.layout-alignment`, `audit.nested-radius`, and `audit.line-length` and `audit.line-height`
 (running text is a role only the author knows: labels, captions, table cells and hero lines are
-not). `audit.heading-levels`, `audit.reduced-motion` and `audit.state-contrast` need no declaration
-and always run. A declared selector that matches nothing is a
+not). `audit.heading-levels`, `audit.reduced-motion`, `audit.state-contrast` and
+`audit.motion-properties` need no declaration and always run. A declared selector that matches nothing is a
 failed finding.
 
 The audit also classifies every request the page made at any viewport. A CDN or dev-server URL, or
@@ -156,6 +158,9 @@ finding status, removed signals) in [interface-discipline.md](interface-discipli
 | UC-39 | Ellipsis as a promise: a menu item or button that opens a follow-up step before it acts ends with `…` ("Rename…"), and so does in-progress copy ("Saving…"). | `WIG` `README.md` Interactions; `WIG` Typography; `ID/better-writing/patterns.md` |
 | UC-40 | Writes: a submission carries an idempotency key and repeat clicks are ignored while it runs, so a retry cannot apply twice; a `POST`, `PATCH` or `DELETE` is budgeted to finish within 500ms, and a slower one shows feedback by the [waiting rule](interface-defaults.md#waiting). | `WIG` `README.md` Forms, Performance; `ID/better-accessibility/forms.md` |
 | UC-41 | Loading hints: a below-fold image sets `loading="lazy"`; the critical above-fold image sets `fetchpriority="high"` (or the framework's `priority`); critical fonts are self-hosted, preloaded with `<link rel="preload" as="font">` and use `font-display: swap`. | `WIG` Images, Performance; [cjk-typography.md](cjk-typography.md) |
+| UC-42 | Source-level, scroll-linked motion: nothing animates from `scrollTop`, `scrollY`, a `scroll` listener or a polled scroll position; a scroll or view timeline drives it where the browser has one, and an IntersectionObserver decides visibility and pausing; scroll-linked motion changes `transform` or `opacity` only on a large surface. Check: grep the motion code for `scroll` listeners and `requestAnimationFrame` loops that read scroll position. | `FMP` Never patterns, Scroll; [UI transition rules](ui-transition-rules.md) |
+| UC-43 | Source-level, loops: an effect runs once unless the loop itself carries meaning; a loop pauses when its element leaves the viewport (`audit.motion-properties` measures loops that are off screen when the page is read, not ones that scroll out later); a large image or a full-screen surface is not animated as a whole. | `BU` Animation; `FMP` Choose the mechanism, Scroll; [motion gate](animation-opportunity-and-review.md#6-subtract-pass) |
+| UC-44 | Source-level, mechanism: a View Transition is not used where the change must be interruptible or cancellable, and a size change inside one is budgeted as layout work; a layout-like effect measures once and plays as a transform (FLIP); one component uses one animation API, never a half-migrated mix. | `FMP` Measurement, View transitions, Tool boundaries; [runtime decision](capability-routing.md#runtime-animation-decision) |
 
 ## Precedence
 
@@ -315,6 +320,12 @@ through the DevTools protocol instead of focusing one element at a time, only te
 is measured again, the browser's `outline-style: auto` ring counts as an indicator, and reduced
 motion compares the two renderings element by element instead of declaring a missing media query a
 failure.
+
+`audit.motion-properties` is this project's own code as well. Its rules are the measurable ones of
+`baseline-ui` and `fixing-motion-performance` ([record](ibelick-ui-skills.md)) and of the
+[compositor cost](animation-opportunity-and-review.md#5-compositor-cost) section; no source text is
+copied. The source-level rules of those lists that a rendered page cannot show are `UC-42` to
+`UC-44`.
 
 ## Maintaining the snapshots
 
