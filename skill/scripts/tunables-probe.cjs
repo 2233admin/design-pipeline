@@ -121,11 +121,14 @@ async function probe(options) {
   }
   const panel = await startPanel(project, { idleMinutes: 30 });
   const url = `${panel.previewUrl}index.html`;
-  const browser = await puppeteer.launch({ executablePath, headless: true, args: ["--autoplay-policy=no-user-gesture-required"] });
   const findings = [];
   const probed = [];
   const pageErrors = [];
+  let browser = null;
   try {
+    // Launch inside the cleanup scope: a browser that is found but cannot start must still close the panel,
+    // or its idle timer keeps the process alive.
+    browser = await puppeteer.launch({ executablePath, headless: true, args: ["--autoplay-policy=no-user-gesture-required"] });
     const page = await browser.newPage();
     page.on("pageerror", (error) => pageErrors.push(error.message));
     await page.setViewport(viewport);
@@ -177,8 +180,7 @@ async function probe(options) {
       }
     }
   } finally {
-    await browser.close();
-    await panel.close();
+    try { if (browser) await browser.close(); } finally { await panel.close(); }
   }
   const after = digest(guarded);
   if (after !== before) fail(SCOPE, `${tunables.FILE} or ${tunables.SCRIPT} changed during the probe; the probe never writes them`, { code: "PROBE_WROTE_FILES" });

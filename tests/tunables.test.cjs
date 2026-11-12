@@ -298,6 +298,20 @@ test("probe without a usable browser exits 1 with BROWSER_UNAVAILABLE", () => {
   } finally { cleanup(dir); }
 });
 
+test("probe whose browser is found but cannot start exits 1 at once and leaves no preview server running", () => {
+  const dir = makePage(tmp());
+  const stubDir = tmp("tunables-stub-");
+  try {
+    const stub = path.join(stubDir, "puppeteer.cjs");
+    fs.writeFileSync(stub, 'module.exports = { launch: async () => { throw new Error("launch refused"); } };\n');
+    const started = Date.now();
+    const result = cli(["tunables", "probe", "--root", dir, "--project-root", dir, "--chrome", process.execPath, "--puppeteer-module", stub], { timeout: 60000 });
+    assert.equal(result.status, 1, `a hung probe is killed by the timeout and has no status: ${JSON.stringify(result.body)}`);
+    assert.match(result.body.error.message, /launch refused/);
+    assert.ok(Date.now() - started < 30000, "the process ends instead of waiting on the preview server's idle timer");
+  } finally { cleanup(dir, stubDir); }
+});
+
 // ---------- in a browser ----------
 
 async function inBrowser(url, run) {

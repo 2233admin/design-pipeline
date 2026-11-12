@@ -46,6 +46,27 @@ function insideRoot(realRoot, real) {
   return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative));
 }
 
+// A page that names its files from the site root ("/tunables.js", url(/img/a.png)) works when served
+// from "/" but would ask this server for a path outside the token. Point such references at the
+// preview mount instead. Only HTML attributes and CSS are rewritten; a path built in a script
+// (fetch, new URL) is left alone, and "//host" and "scheme:" references are never touched.
+const ROOT_ATTRIBUTE = /(\b(?:src|href|poster|action|formaction|data)\s*=\s*)(["'])\/(?!\/)([^"']*)\2/gi;
+const ROOT_CSS_URL = /url\(\s*(["']?)\/(?!\/)([^)"']*)\1\s*\)/gi;
+const ROOT_CSS_IMPORT = /@import\s+(["'])\/(?!\/)([^"']*)\1/gi;
+
+function rebaseCss(css, mount) {
+  return css
+    .replace(ROOT_CSS_URL, (_all, quote, rest) => `url(${quote}${mount}${rest}${quote})`)
+    .replace(ROOT_CSS_IMPORT, (_all, quote, rest) => `@import ${quote}${mount}${rest}${quote}`);
+}
+
+function rebaseHtml(html, mount) {
+  return html
+    .replace(ROOT_ATTRIBUTE, (_all, name, quote, rest) => `${name}${quote}${mount}${rest}${quote}`)
+    .replace(/(<style\b[^>]*>)([\s\S]*?)(<\/style>)/gi, (_all, open, css, close) => `${open}${rebaseCss(css, mount)}${close}`)
+    .replace(/(\bstyle\s*=\s*)(["'])([\s\S]*?)\2/gi, (_all, name, quote, css) => `${name}${quote}${rebaseCss(css, mount)}${quote}`);
+}
+
 // The file a /preview/<rawRest> request names, or null. rawRest is the undecoded path: an encoded
 // separator, a traversal segment, a drive or stream colon, a .git directory, an .env file or a
 // symlink out of the root all answer "not found".
@@ -184,9 +205,12 @@ function startPanel(root, options = {}) {
         if (found.name === tunables.SCRIPT) return status(res, 200, previewScript(), { "Content-Type": TYPES[".js"] });
         const type = TYPES[path.extname(found.file).toLowerCase()] || "application/octet-stream";
         let body = fs.readFileSync(found.file);
+        const mount = `${prefix}preview/`;
         if (type.startsWith("text/html")) {
-          const html = body.toString("utf8");
+          const html = rebaseHtml(body.toString("utf8"), mount);
           body = Buffer.from(/<head\b[^>]*>/i.test(html) ? html.replace(/<head\b[^>]*>/i, (tag) => `${tag}${REGISTRY}`) : `${REGISTRY}${html}`);
+        } else if (type.startsWith("text/css")) {
+          body = Buffer.from(rebaseCss(body.toString("utf8"), mount));
         }
         return status(res, 200, body, { "Content-Type": type });
       }
@@ -243,4 +267,4 @@ function startPanel(root, options = {}) {
   });
 }
 
-module.exports = { DEFAULT_IDLE_MINUTES, MAX_BODY, previewFile, startPanel };
+module.exports = { DEFAULT_IDLE_MINUTES, MAX_BODY, previewFile, rebaseCss, rebaseHtml, startPanel };

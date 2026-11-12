@@ -119,6 +119,29 @@ test("the preview page gets the timeline registry and a tunables.js built from t
   } finally { cleanup(dir); }
 });
 
+test("root-relative references in HTML attributes and CSS point into the preview; nothing else is rewritten", async () => {
+  const dir = makePage(tmp());
+  try {
+    fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><html><head><link rel="stylesheet" href="/site.css"><script src="/tunables.js"></script><style>.a{background:url(/img/a.png)} @import "/more.css";</style></head><body><img src='/img/b.png'><div style="background:url('/img/c.png')"></div><a href="//cdn.example/x.js">cdn</a><script src="https://cdn.example/y.js"></script><img src="data:image/png;base64,AAAA"><img src="rel/d.png"><script>fetch("/data.json")</script></body></html>`);
+    fs.writeFileSync(path.join(dir, "site.css"), `.b{background:url("/img/e.png")} .c{background:url(//cdn.example/f.png)} .d{background:url(rel/g.png)} @import '/more.css';`);
+    await withPanel(dir, async (panel) => {
+      const mount = `/${panel.token}/preview/`;
+      const page = (await call(panel, "preview/index.html")).text;
+      for (const rebased of [`href="${mount}site.css"`, `src="${mount}tunables.js"`, `url(${mount}img/a.png)`, `@import "${mount}more.css"`, `src='${mount}img/b.png'`, `url('${mount}img/c.png')`]) {
+        assert.ok(page.includes(rebased), `${rebased} in ${page}`);
+      }
+      for (const kept of [`href="//cdn.example/x.js"`, `src="https://cdn.example/y.js"`, `src="data:image/png;base64,AAAA"`, `src="rel/d.png"`, `fetch("/data.json")`]) {
+        assert.ok(page.includes(kept), `${kept} stays as written`);
+      }
+      const css = await call(panel, "preview/site.css");
+      assert.match(css.headers["content-type"], /^text\/css/);
+      assert.equal(css.text, `.b{background:url("${mount}img/e.png")} .c{background:url(//cdn.example/f.png)} .d{background:url(rel/g.png)} @import '${mount}more.css';`);
+      assert.equal((await request(panel.port, { target: `${mount}tunables.js` })).status, 200, "the rebased include reaches the token-protected route");
+      assert.equal(fs.readFileSync(path.join(dir, "site.css"), "utf8").includes(panel.token), false, "the file on disk is not rewritten");
+    });
+  } finally { cleanup(dir); }
+});
+
 test("a draft changes the preview only: the project files keep their bytes", async () => {
   const dir = makePage(tmp());
   try {
@@ -369,6 +392,37 @@ test("a moved control reaches the preview as a draft and Reset puts it back", { 
   } finally { cleanup(dir); }
 });
 
+test("a page that includes /tunables.js from the site root still follows the draft in the preview", { skip: BROWSER.skip }, async () => {
+  const dir = makePage(tmp());
+  try {
+    const file = path.join(dir, "index.html");
+    fs.writeFileSync(file, fs.readFileSync(file, "utf8").replace('src="tunables.js"', 'src="/tunables.js"'));
+    await openPanel(dir, async (page) => {
+      assert.equal(await frameValue(page, "card-radius"), 8);
+      await fill(page, "[data-param='card-radius'] input[type=number]", "20");
+      await waitFrameValue(page, "card-radius", 20);
+    });
+  } finally { cleanup(dir); }
+});
+
+test("Save pressed before the draft push fires still leaves the preview on the saved values", { skip: BROWSER.skip }, async () => {
+  const dir = makePage(tmp());
+  try {
+    await openPanel(dir, async (page) => {
+      assert.equal(await frameValue(page, "card-radius"), 8);
+      // Edit and Save in one task: the 250 ms draft push is cancelled by Save and never runs.
+      await page.$eval("[data-param='card-radius'] input[type=number]", (node) => {
+        node.value = "20";
+        node.dispatchEvent(new Event("input", { bubbles: true }));
+        document.querySelector("#save").click();
+      });
+      await page.waitForFunction(() => /Saved/.test(document.querySelector("#status").textContent), { timeout: 15000 });
+      assert.deepEqual(readValues(dir), { "card-radius": 20 });
+      await waitFrameValue(page, "card-radius", 20);
+    });
+  } finally { cleanup(dir); }
+});
+
 test("Save writes the values; an outside edit raises the conflict banner and both ways out work", { skip: BROWSER.skip }, async () => {
   const dir = makePage(tmp());
   try {
@@ -445,7 +499,8 @@ test("a film shows the time scrubber, fits its canvas and seeks to a param's win
       assert.equal(await page.evaluate(() => document.querySelector("#frame").contentWindow.__timelines.main.time()), 3.5, "focus seeks to the middle of the window");
       await fill(page, "[data-param='beat-duration'] input[type=number]", "1.6");
       await waitFrameValue(page, "beat-duration", 1.6);
-      assert.equal(await page.evaluate(() => document.querySelector("#frame").contentWindow.__timelines.main.getChildren(false)[0].duration()), 1.6, "the timeline was rebuilt from the draft");
+      // tunable() answers as soon as tunables.js has run; the page's own script registers the timeline after it.
+      await page.waitForFunction(() => { try { return document.querySelector("#frame").contentWindow.__timelines.main.getChildren(false)[0].duration() === 1.6; } catch { return false; } }, { timeout: 15000 });
       assert.equal(await page.$eval("#stage", (node) => node.classList.contains("fit")), true);
     });
   } finally { cleanup(dir); }

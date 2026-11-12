@@ -85,6 +85,10 @@ the same validation as `tunables set`. If the file changed after the panel loade
 refused and the panel offers to keep your edits or use the file's values. The panel stops after 30
 idle minutes (`--idle-minutes`).
 
+The preview rewrites root-relative references in HTML attributes and CSS (`src="/tunables.js"`,
+`url(/img/a.png)`) so they resolve inside the preview. A path built in a script, such as
+`fetch("/data.json")`, is not rewritten: use a relative path there.
+
 The panel previews; it does not render, and it has no accept or reject control. A saved change
 needs a new render before it shows in the video, and the owner's acceptance of the result is
 recorded in the owner's own words, as for any other change.

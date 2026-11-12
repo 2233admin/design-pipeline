@@ -197,7 +197,15 @@ reloaded after a draft change (debounced 250 ms) so the page rebuilds from the n
 buttons set the frame width to 375, 768 and 1280 px, which is how an owner checks a frontend page at
 phone, tablet and desktop widths. The page reads `tunables.js` as it always does; the server decides
 whether that request returns the saved values or the draft. The file on disk never reads the address
-bar, so renders are unaffected. Sound and video clips are not played and the frame is not a render:
+bar, so renders are unaffected. Save also reloads the frame: it cancels a draft push still waiting on
+the debounce, so without the reload the frame could keep older values than the ones just written.
+
+A page that names files from the site root (`<script src="/tunables.js">`, `url(/img/a.png)`) would
+ask the server for a path outside the token and get 404. The preview rewrites root-relative
+references in HTML attributes (`src`, `href`, `poster`, `action`, `formaction`, `data`), in `<style>`
+blocks, `style` attributes and `.css` files to the preview mount. `//host`, `scheme:` and relative
+references are left as written. A path built in a script (`fetch("/data.json")`) is not rewritten and
+answers 404 in the preview. The files on disk are never changed. Sound and video clips are not played and the frame is not a render:
 the panel says so in its footer.
 
 **Controls.** One per param, grouped by `group`, labelled with `label`: `range` is a slider plus a

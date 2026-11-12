@@ -356,6 +356,8 @@
         refreshDirty();
         showStale(state.stale);
         say(result.body.wrote.length ? `Saved ${result.body.wrote.join(" and ")}` : "Nothing to write: the values already match the file");
+        // Save cancels a draft push that was still waiting on the debounce, so the frame may show older values.
+        reloadFrame();
       }
 
       els.save.addEventListener("click", save);
