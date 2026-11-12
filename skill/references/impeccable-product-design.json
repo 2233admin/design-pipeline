@@ -2,8 +2,8 @@
   "schema": "design-pipeline.impeccable-product-design.v1",
   "source": {
     "url": "https://github.com/pbakaus/impeccable",
-    "revision": "9fadc41729c38fd47d7ae622b501558653f9d2e9",
-    "reviewedAt": "2026-11-04"
+    "revision": "b4bff1626c344067788c2679f048a20057c7cc5a",
+    "reviewedAt": "2026-11-12"
   },
   "visitorModes": [
     {"id": "Persuade", "success": "The visitor decides and acts.", "primaryEvidence": ["brief.md", "directions.md", "qa.md"]},
@@ -55,11 +55,33 @@
     {"id": "comp-round", "route": "visualize.md comp round inside new work: three compositional comps approved before a comp-led build", "outputs": [".impeccable/mocks/", "directions.md"]},
     {"id": "native-platform", "route": "iOS, Android, and adaptive guidance", "outputs": ["platform-specific design constraints"]}
   ],
+  "upstreamReferences": [
+    {"id": "component-review", "disposition": "partly-adopted", "target": "impeccable-contract.md#verification-loop", "reason": "The owner answers a plate, comp or first-viewport review; a waiting review is pending work. The component-review CLI, manifests and receipts are not adopted."},
+    {"id": "craft-floor", "disposition": "adopted", "target": "impeccable-contract.md#craft-floor", "reason": "Verify list and refusals merged into the existing craft floor; the eyebrow is the one ban."},
+    {"id": "doctor", "disposition": "not-adopted", "reason": "Repairs .impeccable/ files that this package does not write. Drift here is covered by sources:check, specs:check and capabilities:check."},
+    {"id": "hooks", "disposition": "not-adopted", "reason": "Installs a detector hook into the harness settings and .impeccable/config.json, which is persistent configuration. The measured audit and anti-slop review run at delivery instead."},
+    {"id": "routing", "disposition": "not-adopted", "reason": "Its no-argument menu reads the impeccable signals CLI. The route command and job-registry.json select the job."},
+    {"id": "region-map", "disposition": "not-adopted", "reason": "Depends on the impeccable comp-spec CLI. Reference regions and reconstruction are handled by reference-spec.md and reconstruction-spec.md."},
+    {"id": "visualize", "disposition": "mapped", "target": "comp-round", "reason": "The comp round is the supporting capability comp-round; Stage 2 direction-preview already requires three comparable versions. Its CLI phase state and image generator calls are not adopted."},
+    {"id": "mode-operate", "disposition": "adopted", "target": "impeccable-contract.md#mode-rules", "reason": "Operate: the world lends type, palette, density and one signature move, never layout, navigation or controls."},
+    {"id": "mode-persuade", "disposition": "adopted", "target": "impeccable-contract.md#mode-rules", "reason": "Persuade and Experience: the world may structure the page, but its parts keep working and it is never a painted picture."},
+    {"id": "mode-read", "disposition": "adopted", "target": "impeccable-contract.md#mode-rules", "reason": "Read: the world owns the frame, the reading column stays calm."}
+  ],
+  "notAdopted": [
+    {"id": "agents-engine", "reason": "Impeccable's own agent engine duplicates this package's job registry and gates."},
+    {"id": "rule-packs", "reason": "Rule sets of the impeccable CLI; the detector stays a separate question (#239)."},
+    {"id": "login-logout-whoami", "reason": "Account features of the hosted service."},
+    {"id": "critique-history-upload", "reason": "Uploads critique snapshots to the hosted service; critique results stay in qa.md."},
+    {"id": "design-md-viewer-sync", "reason": "Syncs DESIGN.md to a hosted viewer; DESIGN.md follows the Google format here."},
+    {"id": "loop", "reason": "A separate product (Loop 0.1.1), not part of the skill."},
+    {"id": "audit-storage", "reason": "The helper and its reports setting are not adopted; the audit report goes to qa.md (ui-craft-sources.md#keep-the-report)."}
+  ],
   "coverage": {
     "upstreamListedCommandCount": 24,
     "upstreamCoreCommandCount": 23,
     "mappedCoreCommandCount": 23,
     "mappedSupportingCapabilityCount": 6,
+    "upstreamReferenceCount": 10,
     "productDesignOnly": true,
     "skinThemeImported": false
   }

@@ -17,7 +17,7 @@ grammar + check rules; its templates are the parameterised layouts of that gramm
 
 | Style | Templates | Character |
 | --- | --- | --- |
-| `arknights-endfield` | 9 (kv, cover, card, banner, ui) | Measured from official promotional art: code-drawn condensed Latin over CJK sans/serif, one figure, a shared left line |
+| `arknights-endfield` | 9 (kv, cover, card, banner, ui) | Measured from official promotional art: code-drawn condensed Latin over CJK sans/serif, one figure, a shared left line. For a poster or sheet about a real subject (document test, dialects, colour and density budgets) read [industrial-document-sheets.md](industrial-document-sheets.md) |
 | `shinbo` | 11 (7 title cards, a corridor poster, a chapter grid, an item codex, a title-card cut) | Flat red/black/paper grounds, Mincho against small gothic, architecture and void, cut-paper collage that never touches copy, flash-hold-black rhythm |
 | `citypop-sleeve` | 3 (event KV, recruit screen, ten-pull wall) | City-pop record sleeve: one pool cyan, white walls, hard cast shadows, striped numerals, postcards at small tilts; lemon only for the top rarity and the main button |
 | `xerox-flyer` | 3 (scorebug with a half-size reflow, ban/pick board, tour-flyer poster) | Punk photocopy flyer: one fluorescent pink, black and paper as if copied, ransom-note scraps, spray-stencil numerals |
@@ -158,7 +158,19 @@ sees layers injected after rendering, hand-written SVG and HTML pages:
 | `no-text-measured` | No visible text on the page; a text-free page declares `data-no-text` on its root | At least one text |
 | `glyph-coverage` | Characters missing from the first font of a run's stack (the page's `@font-face` files, or a registered provider) | Every character |
 | `safe-area-type` | Ink of each text unit over the face and hand boxes of a composited character (from its `materials composite` receipt, scaled to the image's rendered box) | 12 px of ink |
+| `hue-budget` | Opt-in. Share of the canvas painted by each saturated hue (OKLab chroma 0.08 and up), as drawn, minus elements marked `data-deco`. A pixel belongs to the declared role whose hue is nearest within 25 degrees. An undeclared-hue pixel counts only inside a block. The brand colour is reported and never limited | Counter 3%; alert and timed 1% together; any undeclared hue 0.1% |
 | receipt checks | `composite-upscale` and `safe-area-occluder` from the receipt fail; `composite-black-point`, `composite-colour-mismatch` and `matte-halo` are warn bands and go to the notes | See *Generated characters and layers* |
+
+`hue-budget` runs only on a page that declares its colour roles on the root element (`<html>` or
+`<svg>`): `data-hue-brand`, `data-hue-counter`, `data-hue-alert` and `data-hue-timed`, each any CSS
+colour (`data-hue-brand="#ffd400"`). A page with none of them is not measured, so no existing verdict
+changes. A role whose colour is not saturated or not a colour is said in the notes and not measured.
+The roles and limits come from [industrial-document-sheets.md](industrial-document-sheets.md#4-color-budget-by-role).
+An undeclared hue is measured as area: a pixel counts only when at least 5 of its 8 neighbours are
+undeclared too (`hueBlockNeighbours`), so a rule or hairline 1 px thick and the colour fringe of
+antialiased text are not counted, while a stroke 2 px or thicker is. Declared roles count every pixel.
+The result carries `hue` (the shares and the undeclared hues above a tenth of the limit) and a note
+with the brand, counter and status shares. Mark colour control strips and ghost numerals `data-deco`.
 
 A drawn numeral or word (paths, no text) is measured as lettering when it is a lettering slot or
 carries `data-chk` (give `data-cap` for its cap height): overlap, off-canvas and contrast, the colour

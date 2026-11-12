@@ -103,11 +103,14 @@ function extractionDigest(state) {
   return latest?.verdict === "accept" ? "sha256:" + sha256(canonicalJson(latest.inputs)) : null;
 }
 
+// deliverable → 它的检查 gate。review 绑定与 invalidateCheckedEvidence 都读这一张表，新 gate 只登记一处。
+const CHECKED_GATES = { film: "film", edit: "edit", web: "interaction" };
+
 // What a final review binds: the checked outputs, or for ui (which has no checking gate of its own)
 // the delivery evidence its work stage recorded.
 function reviewInputHashes(state) {
   if (state.deliverable === "ui") return state.decisions?.delivered ? { delivered: "sha256:" + sha256(String(state.decisions.delivered)), ...(extractionDigest(state) ? { extraction: extractionDigest(state) } : {}) } : null;
-  const gate = { film: "film", edit: "edit", web: "interaction" }[state.deliverable];
+  const gate = CHECKED_GATES[state.deliverable];
   return state.gates?.[gate]?.inputHashes || null;
 }
 
@@ -123,7 +126,7 @@ function deliveryRecorded(state, root) {
 
 // Drop checked-output gates and the delivery bound to them, so the next pass is rechecked.
 function invalidateCheckedEvidence(state) {
-  state.gates = Object.fromEntries(Object.entries(state.gates || {}).filter(([gate]) => !["film", "edit", "interaction"].includes(gate)));
+  state.gates = Object.fromEntries(Object.entries(state.gates || {}).filter(([gate]) => !Object.values(CHECKED_GATES).includes(gate)));
   delete state.decisions.delivered;
   delete state.decisions.deliveryInputHashes;
   delete state.decisions.deliveredSha256;
