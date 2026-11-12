@@ -4,6 +4,8 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-11-12
+
 ### Fixed
 
 - `tests/ablation-eval.test.cjs` passes on Windows (change `ablation-reference-variant`, #372): the test imports the eval modules through `file://` URLs and gives its temporary profile the `AppData` folders Chrome needs, the eval wraps puppeteer's `Uint8Array` screenshot in a `Buffer` before decoding it, and `runAgent` quotes command parts that contain spaces when it goes through `cmd.exe`.
