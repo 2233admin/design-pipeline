@@ -237,6 +237,7 @@
     "scripts/component-first/orchestration/aggregate-result.cjs",
     "scripts/component-first/orchestration/component-first-orchestrator.cjs",
     "scripts/pipeline-state-core.cjs",
+    "scripts/state-machine-core.cjs",
     "scripts/surface-profile-core.cjs",
     "scripts/reference-intent-contract.cjs",
     "scripts/guided-design-intake-core.cjs",

@@ -129,6 +129,8 @@
     "package-release.test.cjs",
     "pending-source.test.cjs",
     "pipeline-state.test.cjs",
+    "state-machine-tables.test.cjs",
+    "state-recovery.test.cjs",
     "plain-language.test.cjs",
     "publication-bridge.test.cjs",
     "record-feedback.test.cjs",

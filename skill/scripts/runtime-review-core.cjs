@@ -157,7 +157,9 @@ function unique(items, key, label) {
   if (new Set(items.map((item) => item[key])).size !== items.length) fail(SCOPE, label + " " + key + " 必须唯一");
 }
 function sourceDigest(refs) { return sha256(canonicalJson([...refs].sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0))); }
-function freshness(findings) { return findings.some((item) => item.code.includes("BLOCKED")) ? "blocked" : findings.length ? "stale" : "matched"; }
+// 阻断类 finding 的枚举；新增阻断码必须登记在这里，不再靠 code 子串推断。
+const BLOCKING_FINDING_CODES = new Set(["RR_INPUT_BLOCKED", "RR_ACCEPTANCE_BLOCKED"]);
+function freshness(findings) { return findings.some((item) => BLOCKING_FINDING_CODES.has(item.code)) ? "blocked" : findings.length ? "stale" : "matched"; }
 function refFile(session, ref, label, root = session.root) { shape(ref, "Ref"); return readFile(session, root, ref.path, ref.sha256, label); }
 function pathsInManifest(manifest) {
   for (const key of ["designIntent", "uiIr", "catalog", "tokens", "codeMap", "componentFirst", "runtimeObservation"]) if (manifest?.[key]?.path !== undefined) literal(manifest[key].path, key);
