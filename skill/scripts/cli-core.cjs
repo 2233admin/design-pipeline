@@ -53,6 +53,7 @@ const { renderCutSheet, seedCuts } = require("./film-cut-core.cjs");
 const { checkTimeline } = require("./film-timeline-core.cjs");
 const { evaluateFilmRuns } = require("./film-eval-core.cjs");
 const { checkFilmProject, scaffoldFilm } = require("./film-project-core.cjs");
+const tunables = require("./tunables-core.cjs");
 const { prepareFilmMethods } = require("../tools/film-methods/prepare.cjs");
 const { templates: filmTemplates } = require("../tools/prompt-motion/library.cjs");
 const templateBank = require("../tools/template-bank/bank.cjs");
@@ -183,7 +184,7 @@ const KNOWN_OPTIONS = new Set([
   "--spec", "--stills", "--ffmpeg", "--ffprobe", "--medium", "--second", "--pool", "--east-pool",
   "--family", "--size", "--seed", "--png", "-o", "--font-dir", "--images", "--annotations", "--compare",
   "--state", "--experience", "--rules", "--rule", "--recorder", "--actor", "--proposer", "--candidate", "--replay", "--held-out", "--evaluator", "--reason", "--promotion", "--target-version", "--evaluation-manifest-sha256", "--primary-metric", "--metric-direction", "--construction-fixture", "--evidence-hash", "--id", "--gate", "--to",
-  "--target-id", "--section",
+  "--target-id", "--section", "--port", "--idle-minutes",
   "--use", "--name", "--license", "--finish",
   "--generator", "--seed", "--reference",
   "--text", "--text-file", "--weight", "--contrast",
@@ -526,7 +527,12 @@ function publicHelp() {
     "  film voiceover --project-root <dir> --audio <narration.wav> [--script lines.txt] [--start <sec>] [--min-pause 0.25] [--write]   (phrase cues measured from the take's pauses with silencedetect; --script: one spoken line per line; --write records vo-* cues and the narration hash in storyboard.json)",
     "  film blocks --project-root <dir> [--query <action words>] [--tag 3d|shader|transition|...] [--type block|component] [--refresh]",
     "  film cut-sheet --project-root <dir> [--from-reference <shots-analysis report.json>]   (writes cut-sheet.html from storyboard.json cuts; --from-reference first seeds one cut per detected shot, descriptions left empty, never overwrites existing cuts)",
-    "  film check --project-root <dir> [--allow code,code]   (runs storyboard, timeline, render and composition gates; each finding carries a fix; --allow accepts named composition warnings)",
+    "  film check --project-root <dir> [--allow code,code]   (runs storyboard, timeline, render and composition gates; each finding carries a fix; --allow accepts named composition warnings; a project with tunables.json adds a tunables step and fails a render older than the values)",
+    "  tunables init --project-root <dir> [--replace]   (adds tunables.json and the generated tunables.js to a film or web page project; index.html is not edited, the include line is printed)",
+    "  tunables list|check|sync --project-root <dir>   (list: params with defaults and values; check: tunables.json is sound, tunables.js is current and first in index.html, every param is read by the project, every tunable() id is declared; sync: rewrite tunables.js from the effective values; exit 2 on findings)",
+    "  tunables set --project-root <dir> --param <id>=<value> [--param ...] | tunables reset --project-root <dir> --param <id> [--param ...] | --all   (validates against the param, writes values and re-syncs; nothing else changes)",
+    "  tunables probe --project-root <dir> [--param <id>] [--chrome <exe>] [--puppeteer-module <path>]   (renders the page with each param at its value and at a changed value and warns param-no-visible-effect when no sampled frame differs; project files are not written; exit 1 BROWSER_UNAVAILABLE without a browser)",
+    "  tunables panel --project-root <dir> [--port <n>] [--idle-minutes 30]   (local editor on 127.0.0.1 with one control per param and a draft preview; only Save writes tunables.json and tunables.js; a preview, not a render; stops after the idle time)",
     "  film-eval measure --manifest <benchmark.json> --runs <runs-dir> [--output <measurements.json>]",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
     "  component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decide|verify",
@@ -563,7 +569,7 @@ function publicHelp() {
 // status to success, because a status this wrapper does not understand is not evidence of success.
 const KERNEL_EXIT_CODES = [0, 2, 3];
 // Kernel error codes a caller keeps instead of KERNEL_FAILED (the kernel prints its JSON error on stdout).
-const PROPAGATED_KERNEL_CODES = new Set(["TOOL_MISSING", "SEEK_OUT_OF_RANGE", "REFERENCE_BLOCKED", "REFERENCE_UNREACHABLE", "REFERENCE_HTTP_STATUS", "REFERENCE_EMPTY"]);
+const PROPAGATED_KERNEL_CODES = new Set(["TOOL_MISSING", "SEEK_OUT_OF_RANGE", "REFERENCE_BLOCKED", "REFERENCE_UNREACHABLE", "REFERENCE_HTTP_STATUS", "REFERENCE_EMPTY", "BROWSER_UNAVAILABLE"]);
 const KERNEL_STATUS_LABELS = { 2: "blocked", 3: "fidelity-limited" };
 
 function kernelStatusLabel(exitCode, successLabel) {
@@ -3002,6 +3008,51 @@ function sourceAddCommand() {
   fail("cli", "source add is intentionally deferred; record an attributed source-evidence artifact instead", { code: "COMMAND_DEFERRED" });
 }
 
+// tunables: the editable surface of a film or a page. Everything but `panel` is synchronous; the
+// panel returns `serve`, which the entry script awaits so the server can outlive `execute`.
+function tunablesCommand(parsed, root, action) {
+  const project = contained(root, requireOption(parsed, "--project-root"), "--project-root");
+  const params = optionList(parsed, "--param");
+  if (action === "init") return { result: tunables.initTunables(project, { replace: option(parsed, "--replace") === true }), exitCode: 0 };
+  if (action === "list") return { result: { status: "listed", ...tunables.listTunables(project) }, exitCode: 0 };
+  if (action === "sync") return { result: tunables.syncTunables(project), exitCode: 0 };
+  if (action === "set") return { result: tunables.setTunables(project, tunables.parseAssignments(params)), exitCode: 0 };
+  if (action === "reset") return { result: tunables.resetTunables(project, params, option(parsed, "--all") === true), exitCode: 0 };
+  if (action === "check") {
+    const result = tunables.checkTunables(project);
+    return { result, exitCode: result.status === "passed" ? 0 : 2 };
+  }
+  if (action === "probe") {
+    const args = ["--project-root", project];
+    if (params.length > 1) fail("cli", "tunables probe takes at most one --param <id>", { code: "DUPLICATE_OPTION" });
+    const { doc } = tunables.readTunables(project);
+    tunables.assertDocument(doc);
+    if (params[0] && !doc.params.some((param) => param.id === params[0])) fail("tunables", `no param named ${params[0]}; declared: ${doc.params.map((param) => param.id).join(", ") || "none"}`, { code: "VALUE_UNKNOWN", id: params[0] });
+    for (const [flag, value] of [["--param", params[0]], ["--chrome", option(parsed, "--chrome")], ["--puppeteer-module", option(parsed, "--puppeteer-module")]]) if (value) args.push(flag, value);
+    const kernel = runKernel("tunables-probe.cjs", args, root, { timeout: 600000, maxBuffer: 16 * 1024 * 1024 });
+    return { result: kernel.value, exitCode: kernel.exitCode };
+  }
+  const port = option(parsed, "--port") === null ? undefined : Number(option(parsed, "--port"));
+  if (port !== undefined && (!Number.isInteger(port) || port < 0 || port > 65535)) fail("cli", "--port must be an integer from 0 to 65535", { code: "OPTION_INVALID" });
+  const idle = option(parsed, "--idle-minutes") === null ? undefined : Number(option(parsed, "--idle-minutes"));
+  if (idle !== undefined && (!Number.isFinite(idle) || idle <= 0 || idle > 1440)) fail("cli", "--idle-minutes must be a number above 0 and at most 1440", { code: "OPTION_INVALID" });
+  tunables.assertDocument(tunables.readTunables(project).doc);
+  const preview = require("./tunables-preview-core.cjs");
+  const idleMinutes = idle ?? preview.DEFAULT_IDLE_MINUTES;
+  return {
+    result: { status: "serving" },
+    exitCode: 0,
+    serve: async () => {
+      const panel = await preview.startPanel(project, { port, idleMinutes });
+      return {
+        closed: panel.closed,
+        text: `Tunables panel: ${panel.url}\nLoopback only. Only Save writes tunables.json and tunables.js; the preview is not a render. Stops after ${idleMinutes} idle minutes (Ctrl+C stops it now).`,
+        result: { status: "serving", url: panel.url, port: panel.port, idleMinutes },
+      };
+    },
+  };
+}
+
 
 // Command registry. A top-level entry either carries `run` (the command owns its own subcommand
 // routing and accepts any action) or `actions` (an exact `command action` path; anything else is an
@@ -3101,6 +3152,9 @@ const COMMANDS = {
     },
   },
   project: { actions: { inspect: { run: ({ parsed, root }) => projectInspectCommand(parsed, root) } } },
+  tunables: {
+    actions: Object.fromEntries(["init", "list", "check", "sync", "set", "reset", "probe", "panel"].map((name) => [name, { required: ["--project-root"], run: ({ parsed, root, action }) => tunablesCommand(parsed, root, action) }])),
+  },
   reconstruction: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
   scene: { actions: { check: { run: ({ parsed, root, command }) => spatialCommand(parsed, root, command) } } },
   tokens: { actions: { check: { required: ["--artifact"], run: tokensCheckCommand } } },
@@ -3244,7 +3298,7 @@ const COMMANDS = {
             deliverableForm: plan?.deliverableForm,
           });
           const board = readJson(path.join(project, "storyboard.json"), "film storyboard");
-          workflow.recordGate(project, "film", result.status, ["storyboard.json", result.steps.find(step => step.gate === "render")?.video, ...["index.html", "timeline.json", "score-grid.json"].filter(file => fs.existsSync(path.join(project, file))), ...filmEvidenceInputs(board, plan)], result);
+          workflow.recordGate(project, "film", result.status, ["storyboard.json", result.steps.find(step => step.gate === "render")?.video, ...["index.html", "timeline.json", "score-grid.json", "tunables.json", "tunables.js"].filter(file => fs.existsSync(path.join(project, file))), ...filmEvidenceInputs(board, plan)], result);
           return { result, exitCode: result.status === "passed" ? 0 : 2 };
         },
       },
@@ -3471,7 +3525,18 @@ function dispatch(argv) {
 function execute(argv) {
   try {
     const outcome = dispatch(argv);
-    return { output: jsonResult(true, outcome.result), exitCode: outcome.exitCode, json: outcome.json, text: outcome.text };
+    const json = outcome.json;
+    // A command that must outlive this call (the tunables panel) hands back `serve`; the entry
+    // script awaits it, prints what it returns, then waits for `closed`.
+    const serve = outcome.serve && (async () => {
+      try {
+        const served = await outcome.serve();
+        return { output: jsonResult(true, served.result), exitCode: 0, json, text: served.text, closed: served.closed };
+      } catch (error) {
+        return { output: jsonResult(false, {}, error), exitCode: 1, json };
+      }
+    });
+    return { output: jsonResult(true, outcome.result), exitCode: outcome.exitCode, json, text: outcome.text, ...(serve ? { serve } : {}) };
   } catch (error) {
     return { output: jsonResult(false, {}, error), exitCode: ["BLOCKED", "STATE_LOCKED"].includes(error?.code) ? 2 : 1, json: argv.includes("--json") };
   }

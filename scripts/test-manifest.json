@@ -85,6 +85,8 @@
     "animation-craft.test.cjs",
     "film-timeline-eval.test.cjs",
     "film-project.test.cjs",
+    "tunables.test.cjs",
+    "tunables-panel.test.cjs",
     "ff-tracking-hud.test.cjs",
     "product-source-admission.test.cjs",
     "composition-gate.test.cjs",

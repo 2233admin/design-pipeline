@@ -163,6 +163,11 @@ gallery covers basic/web/game/text/scene studies alongside the four state-owned 
   `doctor` lists it (`references/audio-gate.md#listening-and-effects-with-earshot-optional`).
 - PV/MAD edits: `references/film-edit.md`.
 
+### Editable values
+
+When the owner should tune durations, colours, copy or looks without editing code, in a film or
+a page: `tunables init|check|set|probe|panel` and `references/tunables.md`.
+
 ### Captured runtime review
 
 `runtime-review build|check|record` uses `references/runtime-review.md` with
