@@ -41,6 +41,11 @@ Pick one row, open what it names, and open nothing else until the task needs it.
 | Installation, upgrade and skill location | `references/installation.md` | |
 | Route, CLI, gate and receipt contracts | `references/pipeline-reference.md` | `designer-pipeline --help` |
 
+To read one part of a guide, not the whole file:
+`designer-pipeline skill --reference <name> --section <heading-or-anchor>` (`--list` shows the
+headings; a row that says to open a file still means the whole file).
+`designer-pipeline describe <command>` prints one command's usage.
+
 Left alone, the model's default aesthetic is a warm cream background, a serif headline and a
 terracotta accent. The direction stage exists to get past it: it makes real directions from designers,
 real work and a style roulette, and checks them against the user's recent deliveries
@@ -159,6 +164,11 @@ gallery covers basic/web/game/text/scene studies alongside the four state-owned 
   You cannot hear: report the audio gate's numbers, and for effects or listening use earshot when
   `doctor` lists it (`references/audio-gate.md#listening-and-effects-with-earshot-optional`).
 - PV/MAD edits: `references/film-edit.md`.
+
+### Editable values
+
+When the owner should tune durations, colours, copy or looks without editing code, in a film or
+a page: `tunables init|check|set|probe|panel` and `references/tunables.md`.
 
 ### Captured runtime review
 

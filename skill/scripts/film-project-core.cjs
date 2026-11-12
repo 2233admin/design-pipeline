@@ -19,6 +19,7 @@ const { blockNames } = require("./film-blocks-core.cjs");
 const { checkGridAlignment } = require("./score-core.cjs");
 const { checkAudio } = require("./audio-core.cjs");
 const { withFix } = require("./film-hints.cjs");
+const tunables = require("./tunables-core.cjs");
 
 const CHECK_SCHEMA = "design-pipeline.film-check.v1";
 const refs = path.join(__dirname, "../references/film-choreography");
@@ -74,6 +75,7 @@ function compositionHtml(board) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1920, height=1080" />
+    ${tunables.INCLUDE_TAG}
     <script src="${GSAP_SRC}"></script>
     <script src="lib/patterns.js"></script>
     <style>
@@ -164,6 +166,8 @@ function scaffoldFilm(dir, options = {}) {
         "index.html": study ? fs.readFileSync(path.join(refs, "motion-study.html"), "utf8") : compositionHtml(board),
         "lib/patterns.js": fs.readFileSync(path.join(refs, "patterns.js"), "utf8"),
         "lib/timeline-probe.js": fs.readFileSync(path.join(refs, "timeline-probe.js"), "utf8"),
+        // Editable from the start: an empty tunables.json, its generated script, and the include in index.html.
+        ...(study ? {} : { [tunables.FILE]: tunables.serialize(tunables.emptyDocument()), [tunables.SCRIPT]: tunables.generateScript(tunables.emptyDocument()) }),
         ...NOTES,
         "FILM.md": guide,
       };
@@ -195,6 +199,17 @@ function scaffoldFilm(dir, options = {}) {
   const productPromo = template === "default" && options.deliverableForm === PRODUCT_PROMO_FORM;
   const next = productPromo ? steps.flatMap((line) => (line.startsWith("2.") ? [PRODUCT_SOURCE_STEP, line] : line.startsWith("4.") ? [PRODUCT_SAMPLE_STEP.replace("decide --stage sample", `${cliCommand()} decide --root ${project} --project-root ${project} --stage sample`), line] : [line])) : steps;
   return { status: "scaffolded", root: target, files: Object.keys(files), kept, runtime: { ...PINS, install: `npm --prefix ${project} install`, run: `npx --no-install --prefix ${project} hyperframes` }, next };
+}
+
+// The tunables step of `film check`: the same checks as `tunables check`; a file that does not parse is a finding, not a crash.
+function tunablesStep(root) {
+  try {
+    const result = tunables.checkTunables(root);
+    return { gate: "tunables", status: result.status, findings: result.findings, params: result.params, changed: result.changed };
+  } catch (error) {
+    const fix = `Fix ${tunables.FILE} so it parses, then run \`${tunables.command(root, "sync")}\`.`;
+    return { gate: "tunables", status: "failed", findings: [{ code: "tunables-invalid", severity: "error", message: error.message.replace(/^tunables: /, ""), fix }] };
+  }
 }
 
 function newestRender(dir) {
@@ -251,6 +266,10 @@ function checkFilmProject(dir, options = {}) {
     steps.push({ gate: "score", status: alignment.status, findings: alignment.findings, toleranceSec: alignment.toleranceSec });
   }
 
+  // A project that carries tunables.json also gets its params checked; one without it sees no new step.
+  const hasTunables = fs.existsSync(path.join(root, tunables.FILE));
+  if (hasTunables) steps.push(tunablesStep(root));
+
   const timelineFile = path.join(root, "timeline.json");
   const composition = path.join(root, "index.html");
   let timeline = null;
@@ -293,7 +312,14 @@ function checkFilmProject(dir, options = {}) {
     const procedural = (steps.find((step) => step.gate === "timeline")?.metrics?.proceduralBeats) || [];
     const extraSamples = Object.fromEntries(procedural.map((id) => [id, [0.05, 0.95]]));
     const result = evaluateFilmRender(board, video, { outDir: path.join(root, "evidence"), extraSamples, deliverableForm: options.deliverableForm, projectRoot: root });
-    steps.push({ gate: "render", status: result.status, video: path.relative(root, video), findings: result.findings, motion: result.motion, contactSheet: result.contactSheet && path.join("evidence", result.contactSheet.sheet), audio: result.audio, cuts: result.cuts });
+    const renderStep = { gate: "render", status: result.status, video: path.relative(root, video), findings: result.findings, motion: result.motion, contactSheet: result.contactSheet && path.join("evidence", result.contactSheet.sheet), audio: result.audio, cuts: result.cuts };
+    // A render older than tunables.json or tunables.js shows old values; no other result offsets that.
+    const olderThanValues = hasTunables ? tunables.renderOlderThanValues(root, video) : null;
+    if (olderThanValues) {
+      renderStep.findings = [...renderStep.findings, olderThanValues];
+      renderStep.status = "failed";
+    }
+    steps.push(renderStep);
     if (board.sound.mode !== "silent" || result.audio.present) {
       const audio = checkAudio(video, { storyboard: board, target: options.audioTarget || "web" });
       steps.push({ gate: "audio", status: audio.status, findings: audio.findings, metrics: audio.metrics });

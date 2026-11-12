@@ -739,9 +739,9 @@
       "id": "impeccable",
       "kind": "catalog-reference",
       "repo": "https://github.com/pbakaus/impeccable",
-      "revision": "9fadc41729c38fd47d7ae622b501558653f9d2e9",
-      "reviewedAt": "2026-11-04",
-      "committedAt": "2026-11-02T14:38:11-08:00",
+      "revision": "b4bff1626c344067788c2679f048a20057c7cc5a",
+      "reviewedAt": "2026-11-12",
+      "committedAt": "2026-11-11T11:28:26-08:00",
       "profiles": [
         "impeccable-skill-v4"
       ]

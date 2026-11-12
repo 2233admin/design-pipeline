@@ -7,7 +7,7 @@
 在 Claude Code 会话里运行：
 
 ```text
-/plugin marketplace add 2233admin/design-pipeline
+/plugin marketplace add XartLab/design-pipeline
 /plugin install design-pipeline@design-pipeline
 ```
 
@@ -16,7 +16,7 @@
 如果 `marketplace add` 报 `git clone timed out after 120s`（仓库约 250 MB，其中大部分是上游快照），改在终端里只检出目录清单：
 
 ```bash
-claude plugin marketplace add 2233admin/design-pipeline --sparse .claude-plugin
+claude plugin marketplace add XartLab/design-pipeline --sparse .claude-plugin
 ```
 
 ## Codex 和其他 agent
@@ -25,7 +25,7 @@ claude plugin marketplace add 2233admin/design-pipeline --sparse .claude-plugin
 
 ```bash
 SKILLS_DOWNLOAD_MAX_BYTES=104857600 SKILLS_EXTRACT_MAX_BYTES=268435456 SKILLS_EXTRACT_MAX_FILES=5000 \
-  npx skills add https://github.com/2233admin/design-pipeline/releases/latest/download/design-pipeline-skill.zip \
+  npx skills add https://github.com/XartLab/design-pipeline/releases/latest/download/design-pipeline-skill.zip \
   --skill design-pipeline -a codex -g
 ```
 
@@ -33,7 +33,7 @@ Windows PowerShell：
 
 ```powershell
 $env:SKILLS_DOWNLOAD_MAX_BYTES = 104857600; $env:SKILLS_EXTRACT_MAX_BYTES = 268435456; $env:SKILLS_EXTRACT_MAX_FILES = 5000
-npx skills add https://github.com/2233admin/design-pipeline/releases/latest/download/design-pipeline-skill.zip --skill design-pipeline -a codex -g
+npx skills add https://github.com/XartLab/design-pipeline/releases/latest/download/design-pipeline-skill.zip --skill design-pipeline -a codex -g
 ```
 
 `-a` 换成 `cursor` 等其他 agent id 即可；去掉 `-g` 则装进当前项目的 `.agents/skills/`。升级时重新运行同一条命令。
@@ -75,13 +75,13 @@ node "<skill 目录>/scripts/check-design-foundation.cjs" --project-root . --jso
 
 ## 附录 A：离线 Release 包
 
-不能用上面两条命令时，从 [Releases](https://github.com/2233admin/design-pipeline/releases) 下载 `design-pipeline-skill.zip`（Windows）或 `design-pipeline-skill.tgz`（Unix）和 `checksums.txt`，校验后用包内的安装器安装。归档根目录是 `design-pipeline/`，里面有 `SKILL.md`、`scripts/install-local.cjs` 等。下面的命令显式写出目标 `~/.agents/skills/design-pipeline`，因为 0.12.0 及更早的包里安装器默认装到旧位置；Claude Code 用户请改用上面的插件，或把 `--root` 指向 `~/.claude/skills`。
+不能用上面两条命令时，从 [Releases](https://github.com/XartLab/design-pipeline/releases) 下载 `design-pipeline-skill.zip`（Windows）或 `design-pipeline-skill.tgz`（Unix）和 `checksums.txt`，校验后用包内的安装器安装。归档根目录是 `design-pipeline/`，里面有 `SKILL.md`、`scripts/install-local.cjs` 等。下面的命令显式写出目标 `~/.agents/skills/design-pipeline`，因为 0.12.0 及更早的包里安装器默认装到旧位置；Claude Code 用户请改用上面的插件，或把 `--root` 指向 `~/.claude/skills`。
 
 Git Bash / Unix：
 
 ```bash
 version=0.13.0
-base="https://github.com/2233admin/design-pipeline/releases/download/v${version}"
+base="https://github.com/XartLab/design-pipeline/releases/download/v${version}"
 work="${TMPDIR:-/tmp}/design-pipeline-v${version}"
 mkdir -p "$work"
 
@@ -98,7 +98,7 @@ Windows PowerShell：
 
 ```powershell
 $version = "0.13.0"
-$base = "https://github.com/2233admin/design-pipeline/releases/download/v$version"
+$base = "https://github.com/XartLab/design-pipeline/releases/download/v$version"
 $work = Join-Path $env:TEMP "design-pipeline-v$version"
 $archive = Join-Path $work "design-pipeline-skill.zip"
 $checksums = Join-Path $work "checksums.txt"

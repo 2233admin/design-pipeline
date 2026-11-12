@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Tunables</title>
+  <style>
+    :root {
+      --bg: #f4f5f7;
+      --surface: #ffffff;
+      --text: #1b1f24;
+      --muted: #596370;
+      --border: #cfd6de;
+      --accent: #0b5fff;
+      --danger: #b3261e;
+      --note-bg: #fff3cd;
+      --note-text: #4d3800;
+      color-scheme: light dark;
+      accent-color: var(--accent);
+
+      @media (prefers-color-scheme: dark) {
+        --bg: #0f1114;
+        --surface: #181b20;
+        --text: #e6e9ed;
+        --muted: #9aa5b1;
+        --border: #343b44;
+        --accent: #6ea0ff;
+        --danger: #ff8a80;
+        --note-bg: #3a2f08;
+        --note-text: #ffe29a;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+      min-height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    header {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+      padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border);
+    }
+    header h1 { font-size: 16px; margin: 0; font-weight: 650; }
+    #status { color: var(--muted); flex: 1 1 200px; min-width: 0; }
+    #status.error { color: var(--danger); }
+    .chip { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+    .chip[hidden] { display: none; }
+
+    button {
+      font: inherit; color: inherit; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 6px; padding: 5px 12px; cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+    button.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+    button:disabled { opacity: 0.5; cursor: default; }
+
+    main { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; min-height: 0; }
+    #side { padding: 12px 16px; overflow: auto; border-right: 1px solid var(--border); max-height: calc(100dvh - 90px); }
+    #stage-area { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+
+    fieldset { border: 1px solid var(--border); border-radius: 8px; margin: 0 0 12px; padding: 8px 12px 12px; background: var(--surface); }
+    legend { padding: 0 6px; font-weight: 650; text-transform: capitalize; }
+    .control { padding: 8px 0; border-top: 1px solid var(--border); }
+    .control:first-of-type { border-top: 0; }
+    .control label { display: block; font-weight: 600; margin-bottom: 4px; }
+    .row { display: flex; align-items: center; gap: 8px; }
+    .row input[type="range"] { flex: 1 1 auto; min-width: 0; }
+    .row input[type="number"] { width: 6.5em; }
+    .row input[type="text"] { flex: 1 1 auto; min-width: 0; }
+    input[type="text"], input[type="number"], select {
+      font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px;
+    }
+    select { max-width: 100%; }
+    input[type="color"] { width: 44px; height: 30px; padding: 0; border: 1px solid var(--border); border-radius: 6px; background: transparent; }
+    [aria-invalid="true"] { border-color: var(--danger); }
+    .meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .meta .default { overflow-wrap: anywhere; }
+    .meta button { font-size: 12px; padding: 1px 8px; }
+    .problem { color: var(--danger); font-size: 12px; min-height: 0; }
+    .unit { color: var(--muted); }
+
+    #conflict { margin: 12px 16px 0; padding: 10px 12px; border-radius: 8px; background: var(--note-bg); color: var(--note-text); }
+    #conflict[hidden], #stale[hidden], [hidden] { display: none; }
+    #conflict .row { margin-top: 8px; flex-wrap: wrap; }
+    #stale { margin: 12px 16px 0; padding: 10px 12px; border-radius: 8px; background: var(--note-bg); color: var(--note-text); overflow-wrap: anywhere; }
+
+    #toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 8px 16px; border-bottom: 1px solid var(--border); background: var(--surface); }
+    #viewport { display: flex; gap: 4px; }
+    #scrub { display: flex; align-items: center; gap: 8px; flex: 1 1 260px; min-width: 0; }
+    #scrub input[type="range"] { flex: 1 1 auto; min-width: 0; }
+    #time { font-variant-numeric: tabular-nums; min-width: 9ch; color: var(--muted); }
+
+    #stage { --frame-w: 1280px; flex: 1 1 auto; overflow: auto; padding: 16px; min-height: 360px; }
+    #frame-box { margin-inline: auto; width: min(var(--frame-w), 100%); height: 100%; min-height: 360px; }
+    #stage.fit #frame-box { width: auto; height: auto; margin-inline: 0; }
+    #frame { display: block; width: 100%; height: 100%; min-height: 360px; border: 1px solid var(--border); background: #fff; }
+    #stage.fit #frame { width: 100%; height: 100%; min-height: 0; transform-origin: top left; }
+
+    footer { padding: 8px 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; background: var(--surface); }
+
+    @media (max-width: 760px) {
+      main { grid-template-columns: 1fr; }
+      #side { max-height: none; border-right: 0; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Tunables</h1>
+    <span id="dirty" class="chip" hidden>Unsaved changes</span>
+    <span id="status" role="status" aria-live="polite">Loading…</span>
+    <button id="save" type="button" class="primary">Save values</button>
+  </header>
+
+  <main>
+    <section id="side" aria-label="Parameters">
+      <div id="groups"></div>
+    </section>
+
+    <section id="stage-area" aria-label="Preview">
+      <div id="conflict" role="alert" hidden>
+        <strong>tunables.json changed on disk after this panel loaded it.</strong>
+        <div class="row">
+          <button id="keep" type="button">Keep my edits</button>
+          <button id="discard" type="button">Use the file's values</button>
+        </div>
+      </div>
+      <div id="stale" role="status" hidden></div>
+      <div id="toolbar">
+        <div id="viewport" role="group" aria-label="Preview width">
+          <button type="button" data-width="375" aria-pressed="false">375 px</button>
+          <button type="button" data-width="768" aria-pressed="false">768 px</button>
+          <button type="button" data-width="1280" aria-pressed="true">1280 px</button>
+        </div>
+        <div id="scrub" hidden>
+          <button id="play" type="button">Play</button>
+          <label for="time">Time</label>
+          <input id="time" type="range" min="0" max="1" step="0.01" value="0">
+          <output id="time-out" for="time">0.00 s</output>
+        </div>
+      </div>
+      <div id="stage">
+        <div id="frame-box"><iframe id="frame" title="Preview of the project with the draft values"></iframe></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Preview only: the page loads from your project with the draft values; sound and video clips do not play. A saved change needs a new render before it shows in the video.</footer>
+
+  <script>
+    (() => {
+      "use strict";
+      const base = location.pathname.endsWith("/") ? location.pathname : `${location.pathname}/`;
+      const HEX = /^#(?:[0-9a-f]{6}|[0-9a-f]{8})$/i;
+      const MAX_TEXT = 500;
+      const $ = (selector) => document.querySelector(selector);
+      const els = {
+        groups: $("#groups"), status: $("#status"), dirty: $("#dirty"), save: $("#save"), frame: $("#frame"), stage: $("#stage"), box: $("#frame-box"),
+        conflict: $("#conflict"), keep: $("#keep"), discard: $("#discard"), stale: $("#stale"), viewport: $("#viewport"),
+        scrub: $("#scrub"), play: $("#play"), time: $("#time"), timeOut: $("#time-out"),
+      };
+      let state = null;
+      let current = {};
+      const views = new Map();
+      const invalid = new Set();
+      let timeline = null;
+      let lastTime = 0;
+      let sendTimer = null;
+      let playing = false;
+      let canvas = null;
+
+      function make(tag, props = {}, text) {
+        const node = document.createElement(tag);
+        for (const [key, value] of Object.entries(props)) {
+          if (key === "class") node.className = value;
+          else if (key in node) node[key] = value;
+          else node.setAttribute(key, value);
+        }
+        if (text !== undefined) node.textContent = text;
+        return node;
+      }
+
+      function say(message, isError = false) {
+        els.status.textContent = message;
+        els.status.classList.toggle("error", isError);
+      }
+
+      async function api(path, options) {
+        const init = options ? { ...options, headers: { "Content-Type": "application/json" } } : undefined;
+        const response = await fetch(base + path, init);
+        let body = {};
+        try { body = await response.json(); } catch { body = {}; }
+        return { ok: response.ok, status: response.status, body };
+      }
+
+      const changes = () => Object.fromEntries(state.params.filter((param) => current[param.id] !== param.default).map((param) => [param.id, current[param.id]]));
+      const shown = (value) => (typeof value === "boolean" ? (value ? "on" : "off") : String(value));
+
+      function refreshDirty() {
+        const saved = JSON.stringify(Object.entries(state.saved).sort());
+        const now = JSON.stringify(Object.entries(changes()).sort());
+        els.dirty.hidden = saved === now;
+      }
+
+      function showStale(stale) {
+        els.stale.hidden = !stale;
+        els.stale.textContent = stale ? `${stale.message}. ${stale.fix}` : "";
+      }
+
+      function problem(param, message) {
+        const view = views.get(param.id);
+        view.problem.textContent = message || "";
+        for (const input of view.inputs) input.setAttribute("aria-invalid", message ? "true" : "false");
+        if (message) invalid.add(param.id); else invalid.delete(param.id);
+      }
+
+      function commit(param, value) {
+        current[param.id] = value;
+        problem(param, "");
+        views.get(param.id).sync(value);
+        refreshDirty();
+        clearTimeout(sendTimer);
+        sendTimer = setTimeout(pushDraft, 250);
+      }
+
+      function build(param) {
+        const inputId = `c-${param.id}`;
+        const row = make("div", { class: "control" });
+        row.dataset.param = param.id;
+        const label = make("label", { htmlFor: inputId }, param.label);
+        const line = make("div", { class: "row" });
+        const message = make("div", { class: "problem", role: "alert" });
+        const meta = make("div", { class: "meta" });
+        const hint = make("span", { class: "default" }, `Default: ${shown(param.default)}${param.unit ? ` ${param.unit}` : ""}`);
+        const reset = make("button", { type: "button", "aria-label": `Reset ${param.label} to its default` }, "Reset");
+        const inputs = [];
+        let sync;
+
+        if (param.type === "range") {
+          const slider = make("input", { type: "range", id: inputId, min: param.min, max: param.max, step: param.step });
+          const number = make("input", { type: "number", min: param.min, max: param.max, step: param.step, "aria-label": `${param.label} value` });
+          slider.addEventListener("input", () => commit(param, Number(slider.value)));
+          number.addEventListener("input", () => {
+            const value = Number(number.value);
+            if (number.value === "" || !Number.isFinite(value) || value < param.min || value > param.max) problem(param, `Enter a number from ${param.min} to ${param.max}`);
+            else commit(param, value);
+          });
+          line.append(slider, number);
+          if (param.unit) line.append(make("span", { class: "unit" }, param.unit));
+          inputs.push(slider, number);
+          sync = (value) => { slider.value = value; if (document.activeElement !== number) number.value = value; };
+        } else if (param.type === "color") {
+          const picker = make("input", { type: "color", id: inputId });
+          const hex = make("input", { type: "text", maxLength: 9, spellcheck: false, "aria-label": `${param.label} as hex` });
+          picker.addEventListener("input", () => commit(param, `${picker.value}${String(current[param.id]).slice(7)}`.toLowerCase()));
+          hex.addEventListener("input", () => {
+            if (HEX.test(hex.value.trim())) commit(param, hex.value.trim().toLowerCase());
+            else problem(param, "Use #rrggbb or #rrggbbaa");
+          });
+          line.append(picker, hex);
+          inputs.push(picker, hex);
+          sync = (value) => { picker.value = value.slice(0, 7); if (document.activeElement !== hex) hex.value = value; };
+        } else if (param.type === "text") {
+          const text = make("input", { type: "text", id: inputId, maxLength: MAX_TEXT });
+          const counter = make("span", { class: "unit", "aria-hidden": "true" });
+          text.addEventListener("input", () => commit(param, text.value));
+          line.append(text, counter);
+          inputs.push(text);
+          sync = (value) => { if (document.activeElement !== text) text.value = value; counter.textContent = `${value.length}/${MAX_TEXT}`; };
+        } else if (param.type === "checkbox") {
+          const box = make("input", { type: "checkbox", id: inputId, role: "switch" });
+          box.setAttribute("switch", "");
+          box.addEventListener("change", () => commit(param, box.checked));
+          line.append(box);
+          inputs.push(box);
+          sync = (value) => { box.checked = value; };
+        } else {
+          const select = make("select", { id: inputId });
+          for (const option of param.options) select.append(make("option", { value: option }, option));
+          select.addEventListener("change", () => commit(param, select.value));
+          line.append(select);
+          inputs.push(select);
+          sync = (value) => { select.value = value; };
+        }
+
+        reset.addEventListener("click", () => commit(param, param.default));
+        meta.append(hint, reset);
+        row.append(label, line, message, meta);
+        row.addEventListener("focusin", () => {
+          if (param.window && timeline) seek((param.window.startSec + param.window.endSec) / 2);
+        });
+        const view = { row, inputs, problem: message, reset, sync: (value) => { sync(value); reset.disabled = value === param.default; } };
+        views.set(param.id, view);
+        return row;
+      }
+
+      function render() {
+        els.groups.replaceChildren();
+        views.clear();
+        invalid.clear();
+        if (!state.params.length) {
+          els.groups.append(make("p", {}, "This project declares no params yet. Add them to tunables.json and reload."));
+          return;
+        }
+        const groups = new Map();
+        for (const param of state.params) {
+          if (!groups.has(param.group)) groups.set(param.group, make("fieldset", {}, undefined));
+          const set = groups.get(param.group);
+          if (!set.firstChild) set.append(make("legend", {}, param.group));
+          set.append(build(param));
+        }
+        els.groups.append(...groups.values());
+        for (const param of state.params) {
+          current[param.id] = Object.hasOwn(state.values, param.id) ? state.values[param.id] : param.default;
+          views.get(param.id).sync(current[param.id]);
+        }
+        refreshDirty();
+      }
+
+      function reloadFrame() {
+        try { els.frame.contentWindow.location.reload(); } catch { els.frame.src = `${base}preview/index.html?t=${Date.now()}`; }
+      }
+
+      async function pushDraft() {
+        const result = await api("api/draft", { method: "PUT", body: JSON.stringify({ values: changes() }) });
+        if (!result.ok) { say(result.body.error ? result.body.error.message : "The draft was refused", true); return; }
+        // The revision stays the one this panel loaded or last saved, so Save can still see an outside edit.
+        state = { ...state, stale: result.body.stale };
+        showStale(state.stale);
+        say("Preview updated with the draft values");
+        reloadFrame();
+      }
+
+      async function save() {
+        clearTimeout(sendTimer);
+        if (invalid.size) { say(`Fix the marked fields first: ${[...invalid].join(", ")}`, true); return; }
+        const result = await api("api/save", { method: "POST", body: JSON.stringify({ revision: state.revision, values: changes() }) });
+        if (result.status === 409) {
+          state = { ...state, pendingConflict: result.body.state };
+          els.conflict.hidden = false;
+          say("Not saved: the file changed on disk", true);
+          return;
+        }
+        if (!result.ok) { say(result.body.error ? result.body.error.message : "Not saved", true); return; }
+        state = result.body.state;
+        els.conflict.hidden = true;
+        refreshDirty();
+        showStale(state.stale);
+        say(result.body.wrote.length ? `Saved ${result.body.wrote.join(" and ")}` : "Nothing to write: the values already match the file");
+        // Save cancels a draft push that was still waiting on the debounce, so the frame may show older values.
+        reloadFrame();
+      }
+
+      els.save.addEventListener("click", save);
+      els.keep.addEventListener("click", () => {
+        const fresh = state.pendingConflict;
+        state = { ...fresh, params: state.params };
+        els.conflict.hidden = true;
+        refreshDirty();
+        say("Kept your edits on the file's latest revision; press Save to write them");
+      });
+      els.discard.addEventListener("click", () => {
+        // The conflict state carries the server's draft as `values`; the file's own values are `saved`.
+        state = { ...state.pendingConflict, values: state.pendingConflict.saved };
+        els.conflict.hidden = true;
+        render();
+        pushDraft();
+      });
+
+      function seek(seconds) {
+        if (!timeline) return;
+        const clamped = Math.max(0, Math.min(seconds, Number(els.time.max)));
+        timeline.pause();
+        timeline.seek(clamped);
+        lastTime = clamped;
+        els.time.value = clamped;
+        els.timeOut.textContent = `${clamped.toFixed(2)} s`;
+      }
+
+      els.time.addEventListener("input", () => { playing = false; els.play.textContent = "Play"; seek(Number(els.time.value)); });
+      els.play.addEventListener("click", () => {
+        if (!timeline) return;
+        if (playing) { playing = false; timeline.pause(); els.play.textContent = "Play"; return; }
+        if (timeline.time() >= timeline.duration() - 0.01) timeline.seek(0);
+        playing = true;
+        els.play.textContent = "Pause";
+        timeline.play();
+        const tick = () => {
+          if (!playing || !timeline) return;
+          lastTime = timeline.time();
+          els.time.value = lastTime;
+          els.timeOut.textContent = `${lastTime.toFixed(2)} s`;
+          if (timeline.time() >= timeline.duration() - 0.01) { playing = false; els.play.textContent = "Play"; return; }
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+
+      function fitCanvas() {
+        if (!canvas) return;
+        const available = els.stage.clientWidth - 34;
+        const scale = Math.min(1, available / canvas.width);
+        els.box.style.width = `${Math.round(canvas.width * scale)}px`;
+        els.box.style.height = `${Math.round(canvas.height * scale)}px`;
+        els.frame.style.width = `${canvas.width}px`;
+        els.frame.style.height = `${canvas.height}px`;
+        els.frame.style.transform = `scale(${scale})`;
+      }
+
+      function wireFrame() {
+        let registry = null;
+        let root = null;
+        try {
+          registry = els.frame.contentWindow.__timelines;
+          root = els.frame.contentDocument.querySelector("[data-composition-id]");
+        } catch { registry = null; }
+        const ids = registry ? Object.keys(registry) : [];
+        const candidate = ids.length ? registry[ids.includes("main") ? "main" : ids[0]] : null;
+        timeline = candidate && typeof candidate.seek === "function" ? candidate : null;
+        els.scrub.hidden = !timeline;
+        canvas = null;
+        els.stage.classList.remove("fit");
+        els.box.removeAttribute("style");
+        els.frame.removeAttribute("style");
+        if (timeline) {
+          els.time.max = Number(timeline.duration()) || 1;
+          seek(lastTime);
+          if (root && Number(root.dataset.width) > 0 && Number(root.dataset.height) > 0) {
+            canvas = { width: Number(root.dataset.width), height: Number(root.dataset.height) };
+            els.stage.classList.add("fit");
+            fitCanvas();
+          }
+        }
+        els.viewport.hidden = Boolean(canvas);
+      }
+
+      els.frame.addEventListener("load", wireFrame);
+      new ResizeObserver(fitCanvas).observe(els.stage);
+      els.viewport.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-width]");
+        if (!button) return;
+        for (const other of els.viewport.querySelectorAll("button")) other.setAttribute("aria-pressed", String(other === button));
+        els.stage.style.setProperty("--frame-w", `${button.dataset.width}px`);
+      });
+
+      (async () => {
+        const result = await api("api/state");
+        if (!result.ok) { say(result.body.error ? `${result.body.error.code}: ${result.body.error.message}` : "Could not load tunables.json", true); return; }
+        state = result.body;
+        render();
+        showStale(state.stale);
+        say(`${state.params.length} param${state.params.length === 1 ? "" : "s"} loaded`);
+        els.frame.src = `${base}preview/index.html`;
+      })();
+    })();
+  </script>
+</body>
+</html>

@@ -41,7 +41,7 @@ Design and film workflow (UI, motion web, product films, PV/MAD edits) shipped a
 
 ### Issue tracker
 
-Work is tracked in GitHub issues and pull requests on `2233admin/design-pipeline`. See `docs/agents/issue-tracker.md`.
+Work is tracked in GitHub issues and pull requests on `XartLab/design-pipeline`. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

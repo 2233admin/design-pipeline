@@ -5,8 +5,8 @@
 > 在 Agent 里说一句要做什么，拿回一份有设计依据、经过实际检查、由你最后点头的作品。
 
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Stars](https://img.shields.io/github/stars/2233admin/design-pipeline)
-![Last Commit](https://img.shields.io/github/last-commit/2233admin/design-pipeline)
+![Stars](https://img.shields.io/github/stars/XartLab/design-pipeline)
+![Last Commit](https://img.shields.io/github/last-commit/XartLab/design-pipeline)
 ![Node](https://img.shields.io/badge/Node-22+-339933)
 
 </div>
@@ -18,7 +18,7 @@
 Claude Code：
 
 ```text
-/plugin marketplace add 2233admin/design-pipeline
+/plugin marketplace add XartLab/design-pipeline
 /plugin install design-pipeline@design-pipeline
 ```
 
@@ -26,7 +26,7 @@ Codex 和其他 agent：
 
 ```bash
 SKILLS_DOWNLOAD_MAX_BYTES=104857600 SKILLS_EXTRACT_MAX_BYTES=268435456 SKILLS_EXTRACT_MAX_FILES=5000 \
-  npx skills add https://github.com/2233admin/design-pipeline/releases/latest/download/design-pipeline-skill.zip \
+  npx skills add https://github.com/XartLab/design-pipeline/releases/latest/download/design-pipeline-skill.zip \
   --skill design-pipeline -a codex -g
 ```
 

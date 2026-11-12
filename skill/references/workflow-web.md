@@ -676,6 +676,13 @@ Follow reconstruction's existing permissions: graybox readiness releases optical
 if geometry is blocked; detail geometry and fidelity claims still require their own readiness.
 Creating files or passing engineering checks does not grant visual acceptance.
 
+When the owner will tune values such as colours, radius, density, copy or a motion duration after
+the build, declare them as [tunables](tunables.md): `tunables init`, include `tunables.js` first in
+`<head>`, and read each value where it is used (`var(--tn-accent)`, `[data-tn-density="compact"]`,
+`data-tn-text`, or `tunable("id")` in script). `tunables check` fails a declared value nothing
+reads; `tunables probe` warns when changing a value alters no frame; `tunables panel` is the
+editor. Expose what the owner decides by looking, not layout structure.
+
 ## probe
 
 In replicate mode the probe pass also binds `reference.md` and `reference-evidence.json`, and a
@@ -724,8 +731,10 @@ The audit measures the rendered page at each of its `viewports` (default: the fi
 after a fresh load, the fonts and two frames, against the codes in
 `ui-craft-sources.md#measured-audit`. Each viewport also loads the page once with
 `prefers-reduced-motion: reduce`; both loads are read a second after load and compared
-(`audit.reduced-motion`). After the resting audit it forces `:hover` and `:focus-visible` on every
-control (`audit.state-contrast`). It needs the bindable local page: `url` names the project's
+(`audit.reduced-motion`). The same reading judges what the page animates
+(`audit.motion-properties`): `transition: all`, a transition or animation of a layout property, a
+blur animated without end, and an infinite animation running off screen. After the resting audit it
+forces `:hover` and `:focus-visible` on every control (`audit.state-contrast`). It needs the bindable local page: `url` names the project's
 local `index.html`, and every asset the page loads (stylesheets, scripts, fonts, images, data) is a
 file inside the project. An `http(s)` page or a page outside the project is a contract error before
 the browser starts.
