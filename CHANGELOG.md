@@ -4,14 +4,59 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- Wrong tool hints (`fix-tool-guidance-errors`): the `film-edit` hints and error labels said
+  `film edit`, a command that does not exist, so following them failed with `UNKNOWN_ARGUMENT`.
+  The `ui` deliverable's intake no longer asks a film-style duration: it asks product, audience,
+  scope and assets. The `film check` help line, `workflow-film.md` and `composition-gate.md` now
+  list every check `film check` runs (storyboard, score grid, timeline, render, audio, a picture
+  check of the frames, continuity between beats) and say when each one runs, and that the extra
+  `composition capture` step is optional and adds text checks. `SKILL.md` no longer promises a
+  concepts and review step for `ui` at standard: `ui` asks for the brief and goes to the work.
+  `pipeline-reference.md` only points to `pipeline-phases.json` and `explain-block` instead of a
+  document that lacks the state contract. `docs/cli-and-reference-providers.md` lists the
+  commands the help lists.
+
 ### Changed
+
+- `ui` work in an existing project (`add-existing-project-intake`, Phase 1): when the project root
+  holds `package.json`, `next` makes the `work` action host-first and lists, found again at every
+  call, the rule files (`AGENTS.md`, `CLAUDE.md`, `CONTEXT.md`, then `docs/**/*.md`, capped), the
+  checks `test`, `typecheck` (`tsc --noEmit` when only `tsconfig.json` exists), `lint` and `build`
+  from `package.json` scripts with missing ones marked, and constraint lines quoted as `path:line`
+  from the root rule files and from `docs/` files named as ledgers, decisions, acceptance gates,
+  protocols, rules, conventions or doctrine (a fixed English and Chinese word list; a hint, not
+  every rule; other docs are listed, not quoted). It no longer asks for
+  `DESIGN.md`/`MOTION.md` there and names `pipeline-reference.md` only as background. These facts
+  are not written and nothing reads them back. A folder without `package.json` keeps the previous
+  text.
+
+- `ui` delivery in an existing project discloses changes to the host's tests (`align-workflow-lifecycle`, host
+  test integrity): the first `next --deliverable ui` stores the working-tree test files (path,
+  SHA-256, `it`/`test`/`describe` titles, assertion-line and line counts) in
+  `.design-pipeline/state.json` as `hostTests`, so the user's earlier uncommitted test edits never
+  count. Every `next` and `decide` compares the working tree with it again. A missing one makes
+  `decide --stage deliver` fail with exit 2 and finding `host-test-file-deleted`, and keeps `work`
+  open even after a delivery. While one is weakened (a title gone, or fewer tests or assertion
+  lines), `next` asks a new stage, `test-review`, listing removed and added titles and the counts
+  before and after; `decide --stage test-review --verdict accept|reject --answer <reason>` answers
+  it for exactly those changes (a later edit asks again; reject goes back to `work` and becomes a
+  project rule). Purely additive edits need no answer.
+  The verdict is stored in `decisions.testReviews`, apart from the draft `review` (Visual
+  Acceptance), and is meant to be the user's; the tool cannot prove who typed it. `done.evidence`
+  shows `testChanges` (each marked `weakening` or not) next to `testReviews`. `next --replace` is
+  refused while weakened tests are unconfirmed. State from an older version, without `hostTests`,
+  is only reported on. This is
+  disclosure and consent, not a gate: the baseline, the verdict and the state file are writable by
+  an agent, and real enforcement is the host's CI or PR review against the merge base.
 
 - Web `next` prompts (`add-web-treatment-and-section-briefs`): the web intake asks product,
   audience, scope and assets instead of a duration and no longer uses film wording; web concepts
   asks for a section arc and a first-viewport frame per card and says the chosen card is extended
   with `## Treatment`; web build at standard and full writes the treatment first; the web review
-  names the page and the 375x812, 768x1024 and 1440x900 screenshots. Film, edit and ui prompts are
-  unchanged. The `ui` deliverable's intake still asks for a duration.
+  names the page and the 375x812, 768x1024 and 1440x900 screenshots. Film and edit prompts are
+  unchanged.
 
 - Storyboard gate (`strengthen-film-cue-binding-and-song-map`): new warnings `cue-unbound` (a
   declared `downbeat`, `accent`, `impact` or `riser` cue that no beat lists in `soundCues`) and

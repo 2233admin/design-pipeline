@@ -59,6 +59,7 @@
     "references/film-edit.md",
     "references/pipeline-reference.md",
     "scripts/workflow-core.cjs",
+    "scripts/existing-project-core.cjs",
     "scripts/workflows/shared.cjs",
     "scripts/workflows/film.cjs",
     "scripts/workflows/edit.cjs",

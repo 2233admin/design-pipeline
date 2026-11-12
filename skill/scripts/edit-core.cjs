@@ -11,7 +11,7 @@ const path = require("node:path");
 const { assertEnum, assertKeys, assertString, fail } = require("./contract-utils.cjs");
 const { detectCuts, motionProfile, probe, run } = require("./film-core.cjs");
 
-const SCOPE = "film edit";
+const SCOPE = "film-edit";
 const EDIT_SCHEMA = "design-pipeline.edit-list.v1";
 const ANALYSIS_SCHEMA = "design-pipeline.edit-analysis.v1";
 const TOOLS = { ffmpeg: "ffmpeg", ffprobe: "ffprobe" };

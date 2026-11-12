@@ -395,7 +395,7 @@ function publicHelp() {
     "  film scaffold --output <dir> [--replace]",
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
     "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model>]   (one next step)",
-    "  decide --project-root . --stage intake|reference|concept|review|deliver [--choice n|mad|pv] [--verdict accept|reject] [--answer <text>]",
+    "  decide --project-root . --stage intake|reference|concept|review|deliver|test-review [--choice n|mad|pv] [--verdict accept|reject] [--answer <text>]",
     "  film blender (lists templates) | film blender --project-root <dir> --template product-turntable [--params params.json] [--engine eevee|cycles] [--output renders/shot.mp4] [--audio score.wav] [--blender <exe>]",
     "  film-edit analyze --project-root <dir> --audio <music> [--sources sources]   (beat grid + footage shots)",
     "  film-edit auto --project-root <dir> --style mad|pv [--duration <sec>] [--width 1280 --height 720] [--replace]",
@@ -403,7 +403,7 @@ function publicHelp() {
     "  film score --project-root <dir> --bpm <n> [--template punchy-launch|calm-build|tech-pulse --key c] | [--pattern score.strudel.js] [--output assets/score.wav] [--write] [--replace]",
     "    (Strudel, AGPL-3.0, is installed into <dir>/.design-pipeline/strudel on first use; never bundled)",
     "  film blocks --project-root <dir> [--query <action words>] [--tag 3d|shader|transition|...] [--type block|component] [--refresh]",
-    "  film check --project-root <dir>   (runs storyboard, timeline and render gates; each finding carries a fix)",
+    "  film check --project-root <dir>   (runs the storyboard check always; the score grid check only when score-grid.json exists; the timeline check only when index.html or timeline.json exists; the render check only when out.mp4 or renders/*.mp4 exists; after a render, the audio check when the film has sound; after a render, the composition (picture) check of each beat's frames; the carry (continuity between beats) check, reported as step `check`, always; each finding carries a fix)",
     "  film-eval measure --manifest <benchmark.json> --runs <runs-dir> [--output <measurements.json>]",
     "  patterns search|audit | tokens check | ui-ir check | design-code-map check",
     "  component lock|fit|validate-fit|decompose|providers|resolve|inventory|bind|decide|verify",
@@ -1973,7 +1973,8 @@ const COMMANDS = {
   decide: {
     run: ({ parsed, root }) => {
       const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
-      return { result: workflow.decide(project, { stage: option(parsed, "--stage"), choice: option(parsed, "--choice"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer") }), exitCode: 0 };
+      const result = workflow.decide(project, { stage: option(parsed, "--stage"), choice: option(parsed, "--choice"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer") });
+      return { result, exitCode: result.status === "failed" ? 2 : 0 };
     },
   },
   "film-edit": {
