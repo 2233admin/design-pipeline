@@ -87,7 +87,8 @@ changes. A dialect is its ground, type, graphics and texture, not a hue.
 ## 4. Color budget by role
 
 The roles are what `hue-budget` measures (see
-[template-bank.md](template-bank.md#the-browser-half)). Everything else is judged by eye.
+[template-bank.md](template-bank.md#the-browser-half)). Everything else is judged by eye. The
+"anything else" row counts area: a line 1 px thick is not an area, a stroke 2 px or thicker is.
 
 | Role | Use | Area limit |
 | --- | --- | --- |

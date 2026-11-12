@@ -30,6 +30,12 @@ brand colour and SHALL NOT measure a page that declares no role.
 - **WHEN** a declared value is not a colour or has OKLab chroma under 0.08
 - **THEN** the check SHALL say so in a note and SHALL NOT assign any pixel to that role.
 
+#### Scenario: A thin line or text fringe of an undeclared hue
+
+- **WHEN** a page paints an undeclared saturated hue as a line 1 px thick, or as isolated pixels such as the colour fringe of antialiased text
+- **THEN** the check SHALL NOT count those pixels toward an undeclared hue, because a pixel counts only when at least 5 of its 8 neighbours are undeclared too
+- **AND** a block of the same hue SHALL still be counted, and declared roles SHALL be counted pixel by pixel.
+
 #### Scenario: A role declared in a non-RGB colour space
 
 - **WHEN** a role is declared as `oklch(0.87 0.18 95)` or `color(display-p3 0.1 0.2 0.8)` and the page paints that colour

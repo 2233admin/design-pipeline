@@ -66,6 +66,7 @@ const PAGE_RULES = Object.freeze({
   hueCounterMax: 0.03, // share of the canvas the counter colour may paint
   hueStatusMax: 0.01, // share of the canvas alert and timed may paint together
   hueOtherMax: 0.001, // share of the canvas any undeclared saturated hue may paint
+  hueBlockNeighbours: 5, // of 8 neighbours an undeclared-hue pixel needs to count: straight block edge 5, one-pixel line or text fringe 2-3
 });
 
 const STYLE = `
@@ -287,7 +288,10 @@ const box4 = (b) => [Math.round(b.x0), Math.round(b.y0), Math.round(b.x1), Math.
 // for a value that is not a colour). Each saturated pixel (OKLab chroma >= hueMinChroma) goes to the
 // declared role whose hue is nearest within hueMatchDeg (alert and timed count as one status share),
 // or else to a 10-degree hue bin; runs of occupied bins are the undeclared hues. Shares are of all
-// sampled pixels (every second pixel of a row). The brand share is reported, never limited.
+// pixels. A pixel of an undeclared hue counts only inside a block: at least hueBlockNeighbours of its
+// eight neighbours must be undeclared too, so a hairline or the colour fringe of antialiased text
+// (one or two pixels thick) is not an area. Declared roles are counted pixel by pixel. The brand share
+// is reported, never limited.
 function hueBudget(shot, roles, rules = PAGE_RULES) {
   const hueOf = (a, b) => (Math.atan2(b, a) * 180 / Math.PI + 360) % 360;
   const declared = [];
@@ -302,9 +306,10 @@ function hueBudget(shot, roles, rules = PAGE_RULES) {
   const bins = Array.from({ length: BINS }, () => ({ n: 0, r: 0, g: 0, b: 0 }));
   const count = { brand: 0, counter: 0, status: 0 };
   const d = shot.data;
-  let total = 0;
-  for (let i = 0; i + 2 < d.length; i += 8) {
-    total += 1;
+  const W = shot.width; const H = shot.height;
+  const total = W * H;
+  const undeclared = new Uint8Array(total); // 1 + hue bin of a saturated pixel that matches no declared role
+  for (let p = 0, i = 0; p < total; p += 1, i += 4) {
     const r = d[i]; const g = d[i + 1]; const bl = d[i + 2];
     if (Math.max(r, g, bl) - Math.min(r, g, bl) < 16) continue; // near grey: cannot reach the chroma floor
     const [, a, b] = rgbToOklab([r / 255, g / 255, bl / 255]);
@@ -316,7 +321,25 @@ function hueBudget(shot, roles, rules = PAGE_RULES) {
       if (dist <= rules.hueMatchDeg && (!best || dist < best.dist)) best = { group: dec.group, dist };
     }
     if (best) count[best.group] += 1;
-    else { const bin = bins[Math.floor(h / (360 / BINS)) % BINS]; bin.n += 1; bin.r += r; bin.g += g; bin.b += bl; }
+    else undeclared[p] = 1 + (Math.floor(h / (360 / BINS)) % BINS);
+  }
+  for (let y = 0; y < H; y += 1) {
+    for (let x = 0; x < W; x += 1) {
+      const p = y * W + x;
+      if (!undeclared[p]) continue;
+      let near = 0;
+      for (let dy = -1; dy <= 1; dy += 1) {
+        const yy = y + dy;
+        if (yy < 0 || yy >= H) continue;
+        for (let dx = -1; dx <= 1; dx += 1) {
+          const xx = x + dx;
+          if ((dx || dy) && xx >= 0 && xx < W && undeclared[yy * W + xx]) near += 1;
+        }
+      }
+      if (near < rules.hueBlockNeighbours) continue;
+      const bin = bins[undeclared[p] - 1]; const i = p * 4;
+      bin.n += 1; bin.r += d[i]; bin.g += d[i + 1]; bin.b += d[i + 2];
+    }
   }
   const share = Object.fromEntries(Object.entries(count).map(([k, v]) => [k, total ? v / total : 0]));
   // runs of occupied bins (circular), ignoring single-pixel noise

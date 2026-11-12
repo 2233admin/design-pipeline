@@ -158,7 +158,7 @@ sees layers injected after rendering, hand-written SVG and HTML pages:
 | `no-text-measured` | No visible text on the page; a text-free page declares `data-no-text` on its root | At least one text |
 | `glyph-coverage` | Characters missing from the first font of a run's stack (the page's `@font-face` files, or a registered provider) | Every character |
 | `safe-area-type` | Ink of each text unit over the face and hand boxes of a composited character (from its `materials composite` receipt, scaled to the image's rendered box) | 12 px of ink |
-| `hue-budget` | Opt-in. Share of the canvas painted by each saturated hue (OKLab chroma 0.08 and up), as drawn, minus elements marked `data-deco`. A pixel belongs to the declared role whose hue is nearest within 25 degrees. The brand colour is reported and never limited | Counter 3%; alert and timed 1% together; any undeclared hue 0.1% |
+| `hue-budget` | Opt-in. Share of the canvas painted by each saturated hue (OKLab chroma 0.08 and up), as drawn, minus elements marked `data-deco`. A pixel belongs to the declared role whose hue is nearest within 25 degrees. An undeclared-hue pixel counts only inside a block. The brand colour is reported and never limited | Counter 3%; alert and timed 1% together; any undeclared hue 0.1% |
 | receipt checks | `composite-upscale` and `safe-area-occluder` from the receipt fail; `composite-black-point`, `composite-colour-mismatch` and `matte-halo` are warn bands and go to the notes | See *Generated characters and layers* |
 
 `hue-budget` runs only on a page that declares its colour roles on the root element (`<html>` or
@@ -166,6 +166,9 @@ sees layers injected after rendering, hand-written SVG and HTML pages:
 colour (`data-hue-brand="#ffd400"`). A page with none of them is not measured, so no existing verdict
 changes. A role whose colour is not saturated or not a colour is said in the notes and not measured.
 The roles and limits come from [industrial-document-sheets.md](industrial-document-sheets.md#4-color-budget-by-role).
+An undeclared hue is measured as area: a pixel counts only when at least 5 of its 8 neighbours are
+undeclared too (`hueBlockNeighbours`), so a rule or hairline 1 px thick and the colour fringe of
+antialiased text are not counted, while a stroke 2 px or thicker is. Declared roles count every pixel.
 The result carries `hue` (the shares and the undeclared hues above a tenth of the limit) and a note
 with the brand, counter and status shares. Mark colour control strips and ghost numerals `data-deco`.
 

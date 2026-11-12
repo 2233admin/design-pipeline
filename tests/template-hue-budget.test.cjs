@@ -59,7 +59,33 @@ test("hueBudget does not treat a hue near a declared role as undeclared, and rep
   assert.match(result.unmeasured[0], /counter #808080 is not saturated/);
 });
 
+test("hueBudget counts an undeclared hue only where it forms a block, not as a hairline or scattered fringe pixels", () => {
+  const roles = { brand: BRAND };
+  const dots = [];
+  for (let x = 0; x < 200; x += 5) for (let y = 0; y < 100; y += 5) dots.push([x, y, 1, 1, [220, 120, 40]]); // text-fringe-like, 400 pixels = 2%
+  const shot = shotWith([
+    [10, 50, 150, 1, GREEN], // a 1 px rule, 0.75% of the canvas
+    ...dots,
+    [120, 60, 20, 20, GREEN], // a real block, 2%
+  ]);
+  const result = hueBudget(shot, roles, PAGE_RULES);
+  assert.equal(result.others.length, 1, JSON.stringify(result.others));
+  near(result.others[0].share, 0.02);
+  assert.match(result.others[0].hue, /^1[0-9]0-1[0-9]0$/);
+
+  // without the filter the same shot reports the rule and the dots as hues of their own
+  const unfiltered = hueBudget(shot, roles, { ...PAGE_RULES, hueBlockNeighbours: 0 });
+  assert.ok(unfiltered.others.some((entry) => entry.share >= PAGE_RULES.hueOtherMax && entry.hue !== result.others[0].hue), JSON.stringify(unfiltered.others));
+  assert.ok(unfiltered.others.reduce((sum, entry) => sum + entry.share, 0) > result.others[0].share + 0.02);
+});
+
+test("hueBudget leaves a declared role unfiltered: a thin brand line still counts toward its share", () => {
+  const result = hueBudget(shotWith([[10, 50, 150, 1, BRAND]]), { brand: BRAND }, PAGE_RULES);
+  near(result.share.brand, 150 / 20000, 0.0005);
+});
+
 test("the rule limits in PAGE_RULES are the ones the guides state", () => {
+  assert.equal(PAGE_RULES.hueBlockNeighbours, 5);
   assert.equal(PAGE_RULES.hueCounterMax, 0.03);
   assert.equal(PAGE_RULES.hueStatusMax, 0.01);
   assert.equal(PAGE_RULES.hueOtherMax, 0.001);
@@ -123,6 +149,11 @@ test("the browser half applies the hue budget only to a page that declares colou
     assert.equal(silent.hue, undefined);
     assert.deepEqual(silent.findings.filter((f) => f.rule === "hue-budget"), []);
     assert.ok(!silent.notes.some((note) => note.startsWith("hue-budget")));
+
+    // an undeclared-hue rule 1 px thick is not an area: 300 px of green is 0.25% of the canvas, over the limit if counted
+    const ruled = await run(page("rule.html", declaration, within + box(20, 200, 300, 1, "#2fb24a")));
+    assert.deepEqual(ruled.findings.filter((f) => f.rule === "hue-budget"), [], JSON.stringify(ruled.findings));
+    assert.ok(ruled.hue.others.every((entry) => entry.share < PAGE_RULES.hueOtherMax), JSON.stringify(ruled.hue.others));
 
     // a declared value that is not a colour is said, not guessed
     const broken = await run(page("broken.html", 'data-hue-brand="#ffd400" data-hue-counter="not-a-colour"', within));

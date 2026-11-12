@@ -18,6 +18,9 @@ stray green panel or a counter colour used as a fill passes today.
 - Measure: one screenshot of the page as drawn, with elements marked `data-deco` / `data-decor`
   hidden; each pixel at OKLab chroma 0.08 or more goes to the declared role whose hue is nearest
   within 25 degrees, otherwise to a 10-degree hue bin. Runs of occupied bins are the undeclared hues.
+  The shot is read at full resolution, and an undeclared-hue pixel counts only when at least 5 of its
+  8 neighbours are undeclared too (`hueBlockNeighbours`), so a 1 px rule and the colour fringe of
+  antialiased text (LCD subpixel rendering) are not an area. Declared roles count every pixel.
 - Limits in `PAGE_RULES`: counter 3% of the canvas, alert and timed 1% together, any undeclared hue
   0.1%. The brand colour is reported in a note and in the result's `hue`, never limited.
 - A declared value that is not a colour, or not saturated, is said in a note and not measured.
@@ -38,6 +41,8 @@ stray green panel or a counter colour used as a fill passes today.
 - The medium-based text-size floor (screen 9, feed 14, slides 16, CJK +2 px) is **not** added: the
   browser half has no size rule today, and a default-on floor would change the verdict of existing
   pages. Deciding between an opt-in medium declaration and a default floor is left to a follow-up.
+- An undeclared colour drawn as a line 1 px thick, or as text thinner than 2 px, is not counted; the
+  rule limits area, and a thin accent is judged by eye.
 - A passing check is technical conformance only; it grants neither visual nor creative acceptance.
 
 ## Capabilities
