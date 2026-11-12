@@ -239,7 +239,9 @@ test("skill --list names every packaged guide once, sorted", () => {
 test("skill --reference --list shows levels and anchors, and numbers repeats", (t) => {
   const real = cli(["skill", "--reference", "stages", "--list", "--json"]);
   assert.equal(real.status, 0);
-  assert.deepEqual(real.json.headings.find((item) => item.anchor === "stage-4-tasks"), { level: 2, anchor: "stage-4-tasks", heading: "Stage 4: Tasks", line: 620 });
+  const stageFourLine = fs.readFileSync(path.join(referencesRoot, "stages.md"), "utf8").split(/\r?\n/).indexOf("## Stage 4: Tasks") + 1;
+  assert.ok(stageFourLine > 0);
+  assert.deepEqual(real.json.headings.find((item) => item.anchor === "stage-4-tasks"), { level: 2, anchor: "stage-4-tasks", heading: "Stage 4: Tasks", line: stageFourLine });
   const root = fixtureRoot(t);
   writeFixture(root, "fixture");
   const anchors = parseHeadings(fs.readFileSync(path.join(root, "fixture.md"), "utf8")).filter((item) => item.text === "Notes").map((item) => item.anchor);
