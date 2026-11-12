@@ -1,0 +1,109 @@
+<!-- @dsCard group="点阵" height=720 subtitle="点阵与签名标本：Sixtyfour LED 时钟（BLED/SCAN 轴）、Doto 标签、Jersey 大标题、Tiny5/Micro5 刻度、Workbench 跑马 + 六角灯阵 / 三方表决 / 同步率条 / 波形带 / 斜切密排大字 / 角括号 / L4 警示带" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@400;500;700&family=Sixtyfour:BLED,SCAN@0..60,-20..40&family=Workbench:BLED,SCAN@0..60,0..40&family=Tiny5&family=Micro+5&family=Jersey+25&family=Jersey+20&family=Barlow+Condensed:wght@800&family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-sans);-webkit-font-smoothing:none}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:640px}
+.cell{background:var(--bg-200);border:var(--hairline);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.lab{font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;color:var(--ink-300)}
+.lcd{background:var(--bg-000);border:var(--hairline);box-shadow:var(--recess);padding:8px 12px;display:inline-flex;align-items:baseline;gap:12px}
+.clock{font-family:"Sixtyfour",monospace;font-size:20px;line-height:24px;color:var(--signal-orange);font-variation-settings:"BLED" 30,"SCAN" 20}
+.clock b{font-weight:400;font-variation-settings:"BLED" 60,"SCAN" 20}
+.clock.off{color:var(--ink-400);font-variation-settings:"BLED" 0,"SCAN" -20}
+.tick{font-family:"Workbench",monospace;font-size:16px;line-height:20px;color:var(--signal-amber);font-variation-settings:"BLED" 40,"SCAN" 20;white-space:nowrap;overflow:hidden}
+.doto{font-family:"Doto",monospace;font-size:9px;line-height:12px;color:var(--ink-300)}
+.doto.r{font-variation-settings:"ROND" 100}
+.doto.md{font-size:16px;line-height:20px;color:var(--ink-100);font-weight:500}
+.jersey{font-family:"Jersey 25","Jersey 20",monospace;font-size:40px;line-height:40px;color:var(--ink-100)}
+.tiny{font-family:"Tiny5",monospace;font-size:10px;line-height:12px;color:var(--ink-200)}
+.micro{font-family:"Micro 5",monospace;font-size:10px;line-height:12px;color:var(--ink-400)}
+.mx{display:grid;grid-template-columns:repeat(12,6px);gap:2px;padding:6px;background:var(--bg-000);border:var(--hairline);width:max-content}
+.mx i{width:6px;height:6px;border-radius:50%;background:var(--led-off)}
+.mx i.on{background:var(--signal-orange);box-shadow:0 0 4px var(--signal-orange)}
+.cn{font-size:12px;line-height:14px;color:var(--ink-200)}
+
+.sig{font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums;margin-top:16px}
+.sig .sg{display:grid;grid-template-columns:200px 200px 200px;gap:8px;width:620px}
+.sig .b{background:var(--bg-200);border:var(--hairline);padding:8px 10px;position:relative}
+.sig .b h5{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.sig .led{font-family:"Sixtyfour",var(--font-mono);font-size:20px;color:var(--signal-orange);font-variation-settings:"BLED" 30,"SCAN" 20;-webkit-font-smoothing:none}
+.sig .hex{display:grid;grid-template-columns:repeat(8,16px);gap:2px}
+.sig .hex i{width:16px;height:14px;background:var(--led-off);clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);display:block}
+.sig .hex i:nth-child(even){transform:translateY(7px)}
+.sig .hex i.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}
+.sig .hex i.ok{background:var(--signal-green)}.hex i.w{background:var(--signal-amber)}
+.sig .cons{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;clip-path:var(--chamfer-8);background:var(--bg-000);padding:2px}
+.sig .cons div{background:var(--bg-300);padding:6px;display:flex;flex-direction:column;gap:4px;align-items:center}
+.sig .cons small{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.sig .dot{width:8px;height:8px;border-radius:var(--radius-pill);background:var(--signal-green);box-shadow:var(--glow-orange)}
+.sig .dot.w{background:var(--signal-amber)}
+.sig .verdict{margin-top:6px;font-size:10px;color:var(--ink-200);text-align:center}
+.sig .sync{display:flex;align-items:center;gap:8px}
+.sig .sync .bar{flex:1;height:12px;background:var(--bg-000);box-shadow:var(--recess);position:relative;display:flex;gap:2px;padding:2px}
+.sig .sync .bar i{flex:1;background:var(--bg-400)}.sync .bar i.f{background:var(--series-1)}
+.sig .sync .bar s{position:absolute;top:-3px;bottom:-3px;width:1px;background:var(--signal-amber);text-decoration:none}
+.sig .sync b{font-family:var(--font-display);font-weight:800;font-size:22px;letter-spacing:-.01em;line-height:1;color:var(--ink-100)}
+.sig .sync b small{font-family:var(--font-dot);font-size:9px;color:var(--ink-300);margin-left:2px;-webkit-font-smoothing:none}
+.sig .wave{height:36px;background:var(--bg-000);box-shadow:var(--recess)}
+.sig .wave path{fill:none;stroke:var(--signal-green);stroke-width:1}
+.sig .dense{position:relative;padding:12px 14px;background:var(--bg-100);clip-path:var(--chamfer-8)}
+.sig .dense .num{font-family:var(--font-display);font-weight:800;font-size:56px;line-height:50px;letter-spacing:-.01em;color:var(--ink-100)}
+.sig .dense .lab{font-family:var(--font-dot);font-size:9px;letter-spacing:.12em;color:var(--signal-orange);-webkit-font-smoothing:none;position:absolute;top:8px;right:12px}
+.sig .dense .sub{font-size:10px;color:var(--ink-300);margin-top:2px}
+.sig .brk{background:var(--bracket);padding:14px 16px;font-family:var(--font-sans);font-size:12px;color:var(--ink-200)}
+.sig .brk b{display:block;color:var(--ink-100);font-family:var(--font-mono);font-size:14px}
+.sig .haz{height:10px;background:var(--hazard);clip-path:var(--chamfer-8)}
+.sig .l4{display:flex;flex-direction:column;gap:4px}
+.sig .l4 .t{font-family:var(--font-dot);font-size:12px;letter-spacing:.12em;color:var(--signal-amber);-webkit-font-smoothing:none}
+.sig .l4 .line{font-size:11px;color:var(--ink-100);font-family:var(--font-sans)}
+.sig .l4 .line.dim{color:var(--ink-400)}
+</style></head><body>
+<div class="g">
+  <div class="cell" style="grid-column:span 2">
+    <span class="lab">LED · SIXTYFOUR · BLED 30 / SCAN 20 · 秒位 BLED 60</span>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div class="lcd"><span class="clock">14:32:<b>07</b></span></div>
+      <div class="lcd"><span class="clock" style="font-size:14px;line-height:18px">LAG 012ms</span></div>
+      <div class="lcd"><span class="clock off">--:--:--</span></div>
+    </div>
+    <div class="lcd" style="display:block"><div class="tick">▲ 300750 宁德时代 量比4.2 破20日高 · ▲ 300308 中际旭创 +4.1% · ! LV-D 账户对账差异 · </div></div>
+  </div>
+  <div class="cell">
+    <span class="lab">DOTO · 标签 / 面板级</span>
+    <div><span class="doto">NET ASSET · QUOTE · EXEC · ALICE</span></div>
+    <div><span class="doto r">ROND 100 · 圆点变体</span></div>
+    <div><span class="doto md">FLEET 06 · RUNNING</span></div>
+    <div class="cn">方舟像素 12 · 净资产 策略舰队 异动雷达 <span class="lab">（未载入，回退 Noto）</span></div>
+  </div>
+  <div class="cell">
+    <span class="lab">JERSEY 25 · 大屏标题</span>
+    <div class="jersey">DESK 01</div>
+    <div class="jersey" style="color:var(--signal-orange)">OVERVIEW</div>
+  </div>
+  <div class="cell">
+    <span class="lab">TINY5 · MICRO 5 · 刻度</span>
+    <div class="tiny">RS 0 25 50 75 100 · DEPTH 10/10</div>
+    <div class="micro">0 25 50 75 100 · ×1 ×4 ×16 ×64</div>
+    <div class="mx" role="img" aria-label="LED 矩阵"><i class="on"></i><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i></div>
+  </div>
+  <div class="cell">
+    <span class="lab">规则</span>
+    <div class="doto" style="color:var(--ink-200);line-height:16px">INTEGER SCALE ONLY · NO AA · NO TRACKING · NO FAKE BOLD · GRID ALIGNED</div>
+    <div class="cn">整数倍 · 关抗锯齿 · 不加字距 · 不伪粗 · 像素网格对齐 · 只在硬件读数语境</div>
+  </div>
+</div>
+
+<div class="sig">
+<div class="sg">
+  <div class="b"><h5>LED · SIXTYFOUR BLED 30 / SCAN 20</h5><div class="led">14:32:07</div><div style="font-family:var(--font-dot);font-size:9px;color:var(--ink-300);margin-top:6px;letter-spacing:.08em;-webkit-font-smoothing:none">QUOTE 6ms · EXEC 8ms · ALICE 2 RUN</div></div>
+  <div class="b"><h5>HEX MATRIX · 板块异动 · 3 亮</h5><div class="hex"><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i></div></div>
+  <div class="b"><h5>CONSENSUS · 下单前三方</h5><div class="cons"><div><small>GATEWAY</small><span class="dot"></span><small style="color:var(--ink-200)">可卖 ✓</small></div><div><small>ACCOUNT</small><span class="dot w"></span><small style="color:var(--signal-amber)">集中度 58</small></div><div><small>RULES</small><span class="dot"></span><small style="color:var(--ink-200)">无命中</small></div></div><div class="verdict">2 / 3 通过 · 1 接近 · <span style="color:var(--ink-100)">可提交</span></div></div>
+  <div class="b"><h5>SYNC · PAPER 第 38 / 60 日</h5><div class="sync"><div class="bar"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><s style="left:50%"></s></div><b>63<small>%</small></b></div><div style="font-size:10px;color:var(--ink-300);margin-top:6px">刻度 = 偏离门评估点 · 容量用同一形态</div></div>
+  <div class="b"><h5>WAVE · 行情延迟 60s</h5><svg class="wave" viewBox="0 0 180 36" width="100%"><path d="M0 20 L10 20 L14 8 L18 30 L22 20 L40 20 L44 12 L48 26 L52 20 L80 20 L84 6 L88 32 L92 20 L120 20 L124 14 L128 24 L132 20 L160 20 L164 10 L168 28 L172 20 L180 20"/></svg><div style="font-size:10px;color:var(--ink-300);margin-top:4px">只给系统体征 · 永不给价格与盈亏</div></div>
+  <div class="b" style="padding:0;background:transparent;border:0"><div class="dense"><span class="lab">NET ASSET</span><div class="num">2,265</div><div class="sub">千 CNY · 3 账户 · 估算 · 大屏 KPI</div></div></div>
+  <div class="b" style="padding:0;background:transparent;border:0"><div class="brk">当前对象<b>300750 宁德时代 · 卖 500</b></div></div>
+  <div class="b l4" style="grid-column:2/4"><div class="haz"></div><div class="t">LEVEL 4 · 账户 A 日亏损到限</div><div class="line">1 · 日内 -56,600 · 限额 -2.5%</div><div class="line">2 · 交易锁已由执行网关下发 14:32:10</div><div class="line dim">3 · 可平仓 · 不可开仓 · 解除需账户服务</div><div style="font-size:9px;color:var(--ink-400);font-family:var(--font-dot);letter-spacing:.08em;-webkit-font-smoothing:none">三行逐行点亮 · 核心界面 · 不可皮肤化</div></div>
+</div>
+</div>
+</body></html>

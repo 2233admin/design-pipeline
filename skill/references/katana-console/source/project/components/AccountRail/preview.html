@@ -1,0 +1,36 @@
+<!-- @dsCard group="组合" height=150 subtitle="AccountRail：账户集合选择；短码不着色、PAPER 必带标、每账户净值 LCD + 状态灯；多选时所有组合面板同步过滤" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500;700&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.rail{display:flex;gap:8px;align-items:stretch}
+.acct{position:relative;width:132px;height:84px;background:var(--bg-200);border:var(--hairline);padding:8px 10px;display:flex;flex-direction:column;gap:4px;cursor:pointer}
+.acct.on{background:var(--bg-000);box-shadow:var(--recess),inset 0 0 0 1px var(--signal-orange-dim)}
+.acct.paper{border-left:2px solid var(--signal-blue)}
+.acct.off{color:var(--ink-400)}
+.hd{display:flex;align-items:center;gap:6px}
+.code{font-family:var(--font-dot);font-size:16px;font-weight:700;color:var(--signal-orange);letter-spacing:.04em;-webkit-font-smoothing:none}
+.acct.off .code{color:var(--ink-400)}
+.kind{font-family:var(--font-dot);font-size:9px;color:var(--ink-300);letter-spacing:.08em;-webkit-font-smoothing:none}
+.acct.paper .kind{color:var(--signal-blue)}
+.led{width:8px;height:8px;border-radius:var(--radius-pill);margin-left:auto}
+.ok{background:var(--signal-green);box-shadow:var(--glow-orange)}.warn{background:var(--signal-amber)}.dead{background:var(--signal-red)}
+.name{font-family:var(--font-sans);font-size:11px;color:var(--ink-200);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav{font-family:var(--font-lcd);font-size:16px;letter-spacing:.08em;color:var(--ink-100)}
+.acct.off .nav{color:var(--ink-400)}
+.sub{display:flex;justify-content:space-between;font-size:10px;color:var(--ink-300)}
+.sum{width:150px;background:var(--bg-000);box-shadow:var(--recess);padding:8px 10px;display:flex;flex-direction:column;gap:4px;margin-left:auto}
+.sum .kind{color:var(--ink-300)}
+.sum .nav{color:var(--signal-orange);font-size:20px}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--signal-amber);-webkit-font-smoothing:none}
+</style></head><body>
+<div class="rail" role="group" aria-label="账户集合">
+  <div class="acct on" aria-pressed="true"><div class="hd"><span class="code">A</span><span class="kind">LIVE</span><span class="led ok"></span></div><div class="name">中信 · 普通</div><div class="nav">1,284,300</div><div class="sub"><span>现金 21%</span><span>12 持仓</span></div></div>
+  <div class="acct on" aria-pressed="true"><div class="hd"><span class="code">B</span><span class="kind">LIVE</span><span class="led ok"></span></div><div class="name">华泰 · 两融</div><div class="nav">662,180</div><div class="sub"><span>风险度 48%</span><span>7 持仓</span></div></div>
+  <div class="acct on" aria-pressed="true"><div class="hd"><span class="code">F</span><span class="kind">FUT</span><span class="led warn"></span></div><div class="name">中金所 · 期货</div><div class="nav">318,900</div><div class="sub"><span style="color:var(--signal-amber)">保证金 71%</span><span>3 合约</span></div></div>
+  <div class="acct paper" aria-pressed="false"><div class="hd"><span class="code">P</span><span class="kind">PAPER</span><span class="led ok"></span></div><div class="name">模拟 · 策略 momo-7</div><div class="nav">1,000,000</div><div class="sub"><span>现金 100%</span><span>0 持仓</span></div></div>
+  <div class="acct off" aria-pressed="false"><div class="hd"><span class="code">C</span><span class="kind">LIVE</span><span class="led dead"></span></div><div class="name">东财 · 普通</div><div class="nav">— —</div><div class="sub"><span>断线 14:32</span><span class="tag">缺 C</span></div></div>
+  <div class="sum" aria-label="选中账户合计"><div class="hd"><span class="kind">SELECTED 3 · CNY</span></div><div class="nav">2,265,380</div><div class="sub"><span style="color:var(--pnl-up)">+18,420 今日</span><span>22 持仓</span></div><div class="sub"><span class="tag">估算 · 含 F 换算</span></div></div>
+</div>
+</body></html>

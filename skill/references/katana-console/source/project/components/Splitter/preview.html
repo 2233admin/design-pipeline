@@ -1,0 +1,33 @@
+<!-- @dsCard group="工作台" height=170 subtitle="分割线：8px 命中区、1px 可见线；拖动变 orange、吸附点、越界橡皮筋" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-100);color:var(--ink-300);font-family:var(--font-mono);font-size:10px;letter-spacing:.08em}
+.ws{display:grid;grid-template-columns:1fr 8px 1fr;grid-template-rows:60px 8px 60px;width:420px}
+.pane{background:var(--bg-300);border:var(--hairline);box-shadow:var(--plate);display:flex;align-items:center;justify-content:center}
+.sp{position:relative;display:flex;align-items:center;justify-content:center;cursor:col-resize}
+.sp.h{cursor:row-resize}
+.sp::before{content:"";position:absolute;background:var(--line-100)}
+.sp.v::before{width:1px;top:0;bottom:0}
+.sp.h::before{height:1px;left:0;right:0}
+.sp:hover::before{background:var(--line-200)}
+.sp.drag::before{background:var(--signal-orange);box-shadow:0 0 6px var(--signal-orange)}
+.sp.v.drag::before{width:2px}
+.grip{position:relative;width:2px;height:16px;border-radius:var(--radius-pill);background:var(--line-200)}
+.sp.h .grip{width:16px;height:2px}
+.sp.drag .grip{background:var(--signal-orange)}
+.snap{position:absolute;top:50%;width:1px;height:8px;background:var(--signal-orange);opacity:.5;transform:translateY(-50%)}
+.legend{display:flex;gap:var(--space-6);margin-top:var(--space-3)}
+</style></head><body>
+<div class="ws" role="group" aria-label="2×2 布局">
+  <div class="pane">PANE A</div>
+  <div class="sp v" role="separator" aria-orientation="vertical" tabindex="0" aria-label="调整 A/B 宽度"><span class="grip"></span></div>
+  <div class="pane">PANE B</div>
+  <div class="sp h drag" role="separator" aria-orientation="horizontal" tabindex="0" aria-label="调整上下高度" style="grid-column:1 / span 3"><span class="grip"></span></div>
+  <div class="pane">PANE C</div>
+  <div class="sp v" role="separator" aria-orientation="vertical" tabindex="0" aria-label="调整 C/D 宽度"><span class="grip"></span></div>
+  <div class="pane">PANE D</div>
+</div>
+<div class="legend"><span>IDLE · line-100</span><span>HOVER · line-200</span><span style="color:var(--signal-orange)">DRAG · orange + glow</span><span>DBL-CLICK · 复位 1/2</span></div>
+</body></html>

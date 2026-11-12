@@ -1,0 +1,54 @@
+<!-- @dsCard group="研究" height=240 subtitle="SeriesBrowser：任意序列浏览——从目录拖字段进来叠线，指数化 / 对数 / 差分 / 滚动均值变换，衰退 / 事件竖带；PriceChart 多线皮肤" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{width:620px;background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.chip{height:22px;display:flex;align-items:center;gap:6px;padding:0 8px;background:var(--bg-000);box-shadow:var(--recess);font-size:10px;color:var(--ink-200)}
+.chip i{width:8px;height:2px}
+.chip s{text-decoration:none;color:var(--ink-400)}
+.chip.add{background:transparent;box-shadow:none;border:1px dashed var(--line-200);color:var(--ink-300)}
+</style></head><body>
+<div class="wrap"><div class="chips"><div class="chip"><i style="background:var(--series-1)"></i>北向净流入 · 20d 均 · ↓ 指数化=100<s>×</s></div><div class="chip"><i style="background:var(--series-2)"></i>CSI800 · 指数化=100<s>×</s></div><div class="chip"><i style="background:var(--series-3)"></i>10Y 国债 · 差分 · 右轴 ✖ → 独立面板<s>×</s></div><div class="chip add">+ 拖入字段 / 搜索</div><div class="seg" style="margin-left:auto"><span>原值</span><span class="on">指数化</span><span>对数</span><span>差分</span></div></div>
+<svg width="600" height="150" viewBox="0 0 600 150" role="img" aria-label="序列对比"><g class="gl"><line x1="0" y1="20" x2="560" y2="20"/><line x1="0" y1="70" x2="560" y2="70" stroke="var(--line-200)"/><line x1="0" y1="120" x2="560" y2="120"/></g>
+<text x="564" y="23">120</text><text x="564" y="73">100</text><text x="564" y="123">80</text>
+<rect x="180" y="10" width="70" height="130" fill="var(--bg-100)" opacity=".8"/><text x="186" y="20" fill="var(--ink-400)">2024-02 微盘</text>
+<path d="M0 70 L60 74 L120 80 L180 92 L240 86 L300 70 L360 60 L420 52 L480 40 L560 34" fill="none" stroke="var(--series-1)" stroke-width="2"/>
+<path d="M0 70 L60 72 L120 76 L180 88 L240 90 L300 78 L360 70 L420 64 L480 58 L560 50" fill="none" stroke="var(--series-2)" stroke-width="2"/>
+<path d="M0 70 L60 71 L120 69 L180 73 L240 72 L300 70 L360 68 L420 69 L480 66 L560 65" fill="none" stroke="var(--series-3)" stroke-width="1.5" opacity=".9"/>
+<text x="0" y="146">2024-01</text><text x="280" y="146">2025-01</text><text x="520" y="146">2026-01</text></svg>
+<div style="font-size:10px;color:var(--ink-300);margin-top:4px">相关 (1,2) 0.71 · (1,3) -0.12 · 60d 滚动 · 来源 AkShare / 中债 · 不做双 Y 轴，量纲不同请指数化或拆面板</div></div>
+</body></html>

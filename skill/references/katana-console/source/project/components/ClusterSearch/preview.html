@@ -1,0 +1,67 @@
+<!-- @dsCard group="订单流" height=310 subtitle="ClusterSearch：订单流扫描器——Cluster Search 全参数 + Big Trades 区域 + Absorption + Tape Patterns + Exhaustion；命中格高亮、结果进表、可存为告警" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Barlow+Condensed:wght@800&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.ly{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;border:1px solid var(--line-200);padding:0 4px;color:var(--ink-300)}
+.ly.hypo{color:var(--signal-blue);border-color:var(--signal-blue)}.ly.fcst{border-style:dashed}.ly.plan{background:transparent;color:var(--ink-200)}.ly.fact{color:var(--ink-100);border-color:var(--ink-300)}
+
+
+.cs{display:grid;grid-template-columns:230px 1fr;gap:8px;width:620px;height:262px}
+.frm{background:var(--bg-200);border:var(--hairline);padding:6px 8px;display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-content:start;font-size:10px}
+.frm label{color:var(--ink-300)}.frm span{color:var(--ink-100)}.frm .seg{display:inline-flex}
+.frm .in{background:var(--bg-000);box-shadow:var(--recess);padding:1px 6px}
+.res{background:var(--bg-200);border:var(--hairline);display:flex;flex-direction:column}
+.res .row{display:grid;grid-template-columns:52px 56px 46px 46px 46px 1fr;padding:3px 0;color:var(--ink-200)}.res .row.hd{color:var(--ink-300);font-size:9px;letter-spacing:.06em}.res .row.on{background:var(--bg-400);color:var(--ink-100)}
+.res .foot{margin-top:auto}
+.kind{font-family:var(--font-dot);font-size:9px;letter-spacing:.06em;-webkit-font-smoothing:none;border:1px solid var(--line-200);padding:0 4px;color:var(--ink-300)}
+.kind.abs{color:var(--signal-blue);border-color:var(--signal-blue)}.kind.big{color:var(--signal-orange);border-color:var(--signal-orange)}
+
+</style></head><body>
+
+<div class="top"><span class="cn" style="font-weight:700;font-size:13px;color:var(--ink-100)">扫描 · 300750 · 近 5 日</span><span class="seg"><span class="on">Cluster Search</span><span>Big Trades</span><span>Absorption</span><span>Tape Patterns</span><span>Exhaustion</span></span><span class="tag" style="margin-left:auto">HITS 14</span></div>
+<div class="cs">
+ <div class="frm"><label>Calculation</label><span class="seg"><span class="on">Volume</span><span>Delta</span><span>Bid</span><span>Ask</span><span>Trades</span></span><label>Auto Filter</label><span>关 · 手动阈值</label></span><label>量 ≥</label><span class="in">2,000</span><label>均量 ×</label><span class="in">3.0</span><label>占本根 %</label><span class="in">≥ 18</span><label>Imbalance</label><span class="in">≥ 300%</span><label>Delta</label><span class="in">任意</span><label>K 线方向</label><span class="seg"><span class="on">任意</span><span>涨</span><span>跌</span></span><label>Price Location</label><span>High / Low / Body …（8）</span><label>高度 ≥</label><span class="in">3 档</span><label>时间</label><span>09:30–11:30</span><label>Days back</label><span class="in">5</span></div>
+ <div class="res"><div class="row hd"><span>时间</span><span>价位</span><span class="r">Bid</span><span class="r">Ask</span><span class="r">Δ</span><span>类型</span></div>
+  <div class="row on"><span>10:42:07</span><span>246.80</span><span class="r">2,140</span><span class="r">5,980</span><span class="r up">+3,840</span><span><span class="kind">CLUSTER</span> 失衡 ×2.8</span></div>
+  <div class="row"><span>10:41:12</span><span>246.90</span><span class="r">4,320</span><span class="r">410</span><span class="r dn">−3,910</span><span><span class="kind abs">ABSORB</span> 卖压被吸</span></div>
+  <div class="row"><span>10:38:55</span><span>246.70</span><span class="r">880</span><span class="r">6,100</span><span class="r up">+5,220</span><span><span class="kind big">BIG</span> 单笔 5,000 · zone</span></div>
+  <div class="row"><span>10:31:40</span><span>247.10</span><span class="r">3,900</span><span class="r">3,700</span><span class="r">−200</span><span><span class="kind">CLUSTER</span> 高量低Δ</span></div>
+  <div class="row"><span>10:19:03</span><span>246.40</span><span class="r">120</span><span class="r">2,900</span><span class="r up">+2,780</span><span><span class="kind">EXHAUST</span> Ask 衰竭</span></div>
+  <div class="row"><span>09:58:21</span><span>247.00</span><span class="r">5,200</span><span class="r">4,800</span><span class="r">−400</span><span><span class="kind">CLUSTER</span> Body · 高度 4</span></div>
+  <div class="foot"><span>命中格在 flow 层高亮</span><span>点行 = 图表定位</span><span style="margin-left:auto;color:var(--ink-100)">存为告警 →</span></div></div>
+</div>
+
+</body></html>

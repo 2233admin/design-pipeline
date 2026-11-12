@@ -1,0 +1,55 @@
+<!-- @dsCard group="衍生品" height=270 subtitle="OptionsChain：期权链——行权价居中，左 Call 右 Put，IV / Delta / 持仓量 / 自己的仓位；到期 Segmented；ATM 行橙；DOMLadder 的姐妹组件" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.row{display:grid;grid-template-columns:1fr 1fr 60px 28px 72px 1fr 1fr;height:var(--row-tight);align-items:center;border-bottom:var(--hairline);font-size:10px}
+.row>div{padding:0 6px}
+.k{text-align:center;background:var(--bg-000);color:var(--ink-100)}
+.atm .k{color:var(--signal-orange);box-shadow:inset 0 0 0 1px var(--signal-orange-dim)}
+.own{color:var(--order-own)}
+.itm{background:rgba(255,255,255,.02)}
+</style></head><body>
+<div class="top"><span class="code">510300</span><span class="cn" style="color:var(--ink-100)">300ETF 期权</span><div class="seg"><span class="on">10-22 · 14d</span><span>11-25</span><span>12-23</span><span>03-24</span></div><span>标的 3.948 · IV 18.2% · PCR 0.84</span><span style="margin-left:auto">账户 <span class="acc">F</span></span></div>
+<div class="grid" role="grid" aria-label="期权链">
+<div class="row hd"><div class="r">持仓量 · 自己</div><div class="r">Call 价 · IV</div><div class="r">Δ</div><div></div><div class="k" style="background:transparent">行权</div><div>Put 价 · IV</div><div>Δ · 持仓量 · 自己</div></div>
+<div class="row itm"><div class="r">42,100</div><div class="r">0.2160 · 17.1</div><div class="r">0.78</div><div></div><div class="k">3.800</div><div>0.0620 · 19.0</div><div>-0.22 · 38,900</div></div>
+<div class="row itm"><div class="r">61,300 <span class="own">+10</span></div><div class="r">0.1540 · 17.6</div><div class="r">0.66</div><div></div><div class="k">3.900</div><div>0.0980 · 18.4</div><div>-0.34 · 52,700</div></div>
+<div class="row atm"><div class="r">88,200</div><div class="r">0.1010 · 18.2</div><div class="r">0.52</div><div></div><div class="k">3.950</div><div>0.1430 · 18.1</div><div>-0.48 · 91,400 <span class="own">-20</span></div></div>
+<div class="row"><div class="r">74,600</div><div class="r">0.0610 · 18.9</div><div class="r">0.38</div><div></div><div class="k">4.000</div><div>0.2020 · 18.0</div><div>-0.62 · 44,100</div></div>
+<div class="row"><div class="r">39,800</div><div class="r">0.0330 · 19.8</div><div class="r">0.24</div><div></div><div class="k">4.100</div><div>0.2740 · 18.3</div><div>-0.76 · 21,300</div></div>
+<div class="foot"><span>行权 ±5 档 · 全部 23</span><span>自己的仓位 <span class="own">amber</span></span><span>合计 Δ-eq <b>-1,840</b> 份标的</span><span style="margin-left:auto">策略构建 → GreeksBoard</span></div>
+</div>
+</body></html>

@@ -1,0 +1,50 @@
+<!-- @dsCard group="研究" height=290 subtitle="StrategyCompare：多 run 对照——净值叠加（series 固定色）+ 指标表 + 五门矩阵；比 run 不比'最新'；去排行榜" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+.gates{display:inline-flex;gap:3px}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.wrap{width:620px;background:var(--bg-200);border:var(--hairline)}
+.chart{padding:8px 10px;border-bottom:var(--hairline)}
+.row{display:grid;grid-template-columns:14px 150px 56px 56px 56px 56px 56px 1fr;height:var(--row-base);align-items:center;border-bottom:var(--hairline);font-size:10px}
+.row>div{padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sw{width:8px;height:8px;display:inline-block}
+.name b{font-weight:400;color:var(--ink-100)}.name small{color:var(--ink-300);margin-left:4px}
+.best{color:var(--signal-orange)}
+</style></head><body>
+<div class="wrap">
+  <div class="top" style="padding:8px 10px 0;margin:0"><span>对照 <b style="font-weight:400;color:var(--ink-100)">4 run</b> · 同区间 2019-01 → 2026-07 · 同成本模型</span><div class="seg"><span class="on">净值</span><span>回撤</span><span>滚动夏普</span></div><span style="margin-left:auto">+ 加入 run · 导出</span></div>
+  <div class="chart"><svg width="600" height="110" viewBox="0 0 600 110" role="img" aria-label="净值对照">
+    <g class="gl"><line x1="0" y1="20" x2="560" y2="20"/><line x1="0" y1="55" x2="560" y2="55"/><line x1="0" y1="90" x2="560" y2="90"/></g>
+    <text x="564" y="23">2.0</text><text x="564" y="58">1.5</text><text x="564" y="93">1.0</text>
+    <path d="M0 90 L70 84 L140 80 L210 66 L280 60 L350 46 L420 40 L490 30 L560 22" fill="none" stroke="var(--series-1)" stroke-width="2"/>
+    <path d="M0 90 L70 86 L140 84 L210 74 L280 70 L350 60 L420 56 L490 48 L560 42" fill="none" stroke="var(--series-2)" stroke-width="2"/>
+    <path d="M0 90 L70 82 L140 86 L210 70 L280 76 L350 58 L420 64 L490 50 L560 54" fill="none" stroke="var(--series-3)" stroke-width="2"/>
+    <path d="M0 90 L70 88 L140 86 L210 80 L280 78 L350 72 L420 70 L490 66 L560 62" fill="none" stroke="var(--series-4)" stroke-width="2" opacity=".4"/>
+    <path d="M0 90 L70 88 L140 87 L210 82 L280 81 L350 76 L420 75 L490 72 L560 70" fill="none" stroke="var(--chart-bench)" stroke-width="1" stroke-dasharray="3 3"/>
+  </svg></div>
+  <div class="row hd"><div></div><div>run · 策略</div><div class="r">年化</div><div class="r">Sharpe</div><div class="r">MaxDD</div><div class="r">换手</div><div class="r">OOS/IS</div><div>门</div></div>
+  <div class="row"><div><span class="sw" style="background:var(--series-1)"></span></div><div class="name"><b>2c91</b> MOM_RS_V3<small>skip 1</small></div><div class="r best">24.1%</div><div class="r best">1.42</div><div class="r">-17.8%</div><div class="r" style="color:var(--signal-amber)">910%</div><div class="r">0.67</div><div class="gates"><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led warn"></span><span class="led off"></span></div></div>
+  <div class="row"><div><span class="sw" style="background:var(--series-2)"></span></div><div class="name"><b>2e52</b> MOM_RS_V3<small>skip 3</small></div><div class="r">19.6%</div><div class="r">1.36</div><div class="r best">-14.2%</div><div class="r best">690%</div><div class="r best">0.79</div><div class="gates"><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led off"></span></div></div>
+  <div class="row"><div><span class="sw" style="background:var(--series-3)"></span></div><div class="name"><b>2a10</b> QUAL+MOM 合成<small>等权</small></div><div class="r">16.8%</div><div class="r">1.21</div><div class="r">-19.5%</div><div class="r">420%</div><div class="r">0.71</div><div class="gates"><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led off"></span></div></div>
+  <div class="row" style="color:var(--ink-300)"><div><span class="sw" style="background:var(--series-4);opacity:.4"></span></div><div class="name"><b>1f03</b> REV_5D<small>已退役</small></div><div class="r">6.2%</div><div class="r">0.41</div><div class="r">-28.0%</div><div class="r">2,100%</div><div class="r">0.32</div><div class="gates"><span class="led off"></span><span class="led off"></span><span class="led off"></span><span class="led off"></span><span class="led off"></span></div></div>
+  <div class="foot"><span>基准 CSI800 全收益 · 灰</span><span>橙 = 该列最好，不是排名</span><span style="margin-left:auto">推进 2e52 → paper</span></div>
+</div>
+</body></html>

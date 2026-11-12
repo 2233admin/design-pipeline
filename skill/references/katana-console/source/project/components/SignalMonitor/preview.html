@@ -1,0 +1,52 @@
+<!-- @dsCard group="研究" height=240 subtitle="SignalMonitor：今日信号流——策略 / 品种 / 方向 / 目标仓位 / 理由（前三特征贡献）/ 是否已执行；paper 与 live 分标；append-only" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.row{display:grid;grid-template-columns:52px 80px 130px 44px 70px 1fr 90px;height:var(--row-tight);align-items:center;border-bottom:var(--hairline);font-size:10px}
+.side{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none}.b{color:var(--bid)}.s{color:var(--ask)}
+.st{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;color:var(--ink-300)}
+.st.p{color:var(--signal-blue)}.st.l{color:var(--signal-amber)}
+.why{color:var(--ink-300)}.why b{font-weight:400;color:var(--ink-200)}
+</style></head><body>
+<div class="top"><div class="seg"><span class="on">全部</span><span>live</span><span>paper</span><span>未执行</span></div><span>今日 48 信号 · 执行 41 · 跳过 7</span><span style="margin-left:auto">自动滚动 <span class="led on"></span></span></div>
+<div class="grid" role="log" aria-label="信号流"><div class="row hd"><div>时间</div><div>策略</div><div>品种</div><div>方向</div><div class="r">目标仓</div><div>理由 · 前三贡献</div><div>执行</div></div>
+<div class="row" style="box-shadow:inset 2px 0 0 var(--signal-orange)"><div style="color:var(--ink-300)">14:30:02</div><div>mom-core <span class="st l">LIVE</span></div><div><span class="code">300750</span> <span class="cn">宁德时代</span></div><div class="side b">ADD</div><div class="r">24.0%</div><div class="why"><b>MOM_RS</b> +.42 · <b>LIQ</b> +.18 · <b>QUAL</b> +.09</div><div style="color:var(--ink-300)">→ 篓子 RB-1430</div></div>
+<div class="row"><div style="color:var(--ink-300)">14:30:02</div><div>mom-core <span class="st l">LIVE</span></div><div><span class="code">600519</span> <span class="cn">贵州茅台</span></div><div class="side s">TRIM</div><div class="r">18.0%</div><div class="why"><b>MOM_RS</b> -.21 · <b>VAL</b> +.08 · <b>vol</b> -.05</div><div style="color:var(--ink-300)">→ 篓子 RB-1430</div></div>
+<div class="row"><div style="color:var(--ink-300)">14:30:01</div><div>momo-7 <span class="st p">PAPER</span></div><div><span class="code">688041</span> <span class="cn">海光信息</span></div><div class="side b">OPEN</div><div class="r">6.0%</div><div class="why"><b>MOM_RS</b> +.51 · <b>FLOW</b> +.12 · <b>QUAL</b> +.04</div><div class="est">跳过 · 涨停</div></div>
+<div class="row"><div style="color:var(--ink-300)">14:30:01</div><div>alice-rev <span class="st p">PAPER</span></div><div><span class="code">002475</span> <span class="cn">立讯精密</span></div><div class="side s">CLOSE</div><div class="r">0%</div><div class="why"><b>REV</b> -.33 · <b>vol</b> +.10</div><div class="est">跳过 · 策略已暂停 10:12</div></div>
+<div class="row"><div style="color:var(--ink-300)">09:31:00</div><div>liq-hedge <span class="st l">LIVE</span></div><div><span class="code">IF2510</span> <span class="cn">沪深300</span></div><div class="side s">SHORT</div><div class="r">-3 手</div><div class="why">β 对冲 · 组合 Δ-eq -1,840</div><div style="color:var(--ink-300)">已成 09:31:12</div></div>
+<div class="foot"><span>与回测信号比对 → LiveDivergence</span><span style="margin-left:auto">导出 · 加入笔记</span></div></div>
+</body></html>

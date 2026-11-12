@@ -1,0 +1,52 @@
+{
+ "v": 3,
+ "assetGroups": {},
+ "blobs": {},
+ "createdOnFiles": {
+  "at": "2026-10-02T13:45:00Z",
+  "v": 1
+ },
+ "docs": {
+  "readme": "project/README.md",
+  "sections": [
+   "project/asset-management.md",
+   "project/atas.md",
+   "project/blueprint.md",
+   "project/coverage.md",
+   "project/dataviz.md",
+   "project/engineering.md",
+   "project/gamefeel.md",
+   "project/icons.md",
+   "project/layout.md",
+   "project/markets.md",
+   "project/motion.md",
+   "project/pixel.md",
+   "project/portfolio.md",
+   "project/product.md",
+   "project/readability.md",
+   "project/rendering.md",
+   "project/research.md",
+   "project/signature.md",
+   "project/sound.md",
+   "project/spec.md",
+   "project/stack.md",
+   "project/states.md",
+   "project/themes.md",
+   "project/tools.md",
+   "project/typography.md",
+   "project/wheels.md"
+  ]
+ },
+ "groups": [],
+ "lastChange": {
+  "at": "2026-10-03T16:50:00Z",
+  "by": "Claude",
+  "via": "Claude",
+  "note": "DOMLadder 修复 PR #42 Qodo 八项评审：Stop 单触发为市价、一笔成交在同档多单间共享、丢包连同成交一起丢且 gap 期间不撮合、帧 bbo 与档位同源、交易闸（前端 + 引擎拒绝冻结 / 回放 / 离线）、确认时再查状态、拖单改价按坐标找行、聚合桶最优标记；新增 test_engine.js（Node vm 跑 Worker 源）。此前：一切可定制（设置 schema → 面板 / set 命令 / 模板九动作 / 设计模式）。"
+ },
+ "layout": "files",
+ "libraries": [],
+ "namespace": "KatanaConsole",
+ "sections": {},
+ "title": "KATANA Console"
+}

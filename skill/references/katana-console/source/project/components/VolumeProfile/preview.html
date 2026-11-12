@@ -1,0 +1,43 @@
+<!-- @dsCard group="订单流" height=230 subtitle="成交量轮廓：竖向分布、POC、价值区；买卖拆分；固定/可见区间" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:10px;font-variant-numeric:tabular-nums}
+.wrap{display:flex;gap:24px}
+.vp{display:grid;grid-template-columns:48px 160px 56px;gap:0;align-items:center}
+.vp .px{text-align:right;padding-right:6px;color:var(--chart-axis);height:16px;line-height:16px}
+.vp .px.poc{color:var(--poc);font-weight:500}
+.row{height:16px;display:flex;align-items:center;gap:1px;position:relative}
+.row i{display:block;height:10px}
+.b{background:repeating-linear-gradient(90deg,var(--bid) 0 3px,transparent 3px 4px)}
+.a{background:repeating-linear-gradient(90deg,var(--ask) 0 3px,transparent 3px 4px)}
+.row.va{background:var(--va)}
+.row.poc::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--poc);box-shadow:0 0 4px var(--poc)}
+.vp .q{padding-left:8px;color:var(--ink-300);height:16px;line-height:16px}
+.vp .q.poc{color:var(--poc)}
+.lg{display:flex;flex-direction:column;gap:6px;color:var(--ink-300);font-size:9px;letter-spacing:.1em;justify-content:center}
+.lg span{display:flex;align-items:center;gap:6px}
+.lg i{display:inline-block;width:14px;height:8px}
+.chip{border:1px solid var(--line-100);padding:1px 6px;display:inline-block}
+.chip.on{border-color:var(--signal-orange-dim);color:var(--signal-orange)}
+</style></head><body>
+<div class="wrap">
+<div class="vp" role="img" aria-label="成交量轮廓">
+  <div class="px">247.30</div><div class="row"><i class="b" style="width:8px"></i><i class="a" style="width:14px"></i></div><div class="q">412</div>
+  <div class="px">247.20</div><div class="row"><i class="b" style="width:18px"></i><i class="a" style="width:22px"></i></div><div class="q">738</div>
+  <div class="px">247.10</div><div class="row va"><i class="b" style="width:34px"></i><i class="a" style="width:30px"></i></div><div class="q">1,190</div>
+  <div class="px">247.00</div><div class="row va"><i class="b" style="width:60px"></i><i class="a" style="width:54px"></i></div><div class="q">2,140</div>
+  <div class="px poc">246.90</div><div class="row va poc"><i class="b" style="width:92px"></i><i class="a" style="width:68px"></i></div><div class="q poc">3,410</div>
+  <div class="px">246.80</div><div class="row va"><i class="b" style="width:44px"></i><i class="a" style="width:40px"></i></div><div class="q">1,620</div>
+  <div class="px">246.70</div><div class="row va"><i class="b" style="width:20px"></i><i class="a" style="width:16px"></i></div><div class="q">640</div>
+  <div class="px">246.60</div><div class="row"><i class="b" style="width:8px"></i><i class="a" style="width:10px"></i></div><div class="q">310</div>
+  <div class="px">246.50</div><div class="row"><i class="b" style="width:4px"></i><i class="a" style="width:5px"></i></div><div class="q">160</div>
+</div>
+<div class="lg">
+  <span><i class="b"></i> 买成交</span><span><i class="a"></i> 卖成交</span><span><i style="background:var(--va)"></i> 价值区 70%</span><span><i style="height:1px;background:var(--poc)"></i> POC</span>
+  <span style="margin-top:6px"><span class="chip on">可见区间</span><span class="chip">固定 09:30–</span><span class="chip">按日</span></span>
+  <span><span class="chip on">买卖拆分</span><span class="chip">总量</span><span class="chip">Delta</span></span>
+</div>
+</div>
+</body></html>

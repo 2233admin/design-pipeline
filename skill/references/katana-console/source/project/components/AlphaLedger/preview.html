@@ -1,0 +1,61 @@
+<!-- @dsCard group="决策" height=270 subtitle="AlphaLedger：Alpha 保全账——Research Edge 减七项损耗到 Realized Net Alpha；水平条 + 累计列；每项点进归属组件；按策略 / 组合 / 区间" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Barlow+Condensed:wght@800&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.ly{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;border:1px solid var(--line-200);padding:0 4px;color:var(--ink-300)}
+.ly.hypo{color:var(--signal-blue);border-color:var(--signal-blue)}.ly.fcst{border-style:dashed}.ly.plan{background:transparent;color:var(--ink-200)}.ly.fact{color:var(--ink-100);border-color:var(--ink-300)}
+.row{display:grid;grid-template-columns:170px 1fr 84px 84px;height:26px;align-items:center;border-bottom:var(--hairline);font-size:10px}
+.row>div{padding:0 8px}
+.lab{color:var(--ink-200);font-family:var(--font-sans)}.lab small{color:var(--ink-300);font-family:var(--font-mono);margin-left:6px}
+.bar2{position:relative;height:10px}
+.bar2 i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.bar2 i.edge{background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.bar2 i.big{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.cum{color:var(--ink-100)}
+.row.tot{background:var(--bg-300)}.row.tot .lab{color:var(--ink-100)}
+</style></head><body>
+<div class="top"><div class="seg"><span class="on">组合</span><span>mom-core</span><span>liq-hedge</span></div><span>YTD · 账户 A B F · 年化 % · 费后</span><span style="margin-left:auto">Research Edge <b class="lcd" style="font-weight:400;color:var(--ink-100)">+24.1</b> → Realized <b class="lcd" style="font-weight:400;color:var(--ink-100)">+14.2</b> · 保全率 <b style="font-weight:400;color:var(--ink-100)">59%</b></span></div>
+<div class="grid" role="grid" aria-label="Alpha 保全账"><div class="row hd"><div>项</div><div>幅度</div><div class="r">年化</div><div class="r">累计</div></div>
+<div class="row"><div class="lab">Research Edge<small>回测 gross · <span class="run">RUN 2c91</span></small></div><div class="bar2"><i class="edge" style="left:0;width:96%"></i></div><div class="r">+24.1</div><div class="r cum">24.1</div></div>
+<div class="row"><div class="lab">Selection / Overfit<small>RobustnessGate · DSR 折算</small></div><div class="bar2"><i style="left:0;width:14%"></i></div><div class="r">-3.4</div><div class="r cum">20.7</div></div>
+<div class="row"><div class="lab">Portfolio Construction<small>vs 等权基准 · RebalanceDesk</small></div><div class="bar2"><i style="left:0;width:4%"></i></div><div class="r">-0.9</div><div class="r cum">19.8</div></div>
+<div class="row"><div class="lab">Turnover & Financing<small>PnLLedger 费税 + CashLedger 利息</small></div><div class="bar2"><i class="big" style="left:0;width:11%"></i></div><div class="r est">-2.8</div><div class="r cum">17.0</div></div>
+<div class="row"><div class="lab">Execution Shortfall<small>TCA vs arrival</small></div><div class="bar2"><i style="left:0;width:6%"></i></div><div class="r">-1.5</div><div class="r cum">15.5</div></div>
+<div class="row"><div class="lab">Operational / Data<small>DataQuality 停算日 + BreakWorkbench</small></div><div class="bar2"><i style="left:0;width:1%"></i></div><div class="r">-0.2</div><div class="r cum">15.3</div></div>
+<div class="row"><div class="lab">Live Model Divergence<small>LiveDivergence 未解释 + 信号不一致</small></div><div class="bar2"><i style="left:0;width:4%"></i></div><div class="r">-1.1</div><div class="r cum">14.2</div></div>
+<div class="row tot"><div class="lab">Realized Net Alpha<small>PnLLedger · 费后 · 对账 ✓</small></div><div class="bar2"><i class="edge" style="left:0;width:57%"></i></div><div class="r up">+14.2</div><div class="r cum">14.2</div></div>
+<div class="foot"><span>七项各有归属组件 · 点击进入</span><span>最大损耗 <b class="est">Turnover & Financing</b></span><span style="margin-left:auto">加入报告 · 作为决策队列依据</span></div></div>
+</body></html>

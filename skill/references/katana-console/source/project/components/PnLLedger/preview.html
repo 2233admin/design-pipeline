@@ -1,0 +1,53 @@
+<!-- @dsCard group="盈亏" height=290 subtitle="PnLLedger：盈亏总账——按日 × 账户 / 策略 / 品种的已实现、未实现、费用、净盈亏；期初期末对账；数字才上涨跌色" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.row{display:grid;grid-template-columns:72px 28px 1fr 84px 84px 64px 84px 84px;height:var(--row-tight);align-items:center;border-bottom:var(--hairline)}
+.sum{color:var(--ink-100);background:var(--bg-300)}
+</style></head><body>
+<div class="top"><div class="seg"><span class="on">按日</span><span>按账户</span><span>按策略</span><span>按品种</span></div><span>本月 · 账户 A B F · CNY</span><span style="margin-left:auto">期初 2,221,100 → 期末 <b class="lcd" style="color:var(--ink-100);font-weight:400">2,265,380</b> · 差 <span class="up">+44,280</span> · 对账 <span class="led ok"></span></span></div>
+<div class="grid" role="grid" aria-label="盈亏总账">
+  <div class="row hd"><div>日期</div><div></div><div>说明</div><div class="r">已实现</div><div class="r">未实现Δ</div><div class="r">费税</div><div class="r">股息/利息</div><div class="r">净盈亏</div></div>
+  <div class="row"><div style="color:var(--ink-300)">10-02</div><div><span class="acc">A</span></div><div>3 笔平仓 · 12 持仓重估</div><div class="r up">+8,420</div><div class="r up">+21,300</div><div class="r">-483</div><div class="r">0</div><div class="r up">+29,237</div></div>
+  <div class="row"><div style="color:var(--ink-300)">10-02</div><div><span class="acc">B</span></div><div>1 笔部分成交 · 融资利息</div><div class="r">0</div><div class="r dn">-4,120</div><div class="r">-52</div><div class="r">0</div><div class="r dn">-4,172</div></div>
+  <div class="row"><div style="color:var(--ink-300)">10-02</div><div><span class="acc">F</span></div><div>IF2510 结算价重估 <span class="tag est">盯市</span></div><div class="r">0</div><div class="r dn">-6,645</div><div class="r">-12</div><div class="r">0</div><div class="r dn">-6,657</div></div>
+  <div class="row sum"><div>10-02</div><div></div><div>合计</div><div class="r up">+8,420</div><div class="r up">+10,535</div><div class="r">-547</div><div class="r">0</div><div class="r up">+18,408</div></div>
+  <div class="row"><div style="color:var(--ink-300)">10-01</div><div></div><div style="color:var(--ink-300)">休市 · 无重估</div><div class="r">—</div><div class="r">—</div><div class="r">-52</div><div class="r">0</div><div class="r">-52</div></div>
+  <div class="row"><div style="color:var(--ink-300)">09-30</div><div><span class="acc">A</span></div><div>600519 分红 · 2 笔平仓</div><div class="r up">+3,960</div><div class="r dn">-9,870</div><div class="r">-612</div><div class="r up">+11,117</div><div class="r up">+4,595</div></div>
+  <div class="row sum"><div>09-30</div><div></div><div>合计</div><div class="r up">+3,960</div><div class="r dn">-14,220</div><div class="r">-690</div><div class="r up">+11,117</div><div class="r">+167</div></div>
+  <div class="foot"><span>本月 <b>22</b> 交易日</span><span>已实现 <b class="up">+61,900</b></span><span>未实现Δ <b class="dn">-8,400</b></span><span>费税 <b>-9,215</b></span><span>股息利息 <b>+11,065</b></span><span style="margin-left:auto">导出 · 对账</span></div>
+</div>
+</body></html>

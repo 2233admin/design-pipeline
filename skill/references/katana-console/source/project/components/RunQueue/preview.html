@@ -1,0 +1,50 @@
+<!-- @dsCard group="运行中心" height=230 subtitle="RunQueue：run 队列——排队 / 运行中 / 完成 / 失败；进度 Meter、预估剩余、资源（CPU / GPU / 内存）；取消是命令；MLflow 状态" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.row{display:grid;grid-template-columns:22px 72px 170px 1fr 70px 90px 60px;height:var(--row-base);align-items:center;border-bottom:var(--hairline);font-size:10px}
+.row>div{padding:0 6px}
+</style></head><body>
+<div class="kpi"><div><small>RUNNING</small><b>3</b><i>2 CPU · 1 GPU</i></div><div><small>QUEUED</small><b>5</b><i>预计 ~22 min</i></div><div><small>DONE TODAY</small><b>41</b><i>失败 2</i></div><div><small>CPU</small><b>74%</b><i>16 核</i></div><div><small>GPU</small><b>91%</b><i>24 GB · 19.3 用</i></div></div>
+<div class="grid" role="grid" aria-label="run 队列"><div class="row hd"><div></div><div>run</div><div>类型 · 对象</div><div>进度</div><div class="r">剩余</div><div>资源</div><div></div></div>
+<div class="row"><div><span class="led on"></span></div><div class="run">2f30</div><div>train · lgbm_v4</div><div><div class="bar"><i style="width:62%"></i></div></div><div class="r">~6 min</div><div>GPU 1 · 18 GB</div><div class="r" style="color:var(--ink-300)">取消</div></div>
+<div class="row"><div><span class="led on"></span></div><div class="run">2f31</div><div>optimize · MOM_RS_V3 · 240 组</div><div><div class="bar"><i style="width:35%"></i></div></div><div class="r">~9 min</div><div>CPU 8</div><div class="r" style="color:var(--ink-300)">取消</div></div>
+<div class="row"><div><span class="led on"></span></div><div class="run">2f32</div><div>stress · 持仓 10-02</div><div><div class="bar"><i style="width:88%"></i></div></div><div class="r">~20 s</div><div>CPU 2</div><div class="r" style="color:var(--ink-300)">取消</div></div>
+<div class="row" style="color:var(--ink-300)"><div><span class="led off"></span></div><div class="run">2f33</div><div>backtest · QUAL+MOM · skip 3</div><div style="color:var(--ink-400)">排队 #1 · 等 CPU</div><div class="r">—</div><div>CPU 4</div><div class="r">取消</div></div>
+<div class="row" style="color:var(--ink-300)"><div><span class="led off"></span></div><div class="run">2f34</div><div>walkforward · QUAL+MOM</div><div style="color:var(--ink-400)">排队 #2 · 依赖 2f33</div><div class="r">—</div><div>CPU 4</div><div class="r">取消</div></div>
+<div class="row"><div><span class="led bad"></span></div><div class="run">2f28</div><div>factor · FLOW_NORTH_10D</div><div class="est">失败 13:58 · 数据缺口 north_flow 09-12</div><div class="r">—</div><div>—</div><div class="r" style="color:var(--ink-300)">重跑</div></div>
+<div class="foot"><span>OpenAlice · 2 worker · MLflow 同步 <span class="led ok"></span></span><span style="margin-left:auto">完成 → RunInspector</span></div></div>
+</body></html>

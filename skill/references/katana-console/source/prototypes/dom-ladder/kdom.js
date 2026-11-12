@@ -1,0 +1,473 @@
+/* ===================================================================
+   DOMLadder 实装 · ATAS Smart DOM / DOM Trader 1:1 能力，操作用我们的方式 · KATANA Console
+   答案来源：docs/ux/atas-capture/dom-ladder.md（列 / 工具条 / 交互 / 状态 / 验收）+ atas.md §2.4 + tools.md §2
+   边界：L2 快照 + 有序增量 + 序列状态在引擎（Worker 代替 Katana）里 reduce；派生列（深度变化 / 当前成交 / 排队估算 /
+         成交统计 / 轮廓）也在引擎算；纸面撮合在引擎；前端只按价位行 patch 变化的格。
+   定制：一切可改——设置 schema（常规 / 列 / 交易 / DOM Trader / 颜色）→ 面板 · set 命令 · Agent 同一入口；
+         列宽 / 顺序 / 显隐、模板九个动作（Load Save Add Delete Rename Reset Defaults Export Import）、设计模式（隐藏 / 重排元素）。
+   =================================================================== */
+(function(){
+const $=s=>document.querySelector(s);
+const cs=getComputedStyle(document.body);const tok=(n,f)=>{let v=(cs.getPropertyValue(n)||'').trim();let g=0;while(/^\{[\w-]+\}$/.test(v)&&g++<4)v=(cs.getPropertyValue('--'+v.slice(1,-1))||'').trim();return v||f};
+let AC=null;function sfx(k){try{if(!S.sound)return;if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);const P={key:[1800,.03,'square',.04],tick:[2600,.012,'square',.02],latch:[160,.14,'sawtooth',.07],ok:[880,.08,'triangle',.06],no:[140,.18,'square',.06],lift:[90,.12,'sine',.07],fill:[1046,.1,'triangle',.07]}[k];o.type=P[2];o.frequency.setValueAtTime(P[0],t);if(k==='ok'||k==='fill')o.frequency.setValueAtTime(k==='ok'?1320:1568,t+.05);if(k==='latch')o.frequency.setValueAtTime(110,t+.07);g.gain.setValueAtTime(P[3],t);g.gain.exponentialRampToValueAtTime(.0001,t+P[1]);o.start(t);o.stop(t+P[1]+.02)}catch(e){}}
+const springs=[];function spring(obj,key,to,preset,cb){const P={snappy:{k:520,c:38,m:.8},gentle:{k:170,c:26,m:1},settle:{k:300,c:34,m:1}}[preset];let s=springs.find(x=>x.obj===obj&&x.key===key);if(!s){s={obj,key,v:0};springs.push(s)}Object.assign(s,{to,...P,cb})}
+function stepSprings(dt){for(let i=springs.length-1;i>=0;i--){const s=springs[i],x=s.obj[s.key];const a=(-s.k*(x-s.to)-s.c*s.v)/s.m;s.v+=a*dt;s.obj[s.key]=x+s.v*dt;if(Math.abs(s.v)<.01&&Math.abs(s.obj[s.key]-s.to)<.01){s.obj[s.key]=s.to;springs.splice(i,1)}if(s.cb)s.cb()}}
+const fmt=n=>n==null?'':Math.abs(n)>=100000?(n/1000).toFixed(0)+'k':Math.abs(n)>=10000?(n/1000).toFixed(1)+'k':String(Math.round(n));
+/* =================================================================
+   1. 引擎（Worker 代替 Katana）：L2 生成 → 传输（可丢包）→ reducer（序列状态）→ 派生列 → 纸面撮合 → 帧
+   ================================================================= */
+const WORKER_SRC=String.raw`
+const SYMS={'300750':{name:'宁德时代',tick:.01,dec:2,mid:246.5,lot:100,base:2600,venue:'SZSE',cls:'equity',ccy:'CNY'},'IF2512':{name:'沪深300 股指期货',tick:.2,dec:1,mid:3852.0,lot:1,base:9,venue:'CFFEX',cls:'future',ccy:'CNY',mult:300},'BTCUSDT':{name:'BTC 永续',tick:.1,dec:1,mid:62150,lot:1,base:14,venue:'BINANCE',cls:'crypto_perp',ccy:'USDT'}};
+let seed=20261003;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
+let SYM='300750',S=SYMS[SYM],DEPTH=50,AGG=1;
+/* ---- 真实簿（数据源） ---- */
+let book=new Map();/* k → {bid,ask,nb,na} */let bestBid=0,bestAsk=0,seq=1000,tseq=0;
+function K(p){return Math.round(p/S.tick)}
+function sizeAt(d){/* 离最优价越远越厚，带噪声 */return Math.max(1,Math.round(S.base*(0.35+Math.min(d,12)*.12+rnd()*.9)))}
+function genBook(){book=new Map();const mid=K(S.mid);bestBid=mid-1;bestAsk=mid+1;for(let i=0;i<DEPTH;i++){book.set(bestBid-i,{bid:sizeAt(i),ask:0,nb:2+Math.floor(rnd()*20),na:0});book.set(bestAsk+i,{bid:0,ask:sizeAt(i),nb:0,na:2+Math.floor(rnd()*20)})}}
+function lvl(k){let l=book.get(k);if(!l){l={bid:0,ask:0,nb:0,na:0};book.set(k,l)}return l}
+function snapshotMsg(){const bids=[],asks=[];[...book.keys()].sort((a,b)=>b-a).forEach(k=>{const l=book.get(k);if(l.bid>0)bids.push([k,l.bid,l.nb]);if(l.ask>0)asks.push([k,l.ask,l.na])});return {type:'snapshot',seq,bids,asks,depth:DEPTH}}
+/* ---- 逐帧生成：挂单变化 + 成交 ---- */
+const trades=[];let lastTrade=null,drift=0;
+function stepSource(){const ch=[];drift=drift*.9+(rnd()-.5)*.6;
+ /* 若干档挂单量变化（新增 / 撤） */for(let i=0;i<6;i++){const side=rnd()<.5?'bid':'ask';const d=Math.floor(Math.pow(rnd(),1.6)*Math.min(14,DEPTH));const k=side==='bid'?bestBid-d:bestAsk+d;const l=lvl(k);const cur=side==='bid'?l.bid:l.ask;let nxt=Math.max(0,Math.round(cur+(rnd()-.47+drift*(side==='bid'?.05:-.05))*S.base*.5));if(d===0&&nxt<S.base*.15&&rnd()<.5)nxt=Math.round(S.base*.2);if(side==='bid'){l.bid=nxt;l.nb=nxt?Math.max(1,l.nb+Math.round((rnd()-.5)*3)):0}else{l.ask=nxt;l.na=nxt?Math.max(1,l.na+Math.round((rnd()-.5)*3)):0}ch.push([k,l.bid,l.ask,l.nb,l.na])}
+ /* 成交：主动买吃 ask / 主动卖打 bid */const n=rnd()<.7?1+Math.floor(rnd()*3):0;for(let i=0;i<n;i++){const buy=rnd()<.5+drift*.3;const k=buy?bestAsk:bestBid;const l=lvl(k);let q=Math.max(1,Math.round(S.base*(.05+rnd()*.35)));if(rnd()<.05)q*=4;const avail=buy?l.ask:l.bid;q=Math.min(q,Math.max(1,avail));if(buy){l.ask=Math.max(0,l.ask-q);if(!l.ask)l.na=0}else{l.bid=Math.max(0,l.bid-q);if(!l.bid)l.nb=0}
+  const tr={t:Date.now(),k,p:k*S.tick,q,side:buy?'buy':'sell',id:++tseq};trades.push(tr);lastTrade=tr;ch.push([k,l.bid,l.ask,l.nb,l.na]);if(trades.length>4000)trades.shift()}
+ /* 最优价重定：某侧最优档被吃空 → 推进；补新档 */while(lvl(bestAsk).ask===0){bestAsk++;if(!book.has(bestAsk)||lvl(bestAsk).ask===0){const l=lvl(bestAsk);l.ask=sizeAt(0);l.na=3;ch.push([bestAsk,l.bid,l.ask,l.nb,l.na])}}
+ while(lvl(bestBid).bid===0){bestBid--;if(!book.has(bestBid)||lvl(bestBid).bid===0){const l=lvl(bestBid);l.bid=sizeAt(0);l.nb=3;ch.push([bestBid,l.bid,l.ask,l.nb,l.na])}}
+ if(bestAsk<=bestBid){bestAsk=bestBid+1}
+ /* 价差内补单：价差 > 1 tick 时大概率有人往里挂 */while(bestAsk-bestBid>1&&rnd()<.75){if(rnd()<.5){bestBid++;const l=lvl(bestBid);l.bid=sizeAt(0);l.nb=2;ch.push([bestBid,l.bid,l.ask,l.nb,l.na])}else{bestAsk--;const l=lvl(bestAsk);l.ask=sizeAt(0);l.na=2;ch.push([bestAsk,l.bid,l.ask,l.nb,l.na])}}
+ /* 均值回归：远离初始 mid 时另一侧补厚 */const far=(bestBid+bestAsk)/2-K(S.mid);if(Math.abs(far)>25){const side=far>0?'ask':'bid';const k=side==='ask'?bestAsk:bestBid;const l=lvl(k);if(side==='ask'){l.ask+=S.base*2}else{l.bid+=S.base*2}ch.push([k,l.bid,l.ask,l.nb,l.na])}
+ /* 深度维护：两侧保持 DEPTH 档 */for(let i=0;i<DEPTH;i++){const kb=bestBid-i,ka=bestAsk+i;if(lvl(kb).bid===0&&rnd()<.3){const l=lvl(kb);l.bid=sizeAt(i);l.nb=2;ch.push([kb,l.bid,l.ask,l.nb,l.na])}if(lvl(ka).ask===0&&rnd()<.3){const l=lvl(ka);l.ask=sizeAt(i);l.na=2;ch.push([ka,l.bid,l.ask,l.nb,l.na])}}
+ /* 远端清理 */for(const k of [...book.keys()]){if(k<bestBid-DEPTH-5||k>bestAsk+DEPTH+5)book.delete(k)}
+ seq++;return {type:'delta',prevSeq:seq-1,lastSeq:seq,changes:ch}}
+/* ---- 传输层（可注入丢包 / 冻结 / 断开） ---- */
+let dropNext=0,frozen=false,offline=false,l2=true;
+/* ---- Reducer（本机订单簿 + 序列状态） ---- */
+let R=new Map(),rseq=0,status='ok',changed=new Set(),resyncTimer=null;
+function applySnapshot(m){R=new Map();m.bids.forEach(([k,q,n])=>{R.set(k,{bid:q,ask:0,nb:n,na:0})});m.asks.forEach(([k,q,n])=>{const l=R.get(k)||{bid:0,ask:0,nb:0,na:0};l.ask=q;l.na=n;R.set(k,l)});rseq=m.seq;status='ok';DC.clear();for(const k of R.keys())changed.add(k)}
+function applyDelta(m){if(status==='resyncing')return;if(m.prevSeq!==rseq){if(status!=='gap'){status='gap';gapAt=Date.now();DC.clear()}return}m.changes.forEach(([k,b,a,nb,na])=>{const l=R.get(k)||{bid:0,ask:0,nb:0,na:0};const db=b-l.bid,da=a-l.ask;if(db)dc(k,'bid',db);if(da)dc(k,'ask',da);l.bid=b;l.ask=a;l.nb=nb;l.na=na;if(!b&&!a)R.delete(k);else R.set(k,l);changed.add(k)});rseq=m.lastSeq}
+let gapAt=0;function reducerTick(){if(status==='gap'&&Date.now()-gapAt>1200){status='resyncing';setTimeout(()=>{applySnapshot(snapshotMsg())},600)}}
+/* ---- 派生：深度变化窗口（2s）、当前成交（2.5s 自清）、每档成交统计、轮廓 ---- */
+const DC=new Map();/* k → [{t,side,d}] */function dc(k,side,d){if(status!=='ok')return;let a=DC.get(k);if(!a){a=[];DC.set(k,a)}a.push({t:Date.now(),side,d})}
+let WIN=2000,CUR=2500,CALC='FIFO';const TR=new Map();/* k → {buy,sell,vol,buyCur,sellCur,lastT} */
+function applyTrade(tr){let s=TR.get(tr.k);if(!s){s={buy:0,sell:0,vol:0,buyCur:0,sellCur:0,lastT:0};TR.set(tr.k,s)}if(tr.side==='buy'){s.buy+=tr.q;s.buyCur+=tr.q}else{s.sell+=tr.q;s.sellCur+=tr.q}s.vol+=tr.q;s.lastT=tr.t;changed.add(tr.k)}
+function derive(k){const now=Date.now();let chg=null;if(status==='ok'){const a=DC.get(k);if(a){while(a.length&&now-a[0].t>WIN)a.shift();if(!a.length)DC.delete(k);else chg=a.reduce((x,y)=>x+y.d,0)}}
+ const s=TR.get(k);if(s){/* ATAS：bid/ask 恢复后清除旧的当前成交，除非 2.5s 内 */const l=R.get(k);const restored=l&&(l.bid>0||l.ask>0);if(restored&&now-s.lastT>CUR){s.buyCur=0;s.sellCur=0}}
+ return {chg,tr:s||null}}
+/* ---- 纸面账户（PAPER）：排队估算、touch 撮合、仓位、盈亏 ---- */
+const A={pos:0,avg:0,realized:0,orders:[],fills:[],lots:[],oid:0,fid:0};/* lots：FIFO / LIFO 平仓顺序（ATAS trading.calcMode） */
+function placeOrder(side,k,qty,tif,stop){const l=R.get(k);const ahead=stop?0:(side==='buy'?(l?l.bid:0):(l?l.ask:0));const o={id:'O'+(++A.oid),side,k,p:k*S.tick,qty,filled:0,ahead,state:'accepted',tif:tif||'DAY',stop:!!stop,t:Date.now()};A.orders.push(o);return o}
+/* Stop 单：成交价触及即触发 → 市价（ATAS 默认 Stop 为市价触发；Stop as StopLimit 是另一设置，未做） */function checkStops(tr){A.orders.slice().forEach(o=>{if(!o.stop)return;const trig=(o.side==='buy'&&tr.k>=o.k)||(o.side==='sell'&&tr.k<=o.k);if(!trig)return;A.orders.splice(A.orders.indexOf(o),1);postMessage({type:'stopTrig',id:o.id,side:o.side,k:o.k});market(o.side,o.qty-o.filled)})}
+function cancelOrder(id){const i=A.orders.findIndex(o=>o.id===id);if(i<0)return false;A.orders[i].state='cancelled';A.orders.splice(i,1);return true}
+function fill(o,q,p){q=Math.min(q,o.qty-o.filled);if(q<=0)return;o.filled+=q;const sgn=o.side==='buy'?1:-1;const f={id:'F'+(++A.fid),oid:o.id,side:o.side,p,q,t:Date.now()};A.fills.push(f);
+ /* 仓位与已实现：按 lots 以 FIFO / LIFO 顺序平仓 */if(A.pos===0||Math.sign(A.pos)===sgn){A.lots.push({q,p});A.pos+=sgn*q}else{let rem=q;const dir=A.pos>0?1:-1;while(rem>0&&A.lots.length){const i=CALC==='LIFO'?A.lots.length-1:0;const lot=A.lots[i];const c=Math.min(lot.q,rem);A.realized+=(p-lot.p)*c*dir*(S.mult||1);lot.q-=c;rem-=c;if(!lot.q)A.lots.splice(i,1)}A.pos+=sgn*q;if(rem>0)A.lots.push({q:rem,p})}const tq=A.lots.reduce((x,l)=>x+l.q,0);A.avg=tq?A.lots.reduce((x,l)=>x+l.q*l.p,0)/tq:0;
+ if(o.filled>=o.qty){o.state='filled';A.orders.splice(A.orders.indexOf(o),1)}else o.state='partial';postMessage({type:'fill',fill:f,order:{id:o.id,state:o.state,filled:o.filled,qty:o.qty}})}
+function matchTrade(tr){/* 一笔成交的量在同档我的单之间共享，按挂单先后 */let rem=tr.q;for(const o of A.orders.slice()){if(rem<=0)break;if(o.stop||o.k!==tr.k)continue;const hits=(o.side==='buy'&&tr.side==='sell')||(o.side==='sell'&&tr.side==='buy');if(!hits)continue;if(o.ahead>0){const used=Math.min(o.ahead,rem);o.ahead-=used;rem-=used;if(rem<=0)break}const q=Math.min(rem,o.qty-o.filled);if(q>0){fill(o,q,tr.p);rem-=q}}}
+function market(side,qty){const k=side==='buy'?bestAsk:bestBid;const o={id:'M'+(++A.oid),side,k,p:k*S.tick,qty,filled:0,ahead:0,state:'accepted',t:Date.now()};A.orders.push(o);fill(o,qty,o.p)}
+function bboR(){let b=-Infinity,a=Infinity;for(const [k,l] of R){if(l.bid>0&&k>b)b=k;if(l.ask>0&&k<a)a=k}return b>-Infinity&&a<Infinity?{bid:b,ask:a}:null}
+function pnl(bbo){const mid=(bbo.bid+bbo.ask)/2*S.tick;const unreal=A.pos?(mid-A.avg)*A.pos*(S.mult||1):0;const ticks=A.pos?Math.round((mid-A.avg)/S.tick)*(A.pos>0?1:-1):0;const pct=A.pos&&A.avg?((mid-A.avg)/A.avg*100)*(A.pos>0?1:-1):0;return {unreal,realized:A.realized,ticks,pct}}
+/* ---- 回放：录最近 60s 的帧 ---- */
+const REC=[];let replay=null,mode='live';
+/* ---- 帧 ---- */
+function frame(){if(offline)return;let msg;
+ if(replay){const f=REC[replay.i];if(!f){replay=null;mode='live';postMessage({type:'replayEnd'});applySnapshot(snapshotMsg());return}replay.i+=replay.speed;postMessage({...f,mode:'replay',replayAt:f.t});return}
+ if(!frozen){const d=stepSource();const fresh=trades.slice(-12).filter(t=>t.id>lastSeen);if(dropNext>0){dropNext--/* 丢的包连同它的成交一起丢 */}else{applyDelta(d);if(status==='ok')fresh.forEach(tr=>{applyTrade(tr);matchTrade(tr);checkStops(tr)})/* gap / resyncing：停算当前成交，也不撮合 */}if(fresh.length)lastSeen=fresh[fresh.length-1].id}
+ reducerTick();
+ const keys=[...R.keys()].sort((a,b)=>b-a);const out=[];const vmax=Math.max(1,...[...TR.values()].map(s=>s.vol));
+ keys.forEach(k=>{const l=R.get(k);const d=derive(k);const tr=d.tr;out.push([k,l.bid,l.ask,l.nb,l.na,d.chg,tr?tr.buy:0,tr?tr.sell:0,tr?tr.vol:0,tr?tr.buyCur:0,tr?tr.sellCur:0])});
+ const bbo=(l2&&bboR())||{bid:bestBid,ask:bestAsk};/* 最优价与档位同源（reducer）；L1-only 时才用源簿 */const p=pnl(bbo);msg={type:'frame',t:Date.now(),seq:rseq,status,mode,l2,sym:SYM,cfg:{tick:S.tick,dec:S.dec,lot:S.lot,name:S.name,venue:S.venue,cls:S.cls,ccy:S.ccy,depth:DEPTH},bbo,last:lastTrade?{k:lastTrade.k,q:lastTrade.q,side:lastTrade.side,t:lastTrade.t,id:lastTrade.id}:null,levels:l2?out:[],changed:[...changed],vmax,
+  account:{pos:A.pos,avg:A.avg,pnl:p,orders:A.orders.map(o=>({id:o.id,side:o.side,k:o.k,qty:o.qty,filled:o.filled,ahead:o.ahead,state:o.state,tif:o.tif,stop:o.stop})),fills:A.fills.length,calc:CALC,realized:A.realized},rate:trades.filter(t=>Date.now()-t.t<1000).length};
+ changed.clear();if(!frozen){REC.push(msg);if(REC.length>500)REC.shift()}postMessage(msg)}
+let lastSeen=0,FRAME_MS=120;genBook();applySnapshot(snapshotMsg());let timer=setInterval(frame,FRAME_MS);
+const tradable=()=>mode==='live'&&status==='ok'&&!offline&&!frozen;const reject=what=>postMessage({type:'reject',what,reason:mode==='replay'?'replay':offline?'offline':frozen?'stale':status});
+onmessage=e=>{const d=e.data;
+ if(d.type==='order'){if(!tradable())return reject('order');const o=placeOrder(d.side,d.k,d.qty,d.tif,d.stop);postMessage({type:'orderAck',order:{id:o.id,side:o.side,k:o.k,qty:o.qty,ahead:o.ahead,state:o.state,tif:o.tif,stop:o.stop}})}
+ else if(d.type==='cancel'){if(d.id==='all')A.orders.slice().forEach(o=>cancelOrder(o.id));else if(d.id==='bids')A.orders.filter(o=>o.side==='buy').forEach(o=>cancelOrder(o.id));else if(d.id==='asks')A.orders.filter(o=>o.side==='sell').forEach(o=>cancelOrder(o.id));else cancelOrder(d.id)}
+ else if(d.type==='modify'){const o=A.orders.find(o=>o.id===d.id);if(o){o.k=d.k;o.p=d.k*S.tick;const l=R.get(d.k);o.ahead=o.side==='buy'?(l?l.bid:0):(l?l.ask:0)}}
+ else if(d.type==='flatten'){if(!tradable())return reject('flatten');A.orders.slice().forEach(o=>cancelOrder(o.id));if(A.pos)market(A.pos>0?'sell':'buy',Math.abs(A.pos))}
+ else if(d.type==='reverse'){if(!tradable())return reject('reverse');const pos=A.pos;A.orders.slice().forEach(o=>cancelOrder(o.id));if(pos)market(pos>0?'sell':'buy',Math.abs(pos)*2)}
+ else if(d.type==='market'){if(!tradable())return reject('market');market(d.side,d.qty)}
+ else if(d.type==='gap'){dropNext=2}
+ else if(d.type==='freeze'){frozen=!!d.on}
+ else if(d.type==='offline'){offline=!!d.on;if(!offline){applySnapshot(snapshotMsg())}}
+ else if(d.type==='l2'){l2=!!d.on;if(l2)applySnapshot(snapshotMsg())}
+ else if(d.type==='sym'){if(!SYMS[d.sym])return;SYM=d.sym;S=SYMS[SYM];trades.length=0;lastTrade=null;TR.clear();DC.clear();A.pos=0;A.avg=0;A.realized=0;A.orders.length=0;A.lots.length=0;genBook();applySnapshot(snapshotMsg());REC.length=0}
+ else if(d.type==='depth'){DEPTH=Math.max(5,Math.min(100,d.depth|0));genBook();applySnapshot(snapshotMsg())}
+ else if(d.type==='cfg'){/* 设置面板 → 引擎参数（窗口 / 帧率 / 盈亏算法 / 深度） */if(d.frameMs&&d.frameMs!==FRAME_MS){FRAME_MS=d.frameMs;clearInterval(timer);timer=setInterval(frame,FRAME_MS)}if(d.dcWin)WIN=d.dcWin;if(d.curWin)CUR=d.curWin;if(d.calcMode)CALC=d.calcMode;if(d.depth&&d.depth!==DEPTH){DEPTH=Math.max(5,Math.min(100,d.depth|0));genBook();applySnapshot(snapshotMsg())}}
+ else if(d.type==='replay'){const from=Date.now()-d.seconds*1000;let i=REC.findIndex(f=>f.t>=from);if(i<0)i=0;replay={i,speed:Math.max(1,d.speed|0)};mode='replay'}
+ else if(d.type==='stop'){replay=null;mode='live';applySnapshot(snapshotMsg())}
+ else if(d.type==='clear'){if(d.what==='trades'){TR.forEach(s=>{s.buyCur=0;s.sellCur=0})}else if(d.what==='profile'){TR.clear()}else if(d.what==='dc'){DC.clear()}}};
+`;
+const worker=new Worker(URL.createObjectURL(new Blob([WORKER_SRC],{type:'text/javascript'})));
+/* =================================================================
+   2. 设置：一切可定制（ATAS 设置面板 General / Columns / Templates + DOM Trader 参数 1:1）
+      schema → S（唯一事实源）→ 面板 / 命令 / Agent 同一入口；localStorage 持久化；模板九个动作；设计模式
+   ================================================================= */
+const D={levels:new Map(),bbo:null,last:null,cfg:{tick:.01,dec:2,lot:100,name:'',venue:'',cls:'',ccy:'CNY',depth:50},sym:'300750',seq:0,status:'ok',mode:'live',l2:true,account:{pos:0,avg:0,pnl:{},orders:[],fills:0},vmax:1,rate:0,replayAt:null};
+const Q={state:'loading',since:0,lastSeqChange:0,lastFrame:0,frameAt:0,lat:[]};
+const kd=$('#kd');
+const LS={get(k,f){try{const v=JSON.parse(localStorage.getItem('kdom.'+k));return v==null?f:v}catch(e){return f}},set(k,v){try{localStorage.setItem('kdom.'+k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem('kdom.'+k)}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* ---- 列（ATAS 列清单 B 节，默认顺序 = ATAS 出厂；宽度 / 显隐 / 顺序全部可改） ---- */
+const COLS0=[{id:'notes',label:'备注',w:52,on:false},{id:'mybuy',label:'我的买单',w:54,on:true},{id:'bidcur',label:'当前买成交',w:50,on:false},{id:'bids',label:'买量',w:66,on:true},{id:'price',label:'价格',w:72,on:true,fixed:true},{id:'asks',label:'卖量',w:66,on:true},{id:'askcur',label:'当前卖成交',w:50,on:false},{id:'mysell',label:'我的卖单',w:54,on:true},{id:'chg',label:'深度变化',w:64,on:true},{id:'trades',label:'成交',w:62,on:true},{id:'hist',label:'轮廓',w:70,on:true},{id:'ltq',label:'最新量',w:46,on:false},{id:'queue',label:'排队',w:48,on:false},{id:'pnl',label:'盈亏&单',w:60,on:false}];
+const COLS=COLS0.map(c=>({...c}));
+/* 列数组原子校验：任一条目不是 {id:string} 就整体拒绝（不部分应用）；未知 id 跳过；price 固定列永远显示 */
+function sanitizeCols(arr){if(!Array.isArray(arr))return null;const ids=new Set(COLS0.map(c=>c.id));const out=[];for(const s of arr){if(!s||typeof s!=='object'||typeof s.id!=='string')return null;if(!ids.has(s.id))continue;const w=+s.w;out.push({id:s.id,on:!!s.on,w:w>=24&&w<=300?Math.round(w):0})}return out}
+function loadCols(saved){COLS.length=0;COLS0.forEach(c=>COLS.push({...c}));const ok=sanitizeCols(saved);if(!ok)return false;const map=new Map(COLS.map(c=>[c.id,c]));const re=[];ok.forEach(s=>{const c=map.get(s.id);if(!c)return;c.on=c.fixed?true:s.on;if(s.w)c.w=s.w;re.push(c);map.delete(s.id)});map.forEach(c=>re.push(c));COLS.length=0;re.forEach(c=>COLS.push(c));return true}
+function saveCols(){LS.set('cols',COLS.map(c=>({id:c.id,on:c.on,w:c.w})));dirty()}
+/* ---- 设置 schema：g=面板 tab · t=类型 · a=生效方式 · tok=颜色默认取 token ---- */
+const SCHEMA=[
+ /* 常规（ATAS General + DOM 区 + 网格 + 引擎窗口） */
+ {k:'rowH',g:'general',t:'num',l:'行高 px',min:14,max:40,d:22,a:'rebuild'},
+ {k:'fontSize',g:'general',t:'num',l:'字号 px',min:9,max:16,d:11,a:'css'},
+ {k:'volFmt',g:'general',t:'enum',l:'量的显示（lots display）',o:[['short','缩写 k'],['full','千分位'],['lots','按手 / 张']],d:'short',a:'paint'},
+ {k:'depth',g:'general',t:'num',l:'深度档数',min:5,max:100,d:50,a:'worker'},
+ {k:'agg',g:'general',t:'enum',l:'聚合（tick / 档）',o:[[1,'1'],[2,'2'],[5,'5'],[10,'10']],d:1,a:'agg'},
+ {k:'autoCenter',g:'general',t:'bool',l:'自动居中（Auto centre）',d:true,a:'hud'},
+ {k:'autoCenterDev',g:'general',t:'num',l:'居中偏差（行）',min:0,max:12,d:0,tip:'mid 偏离可视区中心超过 N 行才回中；0 = 每帧跟随'},
+ {k:'gridMajor',g:'general',t:'num',l:'主网格每 N 档',min:2,max:50,d:5,a:'paint'},
+ {k:'spreadDim',g:'general',t:'bool',l:'价差行淡显',d:true,a:'css'},
+ {k:'filterMin',g:'general',t:'num',l:'过滤：隐藏挂单量小于',min:0,max:1000000,d:0,a:'paint'},
+ {k:'flash',g:'general',t:'bool',l:'变化闪烁',d:true},
+ {k:'flashMs',g:'general',t:'num',l:'闪烁时长 ms',min:80,max:1000,step:20,d:320,a:'css'},
+ {k:'tooltip',g:'general',t:'bool',l:'悬停提示',d:true},
+ {k:'sound',g:'general',t:'bool',l:'声音',d:true},
+ {k:'frameMs',g:'general',t:'num',l:'引擎帧间隔 ms',min:50,max:500,step:10,d:120,a:'worker'},
+ {k:'dcWindowMs',g:'general',t:'num',l:'深度变化窗口 ms',min:500,max:10000,step:100,d:2000,a:'worker'},
+ {k:'curWindowMs',g:'general',t:'num',l:'当前成交自清 ms（ATAS 2.5s）',min:500,max:10000,step:100,d:2500,a:'worker'},
+ /* 列（列表另渲染；这里是列的子模式） */
+ {k:'ladder',g:'columns',t:'bool',l:'Bid/Ask Ladder（单列合并买卖量）',d:false,a:'rebuild'},
+ {k:'bidsMode',g:'columns',t:'enum',l:'买量 / 卖量',o:[['volume','Volume'],['count','Number of applications'],['avg','Average volume']],d:'volume',a:'rebuild'},
+ {k:'chgMode',g:'columns',t:'enum',l:'深度变化',o:[['both','Pulling & Stacking'],['stacking','Stacking'],['pulling','Pulling']],d:'both',a:'rebuild'},
+ {k:'tradesMode',g:'columns',t:'enum',l:'成交',o:[['volume','Volume'],['buy','Purchases'],['sell','Sales'],['delta','Delta']],d:'volume',a:'rebuild'},
+ {k:'histMode',g:'columns',t:'enum',l:'轮廓',o:[['both','Histogram + Numbers'],['histogram','Histogram'],['numbers','Numbers']],d:'both',a:'paint'},
+ /* 交易（ATAS Trading 区） */
+ {k:'locked',g:'trading',t:'bool',l:'锁定交易（Lock trading）',d:true,a:'hud',tip:'产品红线：启动即锁定，模板不改此项'},
+ {k:'oneClick',g:'trading',t:'bool',l:'One-Click Mode（Flatten / Reverse 不弹确认）',d:false},
+ {k:'tif',g:'trading',t:'enum',l:'订单有效期',o:[['DAY','DAY'],['GTC','GTC']],d:'DAY',a:'hud'},
+ {k:'qty',g:'trading',t:'num',l:'默认手数',min:1,max:1000000,d:1,a:'hud'},
+ {k:'qtyPresets',g:'trading',t:'text',l:'快捷手数（逗号分隔）',d:'1,5,10,25',a:'presets'},
+ {k:'pnlUnit',g:'trading',t:'enum',l:'盈亏单位',o:[['ticks','Ticks'],['cash','Cash'],['pct','Percent']],d:'ticks',a:'hud'},
+ {k:'calcMode',g:'trading',t:'enum',l:'盈亏计算',o:[['FIFO','First in – first out'],['LIFO','Last in – first out']],d:'FIFO',a:'worker'},
+ {k:'posBorder',g:'trading',t:'enum',l:'仓位边框',o:[['none','无'],['thin','细'],['thick','粗']],d:'thin',a:'css'},
+ /* DOM Trader（四种模式 + Liquidity map 参数组 + 最优买卖线） */
+ {k:'dtMode',g:'dt',t:'enum',l:'模式',o:[['dom','Only DOM'],['liq','Liquidity map'],['eclipses','Orderflow (eclipses)'],['blocks','Orderflow (blocks)']],d:'dom',a:'paint'},
+ {k:'depthBars',g:'dt',t:'bool',l:'Only DOM：深度条',d:true,a:'paint'},
+ {k:'liqScheme',g:'dt',t:'enum',l:'Liquidity map 配色',o:[['classic','经典：买蓝 / 卖橙'],['mono','单色深浅'],['neon','高对比霓虹'],['thermal','热力（不分方向）']],d:'classic',a:'paint'},
+ {k:'liqCutoff',g:'dt',t:'num',l:'Upper cutoff %',min:5,max:100,d:100,a:'paint',tip:'超过最大量此比例视为满值，避免单一巨量拉爆全部色阶'},
+ {k:'liqContrast',g:'dt',t:'num',l:'对比度',min:0,max:100,d:50,a:'paint'},
+ {k:'liqSmoothing',g:'dt',t:'enum',l:'平滑',o:[['auto','Auto'],['manual','Manual'],['none','None']],d:'auto',a:'css'},
+ {k:'liqAnimMs',g:'dt',t:'num',l:'动画速度 ms（Manual）',min:0,max:1000,step:20,d:300,a:'css'},
+ {k:'liqLog',g:'dt',t:'bool',l:'对数刻度',d:false,a:'paint'},
+ {k:'liqAlpha',g:'dt',t:'num',l:'不透明度 %',min:10,max:100,d:60,a:'paint'},
+ {k:'bboStyle',g:'dt',t:'enum',l:'最优买卖线型',o:[['solid','实线'],['dashed','虚线'],['dotted','点线'],['none','无']],d:'solid',a:'css'},
+ {k:'bboWidth',g:'dt',t:'num',l:'最优买卖线宽',min:1,max:4,d:2,a:'css'},
+ /* 颜色：空 = 用 token（可随时「↺」回到 token） */
+ {k:'colBid',g:'colors',t:'color',l:'买方 Bid',tok:'--bid',v:'--bid'},
+ {k:'colAsk',g:'colors',t:'color',l:'卖方 Ask',tok:'--ask',v:'--ask'},
+ {k:'colBuy',g:'colors',t:'color',l:'主买 / 盈利（buyColor）',tok:'--signal-green',v:'--kd-buy'},
+ {k:'colSell',g:'colors',t:'color',l:'主卖 / 亏损（sellColor）',tok:'--signal-red',v:'--kd-sell'},
+ {k:'colOwn',g:'colors',t:'color',l:'我的单 / 仓位',tok:'--order-own',v:'--order-own'},
+ {k:'colLast',g:'colors',t:'color',l:'最新成交价底',tok:'--poc',v:'--poc'},
+ {k:'colText',g:'colors',t:'color',l:'文字（textColor）',tok:'--ink-200',v:'--kd-text'},
+ {k:'colBidBg',g:'colors',t:'color',l:'买量列底（askBidsBackground）',tok:'',v:'--kd-bidbg'},
+ {k:'colAskBg',g:'colors',t:'color',l:'卖量列底',tok:'',v:'--kd-askbg'},
+ {k:'colBbo',g:'colors',t:'color',l:'最优买卖线',tok:'--line-200',v:'--kd-bbo-c'},
+ {k:'colBg',g:'colors',t:'color',l:'梯子背景',tok:'--bg-100',v:'--kd-bg'}];
+const SCH={};SCHEMA.forEach(i=>SCH[i.k]=i);const DEF={};SCHEMA.forEach(i=>DEF[i.k]=i.d===undefined?'':i.d);
+const S=Object.assign({},DEF);
+const UI={hidden:[],order:[],design:false};
+const LIQ={classic:{bid:[60,134,216],ask:[232,90,18]},mono:{bid:[214,208,196],ask:[214,208,196]},neon:{bid:[0,255,200],ask:[255,40,180]},thermal:null};
+const TABS=[['general','常规'],['columns','列'],['trading','交易'],['dt','DOM Trader'],['colors','颜色'],['templates','模板']];
+/* 内置预设（ATAS template.presets：不可删 / 不可改名，可 Load / 设默认） */
+const PRESETS={'★ 精简盘口':{settings:{rowH:20},cols:[{id:'mybuy',on:true},{id:'bids',on:true},{id:'price',on:true},{id:'asks',on:true},{id:'mysell',on:true},{id:'notes',on:false},{id:'bidcur',on:false},{id:'askcur',on:false},{id:'chg',on:false},{id:'trades',on:false},{id:'hist',on:false},{id:'ltq',on:false},{id:'queue',on:false},{id:'pnl',on:false}]},
+ '★ 完整分析盘口':{settings:{rowH:22,histMode:'both'},cols:[{id:'notes',on:true},{id:'mybuy',on:true},{id:'bidcur',on:true},{id:'bids',on:true},{id:'price',on:true},{id:'asks',on:true},{id:'askcur',on:true},{id:'mysell',on:true},{id:'chg',on:true},{id:'trades',on:true},{id:'hist',on:true},{id:'ltq',on:true},{id:'queue',on:true},{id:'pnl',on:true}]},
+ '★ DOM Trader 刮头皮':{settings:{rowH:18,dtMode:'liq',liqScheme:'classic',liqContrast:65,flashMs:200,autoCenter:true,frameMs:80},cols:[{id:'mybuy',on:true,w:48},{id:'bids',on:true,w:80},{id:'price',on:true},{id:'asks',on:true,w:80},{id:'mysell',on:true,w:48},{id:'ltq',on:true},{id:'notes',on:false},{id:'bidcur',on:false},{id:'askcur',on:false},{id:'chg',on:false},{id:'trades',on:false},{id:'hist',on:false},{id:'queue',on:false},{id:'pnl',on:false}]}};
+let TPL=LS.get('templates',{});if(typeof TPL!=='object'||Array.isArray(TPL))TPL={};
+let curTpl=LS.get('curTpl',null),defTpl=LS.get('defTpl',null),tplDirty=false,tplSel=null,booting=true;
+const tplNames=()=>[...Object.keys(PRESETS),...Object.keys(TPL)];
+const tplGet=n=>PRESETS[n]||TPL[n]||null;
+const NO_TPL=new Set(['locked','qty']);/* 模板不带：锁定（红线）、手数（会话态） */
+function coerce(it,v){if(it.t==='bool'){if(v==='toggle')return !S[it.k];return v===true||v==='true'||v==='1'||v==='on'||v===1}
+ if(it.t==='num'){let n=parseFloat(v);if(isNaN(n))return;if(it.min!=null)n=Math.max(it.min,n);if(it.max!=null)n=Math.min(it.max,n);const st=it.step||1;n=Math.round(n/st)*st;return +n.toFixed(4)}
+ if(it.t==='enum'){const o=it.o.find(x=>String(x[0])===String(v));return o?o[0]:undefined}
+ if(it.t==='text')return String(v==null?'':v);
+ if(it.t==='color'){v=String(v||'').trim();if(v===''||v==='token'||v==='default')return '';if(/^#[0-9a-f]{3}$/i.test(v))v='#'+[...v.slice(1)].map(c=>c+c).join('');return /^#[0-9a-f]{6}$/i.test(v)?v.toLowerCase():undefined}}
+function setS(k,v,o){const it=SCH[k];if(!it)return false;const nv=coerce(it,v);if(nv===undefined)return false;const same=S[k]===nv;S[k]=nv;if(!same||(o&&o.force))applyKey(it);if(!same&&!booting){persist();if(!NO_TPL.has(k))dirty()}if(!same&&panelOpen()&&!(o&&o.fromPanel))renderPanel();return true}
+function applyKey(it){const a=it.a||(it.t==='color'?'css':'paint');
+ if(a==='rebuild')rebuild();else if(a==='paint')paint(true);else if(a==='css'){applyCss();paint(true)}else if(a==='worker')postCfg();else if(a==='agg')setAgg(S.agg);else if(a==='presets')renderPresets();
+ chips();hud()}
+function persist(){const o={};Object.keys(DEF).forEach(k=>{if(k!=='locked'&&S[k]!==DEF[k])o[k]=S[k]});LS.set('settings',o)}
+function dirty(){if(booting)return;tplDirty=true;if(panelOpen())$('#panelTpl').textContent=tplLabel()}
+function tplLabel(){return (curTpl||'未命名')+(tplDirty?' ●':'')}
+function applyCss(){const st=kd.style;st.setProperty('--kd-font',S.fontSize+'px');st.setProperty('--kd-flash-ms',S.flashMs+'ms');st.setProperty('--kd-liq-ms',(S.liqSmoothing==='none'?0:S.liqSmoothing==='auto'?Math.round(S.frameMs*1.5):S.liqAnimMs)+'ms');st.setProperty('--kd-bbo-w',S.bboStyle==='none'?'0px':S.bboWidth+'px');st.setProperty('--kd-bbo-style',S.bboStyle==='none'?'solid':S.bboStyle);st.setProperty('--kd-spread-op',S.spreadDim?'.45':'1');st.setProperty('--kd-pos-w',{none:'0px',thin:'1px',thick:'2px'}[S.posBorder]);
+ SCHEMA.filter(i=>i.t==='color').forEach(i=>{if(S[i.k])st.setProperty(i.v,S[i.k]);else st.removeProperty(i.v)})}
+function postCfg(){worker.postMessage({type:'cfg',frameMs:S.frameMs,dcWin:S.dcWindowMs,curWin:S.curWindowMs,calcMode:S.calcMode,depth:S.depth})}
+/* ---- 模板：快照 / 应用 / 九个动作 ---- */
+function snapshot(){const settings={};Object.keys(DEF).forEach(k=>{if(!NO_TPL.has(k))settings[k]=S[k]});return {settings,cols:COLS.map(c=>({id:c.id,on:c.on,w:c.w})),ui:{hidden:[...UI.hidden],order:[...UI.order]}}}
+function applyState(t){const was=booting;booting=true;Object.keys(DEF).forEach(k=>{if(NO_TPL.has(k))return;const v=t&&t.settings&&k in t.settings?coerce(SCH[k],t.settings[k]):undefined;S[k]=v===undefined?DEF[k]:v});loadCols(t&&t.cols);UI.hidden=t&&t.ui&&Array.isArray(t.ui.hidden)?[...t.ui.hidden]:[];UI.order=t&&t.ui&&Array.isArray(t.ui.order)?[...t.ui.order]:[];booting=was;applyAll()}
+function applyAll(){applyCss();postCfg();renderPresets();applyUI();setAgg(S.agg);hud();chips();if(!booting){persist();LS.set('cols',COLS.map(c=>({id:c.id,on:c.on,w:c.w})));LS.set('ui',{hidden:UI.hidden,order:UI.order})}}
+function validTpl(t){return !!(t&&typeof t==='object'&&t.settings&&typeof t.settings==='object'&&!Array.isArray(t.settings)&&sanitizeCols(t.cols))}
+function tplMsg(m,bad){const el=$('#tplMsg');if(el){el.textContent=m;el.className=bad?'bad':''}hint(m,bad?2600:1800);sfx(bad?'no':'ok')}
+function tplAction(a,arg){const name=arg||tplSel;
+ if(a==='load'){const t=tplGet(name);if(!t)return tplMsg('没有模板 '+(name||''),true);const go=()=>{applyState(t);curTpl=name;tplDirty=false;LS.set('curTpl',name);tplMsg('已应用模板 '+name);renderPanel()};if(tplDirty&&curTpl)confirmBox(`应用模板「${esc(name)}」将丢弃当前未保存的更改，是否继续？`,go,'模板');else go();return true}
+ if(a==='save'){const n=arg||curTpl||tplSel;if(!n)return tplMsg('先选中或 Add 一个模板',true);if(PRESETS[n])return tplMsg('内置预设不可覆盖，用 Add 另存',true);if(!TPL[n])return tplMsg('没有模板 '+n,true);TPL[n]=snapshot();LS.set('templates',TPL);curTpl=n;tplDirty=false;LS.set('curTpl',n);tplMsg('已保存 '+n);renderPanel();return true}
+ if(a==='add'){const n=(arg||($('#tplName')&&$('#tplName').value)||'').trim();if(!n)return tplMsg('输入模板名',true);if(tplGet(n))return tplMsg('已存在同名模板',true);TPL[n]=snapshot();LS.set('templates',TPL);curTpl=n;tplSel=n;tplDirty=false;LS.set('curTpl',n);tplMsg('已新建 '+n);renderPanel();return true}
+ if(a==='delete'){if(!name||!TPL[name])return tplMsg(PRESETS[name]?'内置预设不可删除':'先选中一个模板',true);confirmBox(`删除模板「${esc(name)}」· 此操作不可撤销`,()=>{delete TPL[name];LS.set('templates',TPL);if(curTpl===name){curTpl=null;LS.del('curTpl')}if(defTpl===name){defTpl=null;LS.del('defTpl')}tplSel=null;tplMsg('已删除 '+name);renderPanel()},'模板');return true}
+ if(a==='rename'){const nn=(arg||($('#tplName')&&$('#tplName').value)||'').trim();if(!tplSel||!TPL[tplSel])return tplMsg(PRESETS[tplSel]?'内置预设不可改名':'先选中一个模板',true);if(!nn)return tplMsg('输入新名字',true);if(tplGet(nn))return tplMsg('已存在同名模板',true);TPL[nn]=TPL[tplSel];delete TPL[tplSel];LS.set('templates',TPL);if(curTpl===tplSel){curTpl=nn;LS.set('curTpl',nn)}if(defTpl===tplSel){defTpl=nn;LS.set('defTpl',nn)}tplSel=nn;tplMsg('已改名为 '+nn);renderPanel();return true}
+ if(a==='reset'){applyState(null);curTpl=null;tplDirty=false;LS.del('curTpl');tplMsg('已恢复出厂设置');renderPanel();return true}
+ if(a==='defaults'){if(!name||!tplGet(name))return tplMsg('先选中一个模板',true);defTpl=name;LS.set('defTpl',name);tplMsg('新面板默认应用 '+name);renderPanel();return true}
+ if(a==='export'){const t=name&&tplGet(name)?{name,...tplGet(name)}:{name:curTpl||'current',...snapshot()};const txt=JSON.stringify(t,null,1);const io=$('#tplIo');if(io)io.value=txt;tplMsg('已导出到文本框（复制保存）');return txt}
+ if(a==='import'){let t;try{t=JSON.parse(arg||($('#tplIo')&&$('#tplIo').value)||'')}catch(e){return tplMsg('文件格式不兼容：不是 JSON',true)}if(!validTpl(t))return tplMsg('文件格式不兼容：缺少 settings / cols',true);let n=String(t.name||'imported').replace(/^★ /,'');while(tplGet(n))n+=' (2)';TPL[n]={settings:t.settings,cols:t.cols,ui:t.ui||{hidden:[],order:[]}};LS.set('templates',TPL);tplSel=n;tplMsg('已导入 '+n);renderPanel();return true}
+ return false}
+/* ---- UI 元素（设计模式：隐藏 / 显示全部 / 拖动重排） ---- */
+function applyUI(){['.tb','.ft'].forEach(sel=>{const box=kd.querySelector(sel);const els=[...box.children].filter(e=>e.dataset.el);const idx=id=>{const i=UI.order.indexOf(id);return i<0?1e4+els.findIndex(e=>e.dataset.el===id):i};els.sort((a,b)=>idx(a.dataset.el)-idx(b.dataset.el)).forEach(e=>{box.appendChild(e);e.classList.toggle('hid',UI.hidden.includes(e.dataset.el)&&!e.hasAttribute('data-keep'));e.draggable=UI.design&&!e.hasAttribute('data-keep')})});kd.classList.toggle('design',UI.design);$('#designBar').hidden=!UI.design}
+function saveUI(){LS.set('ui',{hidden:UI.hidden,order:UI.order});dirty();applyUI()}
+function setDesign(on){UI.design=!!on;/* 禁用态按钮收不到 click：设计模式期间临时启用（动作被 capture 拦截，不会执行） */kd.querySelectorAll('.tb button,.ft button').forEach(b=>{if(UI.design){if(b.disabled){b.dataset.wasdis='1';b.disabled=false}}else if(b.dataset.wasdis){b.disabled=true;delete b.dataset.wasdis}});applyUI();sfx(on?'latch':'tick');if(on)hint('设计模式：点元素隐藏 · 拖动重排 · FIXTURE / 状态标不可隐藏 · 右键菜单「显示全部元素」恢复',5000)}
+let dragEl=null;kd.addEventListener('click',e=>{if(!UI.design)return;const el=e.target.closest('.tb>[data-el],.ft>[data-el]');if(!el)return;e.preventDefault();e.stopPropagation();if(el.hasAttribute('data-keep')){toast('FIXTURE / 状态标永远可见（验收 3）');sfx('no');return}const id=el.dataset.el;const i=UI.hidden.indexOf(id);if(i<0)UI.hidden.push(id);else UI.hidden.splice(i,1);saveUI();sfx('key')},true);
+kd.addEventListener('dragstart',e=>{if(!UI.design)return;const el=e.target.closest('.tb>[data-el],.ft>[data-el]');if(!el)return;dragEl=el;e.dataTransfer.effectAllowed='move'});
+kd.addEventListener('dragover',e=>{if(UI.design&&dragEl&&e.target.closest('.tb,.ft'))e.preventDefault()});
+kd.addEventListener('drop',e=>{if(!UI.design||!dragEl)return;const to=e.target.closest('.tb>[data-el],.ft>[data-el]');if(!to||to===dragEl||to.parentElement!==dragEl.parentElement)return;e.preventDefault();const box=dragEl.parentElement;const ids=[...box.children].filter(x=>x.dataset.el).map(x=>x.dataset.el);const a=ids.indexOf(dragEl.dataset.el),b=ids.indexOf(to.dataset.el);ids.splice(a,1);ids.splice(b,0,dragEl.dataset.el);const other=UI.order.filter(id=>!ids.includes(id));UI.order=[...other,...ids];dragEl=null;saveUI();sfx('tick')});
+/* ---- 右键菜单（ATAS Context Menu：Lock trading / Design mode / Show all elements / Settings；Clone window 由外壳负责，不在此出现） ---- */
+function ctxMenu(e){const items=[{l:(S.locked?'🔓 解锁交易':'🔒 锁定交易')+' (L)',f:()=>setS('locked','toggle')},{l:UI.design?'✔ 退出设计模式':'设计模式',f:()=>setDesign(!UI.design)},{l:'显示全部元素',dis:!UI.hidden.length,f:()=>{UI.hidden=[];saveUI();sfx('ok')}},{sep:true},{l:'设置…',f:()=>openPanel('general')},{l:'列…',f:()=>openPanel('columns')},{l:'模板…',f:()=>openPanel('templates')},{sep:true},{l:'居中 (C)',f:()=>center(true)},{l:S.autoCenter?'✔ 自动居中 (A)':'自动居中 (A)',f:()=>setS('autoCenter','toggle')}];
+ tplNames().forEach(n=>items.push({l:'模板 › '+n+(n===curTpl?' ✔':''),f:()=>tplAction('load',n)}));
+ const m=$('#ctx');m.innerHTML='';items.forEach(it=>{const d=document.createElement('div');if(it.sep){d.className='sep';m.appendChild(d);return}d.className='mi'+(it.dis?' dis':'');d.textContent=it.l;d.addEventListener('click',()=>{if(it.dis)return;m.hidden=true;it.f()});m.appendChild(d)});
+ const r=kd.getBoundingClientRect();m.hidden=false;m.style.left=Math.min(e.clientX-r.left,r.width-m.offsetWidth-4)+'px';m.style.top=Math.min(e.clientY-r.top,r.height-m.offsetHeight-4)+'px';sfx('key')}
+kd.addEventListener('contextmenu',e=>{if(e.target.closest('#rows,#panel,#ctx,input,textarea,select'))return;e.preventDefault();ctxMenu(e)});
+addEventListener('pointerdown',e=>{const m=$('#ctx');if(!m.hidden&&!e.target.closest('#ctx'))m.hidden=true},true);
+/* ---- 设置面板（非模态抽屉：改即生效，梯子继续跑） ---- */
+let panelTab='general';const panelOpen=()=>!$('#panel').hidden;
+function openPanel(tab){if(tab&&TABS.some(t=>t[0]===tab))panelTab=tab;$('#panel').hidden=false;renderPanel();sfx('key')}
+function closePanel(){$('#panel').hidden=true;sfx('tick')}
+function toHex(c){c=(c||'').trim();if(/^#[0-9a-f]{6}/i.test(c))return c.slice(0,7).toLowerCase();if(/^#[0-9a-f]{3}$/i.test(c))return '#'+[...c.slice(1)].map(x=>x+x).join('');const m=c.match(/rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/);if(m)return '#'+[m[1],m[2],m[3]].map(x=>(+x).toString(16).padStart(2,'0')).join('');return '#888888'}
+function fieldEl(i){const row=document.createElement('div');row.className='f f-'+i.t;row.title=i.tip||('set '+i.k);const v=S[i.k];let ctl='';
+ if(i.t==='bool')ctl=`<span class="sw${v?' on':''}" role="switch" aria-checked="${!!v}"><i></i></span>`;
+ else if(i.t==='num'){const rng=i.max!=null&&(i.max-i.min)/(i.step||1)<=500;ctl=(rng?`<input type="range" min="${i.min}" max="${i.max}" step="${i.step||1}" value="${v}" data-k="${i.k}">`:'')+`<input type="number" class="num" min="${i.min}" max="${i.max}" step="${i.step||1}" value="${v}" data-k="${i.k}">`}
+ else if(i.t==='enum')ctl=`<select data-k="${i.k}">${i.o.map(([ov,ol])=>`<option value="${ov}"${String(ov)===String(v)?' selected':''}>${ol}</option>`).join('')}</select>`;
+ else if(i.t==='text')ctl=`<input type="text" class="txt" value="${esc(v)}" data-k="${i.k}">`;
+ else if(i.t==='color'){const cur=v||(i.tok?toHex(tok(i.tok,'#888888')):'#000000');ctl=`<input type="color" value="${cur}" data-k="${i.k}"><span class="cv">${v||(i.tok?'token '+i.tok:'透明')}</span><span class="rst" title="重置为 token">↺</span>`}
+ row.innerHTML=`<span class="fl">${i.l}</span><span class="fc">${ctl}</span>`;
+ row.querySelectorAll('[data-k]').forEach(el=>{const h=()=>{setS(i.k,el.value,{fromPanel:true});row.querySelectorAll('[data-k]').forEach(x=>{if(x!==el)x.value=S[i.k]});if(i.t==='color')row.querySelector('.cv').textContent=S[i.k]||'token '+i.tok};el.addEventListener('input',h);el.addEventListener('change',h)});
+ const sw=row.querySelector('.sw');if(sw)sw.addEventListener('click',()=>{setS(i.k,'toggle',{fromPanel:true});sw.classList.toggle('on',S[i.k]);sw.setAttribute('aria-checked',S[i.k]);sfx('key')});
+ const rst=row.querySelector('.rst');if(rst)rst.addEventListener('click',()=>{setS(i.k,'',{fromPanel:true});renderPanel();sfx('tick')});
+ return row}
+let dragColId=null;
+function moveCol(from,to){if(!from||!to||from===to)return;const a=COLS.findIndex(c=>c.id===from),b=COLS.findIndex(c=>c.id===to);if(a<0||b<0)return;const [c]=COLS.splice(a,1);COLS.splice(b,0,c);saveCols();rebuild();sfx('tick')}
+function renderColsTab(body){const wrap=document.createElement('div');wrap.className='cols';wrap.innerHTML='<div class="ch"><span></span><span>列（拖 ⋮⋮ 或拖列头排序；拖列头右缘改宽）</span><span>宽</span><span></span></div>';
+ COLS.forEach(c=>{const r=document.createElement('div');r.className='cr';r.draggable=!c.fixed;r.dataset.id=c.id;r.innerHTML=`<span class="sw${c.on?' on':''}${c.fixed?' dis':''}"><i></i></span><span class="cn">${c.label}${c.fixed?' <small>固定</small>':''}${c.id==='queue'?' <small>模拟</small>':''}</span><input type="number" class="num" min="24" max="300" value="${c.w}"><span class="dh">${c.fixed?'':'⋮⋮'}</span>`;
+  r.querySelector('.sw').addEventListener('click',()=>{if(c.fixed)return;c.on=!c.on;saveCols();rebuild();r.querySelector('.sw').classList.toggle('on',c.on);sfx('key')});
+  r.querySelector('input').addEventListener('input',e=>{const w=Math.max(24,Math.min(300,+e.target.value||c.w));c.w=w;applyWidths();saveCols()});
+  r.addEventListener('dragstart',e=>{dragColId=c.id;e.dataTransfer.effectAllowed='move'});r.addEventListener('dragover',e=>e.preventDefault());r.addEventListener('drop',e=>{e.preventDefault();moveCol(dragColId,c.id);dragColId=null;renderPanel()});
+  wrap.appendChild(r)});body.appendChild(wrap)}
+function renderTplTab(body){const names=tplNames();if(tplSel&&!tplGet(tplSel))tplSel=null;const w=document.createElement('div');w.className='tpl';
+ w.innerHTML=`<div class="tl">${names.map(n=>`<div class="ti${n===tplSel?' on':''}${n===curTpl?' cur':''}" data-n="${esc(n)}"><span>${esc(n)}${n===curTpl?(tplDirty?' ●':' ✔'):''}</span>${n===defTpl?'<small>默认</small>':''}</div>`).join('')}</div>
+ <div class="ta">${['load','save','add','delete','rename','reset','defaults','export','import'].map(a=>`<span data-a="${a}">${{load:'Load',save:'Save',add:'Add',delete:'Delete',rename:'Rename',reset:'Reset',defaults:'Defaults',export:'Export',import:'Import'}[a]}</span>`).join('')}</div>
+ <input class="txt" id="tplName" placeholder="模板名（Add / Rename 用）"><textarea id="tplIo" placeholder="Export 输出在这里 / Import 把 JSON 粘在这里" spellcheck="false"></textarea>
+ <div class="ta"><span data-a="copy">复制 JSON</span><label class="lnk">选择文件…<input type="file" id="tplFile" accept="application/json,.json" hidden></label><small id="tplMsg"></small></div>
+ <p class="ph2">Load 应用 · Save 覆盖选中 · Add 以当前设置新建 · Defaults 设为新面板默认 · Reset 恢复出厂 · 内置 ★ 预设只能 Load / Defaults</p>`;
+ w.querySelectorAll('.ti').forEach(t=>{t.addEventListener('click',()=>{tplSel=t.dataset.n;renderPanel();sfx('tick')});t.addEventListener('dblclick',()=>tplAction('load',t.dataset.n))});
+ w.querySelectorAll('[data-a]').forEach(b=>b.addEventListener('click',()=>{const a=b.dataset.a;if(a==='copy'){const txt=$('#tplIo').value||tplAction('export');if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(()=>tplMsg('已复制'),()=>{$('#tplIo').select();tplMsg('已选中文本，⌘C 复制')});else{$('#tplIo').select();tplMsg('已选中文本，⌘C 复制')}return}tplAction(a)}));
+ w.querySelector('#tplFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{$('#tplIo').value=String(rd.result);tplAction('import')};rd.readAsText(f)});
+ body.appendChild(w)}
+function renderPanel(){const pn=$('#panel');if(pn.hidden)return;$('#panelTabs').innerHTML=TABS.map(([id,l])=>`<span class="tab${id===panelTab?' on':''}" data-t="${id}">${l}</span>`).join('');$('#panelTabs').querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{panelTab=t.dataset.t;renderPanel();sfx('tick')}));
+ const body=$('#panelBody');body.innerHTML='';
+ if(panelTab==='columns')renderColsTab(body);if(panelTab==='templates'){renderTplTab(body);$('#panelTpl').textContent=tplLabel();return}
+ SCHEMA.filter(i=>i.g===panelTab).forEach(i=>body.appendChild(fieldEl(i)));
+ if(panelTab==='general'){const d=document.createElement('div');d.className='f';d.innerHTML=`<span class="fl">设计模式</span><span class="fc"><span class="sw${UI.design?' on':''}" id="swDesign"><i></i></span><span class="lnk" id="lnkShowAll">显示全部元素${UI.hidden.length?' ('+UI.hidden.length+')':''}</span></span>`;d.querySelector('#swDesign').addEventListener('click',()=>{setDesign(!UI.design);renderPanel()});d.querySelector('#lnkShowAll').addEventListener('click',()=>{UI.hidden=[];saveUI();renderPanel();sfx('ok')});body.appendChild(d)}
+ $('#panelTpl').textContent=tplLabel()}
+$('#panelX').addEventListener('click',closePanel);$('#panelReset').addEventListener('click',()=>confirmBox('恢复出厂设置：列 / 颜色 / 模式 / 模板关联全部回到默认（已存模板不删）',()=>tplAction('reset'),'设置'));
+$('#btnSettings').addEventListener('click',()=>panelOpen()&&panelTab!=='columns'?closePanel():openPanel('general'));$('#btnCols').addEventListener('click',()=>panelOpen()&&panelTab==='columns'?closePanel():openPanel('columns'));
+$('#designDone').addEventListener('click',()=>setDesign(false));$('#designShowAll').addEventListener('click',()=>{UI.hidden=[];saveUI();sfx('ok')});
+const notes=new Map();/* k → text（样机内存；正式版 Notes 卡 price@symbol） */
+let draft=null,sel=null,toastT=0,agentMark=null,hoverK=null,dragO=null;
+/* =================================================================
+   3. 梯子：价位行 = 固定 DOM 行，只 patch 变化的格
+   ================================================================= */
+const lad=$('#ladder'),rowsEl=$('#rows'),head=$('#head'),inner=$('#inner'),scroller=$('#scroll');
+const view={centerK:0,off:0,/* 行偏移（tick）与弹簧用的小数 */};
+let rowNodes=[];/* [{el,cells:{},k}] */
+function visCols(){const out=[];COLS.forEach(c=>{if(!c.on)return;if(S.ladder&&(c.id==='bids'||c.id==='asks'))return;out.push(c)});if(S.ladder){const i=out.findIndex(c=>c.id==='price');out.splice(i,0,{id:'ladder',label:'买 | 卖',w:112,on:true})}return out}
+const gridTpl=()=>visCols().map(c=>c.w+'px').join(' ');
+function innerWidth(){inner.style.width=visCols().reduce((x,c)=>x+c.w,0)+'px'/* min-width:100%：列总宽超出面板时横向可滚，不裁列 */}
+function applyWidths(){const t=gridTpl();head.style.gridTemplateColumns=t;rowNodes.forEach(r=>r.el.style.gridTemplateColumns=t);innerWidth()}
+function buildHead(){const cols=visCols();head.innerHTML='';head.style.gridTemplateColumns=gridTpl();cols.forEach(c=>{const h=document.createElement('div');h.className='h c-'+c.id;h.textContent=c.label+(c.id==='bids'||c.id==='asks'?({volume:'',count:' · 笔',avg:' · 均'}[S.bidsMode]):'')+(c.id==='chg'?({both:'',stacking:' · 加',pulling:' · 撤'}[S.chgMode]):'')+(c.id==='trades'?({volume:'',buy:' · 主买',sell:' · 主卖',delta:' · Δ'}[S.tradesMode]):'');h.title=c.id==='queue'?'模拟排队量：交易所不提供真实排队数据，成交顺序不保证（ATAS 原话：exchange does not provide data for the queue of submitted orders）':c.label+' · 拖动排序 · 拖右缘改宽';h.draggable=!c.fixed;h.dataset.id=c.id;
+  /* 列宽拖柄（ATAS 交互 13） */if(c.id!=='ladder'){const rz=document.createElement('span');rz.className='rz';rz.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();h.draggable=false;const x0=e.clientX,w0=c.w;rz.setPointerCapture(e.pointerId);const mv=ev=>{c.w=Math.max(24,Math.min(300,Math.round(w0+ev.clientX-x0)));applyWidths()};const up=()=>{rz.removeEventListener('pointermove',mv);rz.removeEventListener('pointerup',up);h.draggable=!c.fixed;saveCols();if(panelOpen()&&panelTab==='columns')renderPanel();sfx('tick')};rz.addEventListener('pointermove',mv);rz.addEventListener('pointerup',up)});h.appendChild(rz)}
+  head.appendChild(h)});
+ /* 列头拖拽重排 */let dragId=null;head.querySelectorAll('.h').forEach(h=>{h.addEventListener('dragstart',e=>{dragId=h.dataset.id;e.dataTransfer.effectAllowed='move'});h.addEventListener('dragover',e=>{e.preventDefault()});h.addEventListener('drop',e=>{e.preventDefault();const to=h.dataset.id;if(!dragId||dragId===to)return;moveCol(dragId,to);dragId=null;if(panelOpen()&&panelTab==='columns')renderPanel()})})}
+function rebuild(){buildHead();innerWidth();rowsEl.innerHTML='';rowNodes=[];const cols=visCols();const t=gridTpl();const n=Math.ceil(lad.clientHeight/S.rowH)+4;for(let i=0;i<n;i++){const el=document.createElement('div');el.className='row';el.style.gridTemplateColumns=t;el.style.height=S.rowH+'px';const cells={};cols.forEach(c=>{const d=document.createElement('div');d.className='c c-'+c.id;d.dataset.col=c.id;el.appendChild(d);cells[c.id]=d});rowsEl.appendChild(el);rowNodes.push({el,cells,k:null,sig:''})}paint(true)}
+const price=k=>(k*D.cfg.tick).toFixed(D.cfg.dec);
+function fmtQ(n){/* lots display：缩写 / 千分位 / 按手 */if(n==null)return '';if(S.volFmt==='full')return Math.round(n).toLocaleString('en-US');if(S.volFmt==='lots'){const l=n/(D.cfg.lot||1);return Number.isInteger(l)?String(l):l.toFixed(1)}return fmt(n)}
+function aggLevel(k){/* 聚合档位：把 AGG 个 tick 合成一档 */if(S.agg===1)return D.levels.get(k)||null;let bid=0,ask=0,nb=0,na=0,chg=null,buy=0,sell=0,vol=0,bc=0,sc=0,any=false;for(let i=0;i<S.agg;i++){const l=D.levels.get(k-i);if(!l)continue;any=true;bid+=l.bid;ask+=l.ask;nb+=l.nb;na+=l.na;if(l.chg!=null)chg=(chg||0)+l.chg;buy+=l.buy;sell+=l.sell;vol+=l.vol;bc+=l.buyCur;sc+=l.sellCur}return any?{bid,ask,nb,na,chg,buy,sell,vol,buyCur:bc,sellCur:sc}:null}
+function topK(){const n=rowNodes.length;return view.centerK+Math.floor(n/2)*S.agg}
+/* 份额：Upper cutoff + 对数刻度（Liquidity map 参数，也用于深度条） */
+function shareOf(q){const vm=Math.max(1,(D.vmaxSize||1)*S.liqCutoff/100);const s=S.liqLog?Math.log1p(q)/Math.log1p(vm):q/vm;return Math.min(1,s)}
+function liqBg(side,share){const s=Math.pow(share,1.5-S.liqContrast/100);const a=((.06+s*.94)*S.liqAlpha/100).toFixed(3);const sc=LIQ[S.liqScheme];if(!sc){const r=Math.round(60+195*Math.min(1,s*1.4)),g=Math.round(20+200*Math.max(0,s-.3)/.7),b=Math.round(200*Math.max(0,s-.75)/.25);return `rgba(${r},${g},${b},${a})`}const c=sc[side];return `rgba(${c[0]},${c[1]},${c[2]},${a})`}
+function paint(all){if(!rowNodes.length)return;const cols=visCols();const t0=topK();const fr=view.off;rowsEl.style.transform=`translateY(${(fr*S.rowH).toFixed(2)}px)`;
+ const bb=D.bbo?D.bbo.bid:null,ba=D.bbo?D.bbo.ask:null;const own=new Map();D.account.orders.forEach(o=>{const kk=Math.ceil(o.k/S.agg)*S.agg;let a=own.get(kk);if(!a){a=[];own.set(kk,a)}a.push(o)});const avgK=D.account.pos?Math.round(D.account.avg/D.cfg.tick):null;const lastK=D.last?D.last.k:null;const major=S.agg*S.gridMajor;
+ rowNodes.forEach((r,i)=>{const k=t0-i*S.agg;const moved=r.k!==k;r.k=k;const l=aggLevel(k);const isBB=bb!=null&&bb<=k&&bb>k-S.agg,isBA=ba!=null&&ba<=k&&ba>k-S.agg;const inSpread=bb!=null&&ba!=null&&k-S.agg+1>bb&&k<ba;
+  const cls='row'+(k===lastK||(S.agg>1&&lastK!=null&&lastK<=k&&lastK>k-S.agg)?' last':'')+(isBB?' bb':'')+(isBA?' ba':'')+(inSpread?' spread':'')+(hoverK===k?' hov':'')+(sel===k?' sel':'')+(agentMark&&agentMark.k===k?' agent':'')+(k%major===0?' major':'');if(r.el.className!==cls)r.el.className=cls;
+  const key=(l?[l.bid,l.ask,l.nb,l.na,l.chg,l.buy,l.sell,l.vol,l.buyCur,l.sellCur].join(','):'')+'|'+(own.get(k)?own.get(k).map(o=>o.id+o.filled+o.ahead).join(''):'')+'|'+(k===avgK?D.account.pos:'')+'|'+(k===lastK?D.last.id:'')+'|'+(notes.get(k)||'')+'|'+(draft&&draft.k===k?draft.side+draft.qty:'');
+  if(!all&&!moved&&r.sig===key)return;const changedNow=!moved&&r.sig!==key&&r.sig!=='';r.sig=key;
+  cols.forEach(c=>{const d=r.cells[c.id];const id=c.id;let txt='',style='',cl='c c-'+id;
+   if(id==='price'){txt=price(k);if(k===avgK)cl+=' avg';if(agentMark&&agentMark.k===k)cl+=' agent'}
+   else if(id==='bids'||id==='asks'){const side=id==='bids'?'bid':'ask',q=l?l[side]:0,n=l?(side==='bid'?l.nb:l.na):0;if(q>0&&q>=S.filterMin){txt=S.bidsMode==='count'?String(n):S.bidsMode==='avg'?fmtQ(n?q/n:q):fmtQ(q);const share=shareOf(q);cl+=' '+(share>.66?'s3':share>.33?'s2':'s1');if(S.dtMode==='liq'){style=`background:${liqBg(side,share)}`}else if(S.depthBars&&S.dtMode==='dom'){style=`--w:${(share*100).toFixed(0)}%`}}
+    if(draft&&draft.k===k&&((draft.side==='buy'&&id==='bids')||(draft.side==='sell'&&id==='asks')))cl+=' draft'}
+   else if(id==='ladder'){const b=l?l.bid:0,a=l?l.ask:0;txt=(b?fmtQ(b):'')+' | '+(a?fmtQ(a):'');if(b)cl+=' hasb';if(a)cl+=' hasa'}
+   else if(id==='mybuy'||id==='mysell'){const side=id==='mybuy'?'buy':'sell';const os=(own.get(k)||[]).filter(o=>o.side===side);if(os.length){const q=os.reduce((x,o)=>x+o.qty-o.filled,0);const st=os.every(o=>o.stop);txt=(st?'S ':'')+fmtQ(q)+' ×';cl+=' own'+(st?' stop':'');d.dataset.oid=os[0].id}else d.dataset.oid='';
+    if(draft&&draft.k===k&&draft.side===side){txt='草稿 '+fmtQ(draft.qty)+' ↵';cl+=' draft'}}
+   else if(id==='chg'){const v=l?l.chg:null;if(v==null||v===0||(S.chgMode==='stacking'&&v<0)||(S.chgMode==='pulling'&&v>0))txt='';else{txt=(v>0?'+':'')+fmtQ(v);cl+=v>0?' up':' dn'}}
+   else if(id==='trades'){if(l&&l.vol){const v=S.tradesMode==='buy'?l.buy:S.tradesMode==='sell'?l.sell:S.tradesMode==='delta'?l.buy-l.sell:l.vol;txt=(S.tradesMode==='delta'&&v>0?'+':'')+fmtQ(v);if(S.tradesMode==='delta')cl+=v>=0?' up':' dn';if(S.dtMode==='eclipses'){const r_=Math.min(1,l.vol/(D.vmax||1));style=`--r:${(6+r_*14).toFixed(0)}px;--ec:var(${l.buy>=l.sell?'--kd-buy':'--kd-sell'})`;cl+=' eclipse'}else if(S.dtMode==='blocks'){const r_=Math.min(1,l.vol/(D.vmax||1));style=`--w:${(r_*100).toFixed(0)}%;--ec:var(${l.buy>=l.sell?'--kd-buy':'--kd-sell'})`;cl+=' block'}}}
+   else if(id==='hist'){const v=l?l.vol:0;if(S.histMode!=='numbers')style=`--w:${(Math.min(1,v/(D.vmax||1))*100).toFixed(0)}%`;txt=v&&S.histMode!=='histogram'?fmtQ(v):''}
+   else if(id==='bidcur'||id==='askcur'){const v=l?(id==='bidcur'?l.buyCur:l.sellCur):0;if(v){txt=fmtQ(v);cl+=id==='bidcur'?' up':' dn'}}
+   else if(id==='ltq'){if(k===lastK&&D.last){txt=fmtQ(D.last.q);cl+=D.last.side==='buy'?' up':' dn'}}
+   else if(id==='queue'){const os=own.get(k)||[];if(os.length){txt='≈'+fmtQ(os[0].ahead)+' 估算';cl+=' est'}}
+   else if(id==='pnl'){if(k===avgK&&D.account.pos){const p=D.account.pnl;txt=S.pnlUnit==='ticks'?(p.ticks>=0?'+':'')+p.ticks+'t':S.pnlUnit==='cash'?(p.unreal>=0?'+':'')+fmt(p.unreal):(p.pct>=0?'+':'')+p.pct.toFixed(2)+'%';cl+=(p.unreal>=0?' up':' dn')}else{const os=own.get(k)||[];if(os.length)txt=os.map(o=>(o.side==='buy'?'B':'S')+(o.qty-o.filled)).join(' ')}}
+   else if(id==='notes'){txt=notes.get(k)||'';if(txt)cl+=' note'}
+   if(d.textContent!==txt)d.textContent=txt;if(d.className!==cl)d.className=cl;if(d.getAttribute('style')!==(style||null))d.setAttribute('style',style);
+   if(S.flash&&changedNow&&(id==='bids'||id==='asks'||id==='ladder'||id==='trades'||id==='ltq')&&!all){const f1=d.classList.contains('flash');d.classList.toggle('flash',!f1);d.classList.toggle('flash2',f1)}})})}
+/* 居中 / 滚动 */
+function midK(){return D.bbo?Math.round((D.bbo.bid+D.bbo.ask)/2):view.centerK}
+function center(animated){const target=Math.round(midK()/S.agg)*S.agg;if(target===view.centerK)return;if(animated){const delta=(target-view.centerK)/S.agg;view.centerK=target;view.off-=delta;spring(view,'off',0,'snappy')}else{view.centerK=target;view.off=0}paint(true);if(animated)sfx('tick')}
+lad.addEventListener('wheel',e=>{if(e.target.closest('#panel'))return;if(e.shiftKey||Math.abs(e.deltaX)>Math.abs(e.deltaY))return;/* 横向滚动交给原生（列总宽超出时） */e.preventDefault();if(e.ctrlKey||e.metaKey){const steps=[1,2,5,10];const i=steps.indexOf(S.agg);const n=steps[Math.max(0,Math.min(3,i+(e.deltaY>0?1:-1)))];if(n!==S.agg)setS('agg',n);return}const rows=Math.sign(e.deltaY)*Math.max(1,Math.round(Math.abs(e.deltaY)/40));view.centerK-=rows*S.agg;view.off+=rows;spring(view,'off',0,'settle');if(S.autoCenter)setS('autoCenter',false);paint(true)},{passive:false});
+function setAgg(n){S.agg=n;view.centerK=Math.round(midK()/n)*n;rebuild();if(!booting){sfx('latch');hint(`聚合 ${n} tick`)}chips()}
+/* =================================================================
+   4. 引擎消息 → 投影
+   ================================================================= */
+let frameMark=0;
+worker.onmessage=e=>{const m=e.data;
+ if(m.type==='frame'){frameMark=performance.now();const prevSeq=D.seq;Q.lastFrame=Date.now();if(m.seq!==prevSeq||m.mode==='replay')Q.lastSeqChange=Date.now();
+  if(D.sym!==m.sym){D.sym=m.sym;D.cfg=m.cfg;D.levels.clear();rebuild();$('#symName').textContent=m.cfg.name;$('#symChip').textContent=m.sym;center(false)}
+  D.cfg=m.cfg;D.seq=m.seq;D.status=m.status;D.mode=m.mode;D.l2=m.l2;D.bbo=m.bbo;D.last=m.last;D.account=m.account;D.vmax=m.vmax;D.rate=m.rate;D.replayAt=m.replayAt||null;
+  const ch=new Set(m.changed);if(m.levels.length){const next=new Map();let vs=1;m.levels.forEach(([k,bid,ask,nb,na,chg,buy,sell,vol,bc,sc])=>{next.set(k,{bid,ask,nb,na,chg,buy,sell,vol,buyCur:bc,sellCur:sc});vs=Math.max(vs,bid,ask)});D.levels=next;D.vmaxSize=vs}else if(!m.l2)D.levels=new Map();
+  if(Q.state==='loading'){setState('live');center(false)}
+  if(!D.levels.size&&!m.l2)setState('unsupported');else if(Q.state==='unsupported'&&m.l2)setState('live');
+  if(m.status==='gap'&&Q.state!=='gap')setState('gap');else if(m.status==='resyncing'&&Q.state!=='resyncing')setState('resyncing');else if(m.status==='ok'&&(Q.state==='gap'||Q.state==='resyncing'))setState('live');
+  if(m.mode==='replay'&&Q.state!=='replay')setState('replay');else if(m.mode==='live'&&Q.state==='replay')setState('live');
+  if(S.autoCenter&&D.bbo){const target=Math.round(midK()/S.agg)*S.agg;if(Math.abs(target-view.centerK)>=Math.max(1,S.autoCenterDev)*S.agg)center(true)}
+  paint(false);hud();requestAnimationFrame(()=>{const lat=performance.now()-frameMark;Q.lat.push(lat);if(Q.lat.length>120)Q.lat.shift()});return}
+ if(m.type==='orderAck'){sfx('ok');hint(`已挂 ${m.order.side==='buy'?'买':'卖'} ${price(m.order.k)} × ${m.order.qty} ${m.order.tif} · PAPER · 排队前 ≈${fmtQ(m.order.ahead)}（估算）`);ping(m.order.k);return}
+ if(m.type==='fill'){sfx('fill');hint(`成交 ${m.fill.side==='buy'?'买':'卖'} ${m.fill.q} @ ${m.fill.p.toFixed(D.cfg.dec)} · PAPER`);ping(Math.round(m.fill.p/D.cfg.tick));return}
+ if(m.type==='reject'){sfx('no');hint(`引擎拒绝 ${m.what}：${{replay:'回放态',offline:'离线',stale:'数据冻结',gap:'序列缺口',resyncing:'重建中'}[m.reason]||m.reason}`);return}
+ if(m.type==='stopTrig'){sfx('latch');hint(`STOP 触发 ${m.id} → 市价 ${m.side==='buy'?'买':'卖'} @ ${price(m.k)} · PAPER`);ping(m.k);return}
+ if(m.type==='replayEnd'){setState('live')}};
+function ping(k){const r=rowNodes.find(r=>r.k===k);if(!r)return;r.el.classList.remove('ping');void r.el.offsetWidth;r.el.classList.add('ping')}
+/* 状态侦测：stale / disconnected 由前端按心跳判断（不是贴标签） */
+setInterval(()=>{if(Q.state==='loading'||Q.state==='replay'||Q.state==='unsupported')return;const now=Date.now();const hb=Math.max(1500,S.frameMs*6),st=Math.max(2000,S.frameMs*10);if(now-Q.lastFrame>hb){if(Q.state!=='disconnected')setState('disconnected')}else if(Q.state==='disconnected'){setState('live')}else if(now-Q.lastSeqChange>st&&D.status==='ok'){if(Q.state!=='stale')setState('stale')}else if(Q.state==='stale'&&now-Q.lastSeqChange<=st)setState('live')},250);
+function setState(s){const prev=Q.state;Q.state=s;Q.since=Date.now();const tag=$('#qst');const map={loading:['LOADING','q-on'],stale:['STALE','q-warn'],gap:['GAP','q-warn'],resyncing:['RESYNC','q-warn'],disconnected:['OFFLINE','q-danger'],replay:['REPLAY','q-replay'],unsupported:['L1 ONLY','q-warn'],live:['','']};const [t,c]=map[s]||['',''];tag.textContent=t;tag.className='qst '+c;lad.classList.toggle('frozen',s==='disconnected'||s==='stale');lad.classList.toggle('gap',s==='gap'||s==='resyncing');
+ const bar=$('#stateBar');const msg={stale:'STALE · 序列未推进 · 数据冻结于最后一帧',gap:'序列缺口 · 已停算深度变化 / 当前成交 · 等待快照',resyncing:'重建订单簿 · 等待快照 · 原子替换',disconnected:'引擎心跳丢失 · 数据冻结 · 重连中',unsupported:'不适用 · Provider 不提供 L2 · 只显示最优买卖（不画假深度）',replay:'REPLAY · 交易按钮禁用 · 同一条流'}[s];bar.textContent=msg||'';bar.className='statebar '+(s==='disconnected'?'danger':s==='replay'?'info':msg?'warn':'');
+ document.querySelectorAll('.tradeBtn').forEach(b=>b.disabled=(s==='replay'));
+ if(prev!==s)sfx(s==='live'?'ok':s==='disconnected'?'no':'tick');hud()}
+/* =================================================================
+   5. 工具条 / HUD
+   ================================================================= */
+function hud(){const a=D.account;const ps=$('#posLcd');ps.textContent=a.pos===0?'FLAT':(a.pos>0?'+':'')+a.pos;ps.className='lcd '+(a.pos>0?'up':a.pos<0?'dn':'');
+ const p=a.pnl||{};const pl=$('#pnlLcd');pl.textContent=a.pos?(S.pnlUnit==='ticks'?(p.ticks>=0?'+':'')+p.ticks+'t':S.pnlUnit==='cash'?(p.unreal>=0?'+':'')+fmt(p.unreal):(p.pct>=0?'+':'')+(p.pct||0).toFixed(2)+'%'):'— —';pl.className='lcd '+(a.pos?(p.unreal>=0?'up':'dn'):'');
+ const sp=$('#spreadLcd');if(D.bbo){sp.textContent=`${price(D.bbo.bid)} / ${price(D.bbo.ask)} · ${D.bbo.ask-D.bbo.bid}t`}else sp.textContent='— —';
+ $('#ftInfo').innerHTML=`seq <b>${D.seq}</b> · 深度 <b>${D.levels.size?Math.min(D.cfg.depth,[...D.levels.values()].filter(l=>l.bid).length):0}/${D.cfg.depth}</b> · 聚合 <b>${S.agg}t</b> · 成交 <b>${D.rate}/s</b> · 挂单 <b>${a.orders.length}</b> · 成交数 <b>${a.fills}</b> · ${a.calc||S.calcMode}${D.replayAt?` · REPLAY @ ${new Date(D.replayAt).toTimeString().slice(0,8)}`:''}`;
+ const lat=[...Q.lat].sort((x,y)=>x-y);const p95=lat[Math.floor(lat.length*.95)]||0;$('#ftPerf').innerHTML=`帧→绘制 p95 <b>${p95.toFixed(1)}ms</b> · 行 <b>${rowNodes.length}</b>`;
+ $('#btnLock').classList.toggle('on',S.locked);$('#btnLock').textContent=S.locked?'🔒 已锁定':'🔓 可下单';$('#btnLock').title=S.locked?'交易已锁定（默认）：点击买量 / 卖量只提示，不下单':'点击买量 = 买限价草稿，点击卖量 = 卖限价草稿；↵ 提交到 PAPER';
+ $('#btnAuto').classList.toggle('on',S.autoCenter);$('#tifSel').value=S.tif;if(document.activeElement!==$('#qtyIn'))$('#qtyIn').value=S.qty;document.querySelectorAll('[data-qty]').forEach(x=>x.classList.toggle('on',+x.dataset.qty===S.qty))}
+function chips(){$('#ftStat').innerHTML=`模式 <b>${{dom:'Only DOM',liq:'Liquidity map',eclipses:'Orderflow (eclipses)',blocks:'Orderflow (blocks)'}[S.dtMode]}</b> · 买卖量 <b>${{volume:'Volume',count:'Number of applications',avg:'Average volume'}[S.bidsMode]}</b> · 深度变化 <b>${{both:'Pulling & Stacking',stacking:'Stacking',pulling:'Pulling'}[S.chgMode]}</b> · 成交 <b>${S.tradesMode}</b> · 盈亏 <b>${S.pnlUnit}</b> · 模板 <b>${tplLabel()}</b>`}
+function renderPresets(){const box=$('#qtys');box.querySelectorAll('[data-qty]').forEach(x=>x.remove());const list=[...new Set(String(S.qtyPresets).split(/[,\s]+/).map(x=>parseInt(x)).filter(x=>x>0))].slice(0,8);list.forEach(q=>{const s=document.createElement('span');s.dataset.qty=q;s.textContent=q;s.className=q===S.qty?'on':'';s.addEventListener('click',()=>{setS('qty',q);sfx('key')});box.insertBefore(s,$('#qtyIn'))})}
+$('#qtyIn').addEventListener('input',e=>{setS('qty',Math.max(1,parseInt(e.target.value)||1))});
+$('#tifSel').addEventListener('change',e=>setS('tif',e.target.value));
+$('#btnLock').addEventListener('click',()=>{setS('locked','toggle');sfx('latch');hint(S.locked?'交易已锁定':'交易解锁 · 点击只产生草稿，↵ 提交到 PAPER')});
+$('#btnCenter').addEventListener('click',()=>center(true));$('#btnAuto').addEventListener('click',()=>{setS('autoCenter','toggle');sfx('key');if(S.autoCenter)center(true)});
+$('#symChip').addEventListener('click',()=>{const list=['300750','IF2512','BTCUSDT'];const n=list[(list.indexOf(D.sym)+1)%3];run('sym '+n)});
+const FROZEN={stale:'STALE',gap:'GAP',resyncing:'RESYNC',disconnected:'OFFLINE'};
+function guardTrade(what){if(Q.state==='replay'){hint('回放态不可交易');sfx('no');return false}if(FROZEN[Q.state]){hint(`${FROZEN[Q.state]} · 数据冻结，不可交易 · ${what}`);sfx('no');return false}if(S.locked){toast(`演示模式：交易已锁定 · ${what}`);sfx('no');return false}return true}
+function confirmOrGo(txt,go){const safe=()=>{if(!guardTrade('确认'))return;go()};/* 确认框打开期间状态可能已变（回放 / 冻结）：确认时再查一次 */if(S.oneClick){safe();return}confirmBox(txt,safe)}
+$('#btnFlatten').addEventListener('click',()=>{if(!guardTrade('Flatten'))return;confirmOrGo(`Flatten：撤销全部挂单并市价平掉 ${D.account.pos||0} · PAPER 账户`,()=>{worker.postMessage({type:'flatten'});sfx('latch')})});
+$('#btnReverse').addEventListener('click',()=>{if(!guardTrade('Reverse'))return;confirmOrGo(`Reverse：平仓并反向开 ${Math.abs(D.account.pos)||0} · PAPER 账户`,()=>{worker.postMessage({type:'reverse'});sfx('latch')})});
+$('#btnCancelAll').addEventListener('click',()=>{if(!guardTrade('Cancel All'))return;worker.postMessage({type:'cancel',id:'all'});sfx('no');hint('已撤全部挂单 · PAPER')});
+function confirmBox(txt,ok,title){const n=$('#note');n.innerHTML=`<b>确认 · ${title||'PAPER'}</b><p>${txt}</p><div class="acts"><span class="p" data-a="ok">确认</span><span data-a="x">取消</span></div>`;n.style.display='block';n.querySelectorAll('[data-a]').forEach(s=>s.addEventListener('click',()=>{n.style.display='none';if(s.dataset.a==='ok')ok();else sfx('tick')}))}
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),1600)}
+function hint(t,ms){$('#cmdHint').textContent=t;clearTimeout(hint.t);hint.t=setTimeout(()=>$('#cmdHint').textContent='Enter 执行 · Esc 关',ms||2600)}
+/* =================================================================
+   6. 行交互：点击 = 草稿（锁定时只提示）· 右键自己的单 = 撤 · 拖自己的单 = 改价 · 双击价格 = 居中 · 其余右键 = 菜单
+   ================================================================= */
+function rowAt(e){const el=e.target.closest('.row');if(!el)return null;const r=rowNodes.find(x=>x.el===el);return r?{r,col:e.target.dataset.col}:null}
+rowsEl.addEventListener('pointermove',e=>{const h=rowAt(e);const k=h?h.r.k:null;if(k!==hoverK){hoverK=k;paint(true)}const tip=$('#tip');if(!h||!D.levels.size||!S.tooltip){tip.style.display='none';return}const l=aggLevel(k);const own=D.account.orders.filter(o=>o.k===k);const rect=lad.getBoundingClientRect();tip.style.display='block';tip.style.left=Math.min(e.clientX-rect.left+14,rect.width-230)+'px';tip.style.top=(e.clientY-rect.top-40)+'px';const share=l?shareOf(h.col==='asks'?l.ask:l.bid):0;tip.innerHTML=`<b>${price(k)}</b> · 买 <b>${l&&l.bid?fmtQ(l.bid):'—'}</b>${l&&l.nb?`(${l.nb}笔)`:''} · 卖 <b>${l&&l.ask?fmtQ(l.ask):'—'}</b>${l&&l.na?`(${l.na}笔)`:''}<br>成交 ${l?fmtQ(l.vol):0}（主买 ${l?fmtQ(l.buy):0} / 主卖 ${l?fmtQ(l.sell):0}）· ${S.dcWindowMs/1000}s 变化 ${l&&l.chg!=null?(l.chg>0?'+':'')+fmtQ(l.chg):'—'}${S.dtMode==='liq'&&(h.col==='bids'||h.col==='asks')?` · 色阶 ${(share*100).toFixed(0)}%`:''}${own.length?`<br>我的单：${own.map(o=>(o.side==='buy'?'买':'卖')+o.qty+' '+(o.tif||'')+' 排队≈'+fmtQ(o.ahead)).join('，')}`:''}${h.col==='queue'?'<br><i>排队为模拟估算，交易所不提供真实排队数据，成交顺序不保证</i>':''}`});
+rowsEl.addEventListener('pointerleave',()=>{hoverK=null;$('#tip').style.display='none';paint(true)});
+rowsEl.addEventListener('click',e=>{const h=rowAt(e);if(!h)return;const k=h.r.k,col=h.col;
+ if(col==='price'){sel=sel===k?null:k;paint(true);sfx('tick');return}
+ if(col==='bids'||col==='asks'||col==='ladder'||col==='mybuy'||col==='mysell'){const side=(col==='bids'||col==='mybuy')?'buy':(col==='asks'||col==='mysell')?'sell':(k<=midK()?'buy':'sell');
+  if((col==='mybuy'||col==='mysell')&&h.r.cells[col].dataset.oid&&!draft){return}
+  if(!guardTrade(`${side==='buy'?'买':'卖'} ${price(k)}`))return;
+  /* ATAS Simple Order Entry 位置语义：买在现价上方 = Buy Stop（样机：提示并仍作限价草稿标注 stop） */const bb=D.bbo;const stop=bb&&((side==='buy'&&k>=bb.ask)||(side==='sell'&&k<=bb.bid));draft={side,k,qty:S.qty,stop};sfx('lift');hint(`草稿 ${side==='buy'?'买':'卖'} ${stop?'STOP':'LIMIT'} ${price(k)} × ${S.qty} ${S.tif} · ↵ 提交 · Esc 取消 · PAPER`);paint(true)}});
+rowsEl.addEventListener('dblclick',e=>{const h=rowAt(e);if(h&&h.col==='price'){setS('autoCenter',true);center(true)}});
+rowsEl.addEventListener('contextmenu',e=>{e.preventDefault();const h=rowAt(e);if(!h)return ctxMenu(e);const oid=h.r.cells[h.col]&&h.r.cells[h.col].dataset.oid;if(oid){if(!guardTrade('撤单'))return;worker.postMessage({type:'cancel',id:oid});sfx('no');hint(`撤单 ${oid} · PAPER`);return}
+ /* 右键买量 / 卖量 = Manual Order Entry 的 Stop 单草稿（ATAS 语义）；其余列 = 菜单 */if(h.col==='bids'||h.col==='asks'){const side=h.col==='bids'?'buy':'sell';if(!guardTrade('Stop 草稿'))return;draft={side,k:h.r.k,qty:S.qty,stop:true};sfx('lift');hint(`草稿 ${side==='buy'?'买':'卖'} STOP ${price(h.r.k)} × ${S.qty} · ↵ 提交`);paint(true);return}
+ ctxMenu(e)});
+/* 拖自己的单改价 */rowsEl.addEventListener('pointerdown',e=>{const h=rowAt(e);if(!h)return;const oid=h.r.cells[h.col]&&h.r.cells[h.col].dataset.oid;if(oid&&e.button===0){if(!guardTrade('拖拽改单'))return;dragO={id:oid,fromK:h.r.k};rowsEl.setPointerCapture(e.pointerId);e.preventDefault()}});
+rowsEl.addEventListener('pointerup',e=>{if(!dragO)return;/* 指针被 rowsEl 捕获，target 不是目标格：按坐标找行 */const el=document.elementFromPoint(e.clientX,e.clientY);const rowEl=el&&el.closest('.row');const r=rowEl&&rowNodes.find(x=>x.el===rowEl);const h=r?{r}:null;if(h&&h.r.k!==dragO.fromK){worker.postMessage({type:'modify',id:dragO.id,k:h.r.k});sfx('ok');hint(`改单 ${dragO.id} → ${price(h.r.k)} · PAPER`)}dragO=null});
+addEventListener('keydown',e=>{const t=e.target;const editing=t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable);if(editing){if(e.key==='Escape'&&t.closest&&t.closest('#panel')){t.blur();closePanel()}return}if(e.isComposing||e.ctrlKey||e.metaKey||e.altKey)return;/* IME 合成与修饰键组合不是我们的快捷键 */const k=e.key.toLowerCase();if(k==='/'){e.preventDefault();openCmd('');return}if(k==='enter'&&draft){submitDraft();return}if(k==='escape'){if(!$('#ctx').hidden){$('#ctx').hidden=true}else if(UI.design){setDesign(false)}else if(panelOpen()){closePanel()}else if(draft){draft=null;paint(true);sfx('no')}else if(agentMark){agentMark=null;$('#note').style.display='none';paint(true)}else if(sel!=null){sel=null;paint(true)}return}if(k==='c'){center(true);return}if(k==='l'){setS('locked','toggle');sfx('latch');return}if(k==='a'){setS('autoCenter','toggle');sfx('key')}},true);
+function submitDraft(){if(!draft)return;if(!guardTrade('提交'))return;worker.postMessage({type:'order',side:draft.side,k:draft.k,qty:draft.qty,tif:S.tif,stop:!!draft.stop});draft=null;paint(true)}
+/* =================================================================
+   7. 命令表（人与 Agent 同一入口）：set <key> <value> 覆盖全部设置；旧命令是语法糖
+   ================================================================= */
+const cmd=$('#cmd'),cmdIn=$('#cmdIn');function openCmd(v){cmd.hidden=false;cmdIn.value=v||'';cmdIn.focus();sfx('key')}
+$('#btnCmd').addEventListener('click',()=>openCmd(''));cmdIn.addEventListener('keydown',e=>{if(e.key==='Escape'){cmd.hidden=true;cmdIn.blur()}if(e.key==='Enter'){const v=cmdIn.value.trim();cmd.hidden=true;cmdIn.blur();if(v)run(v)}});
+function bad(v){sfx('no');hint(`无法识别：${v}`,1500);return false}
+function run(v){const a=v.split(/\s+/),c=a[0].toLowerCase();
+ if(c==='set'){const k=a[1];if(!SCH[k])return bad(v);let val=a.slice(2).join(' ');if(val==='')val=SCH[k].t==='bool'?'toggle':SCH[k].t==='color'?'':String(DEF[k]);/* 无值：布尔切换 · 颜色回 token · 其它回默认 */if(!setS(k,val))return bad(v);hint(`${k} = ${S[k]===''?'token':S[k]}`,1800);sfx('key');return true}
+ if(c==='get'){const k=a[1];if(k&&SCH[k]){hint(`${k} = ${JSON.stringify(S[k])} · 默认 ${JSON.stringify(DEF[k])}`,4000);return true}hint(SCHEMA.map(i=>i.k).join(' '),8000);return true}
+ if(c==='settings'){if(a[1]==='close'){closePanel();return true}openPanel(a[1]);return true}
+ if(c==='template'||c==='tpl'){const act=a[1];const name=a.slice(2).join(' ');if(!act)return run('settings templates');if(act==='list'){hint(tplNames().map(n=>n===curTpl?'['+n+']':n).join(' · ')||'没有模板',5000);return true}if(act==='import'){const i=v.indexOf('{');if(i<0)return bad(v);return tplAction('import',v.slice(i))!==false}return tplAction(act,name||undefined)!==false}
+ if(c==='width'){const col=COLS.find(x=>x.id===a[1]||x.label===a[1]);const w=+a[2];if(!col||!(w>=24))return bad(v);col.w=Math.min(300,w);applyWidths();saveCols();sfx('tick');return true}
+ if(c==='design'){setDesign(a[1]==='off'?false:a[1]==='on'?true:!UI.design);return true}
+ if(c==='showall'){UI.hidden=[];saveUI();sfx('ok');return true}
+ if(c==='hide'){const el=kd.querySelector(`[data-el="${a[1]}"]`);if(!el||el.hasAttribute('data-keep'))return bad(v);if(!UI.hidden.includes(a[1]))UI.hidden.push(a[1]);saveUI();return true}
+ if(c==='reset'){return tplAction('reset')}
+ if(c==='col'){const id=a[1];if(id==='ladder')return setS('ladder','toggle');const col=COLS.find(x=>x.id===id||x.label===id);if(!col||col.fixed)return bad(v);col.on=!col.on;saveCols();rebuild();sfx('key');return true}
+ if(c==='cols'){hint('列：'+COLS.map(x=>(x.on?'●':'○')+x.id+'@'+x.w).join(' ')+' · ladder'+(S.ladder?'●':'○'),5000);return true}
+ if(c==='mode'){const m={dom:'dom',liq:'liq',liquidity:'liq',eclipses:'eclipses',blocks:'blocks'}[a[1]];if(!m)return bad(v);setS('dtMode',m);sfx('latch');return true}
+ if(c==='bids'){return setS('bidsMode',a[1])||bad(v)}
+ if(c==='chg'){return setS('chgMode',a[1])||bad(v)}
+ if(c==='trades'){return setS('tradesMode',a[1])||bad(v)}
+ if(c==='pnl'){return setS('pnlUnit',a[1])||bad(v)}
+ if(c==='agg'){return setS('agg',a[1])||bad(v)}
+ if(c==='depth'){return setS('depth',a[1])||bad(v)}
+ if(c==='center'){center(true);return true}if(c==='auto'){setS('autoCenter','toggle');sfx('key');return true}
+ if(c==='lock'){setS('locked','toggle');sfx('latch');return true}
+ if(c==='qty'){return setS('qty',a[1])||bad(v)}
+ if(c==='sym'){if(!['300750','IF2512','BTCUSDT'].includes(a[1]))return bad(v);worker.postMessage({type:'sym',sym:a[1]});draft=null;sel=null;agentMark=null;sfx('latch');return true}
+ if(c==='order'){const side=a[1]==='sell'?'sell':'buy';const p=parseFloat(a[2]);if(isNaN(p))return bad(v);if(!guardTrade('order'))return false;draft={side,k:Math.round(p/D.cfg.tick),qty:+(a[3]||S.qty),stop:a[4]==='stop'};sfx('lift');paint(true);hint(`草稿 ${side==='buy'?'买':'卖'} ${p} × ${draft.qty} · submit 提交`);return true}
+ if(c==='submit'){submitDraft();return true}
+ if(c==='mkt'){const side=a[1]==='sell'?'sell':'buy';if(!guardTrade('MKT'))return false;worker.postMessage({type:'market',side,qty:+(a[2]||S.qty)});sfx('latch');return true}
+ if(c==='cancel'){if(!guardTrade('cancel'))return false;worker.postMessage({type:'cancel',id:a[1]||'all'});sfx('no');return true}
+ if(c==='flatten'){$('#btnFlatten').click();return true}if(c==='reverse'){$('#btnReverse').click();return true}
+ if(c==='clear'){if(!['trades','profile','dc'].includes(a[1]))return bad(v);worker.postMessage({type:'clear',what:a[1]});sfx('key');return true}
+ if(c==='note'){const p=parseFloat(a[1]);if(isNaN(p))return bad(v);const k=Math.round(p/D.cfg.tick);const t=a.slice(2).join(' ');if(t)notes.set(k,t);else notes.delete(k);const col=COLS.find(x=>x.id==='notes');if(!col.on){col.on=true;saveCols();rebuild()}paint(true);sfx('ok');return true}
+ if(c==='state'){const s=a[1];if(s==='gap'){worker.postMessage({type:'gap'});return true}if(s==='stale'){worker.postMessage({type:'freeze',on:true});return true}if(s==='disconnected'){worker.postMessage({type:'offline',on:true});return true}if(s==='unsupported'){worker.postMessage({type:'l2',on:false});return true}if(s==='replay')return run('replay 20 2');if(s==='live'){worker.postMessage({type:'freeze',on:false});worker.postMessage({type:'offline',on:false});worker.postMessage({type:'l2',on:true});if(D.mode==='replay')worker.postMessage({type:'stop'});return true}return bad(v)}
+ if(c==='replay'){worker.postMessage({type:'replay',seconds:+a[1]||20,speed:+a[2]||2});draft=null;sfx('latch');return true}if(c==='stop'){worker.postMessage({type:'stop'});return true}
+ if(c==='agent'){agentExplain();return true}
+ if(c==='artifact'){const art=artifact();const n=$('#note');n.innerHTML=`<b>DOMArtifact · tools.md §2</b><pre>${JSON.stringify(art,null,1).slice(0,900)}</pre><div class="acts"><span class="p" data-a="x">关</span></div>`;n.style.display='block';n.querySelector('[data-a]').addEventListener('click',()=>n.style.display='none');console.log(art);sfx('ok');return true}
+ return bad(v)}
+/* =================================================================
+   8. Agent Artifact（与人看到的同源）+ Agent 解读
+   ================================================================= */
+function artifact(){const lv=[...D.levels.entries()].sort((a,b)=>b[0]-a[0]);let cumB=0,cumA=0;const asks=lv.filter(([k,l])=>l.ask>0).reverse(),bids=lv.filter(([k,l])=>l.bid>0);const cumAsk=new Map(),cumBid=new Map();asks.forEach(([k,l])=>{cumA+=l.ask;cumAsk.set(k,cumA)});bids.forEach(([k,l])=>{cumB+=l.bid;cumBid.set(k,cumB)});
+ const top10B=bids.slice(0,10).reduce((x,[k,l])=>x+l.bid,0),top10A=asks.slice(0,10).reduce((x,[k,l])=>x+l.ask,0);
+ return {tool:'dom',instrument:{instrumentId:`${D.cfg.venue}:${D.sym}`,symbol:D.sym,venue:D.cfg.venue,assetClass:D.cfg.cls,quoteCurrency:D.cfg.ccy,priceTick:D.cfg.tick,qtyStep:D.cfg.lot,timezone:'Asia/Shanghai',capabilities:D.l2?['l1','l2','trades']:['l1','trades']},asOf:new Date(Q.lastFrame||Date.now()).toISOString(),seq:D.seq,bestBid:D.bbo?+price(D.bbo.bid):undefined,bestAsk:D.bbo?+price(D.bbo.ask):undefined,spread:D.bbo?+((D.bbo.ask-D.bbo.bid)*D.cfg.tick).toFixed(D.cfg.dec):undefined,
+  levels:lv.map(([k,l])=>({price:+price(k),bidQty:l.bid,askQty:l.ask,cumBid:cumBid.get(k),cumAsk:cumAsk.get(k)})),imbalance:top10A+top10B?+((top10B-top10A)/(top10B+top10A)).toFixed(3):undefined,ownOrderIds:D.account.orders.map(o=>o.id),positionRef:D.account.pos?'paper://pos/'+D.sym:undefined,
+  view:{template:curTpl,mode:S.dtMode,aggregation:S.agg,columns:visCols().map(c=>c.id),depth:S.depth,calcMode:S.calcMode,tif:S.tif,locked:S.locked},
+  quality:{source:'katana-mock-engine',lastEventAt:new Date(Q.lastSeqChange||Date.now()).toISOString(),stale:Q.state==='stale',sequenceStatus:D.status==='ok'?'ok':D.status,qualityFlags:['fixture',...(D.l2?[]:['l1-only'])],mode:Q.state==='replay'?'replay':'paper'}}}
+function agentExplain(){if(!D.levels.size)return;let best=null;D.levels.forEach((l,k)=>{const size=Math.max(l.bid,l.ask);const stack=l.chg!=null&&l.chg>0?l.chg:0;const sc=size+stack*1.5;if(!best||sc>best.sc)best={k,l,sc,side:l.bid>=l.ask?'bid':'ask'}});if(!best)return;
+ setS('autoCenter',false);const target=Math.round(best.k/S.agg)*S.agg;const delta=(target-view.centerK)/S.agg;view.centerK=target;view.off-=delta;spring(view,'off',0,'gentle');sfx('lift');
+ setTimeout(()=>{agentMark={k:best.k};paint(true);sfx('tick');const n=$('#note');const side=best.side==='bid'?'买':'卖';const size=best.side==='bid'?best.l.bid:best.l.ask;const chg=best.l.chg;const dist=D.bbo?Math.abs(best.k-(best.side==='bid'?D.bbo.bid:D.bbo.ask)):0;
+  n.innerHTML=`<b>QUANT · 盘口</b><p>${price(best.k)} 挂${side} ${fmtQ(size)}，是可见 ${D.levels.size} 档里最大的${chg&&chg>0?`，${S.dcWindowMs/1000} 秒内堆叠 +${fmtQ(chg)}`:chg&&chg<0?`，${S.dcWindowMs/1000} 秒内在撤 ${fmtQ(chg)}`:''}；距最优${side}价 ${dist} tick。${best.side==='bid'?'下方有承接':'上方有压力'}，看它是不是被吃掉还是先撤——撤了就是假墙。</p><div class="acts"><span class="p" data-a="draft">在此价挂${side==='买'?'买':'卖'}草稿</span><span data-a="note">记备注</span><span data-a="x">关</span></div>`;n.style.display='block';
+  n.querySelectorAll('[data-a]').forEach(s=>s.addEventListener('click',()=>{const act=s.dataset.a;if(act==='draft'){if(guardTrade('草稿')){draft={side:best.side==='bid'?'buy':'sell',k:best.k,qty:S.qty,stop:false};sfx('lift');paint(true)}}else if(act==='note'){run(`note ${price(best.k)} 大单 ${fmtQ(size)} ${chg>0?'堆叠':''}`)}else sfx('tick');n.style.display='none';agentMark=null;paint(true)}))},450)}
+$('#btnAgent').addEventListener('click',agentExplain);
+/* =================================================================
+   9. 初始化：已存设置 > 默认模板 > 出厂；然后帧循环
+   ================================================================= */
+(function boot(){const saved=LS.get('settings',null);if(saved&&typeof saved==='object'&&!Array.isArray(saved)){Object.keys(saved).forEach(k=>{if(SCH[k]&&k!=='locked'){const v=coerce(SCH[k],saved[k]);if(v!==undefined)S[k]=v}});loadCols(LS.get('cols',null));const ui=LS.get('ui',null);if(ui){UI.hidden=Array.isArray(ui.hidden)?ui.hidden:[];UI.order=Array.isArray(ui.order)?ui.order:[]}}
+ else if(defTpl&&tplGet(defTpl)){const t=tplGet(defTpl);Object.keys(DEF).forEach(k=>{if(NO_TPL.has(k))return;const v=t.settings&&k in t.settings?coerce(SCH[k],t.settings[k]):undefined;if(v!==undefined)S[k]=v});loadCols(t.cols);if(t.ui){UI.hidden=[...(t.ui.hidden||[])];UI.order=[...(t.ui.order||[])]}curTpl=defTpl}
+ else loadCols(LS.get('cols',null));
+ S.locked=true;applyAll();booting=false})();
+new ResizeObserver(()=>rebuild()).observe(lad);
+let last=performance.now();function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(springs.length){stepSprings(dt);rowsEl.style.transform=`translateY(${(view.off*S.rowH).toFixed(2)}px)`}requestAnimationFrame(loop)}requestAnimationFrame(loop);
+window.KDOM={run,settings:S,schema:SCHEMA,defaults:DEF,set:setS,cols:COLS,templates:()=>({list:tplNames(),current:curTpl,dirty:tplDirty,default:defTpl,saved:Object.keys(TPL)}),template:tplAction,ui:UI,artifact,state:Q,data:D,view};
+})();

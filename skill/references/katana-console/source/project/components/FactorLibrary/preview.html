@@ -1,0 +1,64 @@
+<!-- @dsCard group="研究" height=300 subtitle="FactorLibrary：因子库卡片网格——IC / ICIR / 换手 LCD、衰减迷你线、五门 LED、相关最高因子；表视图可切；每张卡挂 run id" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+.gates{display:inline-flex;gap:3px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:620px}
+.card{background:var(--bg-200);border:var(--hairline);padding:8px 10px;display:grid;grid-template-columns:1fr auto;gap:4px 8px}
+.card.dim{opacity:.6}
+.name{font-weight:500;color:var(--ink-100)}
+.name small{display:block;color:var(--ink-300);font-size:10px;font-weight:400}
+.k{display:flex;gap:10px;grid-column:1/3;font-size:10px;color:var(--ink-300)}
+.k b{font-weight:500;color:var(--ink-100);font-family:var(--font-lcd);font-size:13px;letter-spacing:.04em;display:block}
+.k b.warn{color:var(--signal-amber)}
+.dec{grid-column:1/3;height:18px;display:flex;align-items:flex-end;gap:2px}
+.dec i{flex:1;background:var(--ink-400)}
+.dec i.l{background:var(--series-1)}
+.corr{grid-column:1/3;font-size:10px;color:var(--ink-300)}
+.corr b{font-weight:400;color:var(--ink-200)}
+.corr b.hi{color:var(--signal-amber)}
+</style></head><body>
+<div class="top"><div class="seg"><span class="on">卡片</span><span>表</span></div><span>家族</span><div class="seg"><span class="on">全部 38</span><span>动量 9</span><span>价值 7</span><span>质量 6</span><span>流动性 5</span></div><span style="margin-left:auto">排序 ICIR · 宇宙 CSI800 · 日频</span></div>
+<div class="cards">
+  <div class="card"><div class="name">MOM_RS_V3<small>动量 · 20d 相对强弱 · <span class="run">RUN 2c91</span></small></div><div class="gates"><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span></div>
+    <div class="k"><span>IC<b>0.041</b></span><span>ICIR<b>0.62</b></span><span>换手<b>38%</b></span><span>半衰<b>11d</b></span></div>
+    <div class="dec"><i class="l" style="height:100%"></i><i class="l" style="height:92%"></i><i class="l" style="height:80%"></i><i class="l" style="height:66%"></i><i style="height:52%"></i><i style="height:40%"></i><i style="height:30%"></i><i style="height:22%"></i><i style="height:16%"></i><i style="height:12%"></i></div>
+    <div class="corr">相关最高 <b>MOM_12M</b> 0.61 · <b>REV_5D</b> -0.33</div></div>
+  <div class="card"><div class="name">QUAL_ROE_STAB<small>质量 · ROE 稳定性 · <span class="run">RUN 2b07</span></small></div><div class="gates"><span class="led ok"></span><span class="led ok"></span><span class="led warn"></span><span class="led ok"></span><span class="led ok"></span></div>
+    <div class="k"><span>IC<b>0.028</b></span><span>ICIR<b>0.48</b></span><span>换手<b>9%</b></span><span>半衰<b>64d</b></span></div>
+    <div class="dec"><i class="l" style="height:100%"></i><i class="l" style="height:98%"></i><i class="l" style="height:96%"></i><i class="l" style="height:93%"></i><i class="l" style="height:90%"></i><i class="l" style="height:86%"></i><i style="height:82%"></i><i style="height:78%"></i><i style="height:74%"></i><i style="height:70%"></i></div>
+    <div class="corr">相关最高 <b>QUAL_GPOA</b> 0.44 · 成本后 IC <b class="hi">0.009 未过</b></div></div>
+  <div class="card"><div class="name">VAL_EP_IND<small>价值 · 行业中性 EP · <span class="run">RUN 29f4</span></small></div><div class="gates"><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led warn"></span></div>
+    <div class="k"><span>IC<b>0.022</b></span><span>ICIR<b>0.35</b></span><span>换手<b>12%</b></span><span>半衰<b>48d</b></span></div>
+    <div class="dec"><i class="l" style="height:100%"></i><i class="l" style="height:97%"></i><i class="l" style="height:94%"></i><i class="l" style="height:90%"></i><i class="l" style="height:86%"></i><i style="height:80%"></i><i style="height:74%"></i><i style="height:68%"></i><i style="height:62%"></i><i style="height:56%"></i></div>
+    <div class="corr">相关最高 <b class="hi">VAL_BP</b> 0.82 · 相关性门未过</div></div>
+  <div class="card"><div class="name">LIQ_AMIHUD<small>流动性 · Amihud · <span class="run">RUN 2812</span></small></div><div class="gates"><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span></div>
+    <div class="k"><span>IC<b>0.031</b></span><span>ICIR<b>0.51</b></span><span>换手<b>15%</b></span><span>半衰<b>30d</b></span></div>
+    <div class="dec"><i class="l" style="height:100%"></i><i class="l" style="height:95%"></i><i class="l" style="height:88%"></i><i class="l" style="height:80%"></i><i class="l" style="height:72%"></i><i style="height:64%"></i><i style="height:56%"></i><i style="height:48%"></i><i style="height:42%"></i><i style="height:36%"></i></div>
+    <div class="corr">相关最高 <b>SIZE_LN</b> -0.52</div></div>
+  <div class="card"><div class="name">FLOW_NORTH_5D<small>资金流 · 北向 5d · <span class="run">RUN 27aa</span></small></div><div class="gates"><span class="led ok"></span><span class="led warn"></span><span class="led off"></span><span class="led off"></span><span class="led off"></span></div>
+    <div class="k"><span>IC<b class="warn">0.012</b></span><span>ICIR<b class="warn">0.19</b></span><span>换手<b>71%</b></span><span>半衰<b>3d</b></span></div>
+    <div class="dec"><i class="l" style="height:100%"></i><i class="l" style="height:60%"></i><i class="l" style="height:30%"></i><i style="height:14%"></i><i style="height:8%"></i><i style="height:5%"></i><i style="height:4%"></i><i style="height:3%"></i><i style="height:3%"></i><i style="height:2%"></i></div>
+    <div class="corr">IC 门未过 · 后三门未评估</div></div>
+  <div class="card dim"><div class="name">REV_5D<small>反转 · 5d · <span class="run">RUN 1f03</span> · 已退役</small></div><div class="gates"><span class="led off"></span><span class="led off"></span><span class="led off"></span><span class="led off"></span><span class="led off"></span></div>
+    <div class="k"><span>IC<b>-0.018</b></span><span>ICIR<b>-0.21</b></span><span>换手<b>88%</b></span><span>半衰<b>2d</b></span></div>
+    <div class="dec"></div>
+    <div class="corr">2026-06 退役 · 成本后为负</div></div>
+</div>
+</body></html>

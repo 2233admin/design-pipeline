@@ -1,0 +1,80 @@
+<!-- @dsCard group="资产管理" height=300 subtitle="Fundamentals：三表 + 比率瓦片 + 估值区间 + 同业表；报告期与会计准则来自 Profile；DCF / 可比是 Lab 产物进瓦片" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.est{color:var(--signal-amber)}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.kpi{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:16px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.wrap{display:grid;grid-template-columns:340px 272px;gap:8px;width:620px}
+.grid{font-size:10px}
+.row{display:grid;grid-template-columns:110px repeat(4,1fr);height:22px;align-items:center;border-bottom:var(--hairline)}
+.row>div{padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row>div:first-child{color:var(--ink-200);font-family:var(--font-sans)}
+.row.sec>div:first-child{color:var(--ink-300);font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none}
+.row .r{color:var(--ink-100)}
+.yoy{color:var(--ink-300)}
+.val{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.val h4{margin:0 0 6px;font:inherit;font-size:10px;color:var(--ink-300);letter-spacing:.06em}
+.rng{position:relative;height:14px;background:var(--bg-000);box-shadow:var(--recess);margin:4px 0 8px}
+.rng i{position:absolute;top:3px;bottom:3px;background:repeating-linear-gradient(90deg,var(--ink-300) 0 3px,transparent 3px 5px)}
+.rng b{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--signal-orange);box-shadow:var(--glow-orange)}
+.rng s{position:absolute;top:0;bottom:0;width:1px;background:var(--ink-100);text-decoration:none}
+.peer{display:grid;grid-template-columns:70px repeat(3,1fr);height:20px;align-items:center;font-size:10px;border-bottom:var(--hairline)}
+.peer>div{padding:0 4px;text-align:right}
+.peer>div:first-child{text-align:left;color:var(--ink-200);font-family:var(--font-sans)}
+.peer.me>div{color:var(--signal-orange)}
+.peer.hd>div{color:var(--ink-300)}
+</style></head><body>
+<div class="kpi">
+  <div><small>PE TTM</small><b>21.4</b><i>5 年分位 18%</i></div>
+  <div><small>PB</small><b>4.9</b><i>分位 35%</i></div>
+  <div><small>ROE TTM</small><b>22.8%</b><i>3 年均 23.9</i></div>
+  <div><small>REV YOY</small><b>+14.2%</b><i>2026Q2</i></div>
+  <div><small>NET MARGIN</small><b>15.1%</b><i>↑ 1.3pt</i></div>
+  <div><small>FCF YIELD</small><b>4.6%</b><i>净现金 2,410 亿</i></div>
+</div>
+<div class="wrap">
+  <div class="grid" role="grid" aria-label="利润表 · 季度 · 亿元">
+    <div class="row hd"><div>利润表 · 亿</div><div class="r">25Q3</div><div class="r">25Q4</div><div class="r">26Q1</div><div class="r">26Q2</div></div>
+    <div class="row"><div>营业收入</div><div class="r">1,020</div><div class="r">1,185</div><div class="r">980</div><div class="r">1,142 <span class="yoy">+14</span></div></div>
+    <div class="row"><div>毛利率</div><div class="r">28.1%</div><div class="r">27.4%</div><div class="r">29.0%</div><div class="r">29.6%</div></div>
+    <div class="row"><div>归母净利</div><div class="r">148</div><div class="r">162</div><div class="r">139</div><div class="r">172 <span class="yoy">+21</span></div></div>
+    <div class="row"><div>经营现金流</div><div class="r">260</div><div class="r">312</div><div class="r">188</div><div class="r">294</div></div>
+    <div class="row sec"><div>BALANCE</div><div></div><div></div><div></div><div></div></div>
+    <div class="row"><div>货币资金</div><div class="r">2,980</div><div class="r">3,120</div><div class="r">3,060</div><div class="r">3,210</div></div>
+    <div class="row"><div>有息负债</div><div class="r">790</div><div class="r">810</div><div class="r">780</div><div class="r">800</div></div>
+    <div class="row"><div>存货周转天</div><div class="r">71</div><div class="r">66</div><div class="r">74</div><div class="r">68</div></div>
+  </div>
+  <div class="val">
+    <h4>估值区间 · 现价 246.80 · <span style="color:var(--signal-blue)">RUN 4c7d DCF</span></h4>
+    <div class="rng"><i style="left:22%;width:50%"></i><b style="left:41%"></b><s style="left:58%"></s></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink-300)"><span>悲观 198</span><span>DCF 中枢 <b style="font-weight:400;color:var(--ink-100)">271</b></span><span>乐观 332</span></div>
+    <h4 style="margin-top:10px">同业 · 电池</h4>
+    <div class="peer hd"><div></div><div>PE</div><div>ROE</div><div>营收增</div></div>
+    <div class="peer me"><div>宁德时代</div><div>21.4</div><div>22.8</div><div>+14.2</div></div>
+    <div class="peer"><div>比亚迪</div><div>24.9</div><div>19.1</div><div>+18.0</div></div>
+    <div class="peer"><div>亿纬锂能</div><div>31.2</div><div>12.4</div><div>+22.5</div></div>
+    <div class="peer"><div>国轩高科</div><div>58.0</div><div>4.1</div><div>+9.8</div></div>
+    <div class="peer" style="color:var(--ink-300)"><div>中位</div><div>28.1</div><div>15.8</div><div>+16.1</div></div>
+  </div>
+</div>
+</body></html>

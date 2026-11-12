@@ -1,0 +1,70 @@
+<!-- @dsCard group="衍生品" height=280 subtitle="OptionsFlow：期权成交流——Big Trades · Flow · Flow Delta · Strike Profile · Market State；GEX / Charm / Strike 热力走 Heatmap 预设；Expected Move 等叠加走 IndicatorPanel" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Barlow+Condensed:wght@800&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.ly{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;border:1px solid var(--line-200);padding:0 4px;color:var(--ink-300)}
+.ly.hypo{color:var(--signal-blue);border-color:var(--signal-blue)}.ly.fcst{border-style:dashed}.ly.plan{background:transparent;color:var(--ink-200)}.ly.fact{color:var(--ink-100);border-color:var(--ink-300)}
+
+
+.of{display:grid;grid-template-columns:1fr 200px;gap:8px;width:620px;height:230px}
+.tape{background:var(--bg-200);border:var(--hairline)}
+.tape .row{display:grid;grid-template-columns:56px 60px 24px 30px 60px 50px 1fr;padding:3px 8px;color:var(--ink-200)}.tape .row.hd{color:var(--ink-300);font-size:9px}
+.c{color:var(--series-1)}.p{color:var(--series-2)}
+.fl{font-family:var(--font-dot);font-size:9px;letter-spacing:.06em;-webkit-font-smoothing:none;border:1px solid var(--line-200);padding:0 3px;color:var(--ink-300)}.fl.sw{color:var(--signal-orange);border-color:var(--signal-orange)}
+.side{display:flex;flex-direction:column;gap:6px}
+.sp{background:var(--bg-200);border:var(--hairline);padding:6px 8px;flex:1}
+.sp h4{margin:0 0 4px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.st{display:grid;grid-template-columns:38px 1fr 1fr;gap:2px 4px;align-items:center;font-size:9px;color:var(--ink-300)}
+.st i{display:block;height:7px}.st i.c{background:var(--series-1)}.st i.p{background:var(--series-2);margin-left:auto}
+.ms{display:grid;grid-template-columns:1fr 1fr;gap:3px 8px}.ms small{display:block;color:var(--ink-300);font-size:9px}.ms b{font-family:var(--font-lcd);font-size:13px;font-weight:500;letter-spacing:.06em;color:var(--ink-100)}
+
+</style></head><body>
+
+<div class="top"><span class="cn" style="font-weight:700;font-size:13px;color:var(--ink-100)">期权流 · SPX 0DTE · CBOE 分钟级</span><span class="tag">FLOW Δ +1.8M</span><span class="seg" style="margin-left:auto"><span class="on">Big Trades</span><span>Flow</span><span>Strike</span><span>Market State</span></span></div>
+<div class="of">
+ <div class="tape"><div class="row hd"><span>时间</span><span>行权</span><span>C/P</span><span>方向</span><span class="r">权利金</span><span class="r">张</span><span>标记</span></div>
+  <div class="row"><span>10:42:07</span><span>5,000</span><span class="c">C</span><span>买</span><span class="r">$1.2M</span><span class="r">2,400</span><span><span class="fl sw">SWEEP</span> <span class="fl">ASK</span></span></div>
+  <div class="row"><span>10:41:50</span><span>4,950</span><span class="p">P</span><span>卖</span><span class="r">$640K</span><span class="r">1,800</span><span><span class="fl">BLOCK</span></span></div>
+  <div class="row"><span>10:41:12</span><span>5,025</span><span class="c">C</span><span>买</span><span class="r">$310K</span><span class="r">900</span><span><span class="fl">MULTI</span></span></div>
+  <div class="row"><span>10:40:33</span><span>4,975</span><span class="p">P</span><span>买</span><span class="r">$880K</span><span class="r">2,100</span><span><span class="fl sw">SWEEP</span> <span class="fl">BID</span></span></div>
+  <div class="row"><span>10:39:58</span><span>5,000</span><span class="p">P</span><span>卖</span><span class="r">$420K</span><span class="r">1,200</span><span><span class="fl">BLOCK</span></span></div>
+  <div class="row"><span>10:38:40</span><span>5,050</span><span class="c">C</span><span>买</span><span class="r">$95K</span><span class="r">400</span><span></span></div>
+  <div class="foot"><span>Flow Delta = 买入权利金 − 卖出</span><span style="margin-left:auto">GEX / Charm / Strike 热力 → Heatmap 预设</span></div></div>
+ <div class="side"><div class="sp"><h4>STRIKE PROFILE · 近 30m</h4><div class="st"><span>5,050</span><i class="c" style="width:30%"></i><i class="p" style="width:10%"></i><span>5,025</span><i class="c" style="width:55%"></i><i class="p" style="width:20%"></i><span>5,000</span><i class="c" style="width:90%"></i><i class="p" style="width:60%"></i><span>4,975</span><i class="c" style="width:25%"></i><i class="p" style="width:85%"></i><span>4,950</span><i class="c" style="width:15%"></i><i class="p" style="width:70%"></i></div></div>
+  <div class="sp"><h4>MARKET STATE</h4><div class="ms"><div><small>GEX</small><b>+2.1B</b></div><div><small>Expected Move</small><b>±0.6%</b></div><div><small>Put/Call 流</small><b>0.82</b></div><div><small>Flow Δ 5m</small><b class="up">+1.8M</b></div></div></div></div>
+</div>
+
+</body></html>

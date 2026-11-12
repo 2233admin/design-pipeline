@@ -9,6 +9,35 @@
   },
   "components": [
     {
+      "id": "katana-console/system",
+      "name": "KATANA Console design system",
+      "category": "operations-console",
+      "status": "experimental",
+      "keywords": ["KATANA", "katana-console", "控制台", "交易工作台", "semantic tokens", "Console", "Paper", "DOMLadder", "Footprint", "SmartTape", "dot matrix", "LCD", "workspaces"],
+      "description": "User-authorized internal reference snapshot of KATANA Console: semantic tokens, typography, motion, layout, state rules, component specifications and fixture previews. Select its explicit snapshot for individual component search and token projection; original source maturity is preserved.",
+      "path": "katana-console-design-system-snapshot.json",
+      "guide": "katana-console.md",
+      "routing": {
+        "capabilities": ["katana-console", "app-shell", "data-table", "command-palette", "tabs", "toggle", "text-input", "select", "dialog", "empty-state", "error-state"],
+        "platforms": ["web"],
+        "mode": "reference-adaptation",
+        "evidenceStatus": "unverified",
+        "fallback": "Read the attributed specification, retain fixture and dependency boundaries, then implement and verify the required behavior in the target project's framework and design foundation."
+      },
+      "alignment": {
+        "delivery": "Explicit local reference selection; no automatic package adoption or upstream code execution.",
+        "sourceCommit": "65f1a5317b7b7217d8ad6c453315cd30e89aee5b",
+        "verification": "Source import and hashes are verified separately from component behavior and visual acceptance."
+      },
+      "provenance": {
+        "source": "KATANA Console / 2233admin/KATANAview",
+        "repository": "https://github.com/2233admin/KATANAview",
+        "url": "https://github.com/2233admin/KATANAview/tree/65f1a5317b7b7217d8ad6c453315cd30e89aee5b/design/katana-console",
+        "license": "LicenseRef-User-Authorized-Internal-Reuse",
+        "attribution": "Copied at the user's request for internal reuse. Upstream has no declared open-source license; original source, author attribution and external dependency notices are preserved."
+      }
+    },
+    {
       "id": "smoothui/animated-components",
       "name": "SmoothUI animated React components",
       "category": "animated-ui",

@@ -1,0 +1,56 @@
+<!-- @dsCard group="资产管理" height=250 subtitle="TCA：成交成本分析——到达价 / VWAP / 收盘 三基准滑点，按算法 / 账户 / 时段 / 品种分组零轴条 + 逐单散点；bp 单位" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{display:grid;grid-template-columns:300px 312px;gap:8px;width:620px}
+.r2{display:grid;grid-template-columns:80px 1fr 56px;height:20px;align-items:center;gap:8px;font-size:10px}
+.lab{color:var(--ink-200)}.v{text-align:right;color:var(--ink-100)}.v.w{color:var(--signal-amber)}
+.ax{--z:65%}
+</style></head><body>
+<div class="kpi"><div><small>VS ARRIVAL</small><b class="est">-6.2</b><i>bp · 对我不利</i></div><div><small>VS VWAP</small><b>-1.1</b><i>bp</i></div><div><small>VS CLOSE</small><b>+3.4</b><i>bp · 有利</i></div><div><small>FILL RATE</small><b>91%</b><i>19 未成</i></div><div><small>成本合计</small><b>-18,420</b><i>本月 · 含费</i></div></div>
+<div class="wrap"><div class="box"><h4>按算法 · vs 到达价（bp）</h4>
+<div class="r2"><span class="lab">手动 · 梯子</span><div class="ax"><i style="left:53%;width:12%"></i></div><span class="v">-3.8</span></div>
+<div class="r2"><span class="lab">手动 · GO</span><div class="ax"><i class="w" style="left:35%;width:30%"></i></div><span class="v w">-9.6</span></div>
+<div class="r2"><span class="lab">TWAP 30m</span><div class="ax"><i style="left:58%;width:7%"></i></div><span class="v">-2.1</span></div>
+<div class="r2"><span class="lab">VWAP 全天</span><div class="ax"><i style="left:65%;width:4%"></i></div><span class="v">+1.3</span></div>
+<div class="r2"><span class="lab">篓子 B1–B3</span><div class="ax"><i style="left:50%;width:15%"></i></div><span class="v">-4.7</span></div>
+<div class="r2"><span class="lab">OpenAlice</span><div class="ax"><i style="left:60%;width:5%"></i></div><span class="v">-1.6</span></div>
+</div><div class="box"><h4>逐单 · 滑点 vs 订单占 ADV%</h4>
+<svg width="290" height="140" viewBox="0 0 290 140" role="img" aria-label="滑点散点"><g class="gl"><line x1="30" y1="10" x2="30" y2="120"/><line x1="30" y1="120" x2="280" y2="120"/><line x1="30" y1="70" x2="280" y2="70" stroke="var(--line-200)"/></g>
+<text x="4" y="14">bp</text><text x="250" y="134">ADV%</text><text x="22" y="73" text-anchor="end">0</text>
+<g fill="var(--ink-200)"><circle cx="50" cy="74" r="3"/><circle cx="60" cy="80" r="3"/><circle cx="75" cy="78" r="3"/><circle cx="90" cy="86" r="3"/><circle cx="110" cy="84" r="3"/><circle cx="130" cy="92" r="3"/><circle cx="150" cy="96" r="3"/><circle cx="170" cy="104" r="3"/><circle cx="200" cy="100" r="3"/><circle cx="240" cy="112" r="3"/><circle cx="70" cy="66" r="3"/><circle cx="100" cy="62" r="3"/><circle cx="55" cy="90" r="3"/></g>
+<circle cx="240" cy="112" r="5" fill="none" stroke="var(--signal-orange)"/><text x="248" y="108" fill="var(--signal-orange)">最差 · 手动 GO</text></svg></div></div>
+</body></html>

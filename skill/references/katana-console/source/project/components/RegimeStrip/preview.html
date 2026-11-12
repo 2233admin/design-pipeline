@@ -1,0 +1,54 @@
+<!-- @dsCard group="研究" height=230 subtitle="RegimeStrip：市场状态带（趋势 / 震荡 / 高波 / 危机）叠在时间轴下 + 分状态收益表；状态来自 Lab 的 HMM / 规则 run；颜色是类别不是好坏" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{width:620px;background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.strip{display:flex;height:14px;margin:4px 0 8px}
+.strip i{height:100%}
+.t1{background:var(--series-1)}.t2{background:var(--series-2)}.t3{background:var(--series-4)}.t4{background:var(--series-7)}
+.row{display:grid;grid-template-columns:90px repeat(5,1fr);height:20px;align-items:center;font-size:10px;border-bottom:var(--hairline)}
+.row>div{padding:0 4px;text-align:right}.row>div:first-child{text-align:left;color:var(--ink-200)}
+.sw{display:inline-block;width:8px;height:8px;margin-right:4px;vertical-align:middle}
+</style></head><body>
+<div class="top"><span class="run">RUN 3d07</span><span>HMM 4 态 · 月频 · 基于波动 / 趋势 / 宽度</span><span style="margin-left:auto">当前 <b style="font-weight:400;color:var(--series-1)">■ 趋势上</b> · 第 3 月 · 转移概率 ↓震荡 34%</span></div>
+<div class="wrap"><svg width="600" height="60" viewBox="0 0 600 60"><path d="M0 44 L60 40 L120 46 L180 30 L240 36 L300 22 L360 28 L420 18 L480 24 L540 14 L600 10" fill="none" stroke="var(--ink-300)" stroke-width="1.5"/><text x="0" y="58">2019</text><text x="300" y="58">2023</text><text x="560" y="58">2026</text></svg>
+<div class="strip" role="img" aria-label="状态带"><i class="t1" style="width:12%"></i><i class="t2" style="width:8%"></i><i class="t3" style="width:6%"></i><i class="t1" style="width:14%"></i><i class="t2" style="width:10%"></i><i class="t4" style="width:4%"></i><i class="t2" style="width:12%"></i><i class="t3" style="width:5%"></i><i class="t1" style="width:9%"></i><i class="t2" style="width:8%"></i><i class="t1" style="width:12%"></i></div>
+<div class="row hd"><div>状态</div><div>占比</div><div>策略年化</div><div>基准年化</div><div>超额</div><div>MaxDD</div></div>
+<div class="row"><div><span class="sw t1"></span>趋势上</div><div>47%</div><div>+31.2</div><div>+18.0</div><div>+13.2</div><div>-8.1</div></div>
+<div class="row"><div><span class="sw t2"></span>震荡</div><div>38%</div><div>+9.4</div><div>+1.2</div><div>+8.2</div><div>-11.6</div></div>
+<div class="row"><div><span class="sw t3"></span>高波下行</div><div>11%</div><div>-14.8</div><div>-22.5</div><div>+7.7</div><div>-17.8</div></div>
+<div class="row"><div><span class="sw t4"></span>危机</div><div>4%</div><div>-26.0</div><div>-31.0</div><div>+5.0</div><div class="est">-19.4 · 样本 2 段</div></div></div>
+</body></html>

@@ -1,0 +1,61 @@
+<!-- @dsCard group="研究" height=320 subtitle="RunInspector：一次 run 的全部证据——输入快照 hash、参数、数据版本、代码 commit、门结果、产物、父子 run 树；OpenAlice 的评估文字单独一节并标来源" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+.gates{display:inline-flex;gap:3px}
+.wrap{display:grid;grid-template-columns:360px 252px;gap:8px;width:620px}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;color:var(--ink-300);letter-spacing:.1em;font-family:var(--font-dot);-webkit-font-smoothing:none}
+.kv{display:grid;grid-template-columns:88px 1fr;gap:3px 10px;font-size:10px}
+.kv span{color:var(--ink-300)}
+.kv b{font-weight:400;color:var(--ink-100);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kv b.h{font-family:var(--font-lcd);letter-spacing:.06em;color:var(--signal-orange)}
+.gate{display:grid;grid-template-columns:14px 1fr 70px;gap:8px;align-items:center;height:20px;font-size:10px}
+.gate span{color:var(--ink-200)}
+.gate i{font-style:normal;text-align:right;color:var(--ink-300)}
+.gate i.w{color:var(--signal-amber)}
+.tree{font-size:10px;line-height:18px}
+.tree div{white-space:nowrap;color:var(--ink-300)}
+.tree div b{font-weight:400;color:var(--ink-200)}
+.tree div.me b{color:var(--signal-orange)}
+.out{display:flex;gap:6px;flex-wrap:wrap}
+.out span{padding:2px 6px;border:var(--hairline);background:var(--bg-300);font-size:10px;color:var(--ink-200)}
+.eval{font-family:var(--font-sans);font-size:11px;line-height:1.6;color:var(--ink-200)}
+.eval small{display:block;color:var(--ink-400);font-size:9px;font-family:var(--font-dot);letter-spacing:.08em;-webkit-font-smoothing:none;margin-top:4px}
+</style></head><body>
+<div class="top"><span class="run" style="font-size:12px">RUN 2c91</span><span>backtest · MOM_RS_V3 · CSI800 · 2019-01 → 2026-07</span><span><span class="led ok"></span> 完成 · 4m 12s · 09-30 14:02</span><span style="margin-left:auto">重跑 · 对照 · 加入报告</span></div>
+<div class="wrap">
+  <div class="box"><h4>INPUTS</h4>
+    <div class="kv"><span>快照 hash</span><b class="h">7f3a-c21e-90b4</b><span>数据集</span><b>cn_equity_daily @ v2026.09.28 · point-in-time</b><span>代码</span><b>alice-strats @ 9e1f4c0 · strategies/mom_rs.py</b><span>参数</span><b>lookback 20 · skip 1 · top 10% · rebalance 5d</b><span>成本模型</span><b>佣金 0.03% · 冲击 √V · 印花税 Profile</b><span>宇宙</span><b>CSI800 · 剔 ST / 停牌 / 上市 &lt; 60d</b><span>基准</span><b>CSI800 全收益</b></div>
+    <h4 style="margin-top:10px">GATES</h4>
+    <div class="gate"><span class="led ok"></span><span>样本外 Sharpe ≥ 0.8</span><i>1.12</i></div>
+    <div class="gate"><span class="led ok"></span><span>容量 ≥ 5 亿</span><i>8.3 亿</i></div>
+    <div class="gate"><span class="led ok"></span><span>最大回撤 ≤ 25%</span><i>-17.8%</i></div>
+    <div class="gate"><span class="led warn"></span><span>年换手 ≤ 800%</span><i class="w">910%</i></div>
+    <div class="gate"><span class="led off"></span><span>实盘偏离 ≤ 15%</span><i>未上线</i></div>
+  </div>
+  <div class="box"><h4>LINEAGE</h4>
+    <div class="tree"><div>├ <b>RUN 2b07</b> factor · QUAL_ROE_STAB</div><div>├ <b>RUN 2812</b> factor · LIQ_AMIHUD</div><div class="me">└ <b>RUN 2c91</b> backtest ← 当前</div><div>&nbsp;&nbsp;&nbsp;├ <b>RUN 2d10</b> walkforward</div><div>&nbsp;&nbsp;&nbsp;└ <b>RUN 2d44</b> stress</div></div>
+    <h4 style="margin-top:10px">OUTPUTS</h4>
+    <div class="out"><span>nav.parquet</span><span>trades.parquet</span><span>positions.parquet</span><span>report.md</span><span>gates.json</span></div>
+    <h4 style="margin-top:10px">评估 · OPENALICE</h4>
+    <div class="eval">换手超限来自 skip=1 导致的日内噪音；skip=3 时换手降到 690%，Sharpe 降 0.06。建议下一个 run 试 skip=3。<small>alice · session 41 · 09-30 14:05 · 不是前端结论</small></div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,28 @@
+<!-- @dsCard group="工作台" height=130 subtitle="底栏命令行：LCD 输入 + 建议列表；GO Bar / 快捷键 / Headless 同源" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-100);color:var(--ink-100);font-family:var(--font-mono);font-size:12px}
+.rail{display:flex;align-items:center;gap:var(--space-3);height:44px;padding:0 var(--space-4);background:var(--bg-300);border-top:2px solid #0d0c0a;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.lcd{flex:1;display:flex;align-items:center;gap:10px;padding:5px 10px;background:var(--bg-000);border:var(--hairline);box-shadow:var(--recess);letter-spacing:.04em}
+.lcd:focus-within{border-color:var(--signal-orange-dim);box-shadow:var(--recess),0 0 0 2px rgba(255,106,31,.25)}
+.lcd input{flex:1;background:transparent;border:0;outline:0;color:var(--ink-100);font:inherit;letter-spacing:inherit}
+.lcd input::placeholder{color:var(--ink-400)}
+.hint{font-size:10px;color:var(--ink-300);letter-spacing:.08em}
+.sug{margin-top:6px;width:520px;background:var(--bg-400);border:var(--hairline);box-shadow:var(--lift);border-radius:var(--radius-md);overflow:hidden}
+.sug div{display:flex;justify-content:space-between;align-items:center;height:28px;padding:0 10px;border-bottom:var(--hairline)}
+.sug div:last-child{border-bottom:0}
+.sug .on{background:var(--bg-000);box-shadow:inset 2px 0 0 var(--signal-orange)}
+.sug small{font-size:9px;color:var(--ink-300);letter-spacing:.1em}
+</style></head><body>
+<div class="rail">
+  <div class="lcd"><span style="color:var(--signal-orange)">&gt;</span><label for="cmd" style="position:absolute;left:-9999px">命令</label><input id="cmd" type="text" value="symbol.set 3007"><span class="hint" style="color:var(--ink-400)">view</span></div>
+  <span class="hint">⌘K · ⌘1-5 · M 静音</span>
+</div>
+<div class="sug" role="listbox" aria-label="建议">
+  <div class="on" role="option" aria-selected="true"><span>symbol.set <span style="color:var(--signal-orange)">300750</span> 宁德时代</span><small>LINK A · VIEW</small></div>
+  <div role="option"><span>symbol.set <span style="color:var(--signal-orange)">300759</span> 康龙化成</span><small>LINK A · VIEW</small></div>
+  <div role="option" style="color:var(--ink-300)"><span>order.draft 300750 buy 100</span><small style="color:var(--signal-amber)">WRITE · 需确认</small></div>
+</div>
+</body></html>

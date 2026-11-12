@@ -1,0 +1,48 @@
+<!-- @dsCard group="发现" height=290 subtitle="Screener：条件栏（胶囊，可存为命令）+ 结果 DataGrid + 分布迷你直方；范围滑杆用 Controls；结果可整批拖进自选" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.cond{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.chip{height:24px;display:flex;align-items:center;gap:6px;padding:0 8px;background:var(--bg-000);box-shadow:var(--recess);font-size:10px;color:var(--ink-200)}
+.chip b{font-weight:400;color:var(--signal-orange)}
+.chip s{text-decoration:none;color:var(--ink-400)}
+.chip.add{background:transparent;box-shadow:none;border:1px dashed var(--line-200);color:var(--ink-300)}
+.uni{margin-left:auto;font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.uni b{color:var(--ink-100);font-weight:400}
+.grid{width:600px;border:var(--hairline);background:var(--bg-200)}
+.row{display:grid;grid-template-columns:22px 140px 76px 68px 68px 72px 1fr;height:var(--row-tight);align-items:center;border-bottom:var(--hairline)}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.hd .sort{color:var(--signal-orange)}
+.hd .hist{display:flex;align-items:flex-end;gap:1px;height:14px}
+.hd .hist i{width:4px;background:var(--ink-400)}
+.hd .hist i.in{background:var(--signal-orange-dim)}
+.code{color:var(--ink-200)}.cn{font-family:var(--font-sans)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}
+.chk{width:10px;height:10px;border:1px solid var(--line-200);display:inline-block;background:var(--bg-000)}
+.chk.on{background:var(--signal-orange);border-color:var(--signal-orange)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+</style></head><body>
+<div class="cond" role="group" aria-label="筛选条件">
+  <div class="chip">市场 <b>CN-A</b> · 剔除 ST<s>×</s></div>
+  <div class="chip">市值 <b>100–2000</b> 亿<s>×</s></div>
+  <div class="chip">RS-20 <b>≥ 85</b><s>×</s></div>
+  <div class="chip">量比 <b>> 1.5</b><s>×</s></div>
+  <div class="chip">距 20 日高 <b>≤ 3%</b><s>×</s></div>
+  <div class="chip add">+ 条件</div>
+  <div class="uni">UNIVERSE <b>5,120</b> → <b>37</b></div>
+</div>
+<div class="grid" role="grid" aria-label="筛选结果">
+  <div class="row hd" role="row"><div><span class="chk"></span></div><div>代码 · 名称</div><div class="r sort">RS-20 ▼</div><div class="r">量比</div><div class="r">涨跌</div><div class="r">市值 亿</div><div><div class="hist"><i style="height:3px"></i><i style="height:6px"></i><i style="height:9px"></i><i style="height:12px"></i><i class="in" style="height:14px"></i><i class="in" style="height:10px"></i><i class="in" style="height:5px"></i></div></div></div>
+  <div class="row" role="row"><div><span class="chk on"></span></div><div><span class="code">300750</span> <span class="cn">宁德时代</span></div><div class="r" style="color:var(--signal-orange)">94</div><div class="r">4.2</div><div class="r up">+2.14%</div><div class="r">1,086</div><div style="color:var(--ink-300)">电新 · 已持有 A B</div></div>
+  <div class="row" role="row"><div><span class="chk on"></span></div><div><span class="code">300308</span> <span class="cn">中际旭创</span></div><div class="r" style="color:var(--signal-orange)">91</div><div class="r">3.1</div><div class="r up">+4.10%</div><div class="r">2,112</div><div style="color:var(--ink-300)">通信 · 自选</div></div>
+  <div class="row" role="row"><div><span class="chk"></span></div><div><span class="code">002475</span> <span class="cn">立讯精密</span></div><div class="r">88</div><div class="r">1.8</div><div class="r up">+2.90%</div><div class="r">2,980</div><div style="color:var(--ink-300)">电子 · 自选</div></div>
+  <div class="row" role="row"><div><span class="chk"></span></div><div><span class="code">688041</span> <span class="cn">海光信息</span></div><div class="r">87</div><div class="r">2.4</div><div class="r up">+1.70%</div><div class="r">3,310</div><div style="color:var(--ink-300)">电子</div></div>
+  <div class="row" role="row"><div><span class="chk"></span></div><div><span class="code">603986</span> <span class="cn">兆易创新</span></div><div class="r">86</div><div class="r">1.6</div><div class="r dn">-0.40%</div><div class="r">980</div><div style="color:var(--ink-300)">电子</div></div>
+  <div class="foot"><span><b>37</b> 命中 · 选中 2</span><span>数据 15:00 收盘快照</span><span style="margin-left:auto">加入自选 · 存为命令 · 导出 CSV</span></div>
+</div>
+</body></html>

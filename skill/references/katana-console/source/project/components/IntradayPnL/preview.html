@@ -1,0 +1,55 @@
+<!-- @dsCard group="盈亏" height=250 subtitle="IntradayPnL：日内盈亏曲线——按账户叠线、日亏损限额线、当前值 LCD；到限额走告警阶梯；实盘曲线无结算反馈" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{width:620px;background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.lg{display:flex;gap:14px;font-size:10px;color:var(--ink-300);margin-top:4px}
+.lg i{display:inline-block;width:10px;height:2px;vertical-align:middle;margin-right:4px}
+</style></head><body>
+<div class="kpi"><div><small>TODAY</small><b class="up">+18,408</b><i>+0.81% · 14:32</i></div><div><small>HIGH</small><b>+31,200</b><i>10:48</i></div><div><small>LOW</small><b class="dn">-6,900</b><i>09:41</i></div><div><small>DAY LIMIT</small><b>-56,600</b><i>-2.5% · 离 2.0%</i></div><div><small>REALIZED</small><b class="up">+8,420</b><i>3 笔</i></div></div>
+<div class="wrap"><svg width="600" height="150" viewBox="0 0 600 150" role="img" aria-label="日内盈亏">
+<g class="gl"><line x1="0" y1="30" x2="540" y2="30"/><line x1="0" y1="70" x2="540" y2="70" stroke="var(--line-200)"/><line x1="0" y1="110" x2="540" y2="110"/></g>
+<line x1="0" y1="138" x2="540" y2="138" stroke="var(--signal-red)" stroke-width="1" stroke-dasharray="4 3"/><text x="544" y="141" fill="var(--signal-red)">限额</text>
+<text x="544" y="33">+40k</text><text x="544" y="73">0</text><text x="544" y="113">-40k</text>
+<path d="M0 70 L30 76 L60 82 L90 78 L120 64 L150 52 L180 40 L210 46 L240 50 L270 44 L300 56 L330 60 L360 54 L390 58 L420 52 L450 56 L480 50 L510 52 L540 48" fill="none" stroke="var(--ink-100)" stroke-width="2"/>
+<path d="M0 70 L60 74 L120 60 L180 44 L240 48 L300 52 L360 46 L420 44 L480 40 L540 38" fill="none" stroke="var(--series-1)" stroke-width="1.2"/>
+<path d="M0 70 L60 72 L120 70 L180 72 L240 76 L300 80 L360 82 L420 80 L480 84 L540 82" fill="none" stroke="var(--series-2)" stroke-width="1.2"/>
+<path d="M0 70 L60 68 L120 66 L180 74 L240 72 L300 78 L360 76 L420 80 L480 78 L540 84" fill="none" stroke="var(--series-3)" stroke-width="1.2"/>
+<rect x="150" y="10" width="90" height="130" fill="var(--bg-100)" opacity=".5"/><text x="165" y="22" fill="var(--ink-400)">午休</text>
+<circle cx="540" cy="48" r="3" fill="var(--signal-orange)"/>
+<text x="0" y="148">09:30</text><text x="150" y="148">11:30</text><text x="240" y="148">13:00</text><text x="400" y="148">14:00</text><text x="520" y="148">15:00</text>
+</svg><div class="lg"><span><i style="background:var(--ink-100)"></i>合计</span><span><i style="background:var(--series-1)"></i>A</span><span><i style="background:var(--series-2)"></i>B</span><span><i style="background:var(--series-3)"></i>F</span><span style="margin-left:auto">日历 · 时段来自 Profile</span></div></div>
+</body></html>

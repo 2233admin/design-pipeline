@@ -1,0 +1,54 @@
+<!-- @dsCard group="对账" height=260 subtitle="BreakWorkbench：对账差异工作台——内部 vs 券商 / 托管的持仓、现金、成交差异；每个 break 有影响范围、候选原因、责任、处理记录、最终确认；Agent 不能静默修平" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Barlow+Condensed:wght@800&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.ly{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;border:1px solid var(--line-200);padding:0 4px;color:var(--ink-300)}
+.ly.hypo{color:var(--signal-blue);border-color:var(--signal-blue)}.ly.fcst{border-style:dashed}.ly.plan{background:transparent;color:var(--ink-200)}.ly.fact{color:var(--ink-100);border-color:var(--ink-300)}
+.row{display:grid;grid-template-columns:52px 28px 150px 80px 80px 1fr 80px;height:var(--row-base);align-items:center;border-bottom:var(--hairline);font-size:10px}
+.row>div{padding:0 6px}
+.k{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;color:var(--ink-300)}
+.k.o{color:var(--signal-amber)}.k.c{color:var(--signal-green)}
+.d{color:var(--signal-amber)}
+</style></head><body>
+<div class="kpi"><div><small>OPEN BREAKS</small><b class="est">3</b><i>持仓 1 · 现金 1 · 成交 1</i></div><div><small>MATCHED</small><b>99.2%</b><i>1,284 / 1,294 项</i></div><div><small>OLDEST</small><b>2d</b><i>#114 现金 F</i></div><div><small>SOURCES</small><b>3</b><i>券商 A B F · 托管 —</i></div><div><small>LAST RUN</small><b>15:02</small><i>自动 · 日切后</i></div></div>
+<div class="grid" role="grid" aria-label="对账差异"><div class="row hd"><div>#</div><div></div><div>对象</div><div class="r">内部</div><div class="r">券商</div><div>候选原因 · 处理</div><div>状态</div></div>
+<div class="row"><div class="k o">117</div><div><span class="acc">F</span></div><div><span class="code">IF2510</span> 持仓</div><div class="r">-2 手</div><div class="r d">-3 手</div><div>夜盘 21:05 成交未同步 · Ops Agent 候选 · 待人确认 → 决策队列</div><div><span class="k o">OPEN</span> 3h</div></div>
+<div class="row"><div class="k o">114</div><div><span class="acc">F</span></div><div>现金 CNY</div><div class="r">92,600</div><div class="r d">92,480</div><div>差 120 · 候选：手续费率差（期货 vs 配置）· 已申请费率表</div><div><span class="k o">OPEN</span> 2d</div></div>
+<div class="row"><div class="k o">116</div><div><span class="acc">B</span></div><div><span class="code">300308</span> 成交</div><div class="r">1,200</div><div class="r d">1,300</div><div>券商多一笔 100 @ 187.95 · 内部无 parent order · 孤立事件</div><div><span class="k o">OPEN</span> 5h</div></div>
+<div class="row" style="color:var(--ink-300)"><div class="k c">113</div><div><span class="acc" style="color:var(--ink-400)">A</span></div><div><span>600519</span> 现金 · 分红</div><div class="r">+11,117</div><div class="r">+11,117</div><div>税率按持有期 · 内部估算已更正 · ADJUST 行 09-30</div><div><span class="k c">CLOSED</span> 人</div></div>
+<div class="row" style="color:var(--ink-300)"><div class="k c">112</div><div><span class="acc" style="color:var(--ink-400)">A</span></div><div><span>300750</span> 持仓</div><div class="r">4,800</div><div class="r">4,800</div><div>T+1 时点差 · 自动闭合</div><div><span class="k c">CLOSED</span> 自动</div></div>
+<div class="foot"><span>缺失 ≠ 0 · 差异必须显式</span><span>自动闭合只允许"时点差"类</span><span style="margin-left:auto">导入对账单 · 重跑</span></div></div>
+</body></html>

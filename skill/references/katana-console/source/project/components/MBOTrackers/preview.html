@@ -1,0 +1,66 @@
+<!-- @dsCard group="订单流" height=270 subtitle="MBOTrackers：逐单（MBO / L3）叠加层——Icebergs · Stops · Sweeps 三个 Tracker + Activity Panel + 告警；无 MBO 源时空态，不降级伪造" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Barlow+Condensed:wght@800&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.ly{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;border:1px solid var(--line-200);padding:0 4px;color:var(--ink-300)}
+.ly.hypo{color:var(--signal-blue);border-color:var(--signal-blue)}.ly.fcst{border-style:dashed}.ly.plan{background:transparent;color:var(--ink-200)}.ly.fact{color:var(--ink-100);border-color:var(--ink-300)}
+
+
+.mb{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:620px;margin-bottom:8px}
+.tk{background:var(--bg-200);border:var(--hairline);padding:6px 8px}
+.tk h4{margin:0 0 4px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none;display:flex;justify-content:space-between}
+.tk .kv2{display:grid;grid-template-columns:auto 1fr;gap:2px 8px}.tk label{color:var(--ink-300)}.tk span{color:var(--ink-100)}
+.act{background:var(--bg-200);border:var(--hairline);width:620px}
+.act .row{display:grid;grid-template-columns:84px 72px 92px 50px 58px 1fr;padding:3px 8px;color:var(--ink-200)}.act .row.hd{color:var(--ink-300);font-size:9px}
+.ty{font-family:var(--font-dot);font-size:9px;letter-spacing:.06em;-webkit-font-smoothing:none;border:1px solid var(--line-200);padding:0 4px}
+.ty.ice{color:var(--signal-blue);border-color:var(--signal-blue)}.ty.stp{color:var(--signal-amber);border-color:var(--signal-amber)}.ty.swp{color:var(--signal-orange);border-color:var(--signal-orange)}
+.conf i{display:inline-block;width:5px;height:8px;background:var(--ink-300);margin-right:1px}.conf i.on{background:var(--signal-green)}
+
+</style></head><body>
+
+<div class="top"><span class="cn" style="font-weight:700;font-size:13px;color:var(--ink-100)">逐单追踪 · ESZ6 · Rithmic MBO</span><span class="tag"><i class="led ok"></i> L3 在线</span><span class="tag" style="margin-left:auto">叠加到 FLOW · DOM · HEATMAP</span></div>
+<div class="mb">
+ <div class="tk"><h4>ICEBERGS <span>7 活跃</span></h4><div class="kv2"><label>Min Hidden</label><span>50</span><label>Min Total</label><span>200</span><label>Min Duration</label><span>3 s</label></span><label>置信度</label><span class="seg" style="display:inline-flex"><span>Absolute</span><span class="on">Medium</span></span></div></div>
+ <div class="tk"><h4>STOPS <span>3 簇</span></h4><div class="kv2"><label>Min Volume</label><span>120</span><label>Max Window</label><span>400 ms</span><label>Min Range</label><span>2 ticks</span><label>Count</label><span>3 – 40</span><label>高亮</label><span>区间带（5 种）</span></div></div>
+ <div class="tk"><h4>SWEEPS <span>1 进行中</span></h4><div class="kv2"><label>Aggressors</label><span>5 – 50</span><label>Include Stops</label><span>是</span><label>方向</label><span class="up">买方扫单</span><label>档位</label><span>4</span></div></div>
+</div>
+<div class="act"><div class="row hd"><span>时间</span><span>类型</span><span>价位</span><span class="r">量</span><span>置信</span><span>说明</span></div>
+ <div class="row"><span>10:42:07.412</span><span><span class="ty ice">ICEBERG</span></span><span>5,012.25</span><span class="r">1,840</span><span class="conf"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span><span>隐藏 1,640 · 刷新 9 次 · 仍在</span></div>
+ <div class="row"><span>10:41:58.090</span><span><span class="ty swp">SWEEP</span></span><span>5,011.50 → 5,012.50</span><span class="r">3,120</span><span class="conf"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span><span>21 个主动买单 · 含止损触发</span></div>
+ <div class="row"><span>10:41:12.003</span><span><span class="ty stp">STOPS</span></span><span>5,010.75–5,011.00</span><span class="r">640</span><span class="conf"><i class="on"></i><i class="on"></i><i></i><i></i></span><span>12 笔 · 380 ms 内</span></div>
+ <div class="foot"><span>无 MBO 源 → 面板显示「无逐单数据」空态，不用 L2 推断</span><span style="margin-left:auto">告警 → AlertCenter</span></div></div>
+
+</body></html>

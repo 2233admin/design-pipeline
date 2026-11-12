@@ -1,0 +1,56 @@
+<!-- @dsCard group="资产管理" height=260 subtitle="FactorExposure：风格 / 行业因子的主动暴露零轴条，基准为零线；绝对暴露用双条；越限 amber；来自 Lab 回归 run" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.est{color:var(--signal-amber)}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.wrap{display:grid;grid-template-columns:300px 312px;gap:8px;width:620px}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:10px;color:var(--ink-300);letter-spacing:.06em}
+.r2{display:grid;grid-template-columns:72px 1fr 44px;height:20px;align-items:center;gap:8px}
+.lab{color:var(--ink-200);font-family:var(--font-sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.over{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.ax s{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--signal-amber);opacity:.6;text-decoration:none}
+.v{text-align:right;color:var(--ink-100)}
+.v.over{color:var(--signal-amber)}
+</style></head><body>
+<div class="top"><div class="seg"><span class="on">主动暴露</span><span>绝对暴露</span></div><span>模型 <b style="font-weight:400;color:var(--signal-blue)">RUN 7e02 · CNE6 风格 · 09-30</b></span><span>基准 中证 800</span><span style="margin-left:auto">R² 0.91 · 特异 38%</span></div>
+<div class="wrap">
+  <div class="box"><h4>风格（σ）· 限 ±0.5</h4>
+    <div class="r2"><span class="lab">动量</span><div class="ax"><i class="over" style="left:50%;width:38%"></i><s style="left:75%"></s><s style="left:25%"></s></div><span class="v over">+0.76</span></div>
+    <div class="r2"><span class="lab">成长</span><div class="ax"><i style="left:50%;width:17%"></i><s style="left:75%"></s><s style="left:25%"></s></div><span class="v">+0.34</span></div>
+    <div class="r2"><span class="lab">规模</span><div class="ax"><i style="left:36%;width:14%"></i><s style="left:75%"></s><s style="left:25%"></s></div><span class="v">-0.28</span></div>
+    <div class="r2"><span class="lab">价值</span><div class="ax"><i style="left:30%;width:20%"></i><s style="left:75%"></s><s style="left:25%"></s></div><span class="v">-0.41</span></div>
+    <div class="r2"><span class="lab">波动</span><div class="ax"><i style="left:50%;width:9%"></i><s style="left:75%"></s><s style="left:25%"></s></div><span class="v">+0.18</span></div>
+    <div class="r2"><span class="lab">流动性</span><div class="ax"><i style="left:47%;width:3%"></i><s style="left:75%"></s><s style="left:25%"></s></div><span class="v">-0.06</span></div>
+    <div class="r2"><span class="lab">Beta</span><div class="ax"><i style="left:38%;width:12%"></i><s style="left:75%"></s><s style="left:25%"></s></div><span class="v">-0.24</span></div>
+  </div>
+  <div class="box"><h4>行业（主动权重 %）· 限 ±8</h4>
+    <div class="r2"><span class="lab">电力设备</span><div class="ax"><i class="over" style="left:50%;width:44%"></i><s style="left:80%"></s><s style="left:20%"></s></div><span class="v over">+11.6</span></div>
+    <div class="r2"><span class="lab">电子</span><div class="ax"><i style="left:50%;width:26%"></i><s style="left:80%"></s><s style="left:20%"></s></div><span class="v">+6.9</span></div>
+    <div class="r2"><span class="lab">通信</span><div class="ax"><i style="left:50%;width:15%"></i><s style="left:80%"></s><s style="left:20%"></s></div><span class="v">+4.0</span></div>
+    <div class="r2"><span class="lab">食品饮料</span><div class="ax"><i style="left:50%;width:6%"></i><s style="left:80%"></s><s style="left:20%"></s></div><span class="v">+1.5</span></div>
+    <div class="r2"><span class="lab">银行</span><div class="ax"><i style="left:21%;width:29%"></i><s style="left:80%"></s><s style="left:20%"></s></div><span class="v">-7.6</span></div>
+    <div class="r2"><span class="lab">非银金融</span><div class="ax"><i style="left:30%;width:20%"></i><s style="left:80%"></s><s style="left:20%"></s></div><span class="v">-5.3</span></div>
+    <div class="r2"><span class="lab" style="color:var(--ink-300)">其他 ×22</span><div class="ax"><i style="left:46%;width:4%"></i></div><span class="v" style="color:var(--ink-300)">-1.1</span></div>
+  </div>
+</div>
+</body></html>

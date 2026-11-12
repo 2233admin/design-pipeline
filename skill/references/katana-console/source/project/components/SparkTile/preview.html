@@ -1,0 +1,23 @@
+<!-- @dsCard group="图表" height=120 subtitle="KPI 瓦片：LCD 数值 + 迷你折线 + 变化；一行最多 5 个" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-lcd);font-variant-numeric:tabular-nums}
+.row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--space-2)}
+.tile{background:var(--bg-200);border:var(--hairline);padding:8px 10px;display:flex;flex-direction:column;gap:4px}
+.t{font-family:var(--font-dot);font-size:9px;letter-spacing:.12em;color:var(--ink-300)}
+.v{font-size:16px;line-height:20px;font-weight:500;letter-spacing:.06em}
+.d{font-size:10px}
+svg{width:100%;height:24px;display:block}
+.sp{fill:none;stroke:var(--series-1);stroke-width:1.5}
+.sp.g{stroke:var(--ink-300)}
+</style></head><body>
+<div class="row">
+  <div class="tile"><span class="t">NET ASSET</span><span class="v">¥ 2.42M</span><svg viewBox="0 0 100 24" preserveAspectRatio="none"><path class="sp" d="M0 18 L12 16 L24 17 L36 12 L48 13 L60 9 L72 10 L84 6 L100 4"/><circle cx="100" cy="4" r="2.5" fill="var(--signal-orange)"/></svg><span class="d" style="color:var(--pnl-up)">+1.31% 今日</span></div>
+  <div class="tile"><span class="t">DRAWDOWN</span><span class="v" style="color:var(--signal-amber)">-3.1%</span><svg viewBox="0 0 100 24" preserveAspectRatio="none"><path class="sp g" d="M0 4 L12 8 L24 6 L36 12 L48 10 L60 16 L72 12 L84 18 L100 14"/><circle cx="100" cy="14" r="2.5" fill="var(--signal-orange)"/></svg><span class="d" style="color:var(--ink-300)">峰值 -6.8% · 02-14</span></div>
+  <div class="tile"><span class="t">SHARPE 60D</span><span class="v">1.84</span><svg viewBox="0 0 100 24" preserveAspectRatio="none"><path class="sp" d="M0 14 L12 15 L24 12 L36 13 L48 10 L60 11 L72 8 L84 9 L100 7"/><circle cx="100" cy="7" r="2.5" fill="var(--signal-orange)"/></svg><span class="d" style="color:var(--ink-300)">区间 1.2–2.1</span></div>
+  <div class="tile"><span class="t">TURNOVER</span><span class="v">0.62<span style="font-size:10px;color:var(--ink-300)"> /月</span></span><svg viewBox="0 0 100 24" preserveAspectRatio="none"><path class="sp" d="M0 10 L12 12 L24 9 L36 14 L48 11 L60 13 L72 10 L84 12 L100 11"/><circle cx="100" cy="11" r="2.5" fill="var(--signal-orange)"/></svg><span class="d" style="color:var(--ink-300)">稳定</span></div>
+  <div class="tile" style="border-color:var(--signal-orange-dim)"><span class="t">EXPOSURE</span><span class="v">131<span style="font-size:10px;color:var(--ink-300)"> / 150%</span></span><svg viewBox="0 0 100 24" preserveAspectRatio="none"><path class="sp" d="M0 16 L12 14 L24 15 L36 10 L48 11 L60 8 L72 9 L84 5 L100 4"/><line x1="0" y1="2" x2="100" y2="2" stroke="var(--signal-amber)" stroke-dasharray="2 2"/><circle cx="100" cy="4" r="2.5" fill="var(--signal-orange)"/></svg><span class="d" style="color:var(--signal-amber)">接近上限</span></div>
+</div>
+</body></html>

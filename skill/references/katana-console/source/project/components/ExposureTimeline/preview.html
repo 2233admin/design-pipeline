@@ -1,0 +1,53 @@
+<!-- @dsCard group="盈亏" height=240 subtitle="ExposureTimeline：敞口随时间——总 / 净 / 多 / 空敞口面 + 行业堆叠带 + 杠杆线；限额线；回答什么时候仓位最重" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{width:620px;background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.lg{display:flex;gap:12px;font-size:10px;color:var(--ink-300);margin-top:4px}.lg i{display:inline-block;width:10px;height:6px;vertical-align:middle;margin-right:4px}
+</style></head><body>
+<div class="top"><div class="seg"><span class="on">总 / 净</span><span>行业堆叠</span><span>多空</span><span>资产类别</span></div><span>3M · 账户 A B F · 日频</span><span style="margin-left:auto">现在 总 <b class="lcd" style="font-weight:400;color:var(--ink-100)">1.42×</b> 净 <b class="lcd" style="font-weight:400;color:var(--ink-100)">0.96×</b> · 限 2.0×</span></div>
+<div class="wrap"><svg width="600" height="140" viewBox="0 0 600 140" role="img" aria-label="敞口时间线">
+<g class="gl"><line x1="0" y1="20" x2="540" y2="20"/><line x1="0" y1="60" x2="540" y2="60"/><line x1="0" y1="100" x2="540" y2="100"/></g>
+<text x="544" y="23">2.0×</text><text x="544" y="63">1.0×</text><text x="544" y="103">0</text>
+<line x1="0" y1="20" x2="540" y2="20" stroke="var(--signal-red)" stroke-dasharray="4 3"/>
+<path d="M0 70 L60 66 L120 58 L180 50 L240 54 L300 44 L360 40 L420 46 L480 38 L540 43 L540 100 L0 100 Z" fill="var(--series-1)" opacity=".25"/>
+<path d="M0 70 L60 66 L120 58 L180 50 L240 54 L300 44 L360 40 L420 46 L480 38 L540 43" fill="none" stroke="var(--series-1)" stroke-width="1.5"/>
+<path d="M0 78 L60 76 L120 72 L180 68 L240 70 L300 64 L360 62 L420 66 L480 60 L540 62" fill="none" stroke="var(--ink-100)" stroke-width="1.5"/>
+<rect x="300" y="10" width="60" height="120" fill="var(--signal-amber)" opacity=".08"/><text x="304" y="18" fill="var(--signal-amber)">&gt;1.8× 4 日</text>
+<circle cx="540" cy="43" r="3" fill="var(--signal-orange)"/>
+<text x="0" y="136">07-02</text><text x="180" y="136">08-01</text><text x="360" y="136">09-01</text><text x="520" y="136">10-02</text>
+</svg><div class="lg"><span><i style="background:var(--series-1);opacity:.5"></i>总敞口 / 净值</span><span><i style="background:var(--ink-100);height:2px"></i>净敞口</span><span><i style="background:var(--signal-red);height:1px"></i>限额</span></div></div>
+</body></html>

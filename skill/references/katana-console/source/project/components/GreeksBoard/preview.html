@@ -1,0 +1,65 @@
+<!-- @dsCard group="衍生品" height=260 subtitle="GreeksBoard：组合 Greeks 聚合（Δ Γ Θ ν 按标的）+ 到期 P&L 曲线 + 情景（标的 ±5% × IV ±3）小热力；策略构建器的结果视图" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{display:grid;grid-template-columns:260px 352px;gap:8px;width:620px}
+.row{display:grid;grid-template-columns:70px repeat(4,1fr);height:22px;align-items:center;font-size:10px;border-bottom:var(--hairline)}
+.row>div{padding:0 4px;text-align:right}.row>div:first-child{text-align:left;color:var(--ink-200)}
+.hm{display:grid;grid-template-columns:28px repeat(5,1fr);gap:1px;margin-top:6px;font-size:9px}
+.hm div{height:16px;display:flex;align-items:center;justify-content:center;color:var(--ink-200)}
+.hm .l{color:var(--ink-300);justify-content:flex-end;padding-right:4px}
+</style></head><body>
+<div class="top"><span>账户 <span class="acc">F</span> · 期权 6 腿 + 标的 3 手</span><div class="seg"><span class="on">到期日</span><span>T+0</span><span>T+5</span></div><span style="margin-left:auto">组合 Δ-eq <b class="lcd" style="font-weight:400;color:var(--ink-100)">-1,840</b> · Θ/日 <b class="lcd" style="font-weight:400;color:var(--ink-100)">+2,140</b></span></div>
+<div class="wrap"><div class="box"><h4>按标的聚合</h4>
+<div class="row hd"><div>标的</div><div>Δ</div><div>Γ</div><div>Θ</div><div>ν</div></div>
+<div class="row"><div>510300</div><div>-1,840</div><div>+320</div><div>+2,140</div><div>-860</div></div>
+<div class="row"><div>IF2510</div><div>-900</div><div>0</div><div>0</div><div>0</div></div>
+<div class="row" style="color:var(--ink-100)"><div>合计 Δ-eq</div><div>-2,740</div><div>+320</div><div>+2,140</div><div>-860</div></div>
+<h4 style="margin-top:8px">标的 % × IV（P&L 千元）</h4>
+<div class="hm"><div></div><div class="l">-3</div><div class="l">-1</div><div class="l">0</div><div class="l">+1</div><div class="l">+3</div>
+<div class="l">+5%</div><div style="background:var(--div-neg-200)">-31</div><div style="background:var(--div-neg-100)">-22</div><div style="background:var(--div-neg-100)">-18</div><div style="background:var(--div-neg-100)">-14</div><div style="background:var(--bg-300)">-8</div>
+<div class="l">0</div><div style="background:var(--div-pos-100)">+6</div><div style="background:var(--div-pos-100)">+4</div><div style="background:var(--bg-300)">+2</div><div style="background:var(--bg-300)">0</div><div style="background:var(--div-neg-100)">-3</div>
+<div class="l">-5%</div><div style="background:var(--div-pos-200)">+28</div><div style="background:var(--div-pos-100)">+22</div><div style="background:var(--div-pos-100)">+19</div><div style="background:var(--div-pos-100)">+17</div><div style="background:var(--div-pos-100)">+13</div></div>
+</div><div class="box"><h4>到期 P&L · 标的价</h4>
+<svg width="330" height="170" viewBox="0 0 330 170" role="img" aria-label="到期损益"><g class="gl"><line x1="20" y1="30" x2="320" y2="30"/><line x1="20" y1="85" x2="320" y2="85" stroke="var(--line-200)"/><line x1="20" y1="140" x2="320" y2="140"/></g>
+<text x="324" y="33">+40k</text><text x="324" y="88">0</text><text x="324" y="143">-40k</text>
+<path d="M20 50 L120 50 L180 85 L230 120 L320 120" fill="none" stroke="var(--ink-300)" stroke-width="1.2" stroke-dasharray="3 3"/>
+<path d="M20 62 L80 60 L130 56 L170 70 L210 100 L260 118 L320 124" fill="none" stroke="var(--ink-100)" stroke-width="2"/>
+<line x1="186" y1="20" x2="186" y2="150" stroke="var(--poc)"/><text x="190" y="28" fill="var(--poc)">3.948</text>
+<circle cx="150" cy="85" r="3" fill="var(--signal-orange)"/><text x="100" y="80" fill="var(--signal-orange)">盈亏平衡 3.90</text>
+<text x="20" y="164">3.70</text><text x="160" y="164">3.95</text><text x="300" y="164">4.20</text></svg>
+<div style="font-size:10px;color:var(--ink-300);display:flex;gap:12px;margin-top:4px"><span>— 到期（虚）</span><span>— 现在（实）</span><span style="margin-left:auto">最大亏损 -38k @ 4.20↑</span></div></div></div>
+</body></html>

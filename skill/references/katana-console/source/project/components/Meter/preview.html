@@ -1,0 +1,37 @@
+<!-- @dsCard group="工作台" height=150 subtitle="仪表：点阵填充条 + 发光刻度针；越界转 amber" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px}
+.col{display:flex;flex-direction:column;gap:var(--space-2);width:320px}
+.lab{display:flex;justify-content:space-between;color:var(--ink-300);font-size:10px}
+.meter{height:10px;background:var(--bg-000);border:var(--hairline);box-shadow:var(--recess)}
+.meter > span{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--signal-orange) 0 4px,transparent 4px 6px)}
+.meter.ok > span{background:repeating-linear-gradient(90deg,var(--signal-green) 0 4px,transparent 4px 6px)}
+.meter.warn > span{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 4px,transparent 4px 6px)}
+.meter.off > span{background:repeating-linear-gradient(90deg,var(--line-200) 0 4px,transparent 4px 6px)}
+.gauge{position:relative;height:34px;background:var(--bg-000);border:var(--hairline);box-shadow:var(--recess)}
+.gauge .base{position:absolute;left:6px;right:6px;top:50%;height:1px;background:var(--line-100)}
+.gauge .pin{position:absolute;top:4px;bottom:4px;width:2px;background:var(--signal-orange);box-shadow:var(--glow-orange)}
+.gauge .ticks{position:absolute;left:6px;right:6px;bottom:4px;display:flex;justify-content:space-between;font-size:8px;color:var(--ink-400)}
+</style></head><body>
+<div style="display:flex;gap:var(--space-6)">
+  <div class="col">
+    <div class="lab"><span>LOAD · 敞口</span><span style="color:var(--ink-100)">72%</span></div>
+    <div class="meter ok"><span style="width:72%"></span></div>
+    <div class="lab"><span>LOAD · 受锁</span><span style="color:var(--signal-amber)">38%</span></div>
+    <div class="meter warn"><span style="width:38%"></span></div>
+    <div class="lab"><span>回测进度</span><span style="color:var(--signal-orange)">61%</span></div>
+    <div class="meter"><span style="width:61%"></span></div>
+    <div class="lab"><span style="color:var(--ink-400)">OFF</span><span style="color:var(--ink-400)">0%</span></div>
+    <div class="meter off"><span style="width:0%"></span></div>
+  </div>
+  <div class="col">
+    <div class="lab"><span>RS-20 · 电子</span><span style="color:var(--signal-orange)">94</span></div>
+    <div class="gauge"><div class="base"></div><div class="pin" style="left:calc(6px + 94% * .88)"></div><div class="ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div></div>
+    <div class="lab"><span>RS-20 · 军工</span><span style="color:var(--signal-red)">27</span></div>
+    <div class="gauge"><div class="base"></div><div class="pin" style="left:calc(6px + 27% * .88);background:var(--signal-red);box-shadow:0 0 6px var(--signal-red)"></div><div class="ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div></div>
+  </div>
+</div>
+</body></html>

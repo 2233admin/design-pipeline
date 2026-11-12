@@ -1,0 +1,30 @@
+<!-- @dsCard group="工作台" height=110 subtitle="指示灯：off · on · ok · warn · danger；点阵矩阵" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-300);font-family:var(--font-mono);font-size:9px;letter-spacing:.12em}
+.row{display:flex;gap:var(--space-6);align-items:center}
+.item{display:flex;align-items:center;gap:var(--space-2)}
+.dot{width:8px;height:8px;border-radius:var(--radius-pill);background:var(--led-off);box-shadow:inset 0 1px 2px rgba(0,0,0,.8)}
+.dot.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}
+.dot.ok{background:var(--signal-green);box-shadow:0 0 6px var(--signal-green)}
+.dot.warn{background:var(--signal-amber);box-shadow:0 0 6px var(--signal-amber)}
+.dot.danger{background:var(--signal-red);box-shadow:0 0 6px var(--signal-red)}
+.matrix{display:grid;grid-template-columns:repeat(8,8px);gap:6px;padding:6px;background:var(--bg-000);border:var(--hairline);box-shadow:var(--recess)}
+</style></head><body>
+<div class="row">
+  <div class="item"><span class="dot" role="img" aria-label="熄灭"></span>OFF</div>
+  <div class="item"><span class="dot on" role="img" aria-label="激活"></span>ON</div>
+  <div class="item"><span class="dot ok" role="img" aria-label="正常"></span>OK</div>
+  <div class="item"><span class="dot warn" role="img" aria-label="警告"></span>WARN</div>
+  <div class="item"><span class="dot danger" role="img" aria-label="危险"></span>DANGER</div>
+  <div style="width:1px;height:24px;background:var(--line-100)"></div>
+  <div class="item">QUOTE <span class="dot ok"></span> EXEC <span class="dot ok"></span> ALICE <span class="dot warn"></span></div>
+  <div style="width:1px;height:24px;background:var(--line-100)"></div>
+  <div class="matrix" role="img" aria-label="异动灯阵 3 命中">
+    <span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot warn"></span><span class="dot"></span><span class="dot"></span><span class="dot on"></span><span class="dot"></span>
+    <span class="dot"></span><span class="dot"></span><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+  </div>
+</div>
+</body></html>

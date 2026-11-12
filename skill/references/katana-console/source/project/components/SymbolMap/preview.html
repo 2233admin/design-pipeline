@@ -1,0 +1,49 @@
+<!-- @dsCard group="运行中心" height=220 subtitle="SymbolMap：跨源代码映射——同一品种在各源的代码、是否一致、冲突与缺失；手动修正是命令；GO Bar 解析靠它" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.row{display:grid;grid-template-columns:22px 150px 1fr 1fr 1fr 1fr 60px;height:var(--row-base);align-items:center;border-bottom:var(--hairline);font-size:10px}
+.row>div{padding:0 6px}.m{color:var(--ink-200)}.miss{color:var(--ink-400)}
+</style></head><body>
+<div class="top"><span>5,312 品种 · 4 源</span><div class="seg"><span class="on">冲突 3</span><span>缺失 41</span><span>全部</span></div><span style="margin-left:auto">规范码 = 交易所码 + 后缀（.SZ .SH .BJ .CFX）</span></div>
+<div class="grid" role="grid" aria-label="代码映射"><div class="row hd"><div></div><div>规范</div><div>QMT</div><div>Tushare</div><div>AkShare</div><div>ccxt / 其他</div><div></div></div>
+<div class="row"><div><span class="led ok"></span></div><div><span class="code">300750.SZ</span> <span class="cn">宁德时代</span></div><div class="m">300750.SZ</div><div class="m">300750.SZ</div><div class="m">sz300750</div><div class="miss">—</div><div class="r" style="color:var(--ink-300)">—</div></div>
+<div class="row"><div><span class="led warn"></span></div><div><span class="code">IF2510.CFX</span> <span class="cn">沪深300 期货</span></div><div class="m">IF2510.IF</div><div class="m">IF2510.CFX</div><div class="m">IF2510</div><div class="miss">—</div><div class="r est">确认</div></div>
+<div class="row"><div><span class="led warn"></span></div><div><span class="code">00700.HK</span> <span class="cn">腾讯控股</span></div><div class="m">00700.HK</div><div class="m">00700.HK</div><div class="est">0700.HK ≠</div><div class="miss">—</div><div class="r est">确认</div></div>
+<div class="row"><div><span class="led ok"></span></div><div><span class="code">BTCUSDT.BNB</span></div><div class="miss">—</div><div class="miss">—</div><div class="miss">—</div><div class="m">BTC/USDT</div><div class="r" style="color:var(--ink-300)">—</div></div>
+<div class="row"><div><span class="led off"></span></div><div><span class="code">920001.BJ</span> <span class="cn">某北交所</span></div><div class="m">920001.BJ</div><div class="miss">缺</div><div class="miss">缺</div><div class="miss">—</div><div class="r" style="color:var(--ink-300)">补</div></div>
+<div class="foot"><span>映射表 = 数据平台维护 · 前端只确认冲突</span><span style="margin-left:auto">粘贴识别 / GO Bar 解析用规范码</span></div></div>
+</body></html>

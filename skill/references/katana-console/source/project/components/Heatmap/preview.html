@@ -1,0 +1,31 @@
+<!-- @dsCard group="图表" height=230 subtitle="热力图：行业 × 周 相对强度；发散色阶，格间 1px 缝，低对比格不写字" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px}
+.head{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2)}
+.hm{display:grid;grid-template-columns:72px repeat(12,32px);gap:1px;background:var(--bg-100);border:var(--hairline);width:max-content}
+.hm > div{height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-variant-numeric:tabular-nums}
+.hm .r{justify-content:flex-start;padding-left:8px;background:var(--bg-300);color:var(--ink-200);font-family:var(--font-sans);font-size:11px}
+.hm .c{background:var(--bg-300);color:var(--chart-axis);font-size:9px}
+.p3{background:var(--pnl-up);color:var(--bg-000)}.p2{background:var(--div-pos-200);color:var(--ink-100)}.p1{background:var(--div-pos-100);color:var(--ink-200)}
+.z{background:var(--div-mid);color:var(--ink-300)}
+.n1{background:var(--div-neg-100);color:var(--ink-200)}.n2{background:var(--div-neg-200);color:var(--ink-100)}.n3{background:var(--pnl-down);color:var(--bg-000)}
+.sel{outline:2px solid var(--signal-orange);outline-offset:-2px}
+.scale{display:flex;align-items:center;gap:6px;margin-top:var(--space-2);color:var(--ink-300);font-size:9px;letter-spacing:.1em}
+.scale i{width:18px;height:8px;display:inline-block}
+</style></head><body>
+<div class="head"><span style="font-family:var(--font-sans);font-weight:700;font-size:13px">行业 × 周 · 相对强度（vs 沪深300）</span><span style="margin-left:auto;color:var(--ink-300);font-size:10px">点击格子 → Desk 联动该行业</span></div>
+<div class="hm" role="table" aria-label="行业相对强度热力图">
+  <div class="c"></div><div class="c">W27</div><div class="c">W28</div><div class="c">W29</div><div class="c">W30</div><div class="c">W31</div><div class="c">W32</div><div class="c">W33</div><div class="c">W34</div><div class="c">W35</div><div class="c">W36</div><div class="c">W37</div><div class="c">W38</div>
+  <div class="r">电子</div><div class="p1">+1</div><div class="p2">+3</div><div class="p2">+2</div><div class="p3">+5</div><div class="p3">+6</div><div class="p2">+3</div><div class="p3">+4</div><div class="p3">+7</div><div class="p2">+3</div><div class="p3">+5</div><div class="p3 sel">+8</div><div class="p3">+6</div>
+  <div class="r">通信</div><div class="z">0</div><div class="p1">+1</div><div class="p2">+2</div><div class="p2">+3</div><div class="p3">+4</div><div class="p2">+2</div><div class="p2">+3</div><div class="p3">+5</div><div class="p2">+3</div><div class="p2">+2</div><div class="p3">+4</div><div class="p3">+5</div>
+  <div class="r">计算机</div><div class="n1">-1</div><div class="z">0</div><div class="p1">+1</div><div class="p2">+2</div><div class="p2">+3</div><div class="p1">+1</div><div class="p2">+2</div><div class="p3">+4</div><div class="p2">+2</div><div class="p2">+3</div><div class="p2">+3</div><div class="p3">+4</div>
+  <div class="r">医药</div><div class="n2">-2</div><div class="n1">-1</div><div class="z">0</div><div class="z">0</div><div class="p1">+1</div><div class="z">0</div><div class="p1">+1</div><div class="p1">+1</div><div class="z">0</div><div class="p1">+1</div><div class="p1">+1</div><div class="z">0</div>
+  <div class="r">银行</div><div class="p1">+1</div><div class="z">0</div><div class="n1">-1</div><div class="n1">-1</div><div class="n2">-2</div><div class="n1">-1</div><div class="n2">-2</div><div class="n2">-3</div><div class="n1">-1</div><div class="n2">-2</div><div class="n2">-2</div><div class="n2">-3</div>
+  <div class="r">煤炭</div><div class="p2">+2</div><div class="p1">+1</div><div class="z">0</div><div class="n1">-1</div><div class="n2">-2</div><div class="n2">-3</div><div class="n1">-1</div><div class="n2">-2</div><div class="n3">-4</div><div class="n2">-3</div><div class="n2">-2</div><div class="n3">-4</div>
+  <div class="r">军工</div><div class="n1">-1</div><div class="n2">-2</div><div class="n2">-2</div><div class="n3">-4</div><div class="n2">-3</div><div class="n3">-5</div><div class="n3">-4</div><div class="n2">-3</div><div class="n3">-5</div><div class="n3">-6</div><div class="n3">-5</div><div class="n3">-7</div>
+</div>
+<div class="scale"><span>-8%</span><i style="background:var(--pnl-down)"></i><i style="background:var(--div-neg-200)"></i><i style="background:var(--div-neg-100)"></i><i style="background:var(--div-mid)"></i><i style="background:var(--div-pos-100)"></i><i style="background:var(--div-pos-200)"></i><i style="background:var(--pnl-up)"></i><span>+8%</span><span style="margin-left:12px">A 股约定 · 红涨绿跌 · 色觉友好：设置</span></div>
+</body></html>

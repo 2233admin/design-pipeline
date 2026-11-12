@@ -1,0 +1,47 @@
+<!-- @dsCard group="资产管理" height=270 subtitle="OrderBasket：篓子单——跨账户一组订单的预检灯、拆分策略、分批进度；每批提交各走确认；没有一键全发" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.est{color:var(--signal-amber)}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.grid{width:620px}
+.row{display:grid;grid-template-columns:22px 28px 130px 44px 72px 72px 90px 1fr;height:var(--row-tight);align-items:center;border-bottom:var(--hairline)}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none}
+.buy{color:var(--bid)}.sell{color:var(--ask)}
+.led{width:8px;height:8px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green);box-shadow:var(--glow-orange)}.warn{background:var(--signal-amber)}.bad{background:var(--signal-red)}
+.batch{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;color:var(--ink-300)}
+.batch.now{color:var(--signal-orange)}
+.prog{display:flex;gap:2px;align-items:center}
+.prog i{width:14px;height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.prog i.done{background:var(--series-1);border-color:var(--series-1)}
+.prog i.now{border-color:var(--signal-orange);background:repeating-linear-gradient(90deg,var(--signal-orange) 0 2px,transparent 2px 4px)}
+.btn{margin-left:auto;height:24px;padding:0 10px;display:flex;align-items:center;background:var(--bg-400);border:1px solid var(--line-200);color:var(--ink-100);font-size:11px}
+</style></head><body>
+<div class="top"><span>篓子 <b style="font-weight:400;color:var(--ink-100)">RB-0930-A</b> · 来源 RebalanceDesk</span><div class="seg"><span class="on">3 批 · 5 分钟</span><span>一次</span><span>TWAP 30m</span></div><span>先卖后买</span><span style="margin-left:auto">预检 <span class="led ok"></span> 3 <span class="led warn"></span> 1 <span class="led bad"></span> 0</span></div>
+<div class="grid" role="grid" aria-label="篓子单">
+  <div class="row hd"><div></div><div></div><div>代码 · 名称</div><div>方向</div><div class="r">数量</div><div class="r">限价</div><div>批次</div><div>预检</div></div>
+  <div class="row"><div><span class="led ok"></span></div><div><span class="acc">A</span></div><div><span class="code">300750</span> <span class="cn">宁德时代</span></div><div class="side sell">SELL</div><div class="r">500</div><div class="r">246.80</div><div class="batch">B1 已成</div><div style="color:var(--ink-300)">可卖 ✓ · 风控 ✓</div></div>
+  <div class="row"><div><span class="led ok"></span></div><div><span class="acc">B</span></div><div><span class="code">300308</span> <span class="cn">中际旭创</span></div><div class="side sell">SELL</div><div class="r">300</div><div class="r">188.40</div><div class="batch">B1 已成</div><div style="color:var(--ink-300)">可卖 ✓ · 风控 ✓</div></div>
+  <div class="row" style="box-shadow:inset 2px 0 0 var(--signal-orange)"><div><span class="led ok"></span></div><div><span class="acc">A</span></div><div><span class="code">600519</span> <span class="cn">贵州茅台</span></div><div class="side buy">BUY</div><div class="r">100</div><div class="r">1,482.00</div><div class="batch now">B2 待确认</div><div style="color:var(--ink-300)">资金 ✓ · 集中度 ✓</div></div>
+  <div class="row"><div><span class="led warn"></span></div><div><span class="acc">A</span></div><div><span class="code">688041</span> <span class="cn">海光信息</span></div><div class="side buy">BUY</div><div class="r">400</div><div class="r">142.10</div><div class="batch">B3</div><div class="est">涨停价 · 可能不成 · 200 股起</div></div>
+  <div class="row" style="color:var(--ink-300)"><div><span class="led" style="background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)"></span></div><div><span class="acc" style="color:var(--ink-400)">B</span></div><div><span>002475</span> <span class="cn">立讯精密</span></div><div class="side" style="color:var(--ink-400)">—</div><div class="r">0</div><div class="r">—</div><div class="batch">跳过</div><div>阈值内 · 用户移除</div></div>
+  <div class="foot"><span>进度 <span class="prog"><i class="done"></i><i class="now"></i><i></i></span> 1/3</span><span>净现金 <b>-72,700</b></span><span>剩余 <b>2</b> 笔 · 1 待确认</span><span class="btn">提交 B2 → 确认（1 笔）</span></div>
+</div>
+</body></html>

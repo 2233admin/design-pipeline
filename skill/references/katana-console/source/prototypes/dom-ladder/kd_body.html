@@ -1,0 +1,43 @@
+<div class="kdwrap" id="kd">
+ <div class="tb">
+  <span class="sym" data-el="sym"><span id="symChip" class="chip" title="点击切换标的（fixture 三个）">300750</span><small id="symName">宁德时代</small></span>
+  <span class="chip acct" data-el="acct" title="交易账户：模拟 · 固定不可切换">PAPER</span>
+  <select class="sel" id="tifSel" data-el="tif" title="订单有效期 DAY / GTC（随单发送到 PAPER）"><option>DAY</option><option>GTC</option></select>
+  <span class="qtys" id="qtys" data-el="qtys" title="快捷手数（设置 › 交易 可改）/ 手动手数"><input id="qtyIn" class="num" value="1" inputmode="numeric"></span>
+  <button class="btn" id="btnExit" data-el="exit" disabled title="ExitStrategy（预留：Simple / Multi-Level，经 ExitStrategy 卡）">Exit</button>
+  <button class="btn" id="btnCols" data-el="cols" title="列：显隐 / 宽度 / 顺序 / 子模式">列</button>
+  <button class="btn" id="btnSettings" data-el="settings" title="设置：常规 / 列 / 交易 / DOM Trader / 颜色 / 模板">⚙ 设置</button>
+  <span class="sp"></span>
+  <span class="lcd" id="posLcd" data-el="pos" title="仓位：FLAT / +N / −N">FLAT</span>
+  <span class="lcd" id="pnlLcd" data-el="pnl" title="盈亏（ticks / cash / pct）">— —</span>
+  <button class="btn tradeBtn" id="btnReverse" data-el="reverse" title="平仓并反向开等量仓位（One-Click 关闭时弹确认）">Reverse</button>
+  <button class="btn tradeBtn" id="btnFlatten" data-el="flatten" title="撤单 + 市价平仓（One-Click 关闭时弹确认）">Flatten</button>
+  <button class="btn tradeBtn" id="btnCancelAll" data-el="cancel" title="撤销全部挂单">Cancel All</button>
+  <button class="btn lockBtn on" id="btnLock" data-el="lock">🔒 已锁定</button>
+  <button class="btn" id="btnCenter" data-el="center" title="居中（C / 双击价格列）">居中</button>
+  <button class="btn on" id="btnAuto" data-el="auto" title="自动居中（A）">自动</button>
+  <span class="qst" id="qst" data-el="qst" data-keep></span>
+  <span class="fx" data-el="fx" data-keep title="确定性样例驱动（Worker 代替本机引擎），不是实时行情">FIXTURE</span>
+  <button class="btn agent" id="btnAgent" data-el="agent">Agent 解读</button>
+  <button class="btn" id="btnCmd" data-el="cmd" title="/ 命令">/ 命令</button>
+ </div>
+ <div class="statebar" id="stateBar"></div>
+ <div class="designbar" id="designBar" hidden>设计模式 · 点元素隐藏 · 拖动重排 · FIXTURE / 状态标不可隐藏 · <span class="lnk" id="designShowAll">显示全部元素</span> · <span class="lnk" id="designDone">完成（Esc）</span></div>
+ <div class="ladder" id="ladder">
+  <div class="scroll" id="scroll"><div class="inner" id="inner">
+   <div class="head" id="head"></div>
+   <div class="rows" id="rows"></div>
+  </div></div>
+  <div class="panel" id="panel" hidden>
+   <div class="ph"><b>设置</b><span class="tabs" id="panelTabs"></span><span class="x" id="panelX" title="关闭（Esc）">✕</span></div>
+   <div class="pb" id="panelBody"></div>
+   <div class="pf"><span>模板 <b id="panelTpl">未命名</b></span><span class="sp"></span><span class="lnk" id="panelReset">恢复出厂</span></div>
+  </div>
+  <div class="ctx" id="ctx" hidden></div>
+  <div class="tip" id="tip"></div>
+  <div class="note" id="note"></div>
+  <div class="toast" id="toast"></div>
+  <div class="cmd" id="cmd" hidden><span>›</span><input id="cmdIn" placeholder="set rowH 18 · set dtMode liq · set liqScheme thermal · set colBid #00ffc8 · width bids 90 · col hist · template add 我的 · template load ★ DOM Trader 刮头皮 · design · agg 5 · lock · order buy 246.40 5 · submit · mkt sell 2 · state gap · replay 20 2 · artifact · agent"><small id="cmdHint">Enter 执行 · Esc 关</small></div>
+ </div>
+ <div class="ft"><span class="lcd sm" id="spreadLcd" data-el="spread">— —</span><span id="ftStat" data-el="stat"></span><span id="ftInfo" data-el="info"></span><span id="ftPerf" data-el="perf"></span><span class="sp"></span><span class="help" data-el="help">滚轮滚价位 · ⌘滚轮改聚合 · 双击价格居中 · 点买量/卖量 = 限价草稿（默认锁定） · 右键买卖量 = Stop 草稿 · 右键自己的单 = 撤 · 拖自己的单 = 改价 · 拖列头排序 / 拖右缘改宽 · 右键其它处 = 菜单 · ↵ 提交 · L 锁 · C 居中 · / 命令</span><span id="ftEngine" data-el="engine">数据流：Worker（代替本机引擎）L2 快照 + 有序增量 + 序列状态 → reducer / 深度变化 / 当前成交 / 排队估算 / 纸面撮合（FIFO / LIFO）→ 前端只 patch 变化的格；设置 → schema → 面板 / set 命令 / 模板</span></div>
+</div>

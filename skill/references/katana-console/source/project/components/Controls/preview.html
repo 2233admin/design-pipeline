@@ -1,0 +1,45 @@
+<!-- @dsCard group="基元" height=230 subtitle="表单基元皮肤：Button / Input / Select / Slider / Checkbox / Segmented；四态" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600&family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-sans);font-size:12px}
+.g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3) var(--space-6);width:560px}
+.f{display:flex;flex-direction:column;gap:4px}
+label{font-family:var(--font-display);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-200)}
+.h{font-size:10px;color:var(--ink-300);font-family:var(--font-mono)}
+.btn{height:var(--control-h);padding:0 12px;background:var(--bg-200);border:1px solid var(--line-200);color:var(--ink-100);font:600 13px var(--font-display);letter-spacing:.06em;text-transform:uppercase;border-radius:var(--radius-sm);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 1px 0 #0d0c0a;cursor:pointer}
+.btn:hover{background:var(--bg-400)}
+.btn:active{transform:translateY(1px);box-shadow:inset 0 1px 0 rgba(0,0,0,.4)}
+.btn:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.btn.pri{background:#3a1e0e;border-color:var(--signal-orange-dim);color:var(--signal-orange)}
+.btn.dan{border-color:#5a1f1f;color:var(--signal-red)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.in{height:var(--control-h);padding:0 8px;background:var(--bg-000);border:1px solid var(--line-100);box-shadow:var(--recess);color:var(--ink-100);font:12px var(--font-mono);border-radius:var(--radius-sm);width:100%;box-sizing:border-box}
+.in:focus{outline:0;border-color:var(--signal-orange-dim);box-shadow:var(--recess),0 0 0 2px rgba(255,106,31,.25)}
+.in.err{border-color:#5a1f1f;box-shadow:var(--recess),0 0 0 2px rgba(255,90,90,.2)}
+.sel{display:flex;align-items:center;justify-content:space-between;height:var(--control-h);padding:0 8px;background:var(--bg-200);border:1px solid var(--line-200);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:12px}
+.seg{display:inline-flex;border:1px solid var(--line-200);border-radius:var(--radius-sm);overflow:hidden}
+.seg span{padding:0 10px;height:26px;display:flex;align-items:center;font:600 12px var(--font-display);letter-spacing:.06em;color:var(--ink-300);border-right:1px solid var(--line-200)}
+.seg span:last-child{border-right:0}
+.seg span.on{background:var(--bg-000);color:var(--signal-orange);box-shadow:inset 0 -2px 0 var(--signal-orange)}
+.sl{position:relative;height:28px;display:flex;align-items:center}
+.sl .t{height:6px;width:100%;background:var(--bg-000);border:1px solid var(--line-100);box-shadow:var(--recess)}
+.sl .fill{position:absolute;left:0;top:11px;height:6px;width:62%;background:repeating-linear-gradient(90deg,var(--signal-orange) 0 3px,transparent 3px 5px)}
+.sl .k{position:absolute;left:calc(62% - 7px);top:7px;width:14px;height:14px;border-radius:50%;background:var(--signal-orange);box-shadow:var(--glow-orange);border:2px solid var(--bg-300)}
+.ck{display:flex;align-items:center;gap:8px;font-size:12px}
+.ck i{width:14px;height:14px;border:1px solid var(--line-200);background:var(--bg-000);box-shadow:var(--recess);display:inline-flex;align-items:center;justify-content:center;border-radius:2px}
+.ck i.on{border-color:var(--signal-orange-dim);background:#3a1e0e}
+.ck i.on::after{content:"";width:6px;height:6px;background:var(--signal-orange);box-shadow:var(--glow-orange)}
+</style></head><body>
+<div class="g">
+  <div class="f"><label>Button</label><div style="display:flex;gap:8px"><button class="btn pri">运行回测</button><button class="btn">取消</button><button class="btn dan">撤全部</button><button class="btn" disabled>禁用</button></div></div>
+  <div class="f"><label>Segmented</label><div class="seg" role="radiogroup"><span class="on">1m</span><span>5m</span><span>15m</span><span>1D</span></div></div>
+  <div class="f"><label for="i1">Input · 数值</label><input id="i1" class="in" value="0.0015"><span class="h">费率 · 单边 · 0–0.01</span></div>
+  <div class="f"><label for="i2">Input · 错误</label><input id="i2" class="in err" value="abc"><span class="h" style="color:var(--signal-red)">需要 0–0.01 之间的数字</span></div>
+  <div class="f"><label>Select</label><div class="sel"><span>vectorbt.pro</span><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4l3 3 3-3"/></svg></div></div>
+  <div class="f"><label>Slider · 价值区 70%</label><div class="sl"><div class="t"></div><div class="fill"></div><div class="k" role="slider" aria-valuenow="70" aria-valuemin="60" aria-valuemax="80" tabindex="0"></div></div></div>
+  <div class="f"><label>Checkbox</label><div style="display:flex;gap:16px"><span class="ck"><i class="on"></i>中性化</span><span class="ck"><i class="on"></i>去极值</span><span class="ck"><i></i>行业内</span></div></div>
+  <div class="f"><label>Button · 图标</label><div style="display:flex;gap:6px"><button class="btn" style="padding:0 6px" aria-label="设置"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="2"/><path d="M7 1v2M7 11v2M1 7h2M11 7h2"/></svg></button><button class="btn" style="padding:0 6px" aria-label="表格视图"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="11" height="9"/><path d="M1.5 6h11M5 2.5v9"/></svg></button><button class="btn" style="padding:0 6px" aria-label="全屏"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5V2h3M12 5V2H9M2 9v3h3M12 9v3H9"/></svg></button></div></div>
+</div>
+</body></html>

@@ -1,0 +1,49 @@
+<!-- @dsCard group="工作台" height=420 subtitle="Preferences：偏好页（Codex 式左侧目录 + 右侧分组）；此卡以 Paper 亮主题渲染——同一套 token 名，不同值；外观 / 字体 / 密度 / 涨跌约定 / 动效 / 声音 / 快捷键 / 渲染 / 账户显示（安全项锁定）" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Paper theme override — same token names, light values (tokens.json theme=paper) */
+.paper{--bg-000:#dcd8ce;--bg-100:#e8e5dd;--bg-200:#efece5;--bg-300:#f4f2ec;--bg-400:#fbfaf6;--line-100:#d3cfc5;--line-200:#bdb8ac;--ink-100:#17160f;--ink-200:#3f3b33;--ink-300:#6a655a;--ink-400:#a9a497;--signal-orange:#d14e0a;--signal-orange-dim:#f1c9b2;--signal-amber:#9a6e00;--signal-green:#1e7d2c;--signal-red:#b3281f;--signal-blue:#1a5fbf;--lcd-bg:#1e1d19;--lcd-fg:#ede6d6;--hairline:1px solid #d3cfc5;--recess:inset 0 2px 6px rgba(0,0,0,.18);--plate:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(0,0,0,.08),0 2px 0 #cfcac0;--glow-orange:0 0 4px rgba(209,78,10,.45),inset 0 0 2px rgba(255,255,255,.6);--led-off:#d3cfc5;--radius-pill:999px}
+body{margin:0;padding:12px;background:#e8e5dd;font-family:var(--font-mono,"DM Mono",monospace);font-size:11px;font-variant-numeric:tabular-nums}
+.paper{color:var(--ink-100);display:grid;grid-template-columns:150px 470px;width:620px;background:var(--bg-300);box-shadow:var(--plate);min-height:390px}
+.nav{background:var(--bg-200);border-right:var(--hairline);padding:8px 0}
+.nav h6{margin:8px 12px 4px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-400);font-family:"Doto",monospace;-webkit-font-smoothing:none}
+.nav div{height:26px;display:flex;align-items:center;padding:0 12px;color:var(--ink-200);font-family:"Noto Sans SC",sans-serif;font-size:11px}
+.nav div.on{background:var(--bg-300);color:var(--ink-100);box-shadow:inset 2px 0 0 var(--signal-orange)}
+.nav div small{margin-left:auto;font-family:"DM Mono",monospace;font-size:9px;color:var(--ink-400)}
+.main{padding:12px 16px}
+.main h5{margin:0 0 10px;font:inherit;font-size:13px;font-weight:500;color:var(--ink-100);font-family:"Noto Sans SC",sans-serif}
+.row{display:grid;grid-template-columns:120px 1fr;gap:8px 16px;align-items:center;min-height:30px;border-bottom:var(--hairline);padding:4px 0}
+.row .k{color:var(--ink-200);font-family:"Noto Sans SC",sans-serif}
+.row .k small{display:block;color:var(--ink-300);font-size:10px;font-family:"DM Mono",monospace}
+.seg{display:inline-flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 9px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.sw{display:inline-flex;gap:6px;align-items:center}
+.sw i{width:16px;height:16px;border-radius:3px;display:inline-block;border:1px solid var(--line-200)}
+.sw i.on{box-shadow:0 0 0 2px var(--bg-300),0 0 0 3px var(--signal-orange)}
+.tg{width:30px;height:16px;background:var(--bg-000);box-shadow:var(--recess);position:relative;display:inline-block;vertical-align:middle}
+.tg i{position:absolute;top:3px;left:3px;width:10px;height:10px;background:var(--line-200)}
+.tg.on i{left:17px;background:var(--signal-orange);box-shadow:var(--glow-orange)}
+.tg.lock{opacity:.55}
+.lcd{display:inline-flex;align-items:baseline;gap:6px;background:var(--lcd-bg);box-shadow:var(--recess);padding:3px 8px;color:var(--lcd-fg);font-size:12px;letter-spacing:.06em}
+.lcd b{font-weight:400;color:#ff6a1f}
+.pre{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.pre div{height:34px;border:var(--hairline);display:flex;align-items:center;justify-content:center;font-size:10px;gap:6px}
+.pre .c{background:#1d1b18;color:#ede6d6;border-color:#2b2823}
+.pre .p{background:#f4f2ec;color:#17160f;box-shadow:inset 0 0 0 1px var(--signal-orange)}
+.note{color:var(--ink-300);font-size:10px;margin-top:8px;font-family:"Noto Sans SC",sans-serif}
+.lock-note{color:var(--signal-amber);font-size:10px;font-family:"Noto Sans SC",sans-serif}
+</style></head><body>
+<div class="paper" role="dialog" aria-label="偏好">
+  <nav class="nav"><h6>偏好</h6><div class="on">外观<small>⌘,</small></div><div>字体与可读性</div><div>密度</div><div>涨跌与市场</div><div>动效</div><div>声音</div><div>快捷键</div><div>渲染<small>RENDER</small></div><div>账户显示</div><h6>系统</h6><div>数据与隐私</div><div>导入 / 导出</div><div>关于</div></nav>
+  <section class="main">
+    <h5>外观</h5>
+    <div class="row"><div class="k">主题<small>data-theme</small></div><div><span class="seg"><span>Console 暗</span><span class="on">Paper 亮</span><span>跟随系统</span><span>按时段</span></span><div class="pre"><div class="c"><i style="width:8px;height:8px;background:#ff6a1f;box-shadow:0 0 6px #ff6a1f;display:inline-block;border-radius:50%"></i>CONSOLE · 12:1</div><div class="p"><i style="width:8px;height:8px;background:#d14e0a;display:inline-block;border-radius:50%"></i>PAPER · 16:1</div></div></div></div>
+    <div class="row"><div class="k">强调色<small>signal-orange</small></div><div class="sw"><i class="on" style="background:#d14e0a"></i><i style="background:#9a6e00"></i><i style="background:#0b8fb0"></i><i style="background:#1e7d2c"></i><span style="color:var(--ink-300);font-size:10px;margin-left:6px">只改强调与发光；LinkGroup / 买卖 / 序列色不变</span></div></div>
+    <div class="row"><div class="k">时段切换<small>白天 Paper · 夜间 Console</small></div><div><span class="tg on"><i></i></span> <span class="lcd">09:00<b>→</b>18:00</span> <span style="color:var(--ink-300);font-size:10px;margin-left:6px">与夜间模式同一时段表</span></div></div>
+    <div class="row"><div class="k">LCD 窗<small>lcd-bg</small></div><div><span class="lcd">NET <b>2,265,380</b></span> <span style="color:var(--ink-300);font-size:10px;margin-left:6px">亮主题下保持深色岛，不可改</span></div></div>
+    <div class="row"><div class="k">安全标识<small>不可皮肤化</small></div><div><span class="tg on lock"><i></i></span> <span class="lock-note">实盘 amber 框 · PAPER 蓝条 · 警示带 · 确认结构 — 任何主题下常开</span></div></div>
+    <div class="note">主题 JSON 可导出分享（导入 / 导出页）。改动即时生效，颜色 120ms 过渡，不重建图表。</div>
+  </section>
+</div>
+</body></html>

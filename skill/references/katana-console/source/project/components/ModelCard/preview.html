@@ -1,0 +1,57 @@
+<!-- @dsCard group="研究" height=270 subtitle="ModelCard：模型卡——类型 / 特征 / 训练窗 / 目标 / 指标 KPI、特征重要性零轴条（含稳定性）、校准图；MLflow run 映射；不解释因果" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{display:grid;grid-template-columns:300px 312px;gap:8px;width:620px}
+.r2{display:grid;grid-template-columns:96px 1fr 50px;height:20px;align-items:center;gap:8px;font-size:10px}
+.lab{color:var(--ink-200)}.v{text-align:right;color:var(--ink-100)}
+.ax{--z:0}.ax:before{display:none}
+.kv{display:grid;grid-template-columns:70px 1fr;gap:3px 8px;font-size:10px}.kv span{color:var(--ink-300)}.kv b{font-weight:400;color:var(--ink-100)}
+</style></head><body>
+<div class="kpi"><div><small>IC (OOS)</small><b>0.052</b><i>IS 0.071</i></div><div><small>RANK IC</small><b>0.061</b><i>ICIR 0.74</i></div><div><small>TOP-DECILE</small><b>+21.4%</b><i>年化 · 费后</i></div><div><small>TRAIN</small><b>36m</b><i>滚动 · 月更</i></div><div><small>STATUS</small><b style="font-size:12px;color:var(--signal-green)">PAPER</b><i>momo-7 用</i></div></div>
+<div class="wrap"><div class="box"><h4>模型 · <span class="run">RUN 2f01 · MLflow</span></h4>
+<div class="kv"><span>类型</span><b>LightGBM 回归 · 目标 20d 超额</b><span>特征</span><b>38 因子 + 12 行情特征</b><span>样本</span><b>CSI800 · 2019-01 → 2026-07 · 1.3M 行</b><span>训练</span><b>36 月滚动 · 每月重训 · 早停 200</b><span>超参</span><b>leaves 63 · lr 0.03 · 1,800 轮</b><span>代码</span><b>alice-models @ 4b2c9e1</b><span>数据</span><b>factors_v3 @ v2026.10.02</b></div>
+<h4 style="margin-top:8px">校准 · 预测分十档 vs 实际超额</h4>
+<svg width="280" height="60" viewBox="0 0 280 60"><g class="gl"><line x1="20" y1="30" x2="270" y2="30" stroke="var(--line-200)"/></g><g fill="var(--ink-200)"><rect x="28" y="40" width="16" height="12"/><rect x="52" y="36" width="16" height="8"/><rect x="76" y="33" width="16" height="4"/><rect x="100" y="31" width="16" height="2"/><rect x="124" y="29" width="16" height="1"/><rect x="148" y="27" width="16" height="3"/><rect x="172" y="24" width="16" height="6"/><rect x="196" y="20" width="16" height="10"/><rect x="220" y="15" width="16" height="15"/><rect x="244" y="8" width="16" height="22"/></g><text x="28" y="58">D1</text><text x="244" y="58">D10</text></svg></div>
+<div class="box"><h4>特征重要性（增益）· 右小字 = 跨窗稳定性</h4>
+<div class="r2"><span class="lab">MOM_RS_V3</span><div class="ax"><i style="left:0;width:92%"></i></div><span class="v">0.18 <span style="color:var(--ink-300)">σ.02</span></span></div>
+<div class="r2"><span class="lab">LIQ_AMIHUD</span><div class="ax"><i style="left:0;width:70%"></i></div><span class="v">0.14 <span style="color:var(--ink-300)">σ.03</span></span></div>
+<div class="r2"><span class="lab">QUAL_ROE_STAB</span><div class="ax"><i style="left:0;width:55%"></i></div><span class="v">0.11 <span style="color:var(--ink-300)">σ.02</span></span></div>
+<div class="r2"><span class="lab">vol_20d</span><div class="ax"><i style="left:0;width:48%"></i></div><span class="v">0.09 <span style="color:var(--ink-300)">σ.05</span></span></div>
+<div class="r2"><span class="lab">FLOW_NORTH_5D</span><div class="ax"><i class="w" style="left:0;width:40%"></i></div><span class="v">0.08 <span class="est">σ.09</span></span></div>
+<div class="r2"><span class="lab">VAL_EP_IND</span><div class="ax"><i style="left:0;width:30%"></i></div><span class="v">0.06 <span style="color:var(--ink-300)">σ.02</span></span></div>
+<div class="r2" style="color:var(--ink-300)"><span class="lab" style="color:var(--ink-300)">其他 ×44</span><div class="ax"><i style="left:0;width:34%;background:repeating-linear-gradient(90deg,var(--ink-400) 0 3px,transparent 3px 5px)"></i></div><span class="v" style="color:var(--ink-300)">0.34</span></div></div></div>
+</body></html>

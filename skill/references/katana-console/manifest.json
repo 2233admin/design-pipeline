@@ -1,0 +1,4512 @@
+{
+  "formatVersion": 1,
+  "name": "KATANA Console",
+  "sourceCommit": "65f1a5317b7b7217d8ad6c453315cd30e89aee5b",
+  "source": {
+    "repository": "https://github.com/2233admin/KATANAview",
+    "commit": "65f1a5317b7b7217d8ad6c453315cd30e89aee5b",
+    "path": "design/katana-console",
+    "readMethod": "git-object-only"
+  },
+  "license": "LicenseRef-User-Authorized-Internal-Reuse",
+  "licenseNotice": "The upstream snapshot declares no repository open-source license. Copied with the owner's authorization for internal reuse; this is not an MIT/GPL grant or authorization for public redistribution. Upstream authorship and external dependency terms remain applicable.",
+  "fileCount": 290,
+  "componentCount": 105,
+  "totalBytes": 2378035,
+  "files": [
+    {
+      "path": "project/api/components/CommandLine.md",
+      "sourcePath": "design/katana-console/project/api/components/CommandLine.md",
+      "sha256": "fa20aae3d597264394a7238f9edac9d41aec23f830c299facee7ce21891198aa",
+      "size": 546
+    },
+    {
+      "path": "project/api/components/EquityCurve.md",
+      "sourcePath": "design/katana-console/project/api/components/EquityCurve.md",
+      "sha256": "430425b88cac1a91d1680873cd7d489159e5081dcd832c723b7dc6986cbc97b3",
+      "size": 497
+    },
+    {
+      "path": "project/api/components/FactorIC.md",
+      "sourcePath": "design/katana-console/project/api/components/FactorIC.md",
+      "sha256": "276f5d03216b122aeac60b1b9911c7baab70242dcead0782d48118dcf0a83f93",
+      "size": 495
+    },
+    {
+      "path": "project/api/components/Footprint.md",
+      "sourcePath": "design/katana-console/project/api/components/Footprint.md",
+      "sha256": "ab080afc57c758e1c2fea8a38be3631f26c07be181272054e62ef9b74b2226e5",
+      "size": 550
+    },
+    {
+      "path": "project/api/components/Heatmap.md",
+      "sourcePath": "design/katana-console/project/api/components/Heatmap.md",
+      "sha256": "b7d7aaf4a76be28612b413069a76d416987e15bd56f1d426d368f4c03bdd8764",
+      "size": 571
+    },
+    {
+      "path": "project/api/components/LCDReadout.md",
+      "sourcePath": "design/katana-console/project/api/components/LCDReadout.md",
+      "sha256": "a99428cc2bab138207eb83e16c7556bca5e439058771c97f78a827469dc68b5a",
+      "size": 587
+    },
+    {
+      "path": "project/api/components/Meter.md",
+      "sourcePath": "design/katana-console/project/api/components/Meter.md",
+      "sha256": "f667f7ac4c26e56367462ca12c792f2b86894eb9a3aa5bac53eebaf035808756",
+      "size": 568
+    },
+    {
+      "path": "project/api/components/PanelFrame.md",
+      "sourcePath": "design/katana-console/project/api/components/PanelFrame.md",
+      "sha256": "47f5cbf95f4d7dc1289e9226f7e2b5cf8e59c06cf1473f7054aaa9886008418b",
+      "size": 561
+    },
+    {
+      "path": "project/api/components/QuantileLayers.md",
+      "sourcePath": "design/katana-console/project/api/components/QuantileLayers.md",
+      "sha256": "3b7db8124b49f1cfc428de68cbddc26452d0f25e5ffdcfec1f5c7efc64cac955",
+      "size": 585
+    },
+    {
+      "path": "project/api/components/SparkTile.md",
+      "sourcePath": "design/katana-console/project/api/components/SparkTile.md",
+      "sha256": "f323e738acf0351bff83d1723900ac79372c530ab7c9222663ed330cb9e40668",
+      "size": 533
+    },
+    {
+      "path": "project/api/components/Splitter.md",
+      "sourcePath": "design/katana-console/project/api/components/Splitter.md",
+      "sha256": "9bfdac4e09590a7fabf9425f51dcc962700a3d432840f2571a0ee91714d543a3",
+      "size": 508
+    },
+    {
+      "path": "project/api/components/StatusLED.md",
+      "sourcePath": "design/katana-console/project/api/components/StatusLED.md",
+      "sha256": "d46726b579433710fcb8eefffac95ccc0b27302cb9b599f1ca63ab402e0870b7",
+      "size": 647
+    },
+    {
+      "path": "project/api/components/Toggle.md",
+      "sourcePath": "design/katana-console/project/api/components/Toggle.md",
+      "sha256": "d8210988b078bf077f729aee9a90282cdf2218a3f94e3405aa1a5409ef1301e4",
+      "size": 533
+    },
+    {
+      "path": "project/api/components/WorkspaceTabs.md",
+      "sourcePath": "design/katana-console/project/api/components/WorkspaceTabs.md",
+      "sha256": "a934918bf1746979bf3fb929f4a0a00c1d49e2ec5329c9dcf677a78e14d73771",
+      "size": 594
+    },
+    {
+      "path": "project/api/tokens.md",
+      "sourcePath": "design/katana-console/project/api/tokens.md",
+      "sha256": "699df559bc51926c80b77afd0a60eb94e290a4ccea89b692889dd0a390617a84",
+      "size": 9846
+    },
+    {
+      "path": "project/asset-management.md",
+      "sourcePath": "design/katana-console/project/asset-management.md",
+      "sha256": "80edcf39a2b93a55e5cc0bc56202faa42c0437acfb02c66b1894827da3eb2415",
+      "size": 7109
+    },
+    {
+      "path": "project/atas.md",
+      "sourcePath": "design/katana-console/project/atas.md",
+      "sha256": "23b911d11cde095c7f30df529106e7b73bf82fc8e470d487b64e6d3758077191",
+      "size": 77375
+    },
+    {
+      "path": "project/blueprint.md",
+      "sourcePath": "design/katana-console/project/blueprint.md",
+      "sha256": "c025d0df6831599f565218fda3cd86346a0f039965bae0808e7a5ad3d7166e41",
+      "size": 17206
+    },
+    {
+      "path": "project/components/AccountMirror/preview.html",
+      "sourcePath": "design/katana-console/project/components/AccountMirror/preview.html",
+      "sha256": "8b5d23e0ffd465b85ae82b427478ebb602b4f0c4e33a18cc21aa665d2bbc9612",
+      "size": 5869
+    },
+    {
+      "path": "project/components/AccountMirror/README.md",
+      "sourcePath": "design/katana-console/project/components/AccountMirror/README.md",
+      "sha256": "9118d974c912230bb4335a2b9bba5445e4662076c3baac0ef5c2ab0c89608677",
+      "size": 1421
+    },
+    {
+      "path": "project/components/AccountRail/preview.html",
+      "sourcePath": "design/katana-console/project/components/AccountRail/preview.html",
+      "sha256": "eca0f6d350ee5b3a2384dc88fde2a5d1534ae686cf73df4562f65e969f6f038b",
+      "size": 4264
+    },
+    {
+      "path": "project/components/AccountRail/README.md",
+      "sourcePath": "design/katana-console/project/components/AccountRail/README.md",
+      "sha256": "1a5b13f5e2153ed4c93bfec17b9312b9949a702b16ae0abfb9582e42e80be245",
+      "size": 2212
+    },
+    {
+      "path": "project/components/AgentsStatus/preview.html",
+      "sourcePath": "design/katana-console/project/components/AgentsStatus/preview.html",
+      "sha256": "2c1f28f343aa86f9a282d5da9ec321e8cfa5237465fc50befbcf7af0810f55ad",
+      "size": 5884
+    },
+    {
+      "path": "project/components/AgentsStatus/README.md",
+      "sourcePath": "design/katana-console/project/components/AgentsStatus/README.md",
+      "sha256": "4b32d36d97c68867902835d3a26f5ed3b73b562e19f645bfde34441b44315949",
+      "size": 1589
+    },
+    {
+      "path": "project/components/AlertCenter/preview.html",
+      "sourcePath": "design/katana-console/project/components/AlertCenter/preview.html",
+      "sha256": "2f0eb72b4220737c2be5af1742233cd7a2711b9b3c2e91dc7b1ae448f874691d",
+      "size": 4804
+    },
+    {
+      "path": "project/components/AlertCenter/README.md",
+      "sourcePath": "design/katana-console/project/components/AlertCenter/README.md",
+      "sha256": "ebd4826e127c0eadc5e3b02f74c02ed829a67b52ea43fe194aa809367140a61f",
+      "size": 3167
+    },
+    {
+      "path": "project/components/AliceSessions/preview.html",
+      "sourcePath": "design/katana-console/project/components/AliceSessions/preview.html",
+      "sha256": "7ca502948175693149725e8922d73a8b7ae4cbb7a7d78de10448c5e948b7d90b",
+      "size": 5823
+    },
+    {
+      "path": "project/components/AliceSessions/README.md",
+      "sourcePath": "design/katana-console/project/components/AliceSessions/README.md",
+      "sha256": "30ad26b4c355cc6c12e2c3edc7b8c3d84c31ce7cf875c35e81a6749db8e35ffb",
+      "size": 1933
+    },
+    {
+      "path": "project/components/AlphaLedger/preview.html",
+      "sourcePath": "design/katana-console/project/components/AlphaLedger/preview.html",
+      "sha256": "142a314dfaf217dcfc4b0ad155458638bfc1d259ae42aa9964f3e6ee1b5d6f18",
+      "size": 7430
+    },
+    {
+      "path": "project/components/AlphaLedger/README.md",
+      "sourcePath": "design/katana-console/project/components/AlphaLedger/README.md",
+      "sha256": "f1c6e77560a255aebb610c6b0665483a31a08c2d3ea8001e665a53de2204147a",
+      "size": 2168
+    },
+    {
+      "path": "project/components/BondCalc/preview.html",
+      "sourcePath": "design/katana-console/project/components/BondCalc/preview.html",
+      "sha256": "85b481a369e3d63d241ed0e2a3728a44473eae0e41f215f7d48980c450cdbb2a",
+      "size": 6231
+    },
+    {
+      "path": "project/components/BondCalc/README.md",
+      "sourcePath": "design/katana-console/project/components/BondCalc/README.md",
+      "sha256": "421e4778cc1c174e400f7a40f4813a1b1d9d48269f7201f79d6b8d611900af0d",
+      "size": 1760
+    },
+    {
+      "path": "project/components/BreakWorkbench/preview.html",
+      "sourcePath": "design/katana-console/project/components/BreakWorkbench/preview.html",
+      "sha256": "7dc39e62d05f76fc0c9460e55653d9e0b7c8690c6439766c6e2ffcb6d07d1bfc",
+      "size": 6867
+    },
+    {
+      "path": "project/components/BreakWorkbench/README.md",
+      "sourcePath": "design/katana-console/project/components/BreakWorkbench/README.md",
+      "sha256": "3c5a5630fd7ed98beaf0d6c0ec7bdff15598449dc34489fe5f3d56b587bf9935",
+      "size": 2051
+    },
+    {
+      "path": "project/components/BrinsonAttribution/preview.html",
+      "sourcePath": "design/katana-console/project/components/BrinsonAttribution/preview.html",
+      "sha256": "03e839f1c6cc3b740cb5d058903c04b34a438873fec7c644e24caec6d3916ace",
+      "size": 6722
+    },
+    {
+      "path": "project/components/BrinsonAttribution/README.md",
+      "sourcePath": "design/katana-console/project/components/BrinsonAttribution/README.md",
+      "sha256": "5187b284d7dfe26e29449dd201b7a96aa59286801eee25a04f6e75465b7d3344",
+      "size": 1580
+    },
+    {
+      "path": "project/components/Calendar/preview.html",
+      "sourcePath": "design/katana-console/project/components/Calendar/preview.html",
+      "sha256": "64c93efcc6616104ca9a2a5d5158028bcadfbfa7908235c195b674036b0bfcf0",
+      "size": 6368
+    },
+    {
+      "path": "project/components/Calendar/README.md",
+      "sourcePath": "design/katana-console/project/components/Calendar/README.md",
+      "sha256": "6333f5599b5c9b68f3c48805b0edbccc3f81f714b9af77f73348036741779c1e",
+      "size": 1794
+    },
+    {
+      "path": "project/components/CashLedger/preview.html",
+      "sourcePath": "design/katana-console/project/components/CashLedger/preview.html",
+      "sha256": "416e986952eb2dba1fe489bdd19a76d96a50dddcc892c94c61fd0b4cbbbb879b",
+      "size": 5648
+    },
+    {
+      "path": "project/components/CashLedger/README.md",
+      "sourcePath": "design/katana-console/project/components/CashLedger/README.md",
+      "sha256": "f3895433fcd2d6978c641b88d9eb4ba5fe922045628b5446bfb107188540d8d7",
+      "size": 2177
+    },
+    {
+      "path": "project/components/ChartTrader/preview.html",
+      "sourcePath": "design/katana-console/project/components/ChartTrader/preview.html",
+      "sha256": "0019bef1a2bb9cbf6f584d88dc8767a975dd21478bc5d3b60d3a07f7b8cf6413",
+      "size": 5300
+    },
+    {
+      "path": "project/components/ChartTrader/README.md",
+      "sourcePath": "design/katana-console/project/components/ChartTrader/README.md",
+      "sha256": "4592b6db2aa08db353c418a6f86235d740a48821a0816d696c6f7128c81d0ae1",
+      "size": 3480
+    },
+    {
+      "path": "project/components/ClusterSearch/preview.html",
+      "sourcePath": "design/katana-console/project/components/ClusterSearch/preview.html",
+      "sha256": "d0fec16ba033582a0a18b11ca3cc03effd97a45d2325467a346963386a034263",
+      "size": 7932
+    },
+    {
+      "path": "project/components/ClusterSearch/README.md",
+      "sourcePath": "design/katana-console/project/components/ClusterSearch/README.md",
+      "sha256": "a306a50c2bc6eaae3e69e9e8ffe98a78aeaeb8e5b3427a7d745e396598690fc2",
+      "size": 1900
+    },
+    {
+      "path": "project/components/CommandLine/preview.html",
+      "sourcePath": "design/katana-console/project/components/CommandLine/preview.html",
+      "sha256": "90fd22253af7c0d79d9ef2a5a90beecc184a0cef5f75fbe6b1f84440e40e5b24",
+      "size": 2560
+    },
+    {
+      "path": "project/components/CommandLine/README.md",
+      "sourcePath": "design/katana-console/project/components/CommandLine/README.md",
+      "sha256": "e53a109cfea020f78082886e37f0644afdcd58abe97e2120afb62e698fe9cfb9",
+      "size": 1294
+    },
+    {
+      "path": "project/components/ConsensusBlock/preview.html",
+      "sourcePath": "design/katana-console/project/components/ConsensusBlock/preview.html",
+      "sha256": "b382705e6be40bd6cb350c1f2dcb90e39f3a67902a57ccf6604f7ddae30acf26",
+      "size": 2961
+    },
+    {
+      "path": "project/components/ConsensusBlock/README.md",
+      "sourcePath": "design/katana-console/project/components/ConsensusBlock/README.md",
+      "sha256": "3c01ffbfab884f2d8709a5ff79a80e88c0cd048220bdc21e557951638ab64fe6",
+      "size": 2395
+    },
+    {
+      "path": "project/components/Controls/preview.html",
+      "sourcePath": "design/katana-console/project/components/Controls/preview.html",
+      "sha256": "2b65649ec094b099f93c92f97933e8f8c6c95fed85f0a2a3509ce6be74532d66",
+      "size": 5949
+    },
+    {
+      "path": "project/components/Controls/README.md",
+      "sourcePath": "design/katana-console/project/components/Controls/README.md",
+      "sha256": "38788e6979c391a154d6682646bdfe32002978aaa4f1b289384c5be6aaed081e",
+      "size": 2121
+    },
+    {
+      "path": "project/components/CorporateActions/preview.html",
+      "sourcePath": "design/katana-console/project/components/CorporateActions/preview.html",
+      "sha256": "d5b51c076a051de820b3f2d75765d419d30b679afbf0ab5dc4958291fb28735f",
+      "size": 6511
+    },
+    {
+      "path": "project/components/CorporateActions/README.md",
+      "sourcePath": "design/katana-console/project/components/CorporateActions/README.md",
+      "sha256": "8b32a2c746cc4852ed088297972b3e124bca3a3ab603ad9e1f8344792b1cfe3e",
+      "size": 1782
+    },
+    {
+      "path": "project/components/Cover/preview.html",
+      "sourcePath": "design/katana-console/project/components/Cover/preview.html",
+      "sha256": "084b18e13a83573b25a30ad41784d2d60bb55b8a5f85ed483014d2362bf51534",
+      "size": 4453
+    },
+    {
+      "path": "project/components/DataGrid/preview.html",
+      "sourcePath": "design/katana-console/project/components/DataGrid/preview.html",
+      "sha256": "30df276abe528ccb62c624810d7bb6f3366e6ca6d3fcd8a143bfd4d08b6a1f43",
+      "size": 4675
+    },
+    {
+      "path": "project/components/DataGrid/README.md",
+      "sourcePath": "design/katana-console/project/components/DataGrid/README.md",
+      "sha256": "a24c6551e25b100d859c42fcb1a3505f01529a16a428ed1233c074d49cbb5aac",
+      "size": 3372
+    },
+    {
+      "path": "project/components/DataQuality/preview.html",
+      "sourcePath": "design/katana-console/project/components/DataQuality/preview.html",
+      "sha256": "741ac8fee99458ee4c88418dbc0e539dc0d06af02819ecd03c7bb1159ac5a308",
+      "size": 6758
+    },
+    {
+      "path": "project/components/DataQuality/README.md",
+      "sourcePath": "design/katana-console/project/components/DataQuality/README.md",
+      "sha256": "739f3d5f857668761158df68aeabf8ae5db4ed936ed5d03f34de97498333891d",
+      "size": 1674
+    },
+    {
+      "path": "project/components/DatasetCatalog/preview.html",
+      "sourcePath": "design/katana-console/project/components/DatasetCatalog/preview.html",
+      "sha256": "1822a4089009e4cddd623f24bb3705252c29222cf8530cb80735cee9c2e8cab6",
+      "size": 6481
+    },
+    {
+      "path": "project/components/DatasetCatalog/README.md",
+      "sourcePath": "design/katana-console/project/components/DatasetCatalog/README.md",
+      "sha256": "59d61228ebe855badb1b9151dce819b1255fd0f45d9656ca51a3f228f063f773",
+      "size": 1555
+    },
+    {
+      "path": "project/components/DataSources/preview.html",
+      "sourcePath": "design/katana-console/project/components/DataSources/preview.html",
+      "sha256": "323b29feca65d186f3b16a6a19ce43b31d96102bb3aada74d50fa0a88a8d92a3",
+      "size": 6320
+    },
+    {
+      "path": "project/components/DataSources/README.md",
+      "sourcePath": "design/katana-console/project/components/DataSources/README.md",
+      "sha256": "f5a72be351e5746de2bdbb410e641be39a9d4b81be855b2ebe71928ae8ae97e3",
+      "size": 1720
+    },
+    {
+      "path": "project/components/DecisionJournal/preview.html",
+      "sourcePath": "design/katana-console/project/components/DecisionJournal/preview.html",
+      "sha256": "7e0011f17be40c0d2a96070c87d603df9fad0bf8b0c3a03d888e0336241e3a8b",
+      "size": 7041
+    },
+    {
+      "path": "project/components/DecisionJournal/README.md",
+      "sourcePath": "design/katana-console/project/components/DecisionJournal/README.md",
+      "sha256": "dbd9a696b7c90c9398a0e0c2506ab9b5fa5905b58949eb3a449502f98c51c8ec",
+      "size": 1844
+    },
+    {
+      "path": "project/components/DecisionQueue/preview.html",
+      "sourcePath": "design/katana-console/project/components/DecisionQueue/preview.html",
+      "sha256": "9a6c3bfcf1094d0a6be0e28045ea5363f4d6d7376f2734514527478ee4119cdd",
+      "size": 7342
+    },
+    {
+      "path": "project/components/DecisionQueue/README.md",
+      "sourcePath": "design/katana-console/project/components/DecisionQueue/README.md",
+      "sha256": "b725062aa8d8cb8b105a8f29b78f315ae7e5d857ae80c590906b649e2e2c6410",
+      "size": 2264
+    },
+    {
+      "path": "project/components/DeploymentBoard/preview.html",
+      "sourcePath": "design/katana-console/project/components/DeploymentBoard/preview.html",
+      "sha256": "3893fdcc561de0f8b2d19fa9f378ad8e68b60f0697f5b68dedbce6d99b13f51d",
+      "size": 6474
+    },
+    {
+      "path": "project/components/DeploymentBoard/README.md",
+      "sourcePath": "design/katana-console/project/components/DeploymentBoard/README.md",
+      "sha256": "8957384468e9746dfd32602f80f0d515eec0c71aa0a8806e9918d6ee877fbb62",
+      "size": 2159
+    },
+    {
+      "path": "project/components/DOMHeatmap/preview.html",
+      "sourcePath": "design/katana-console/project/components/DOMHeatmap/preview.html",
+      "sha256": "2b8f28100acaced73813811a30f4b9278b7496bde995b348ed3e0261ea3e4ec2",
+      "size": 12598
+    },
+    {
+      "path": "project/components/DOMHeatmap/README.md",
+      "sourcePath": "design/katana-console/project/components/DOMHeatmap/README.md",
+      "sha256": "2962f740d4052d2d8f6b1c5162d1dd23a9e31133469a1906f890816d7e5f9e35",
+      "size": 2916
+    },
+    {
+      "path": "project/components/DOMLadder/preview.html",
+      "sourcePath": "design/katana-console/project/components/DOMLadder/preview.html",
+      "sha256": "27318c7e43e237403833b14467eaf5ed42fd9939a72c22218e0373d806807ff1",
+      "size": 110117
+    },
+    {
+      "path": "project/components/DOMLadder/README.md",
+      "sourcePath": "design/katana-console/project/components/DOMLadder/README.md",
+      "sha256": "86d5e1e2d343759046b164337d227191c858075ce198cd155a4e93b9f408f05b",
+      "size": 10433
+    },
+    {
+      "path": "project/components/DotMatrix/preview.html",
+      "sourcePath": "design/katana-console/project/components/DotMatrix/preview.html",
+      "sha256": "b747e23cd2db0d06a5f0bb7cce80fe2cf25befe2454f61580ff865061e7d068b",
+      "size": 11534
+    },
+    {
+      "path": "project/components/DotMatrix/README.md",
+      "sourcePath": "design/katana-console/project/components/DotMatrix/README.md",
+      "sha256": "33b5d6b2023f5c4d263c5e2690b930e0798606ca9da3202096ada714d3a14a66",
+      "size": 3137
+    },
+    {
+      "path": "project/components/DrawingToolbar/preview.html",
+      "sourcePath": "design/katana-console/project/components/DrawingToolbar/preview.html",
+      "sha256": "3ded2d4c4951fd2866db7894cf89c8eae9fd0fb5c2a8c49fdca5318ced31bd01",
+      "size": 9500
+    },
+    {
+      "path": "project/components/DrawingToolbar/README.md",
+      "sourcePath": "design/katana-console/project/components/DrawingToolbar/README.md",
+      "sha256": "9155c3168a5a2b236c80c14ee65494ecc1ef80f8daf668fab691d20bd256a98f",
+      "size": 2301
+    },
+    {
+      "path": "project/components/Entitlements/preview.html",
+      "sourcePath": "design/katana-console/project/components/Entitlements/preview.html",
+      "sha256": "df2a6ac272312a90eb22e0d526cc5dd2131f7b0fd3980e3161ac1470c229ae17",
+      "size": 7041
+    },
+    {
+      "path": "project/components/Entitlements/README.md",
+      "sourcePath": "design/katana-console/project/components/Entitlements/README.md",
+      "sha256": "f300795996ebe446586a4ca2024352516527296da18eff3ea0ea1a2632ff996e",
+      "size": 1844
+    },
+    {
+      "path": "project/components/EquityCurve/preview.html",
+      "sourcePath": "design/katana-console/project/components/EquityCurve/preview.html",
+      "sha256": "a25277a0035f388e2443e3eb70c76d8a80a0ec262eb5fbb4ad441664d19a5a27",
+      "size": 3683
+    },
+    {
+      "path": "project/components/EquityCurve/README.md",
+      "sourcePath": "design/katana-console/project/components/EquityCurve/README.md",
+      "sha256": "4569f56df41d3451e15f2cf002a02444bd91a4ce340b8e34073f61a024e76647",
+      "size": 1454
+    },
+    {
+      "path": "project/components/EventStudy/preview.html",
+      "sourcePath": "design/katana-console/project/components/EventStudy/preview.html",
+      "sha256": "f15066d19ef89d48b7704d22640ddba01c55f7a5106b6c86e5abb13d7fbcd4cc",
+      "size": 6027
+    },
+    {
+      "path": "project/components/EventStudy/README.md",
+      "sourcePath": "design/katana-console/project/components/EventStudy/README.md",
+      "sha256": "9802c2acb11acc193248d9593b6a9afed369a0dada8fbfac1ca2002c3ad1c0fa",
+      "size": 1637
+    },
+    {
+      "path": "project/components/EventTimeline/preview.html",
+      "sourcePath": "design/katana-console/project/components/EventTimeline/preview.html",
+      "sha256": "0ab4d834de02aa0e59cf1ee4a2d9508c821831b233c4f2471733b7189d9bdd01",
+      "size": 6524
+    },
+    {
+      "path": "project/components/EventTimeline/README.md",
+      "sourcePath": "design/katana-console/project/components/EventTimeline/README.md",
+      "sha256": "c2686ccad5528cf0e36c1509ede7ff589cb8b5be283b81b62ac4b5e8aa8909cb",
+      "size": 1723
+    },
+    {
+      "path": "project/components/ExitStrategy/preview.html",
+      "sourcePath": "design/katana-console/project/components/ExitStrategy/preview.html",
+      "sha256": "b415716cfa29e6b1b8000401ca50e27da5b7ba8d3275557fb0ef3743e846fcae",
+      "size": 7336
+    },
+    {
+      "path": "project/components/ExitStrategy/README.md",
+      "sourcePath": "design/katana-console/project/components/ExitStrategy/README.md",
+      "sha256": "3fceb6dac6c68d93ba183864c8c727db25b053da568321768d5bb9d971e4803a",
+      "size": 1821
+    },
+    {
+      "path": "project/components/ExposureTimeline/preview.html",
+      "sourcePath": "design/katana-console/project/components/ExposureTimeline/preview.html",
+      "sha256": "de910778e78023b31fb6ec64ed4a61b944b1357d5e7ba3b7203df2670312772e",
+      "size": 5689
+    },
+    {
+      "path": "project/components/ExposureTimeline/README.md",
+      "sourcePath": "design/katana-console/project/components/ExposureTimeline/README.md",
+      "sha256": "c0288cad3859a8f9680b717207d95a093ab4d7f1a39663ed9c11b677652d88e6",
+      "size": 1581
+    },
+    {
+      "path": "project/components/FactorDecay/preview.html",
+      "sourcePath": "design/katana-console/project/components/FactorDecay/preview.html",
+      "sha256": "0865a570906f1d47ed0bde9c0353b6261d87a678cf00575334415e0d96839f08",
+      "size": 6006
+    },
+    {
+      "path": "project/components/FactorDecay/README.md",
+      "sourcePath": "design/katana-console/project/components/FactorDecay/README.md",
+      "sha256": "801261aee898ac414b2cc792707ba8a82e2a58aacec9eab7b4c1e053f9915112",
+      "size": 1500
+    },
+    {
+      "path": "project/components/FactorExposure/preview.html",
+      "sourcePath": "design/katana-console/project/components/FactorExposure/preview.html",
+      "sha256": "c33ce5e410b06852f488a57f62aa004b4b227d1e8d3882a6b384d104b64d5c0d",
+      "size": 5922
+    },
+    {
+      "path": "project/components/FactorExposure/README.md",
+      "sourcePath": "design/katana-console/project/components/FactorExposure/README.md",
+      "sha256": "c4e24fbbe310ab9389cad9a33245fb0aa88cdc230db46325c178f947b2c6ca37",
+      "size": 1882
+    },
+    {
+      "path": "project/components/FactorIC/preview.html",
+      "sourcePath": "design/katana-console/project/components/FactorIC/preview.html",
+      "sha256": "da9cdcdeaf4c8c3cb6b1c386a35188d27f6b354171184f988c58ba4b873334ba",
+      "size": 4785
+    },
+    {
+      "path": "project/components/FactorIC/README.md",
+      "sourcePath": "design/katana-console/project/components/FactorIC/README.md",
+      "sha256": "0a1e6c608020d3b733f0493cffdfbbe70efe8470165e097c37a566c5b0f74206",
+      "size": 1065
+    },
+    {
+      "path": "project/components/FactorLibrary/preview.html",
+      "sourcePath": "design/katana-console/project/components/FactorLibrary/preview.html",
+      "sha256": "18b5362944144230e02705a64a4a04aed9d0014e9a6c383094bf12517b302c5e",
+      "size": 8001
+    },
+    {
+      "path": "project/components/FactorLibrary/README.md",
+      "sourcePath": "design/katana-console/project/components/FactorLibrary/README.md",
+      "sha256": "e8289be60ef1143169d0ae1f02d82c2450c1556894183d88a39d806a3b7fcae3",
+      "size": 2050
+    },
+    {
+      "path": "project/components/FillLog/preview.html",
+      "sourcePath": "design/katana-console/project/components/FillLog/preview.html",
+      "sha256": "b319c10e0f2f97a5e080c4fd9afc398699451c3b46f42bcc1116ceaffb8dec71",
+      "size": 4371
+    },
+    {
+      "path": "project/components/FillLog/README.md",
+      "sourcePath": "design/katana-console/project/components/FillLog/README.md",
+      "sha256": "cffcb3315e9e195750ae7f36c5137e9aabe820842f44c5f97ef37a19f564d159",
+      "size": 2047
+    },
+    {
+      "path": "project/components/FlowGauges/preview.html",
+      "sourcePath": "design/katana-console/project/components/FlowGauges/preview.html",
+      "sha256": "2ad6a1a225badab35b2928b17d24b1dfb5ceaa34ddc4c8a0148be8fcc97d9089",
+      "size": 6613
+    },
+    {
+      "path": "project/components/FlowGauges/README.md",
+      "sourcePath": "design/katana-console/project/components/FlowGauges/README.md",
+      "sha256": "bbd0c295fdf78a105e4b96f9ce8a842f443efb7cb4dfc348f890ae8a7061ff33",
+      "size": 1412
+    },
+    {
+      "path": "project/components/Footprint/preview.html",
+      "sourcePath": "design/katana-console/project/components/Footprint/preview.html",
+      "sha256": "d06add4cd764a0273a53d7278e0a84bdb3876822655166741491ebd789d87981",
+      "size": 34926
+    },
+    {
+      "path": "project/components/Footprint/README.md",
+      "sourcePath": "design/katana-console/project/components/Footprint/README.md",
+      "sha256": "514587e4b2aa82f9603d7c70694616591c31ac6937737436edd0d76c2c34af6f",
+      "size": 5209
+    },
+    {
+      "path": "project/components/Fundamentals/preview.html",
+      "sourcePath": "design/katana-console/project/components/Fundamentals/preview.html",
+      "sha256": "7cc1404da6870c7bdbb217d39d8d193baceb3fb1d7173c3d41128db6c5214b0f",
+      "size": 6753
+    },
+    {
+      "path": "project/components/Fundamentals/README.md",
+      "sourcePath": "design/katana-console/project/components/Fundamentals/README.md",
+      "sha256": "9ebbaac967773b088381784eaf6b3aa60eff022fb2669dfd58a76590543a044a",
+      "size": 2099
+    },
+    {
+      "path": "project/components/GreeksBoard/preview.html",
+      "sourcePath": "design/katana-console/project/components/GreeksBoard/preview.html",
+      "sha256": "0f7bc76e2e4207c7dc47f34a6ca5d775c6ec62887eaa55ddbb632ec61f94cf52",
+      "size": 7314
+    },
+    {
+      "path": "project/components/GreeksBoard/README.md",
+      "sourcePath": "design/katana-console/project/components/GreeksBoard/README.md",
+      "sha256": "855323ebb9904544c5cc1312dedea86ecf3b1cd3a30d36d7295f48d397004f6b",
+      "size": 1720
+    },
+    {
+      "path": "project/components/Heatmap/preview.html",
+      "sourcePath": "design/katana-console/project/components/Heatmap/preview.html",
+      "sha256": "21c6b0239fc4ae089cd71a264e54d52bf5aed5882a7d04210461405b21548529",
+      "size": 5017
+    },
+    {
+      "path": "project/components/Heatmap/README.md",
+      "sourcePath": "design/katana-console/project/components/Heatmap/README.md",
+      "sha256": "23f0371d6e967f26abe85e7a6ddc4914463aca9f70aefd4c4db239b03a70f938",
+      "size": 1480
+    },
+    {
+      "path": "project/components/HypothesisLedger/preview.html",
+      "sourcePath": "design/katana-console/project/components/HypothesisLedger/preview.html",
+      "sha256": "47cc5718adff165409d4a424eac6cdcf74398a866989b550ea618e6b56afe12f",
+      "size": 7343
+    },
+    {
+      "path": "project/components/HypothesisLedger/README.md",
+      "sourcePath": "design/katana-console/project/components/HypothesisLedger/README.md",
+      "sha256": "32004f964abfac4a9d40b897b502c882c8a5c3b943b1faac90174707caa5fa13",
+      "size": 2000
+    },
+    {
+      "path": "project/components/IndicatorPanel/preview.html",
+      "sourcePath": "design/katana-console/project/components/IndicatorPanel/preview.html",
+      "sha256": "035fcd11982ae796d5b3b15ded1f3ba0ab5ec85abe60af2608bdff642152a488",
+      "size": 7786
+    },
+    {
+      "path": "project/components/IndicatorPanel/README.md",
+      "sourcePath": "design/katana-console/project/components/IndicatorPanel/README.md",
+      "sha256": "13cb51cf5ab853dd0e1761c54a7c203cad5c3100418a62c23600e4f2d46136c4",
+      "size": 2797
+    },
+    {
+      "path": "project/components/IntradayPnL/preview.html",
+      "sourcePath": "design/katana-console/project/components/IntradayPnL/preview.html",
+      "sha256": "645ce025a5d4bfacc6c4eb67145e85e8e9675b8f715f3dd60a12f5985ff76cab",
+      "size": 6051
+    },
+    {
+      "path": "project/components/IntradayPnL/README.md",
+      "sourcePath": "design/katana-console/project/components/IntradayPnL/README.md",
+      "sha256": "06baa45115a6d70cce9d11614039cbf101443e35e8853de919b6be92c51bbd7a",
+      "size": 1778
+    },
+    {
+      "path": "project/components/LCDReadout/preview.html",
+      "sourcePath": "design/katana-console/project/components/LCDReadout/preview.html",
+      "sha256": "8d2897666ced6281d60cce72d839b9b4ae275f45881bdd83b6088324ce8b957f",
+      "size": 1898
+    },
+    {
+      "path": "project/components/LCDReadout/README.md",
+      "sourcePath": "design/katana-console/project/components/LCDReadout/README.md",
+      "sha256": "bdf7d92b8e00fe38d9118ac97f113ec591e7562d0ece41b1151c39abc0df6bbc",
+      "size": 1814
+    },
+    {
+      "path": "project/components/LiveDivergence/preview.html",
+      "sourcePath": "design/katana-console/project/components/LiveDivergence/preview.html",
+      "sha256": "54ec8c133902c4cb844431e741c25b1cef27c921a6ccc651528df92e2766291e",
+      "size": 5752
+    },
+    {
+      "path": "project/components/LiveDivergence/README.md",
+      "sourcePath": "design/katana-console/project/components/LiveDivergence/README.md",
+      "sha256": "025df5ef1372fb2c3312809d4af443a6ecf56d80871b890239cf901161d448b7",
+      "size": 1871
+    },
+    {
+      "path": "project/components/LossLimits/preview.html",
+      "sourcePath": "design/katana-console/project/components/LossLimits/preview.html",
+      "sha256": "afa1d75a01436a4ca9e07fb0ecec48d4ac64593cc53b91e84e09bbdd4d13f12a",
+      "size": 6491
+    },
+    {
+      "path": "project/components/LossLimits/README.md",
+      "sourcePath": "design/katana-console/project/components/LossLimits/README.md",
+      "sha256": "3d0d78bfac6f775429ea2b557cf8ef83db2f310812f00f33598ff29f490e737a",
+      "size": 2437
+    },
+    {
+      "path": "project/components/MBOTrackers/preview.html",
+      "sourcePath": "design/katana-console/project/components/MBOTrackers/preview.html",
+      "sha256": "3d86f286a5535a389efbd725cfa8747a16261987bf1a754dea554cf8a52b096b",
+      "size": 7588
+    },
+    {
+      "path": "project/components/MBOTrackers/README.md",
+      "sourcePath": "design/katana-console/project/components/MBOTrackers/README.md",
+      "sha256": "692d0752e35156f9896ed7bfa0e62339750947b6595d74aeb2e5aff6fd30f19b",
+      "size": 1636
+    },
+    {
+      "path": "project/components/Meter/preview.html",
+      "sourcePath": "design/katana-console/project/components/Meter/preview.html",
+      "sha256": "6d08ad4fdba682e421c3ecc1ebc9dd74606448a96e424c08e9791dc708456c49",
+      "size": 3151
+    },
+    {
+      "path": "project/components/Meter/README.md",
+      "sourcePath": "design/katana-console/project/components/Meter/README.md",
+      "sha256": "d237057159f8c07654cf93d5f888448dd99a243fbe1fafebbf96b7bd71116dc9",
+      "size": 1631
+    },
+    {
+      "path": "project/components/ModelCard/preview.html",
+      "sourcePath": "design/katana-console/project/components/ModelCard/preview.html",
+      "sha256": "1fb205e4eef95a8cb470e0ab6dd5d4de54b3be515bb67d52218a33877430b416",
+      "size": 7206
+    },
+    {
+      "path": "project/components/ModelCard/README.md",
+      "sourcePath": "design/katana-console/project/components/ModelCard/README.md",
+      "sha256": "1806cde734324c817ed3c4d3958d226923e74b97f1bb0093a93e9371d286aa1e",
+      "size": 1803
+    },
+    {
+      "path": "project/components/NewsFeed/preview.html",
+      "sourcePath": "design/katana-console/project/components/NewsFeed/preview.html",
+      "sha256": "f2d7509218a977c1677c0905264f89855cac56afd5a0b79c91ea5afbb0822636",
+      "size": 6063
+    },
+    {
+      "path": "project/components/NewsFeed/README.md",
+      "sourcePath": "design/katana-console/project/components/NewsFeed/README.md",
+      "sha256": "8e0ff9a42044d1c8970cb857167eedd0f554965c0ee63ee176da85ba8b2d8cf1",
+      "size": 1687
+    },
+    {
+      "path": "project/components/Notes/preview.html",
+      "sourcePath": "design/katana-console/project/components/Notes/preview.html",
+      "sha256": "f2e422d7a27ff055c4dce7655cfc5e4e9e1f2f92dfe1a111044e6e8a7fe51a7d",
+      "size": 5672
+    },
+    {
+      "path": "project/components/Notes/README.md",
+      "sourcePath": "design/katana-console/project/components/Notes/README.md",
+      "sha256": "6f58e68d75a7aecd714addca586939d8445010361794b09f5941bdd2a3359276",
+      "size": 1773
+    },
+    {
+      "path": "project/components/OptionsChain/preview.html",
+      "sourcePath": "design/katana-console/project/components/OptionsChain/preview.html",
+      "sha256": "46ac47272600fbd245753725d4847cac17d18602953463430e512ab2adcba12a",
+      "size": 5959
+    },
+    {
+      "path": "project/components/OptionsChain/README.md",
+      "sourcePath": "design/katana-console/project/components/OptionsChain/README.md",
+      "sha256": "e6df5fcbec6451569f5baee1ae7d1a60f0945fd61f6ec83984dd8e3901c162f9",
+      "size": 1638
+    },
+    {
+      "path": "project/components/OptionsFlow/preview.html",
+      "sourcePath": "design/katana-console/project/components/OptionsFlow/preview.html",
+      "sha256": "1d3fa149c026e6b3d9222fb15eee15187166def1de3a9ed18f84bff73f81fd77",
+      "size": 8119
+    },
+    {
+      "path": "project/components/OptionsFlow/README.md",
+      "sourcePath": "design/katana-console/project/components/OptionsFlow/README.md",
+      "sha256": "51b50bd3b05ba70a540b0281b709d42253edd9d70124ac2218763967ea17b7dd",
+      "size": 1729
+    },
+    {
+      "path": "project/components/OrderBasket/preview.html",
+      "sourcePath": "design/katana-console/project/components/OrderBasket/preview.html",
+      "sha256": "b0121ab6b671af9ef521b66556242582577b84d76e2f486566bae55ed634fa49",
+      "size": 5894
+    },
+    {
+      "path": "project/components/OrderBasket/README.md",
+      "sourcePath": "design/katana-console/project/components/OrderBasket/README.md",
+      "sha256": "dba757ecd2bd35884067fe5ea945994667c594952766d8e86323485e860519f0",
+      "size": 2494
+    },
+    {
+      "path": "project/components/OrderBlotter/preview.html",
+      "sourcePath": "design/katana-console/project/components/OrderBlotter/preview.html",
+      "sha256": "bc7ba1b3e3049bcc86e35b204a3ae12e378f97b9025189571ad081d9648ff653",
+      "size": 5110
+    },
+    {
+      "path": "project/components/OrderBlotter/README.md",
+      "sourcePath": "design/katana-console/project/components/OrderBlotter/README.md",
+      "sha256": "f99bfde7c6b151fb8ce76d1128fb97170eea2dd3259dfe15e3f9929ee219a8f5",
+      "size": 2189
+    },
+    {
+      "path": "project/components/OrderTicket/preview.html",
+      "sourcePath": "design/katana-console/project/components/OrderTicket/preview.html",
+      "sha256": "28ea9007fdef2739dd3c66271dc146da67c1a077ae9d3c496d11e19fd5548dcf",
+      "size": 4773
+    },
+    {
+      "path": "project/components/OrderTicket/README.md",
+      "sourcePath": "design/katana-console/project/components/OrderTicket/README.md",
+      "sha256": "8701cc31cfc34a13570b856e7132c2c789e22968080a094cfdd3bcf45189e114",
+      "size": 3392
+    },
+    {
+      "path": "project/components/Overlays/preview.html",
+      "sourcePath": "design/katana-console/project/components/Overlays/preview.html",
+      "sha256": "2841767a88b544371e69a2e0f7ccfffc83f2f29d4bb225ad181b24dd014b6d64",
+      "size": 4481
+    },
+    {
+      "path": "project/components/Overlays/README.md",
+      "sourcePath": "design/katana-console/project/components/Overlays/README.md",
+      "sha256": "2ce43ec8203c052132d9c47ffc41c14b6a8fdfe51ac9e4ef94103f2efb4cf8f7",
+      "size": 2730
+    },
+    {
+      "path": "project/components/PanelFrame/preview.html",
+      "sourcePath": "design/katana-console/project/components/PanelFrame/preview.html",
+      "sha256": "8c2ff563dfa104f09a8184469704510771e2790f3be00ff690a9cf72501919ce",
+      "size": 3970
+    },
+    {
+      "path": "project/components/PanelFrame/README.md",
+      "sourcePath": "design/katana-console/project/components/PanelFrame/README.md",
+      "sha256": "31df223e3926429bda4e253bf355e1ab3db003c6a7e680bb3e4118c12b5a909a",
+      "size": 1665
+    },
+    {
+      "path": "project/components/ParamScatter/preview.html",
+      "sourcePath": "design/katana-console/project/components/ParamScatter/preview.html",
+      "sha256": "0e21128dc1e549ab9ba6d71ef0873b97256ba2eea4a5be31e324e69753f9ae52",
+      "size": 5409
+    },
+    {
+      "path": "project/components/ParamScatter/README.md",
+      "sourcePath": "design/katana-console/project/components/ParamScatter/README.md",
+      "sha256": "354fac9073b1f5e8bb575e658ee8a03ec82b8a0245bc8b1cc48a73779bf3f58e",
+      "size": 1862
+    },
+    {
+      "path": "project/components/PerformanceReport/preview.html",
+      "sourcePath": "design/katana-console/project/components/PerformanceReport/preview.html",
+      "sha256": "47866c0deca2b1189bd813e5470eec8bf56c86a71869b520d5345638fb165626",
+      "size": 5725
+    },
+    {
+      "path": "project/components/PerformanceReport/README.md",
+      "sourcePath": "design/katana-console/project/components/PerformanceReport/README.md",
+      "sha256": "5a2677ddda82960dedf61c20056cfda51ee6e9e13a98ce819b48e8464443c76e",
+      "size": 2287
+    },
+    {
+      "path": "project/components/PnLAttribution/preview.html",
+      "sourcePath": "design/katana-console/project/components/PnLAttribution/preview.html",
+      "sha256": "7c7561cb6312ed015ad0a3ac707ed1314554ab810c7b97d075c18fe88e801e68",
+      "size": 4066
+    },
+    {
+      "path": "project/components/PnLAttribution/README.md",
+      "sourcePath": "design/katana-console/project/components/PnLAttribution/README.md",
+      "sha256": "3caf7f62b7c00d83efbb892770f3bbf0809cb2373676fb3f034bdad2a3e82386",
+      "size": 1999
+    },
+    {
+      "path": "project/components/PnLLedger/preview.html",
+      "sourcePath": "design/katana-console/project/components/PnLLedger/preview.html",
+      "sha256": "443fe6bbf98550c0c505149232ad26227c9d1eabf2be4a131b51103f2b195ba5",
+      "size": 6603
+    },
+    {
+      "path": "project/components/PnLLedger/README.md",
+      "sourcePath": "design/katana-console/project/components/PnLLedger/README.md",
+      "sha256": "defa861194ca681ca952170884ae774429cfaa02630b651fe2587c75a3244bb4",
+      "size": 1940
+    },
+    {
+      "path": "project/components/PositionBook/preview.html",
+      "sourcePath": "design/katana-console/project/components/PositionBook/preview.html",
+      "sha256": "e1abe090affda1fbae2180abdf72269bef2c7886cb606ab97dff58b9f910e399",
+      "size": 5835
+    },
+    {
+      "path": "project/components/PositionBook/README.md",
+      "sourcePath": "design/katana-console/project/components/PositionBook/README.md",
+      "sha256": "d72dea3d3e2b8c9b658cdd61a0bd2fd29087e75e0343f0d5ecfd77282dba61a9",
+      "size": 2602
+    },
+    {
+      "path": "project/components/PositionHistory/preview.html",
+      "sourcePath": "design/katana-console/project/components/PositionHistory/preview.html",
+      "sha256": "f513b042131e4e7e0b93458c4352a41cb9125ff8e715122a784a9fd310e3426b",
+      "size": 6680
+    },
+    {
+      "path": "project/components/PositionHistory/README.md",
+      "sourcePath": "design/katana-console/project/components/PositionHistory/README.md",
+      "sha256": "dd1db6b6f4c5caa8b096fc23fadec7c4866496676b8718d31bdec1d5197c20a3",
+      "size": 1869
+    },
+    {
+      "path": "project/components/Preferences/preview.html",
+      "sourcePath": "design/katana-console/project/components/Preferences/preview.html",
+      "sha256": "ee8916385d8708bcfbe495df112d5f249d24748d3026ff6da0c49bb43e631077",
+      "size": 6533
+    },
+    {
+      "path": "project/components/Preferences/README.md",
+      "sourcePath": "design/katana-console/project/components/Preferences/README.md",
+      "sha256": "2212dce0f96fc10e23ea7a915a1bc54aa649d4dccbf1b0a70f072a6e0e870b2a",
+      "size": 4375
+    },
+    {
+      "path": "project/components/PriceChart/preview.html",
+      "sourcePath": "design/katana-console/project/components/PriceChart/preview.html",
+      "sha256": "fb76c4bc3da13f579ffd8d4db5fcb66b507367ee69ed5bf1aa8de5a6a8099465",
+      "size": 71993
+    },
+    {
+      "path": "project/components/PriceChart/README.md",
+      "sourcePath": "design/katana-console/project/components/PriceChart/README.md",
+      "sha256": "5dbcd3208d3611f770c2118a99a3ed9a7bf2e88ca2561493dba014ed1024bf4e",
+      "size": 6223
+    },
+    {
+      "path": "project/components/QuantileLayers/preview.html",
+      "sourcePath": "design/katana-console/project/components/QuantileLayers/preview.html",
+      "sha256": "0e7b764a102796135fe3deffce4a93096a3adf5c1a5a78cf0ae2c8518e0671db",
+      "size": 3337
+    },
+    {
+      "path": "project/components/QuantileLayers/README.md",
+      "sourcePath": "design/katana-console/project/components/QuantileLayers/README.md",
+      "sha256": "62cc5ed885d281e96ea7607e1fe8292385fe43e6806e5810965ef380f1e2d149",
+      "size": 931
+    },
+    {
+      "path": "project/components/RebalanceDesk/preview.html",
+      "sourcePath": "design/katana-console/project/components/RebalanceDesk/preview.html",
+      "sha256": "872c57b9a5a125b1aae88dbac043ed465bfe7ce3bff4548cc66d9c5c8ad28c36",
+      "size": 5834
+    },
+    {
+      "path": "project/components/RebalanceDesk/README.md",
+      "sourcePath": "design/katana-console/project/components/RebalanceDesk/README.md",
+      "sha256": "438afd21ff26b11221329636f5e74def72e3277de425fcb5548a079a1e0cd6c8",
+      "size": 2476
+    },
+    {
+      "path": "project/components/RegimeStrip/preview.html",
+      "sourcePath": "design/katana-console/project/components/RegimeStrip/preview.html",
+      "sha256": "8832499a8e78d764b2a585cb76447f6ae48c205fe32ad57c8eba7a12f2ee8ce0",
+      "size": 5993
+    },
+    {
+      "path": "project/components/RegimeStrip/README.md",
+      "sourcePath": "design/katana-console/project/components/RegimeStrip/README.md",
+      "sha256": "a899e965cd84d217105c22720a9ec80867cf32148415df462441e91a5c61293e",
+      "size": 1603
+    },
+    {
+      "path": "project/components/ReplayBar/preview.html",
+      "sourcePath": "design/katana-console/project/components/ReplayBar/preview.html",
+      "sha256": "b5133eab6e0ade18c9914002895759e143936818d8575ebb6165de0226393368",
+      "size": 3325
+    },
+    {
+      "path": "project/components/ReplayBar/README.md",
+      "sourcePath": "design/katana-console/project/components/ReplayBar/README.md",
+      "sha256": "7320c234eb3d1758c833ff5ecb2837990423e9b250b628c6ead2469bb0d89b7e",
+      "size": 2212
+    },
+    {
+      "path": "project/components/ReportBuilder/preview.html",
+      "sourcePath": "design/katana-console/project/components/ReportBuilder/preview.html",
+      "sha256": "bcd8cfc195f7465d02a96ebf5663941a79b8604978b1692d4843c460e6403217",
+      "size": 6300
+    },
+    {
+      "path": "project/components/ReportBuilder/README.md",
+      "sourcePath": "design/katana-console/project/components/ReportBuilder/README.md",
+      "sha256": "cb3c0bb50a4782616ea844feca3047a489beaa33ef5402358d1868e8c832e1ec",
+      "size": 2112
+    },
+    {
+      "path": "project/components/RiskBoard/preview.html",
+      "sourcePath": "design/katana-console/project/components/RiskBoard/preview.html",
+      "sha256": "3f2765d91308fa7c1ee4aa6cee81e75211441d9046739dd24ea99809c5aae135",
+      "size": 3747
+    },
+    {
+      "path": "project/components/RiskBoard/README.md",
+      "sourcePath": "design/katana-console/project/components/RiskBoard/README.md",
+      "sha256": "b5f26701d88a46a75c8984f73469453be20a6b2915ed64041ae426553f21acfe",
+      "size": 2104
+    },
+    {
+      "path": "project/components/RobustnessGate/preview.html",
+      "sourcePath": "design/katana-console/project/components/RobustnessGate/preview.html",
+      "sha256": "e641cb018335e349aee900049da755d09613e0abd547e6fb32054e86033e8858",
+      "size": 6554
+    },
+    {
+      "path": "project/components/RobustnessGate/README.md",
+      "sourcePath": "design/katana-console/project/components/RobustnessGate/README.md",
+      "sha256": "ce12a3889a4bae3fba66ea79c4de540b9016306863b58a8bd242dda8e397c546",
+      "size": 2104
+    },
+    {
+      "path": "project/components/RunInspector/preview.html",
+      "sourcePath": "design/katana-console/project/components/RunInspector/preview.html",
+      "sha256": "b5537f655e838654765244d998783fbf5ad3d1ac47f4f6d1798b3ebb28518022",
+      "size": 5616
+    },
+    {
+      "path": "project/components/RunInspector/README.md",
+      "sourcePath": "design/katana-console/project/components/RunInspector/README.md",
+      "sha256": "67185f8faa7f5e6e6d25c406eea0b1c8c81081cb0a9c88d692b9e1cc9e3f6c04",
+      "size": 2556
+    },
+    {
+      "path": "project/components/RunLauncher/preview.html",
+      "sourcePath": "design/katana-console/project/components/RunLauncher/preview.html",
+      "sha256": "2bf0a2afb781a7d6dfccbd60edf7665930eecb4054337a3a59435a6180afdf16",
+      "size": 4801
+    },
+    {
+      "path": "project/components/RunLauncher/README.md",
+      "sourcePath": "design/katana-console/project/components/RunLauncher/README.md",
+      "sha256": "820d3899f2ef871cc39a91997f0db6d5da78ebf8a4f0138f3fe52b4aaa111f51",
+      "size": 2331
+    },
+    {
+      "path": "project/components/RunQueue/preview.html",
+      "sourcePath": "design/katana-console/project/components/RunQueue/preview.html",
+      "sha256": "33731f2182e94927a253c828e0cd8af28756f08748edc83263e6c5c861186e1a",
+      "size": 6175
+    },
+    {
+      "path": "project/components/RunQueue/README.md",
+      "sourcePath": "design/katana-console/project/components/RunQueue/README.md",
+      "sha256": "6a78e0471f3cc24e7c193c865987e29c07e7be02872665b943af5c2637d17811",
+      "size": 1871
+    },
+    {
+      "path": "project/components/Screener/preview.html",
+      "sourcePath": "design/katana-console/project/components/Screener/preview.html",
+      "sha256": "51a3be13ea4e5196250d5f53b919bdff7e51a956ceb83c0700efdab5cc3757ae",
+      "size": 5166
+    },
+    {
+      "path": "project/components/Screener/README.md",
+      "sourcePath": "design/katana-console/project/components/Screener/README.md",
+      "sha256": "f591d0a7223e8d583dbdb7783b6d83e24f8d51ffde6fa72d4a1b4868094f4793",
+      "size": 2527
+    },
+    {
+      "path": "project/components/SeriesBrowser/preview.html",
+      "sourcePath": "design/katana-console/project/components/SeriesBrowser/preview.html",
+      "sha256": "4bc8681757cc28767294236008c4c268de273f19dba606d9a485153fe1fd6a48",
+      "size": 5904
+    },
+    {
+      "path": "project/components/SeriesBrowser/README.md",
+      "sourcePath": "design/katana-console/project/components/SeriesBrowser/README.md",
+      "sha256": "db71f82fb566dde8f483648d7ce260f2e4fe1bcc11fc066290a11db71669828b",
+      "size": 1715
+    },
+    {
+      "path": "project/components/SignalMonitor/preview.html",
+      "sourcePath": "design/katana-console/project/components/SignalMonitor/preview.html",
+      "sha256": "2f48c46de52261b907bed0aa78da9d8516b2f7713bc9a23cad8fd1370726e193",
+      "size": 6720
+    },
+    {
+      "path": "project/components/SignalMonitor/README.md",
+      "sourcePath": "design/katana-console/project/components/SignalMonitor/README.md",
+      "sha256": "233f0424c0da0de5787a5371d943146aba202e019180c78955efcbe794e96b12",
+      "size": 1747
+    },
+    {
+      "path": "project/components/SmartTape/preview.html",
+      "sourcePath": "design/katana-console/project/components/SmartTape/preview.html",
+      "sha256": "7d5d96c15acd01bf36e6dd7b75ec70c606fc3a1c96ce62a1f573dab1ec797ba7",
+      "size": 3501
+    },
+    {
+      "path": "project/components/SmartTape/README.md",
+      "sourcePath": "design/katana-console/project/components/SmartTape/README.md",
+      "sha256": "5f024f18ccfb24f0cc06aa196ad7780ebe75ff42d6a0e14ea4e78967f3bc1888",
+      "size": 2750
+    },
+    {
+      "path": "project/components/SparkTile/preview.html",
+      "sourcePath": "design/katana-console/project/components/SparkTile/preview.html",
+      "sha256": "8ab7f620d5089b059aedfb30ed52726a28cc3b86b51c16a0399a37f18a88c900",
+      "size": 3099
+    },
+    {
+      "path": "project/components/SparkTile/README.md",
+      "sourcePath": "design/katana-console/project/components/SparkTile/README.md",
+      "sha256": "50137013663560e2d4aef7505b0ea46c8f44a5c3f3de169e6b8d6a79a1a9199a",
+      "size": 1323
+    },
+    {
+      "path": "project/components/Splitter/preview.html",
+      "sourcePath": "design/katana-console/project/components/Splitter/preview.html",
+      "sha256": "3fdbbe447442cd5da00018a9402b02f16ecc7395b1d8daea829d99f0a35780a9",
+      "size": 2397
+    },
+    {
+      "path": "project/components/Splitter/README.md",
+      "sourcePath": "design/katana-console/project/components/Splitter/README.md",
+      "sha256": "15485cb17eb2ba417fe024cd7299759b6bf17d14e296ba720d97f530c41ff36f",
+      "size": 1596
+    },
+    {
+      "path": "project/components/StatusBar/preview.html",
+      "sourcePath": "design/katana-console/project/components/StatusBar/preview.html",
+      "sha256": "1343000b8381e6f9b0ae738e84b5b697096ce99362d9639c9c63842a516ab1e4",
+      "size": 6609
+    },
+    {
+      "path": "project/components/StatusBar/README.md",
+      "sourcePath": "design/katana-console/project/components/StatusBar/README.md",
+      "sha256": "8c3515e7337d4c2032a65c1884b867fd7acf94f56c12c88f69e0bc5b58a799d3",
+      "size": 2381
+    },
+    {
+      "path": "project/components/StatusLED/preview.html",
+      "sourcePath": "design/katana-console/project/components/StatusLED/preview.html",
+      "sha256": "c106406e14295440031afd5d0b217820f1df29757b7e8edeb67bf37fc418f4a6",
+      "size": 2426
+    },
+    {
+      "path": "project/components/StatusLED/README.md",
+      "sourcePath": "design/katana-console/project/components/StatusLED/README.md",
+      "sha256": "1a3f9d047bbf9967f6a6c1e501d391dfea477772297e273f18a54666bf05cfae",
+      "size": 1846
+    },
+    {
+      "path": "project/components/StrategyCompare/preview.html",
+      "sourcePath": "design/katana-console/project/components/StrategyCompare/preview.html",
+      "sha256": "fd8a08f16c0f6b82b6b56fdc875b3b79130244128c8f4055d8c2d94f75462d94",
+      "size": 6333
+    },
+    {
+      "path": "project/components/StrategyCompare/README.md",
+      "sourcePath": "design/katana-console/project/components/StrategyCompare/README.md",
+      "sha256": "396c3acbc2c75bde5b2551868b74949df7ee2c01dccc50f71447514a98dcf980",
+      "size": 1931
+    },
+    {
+      "path": "project/components/StressTest/preview.html",
+      "sourcePath": "design/katana-console/project/components/StressTest/preview.html",
+      "sha256": "d656056d045e6dc99e835fcf5582bfe1523aeb39e749d0bcbc4ab4c5f260b4a8",
+      "size": 5579
+    },
+    {
+      "path": "project/components/StressTest/README.md",
+      "sourcePath": "design/katana-console/project/components/StressTest/README.md",
+      "sha256": "7663ef7ab552a9db1e07b13ddbb1150fc6e895d51b38ac0ec08ae764c4ef88ad",
+      "size": 2115
+    },
+    {
+      "path": "project/components/SymbolMap/preview.html",
+      "sourcePath": "design/katana-console/project/components/SymbolMap/preview.html",
+      "sha256": "3cd239d46ece675b432b3d823181e5a936959873d112be9d8023b000807c5ea1",
+      "size": 5909
+    },
+    {
+      "path": "project/components/SymbolMap/README.md",
+      "sourcePath": "design/katana-console/project/components/SymbolMap/README.md",
+      "sha256": "783a65a2747e3e2d9528ca5b6dd14a5c5db62a445db57bb40f90fb057ba8f02e",
+      "size": 1495
+    },
+    {
+      "path": "project/components/SystemHealth/preview.html",
+      "sourcePath": "design/katana-console/project/components/SystemHealth/preview.html",
+      "sha256": "a422ba39b527fdd19507e88cf75ecca7827109137bf8ecc9934542605ab70ccc",
+      "size": 6210
+    },
+    {
+      "path": "project/components/SystemHealth/README.md",
+      "sourcePath": "design/katana-console/project/components/SystemHealth/README.md",
+      "sha256": "d3c528bf4717342b5e266eddf589c7c1d19d0c571fddd3eda53b12244369130c",
+      "size": 1634
+    },
+    {
+      "path": "project/components/Talk/preview.html",
+      "sourcePath": "design/katana-console/project/components/Talk/preview.html",
+      "sha256": "fdc277319c441852a926f85ec9f390f37ceb800c36493371e98fd116b994c29d",
+      "size": 6973
+    },
+    {
+      "path": "project/components/Talk/README.md",
+      "sourcePath": "design/katana-console/project/components/Talk/README.md",
+      "sha256": "2f2d42012714b63ecaf0a4499d69bde4b126bd0eab7bd0d8ee54ac10156226b7",
+      "size": 1648
+    },
+    {
+      "path": "project/components/TaxLots/preview.html",
+      "sourcePath": "design/katana-console/project/components/TaxLots/preview.html",
+      "sha256": "40659e1ce09cd351a8d3ef4e062facbd00e191288320d310a9235dcf08144e99",
+      "size": 5973
+    },
+    {
+      "path": "project/components/TaxLots/README.md",
+      "sourcePath": "design/katana-console/project/components/TaxLots/README.md",
+      "sha256": "c843463ba05161f1e43b8eda46b409311bb3a0a50eb5f29e7fb465a77b8d29e6",
+      "size": 1844
+    },
+    {
+      "path": "project/components/TCA/preview.html",
+      "sourcePath": "design/katana-console/project/components/TCA/preview.html",
+      "sha256": "75a0f6cd89d629b0345e1dd779337463476b37dbac71b84643c0f681cc862c83",
+      "size": 6206
+    },
+    {
+      "path": "project/components/TCA/README.md",
+      "sourcePath": "design/katana-console/project/components/TCA/README.md",
+      "sha256": "4573f4c0fedc4f2576a5fc0872ea615750e0a744e17a31516cb2a5b16cd15f13",
+      "size": 1629
+    },
+    {
+      "path": "project/components/Toggle/preview.html",
+      "sourcePath": "design/katana-console/project/components/Toggle/preview.html",
+      "sha256": "eaa8843e36f3ed2574d39f18b32541e48510e10a624fc7fc746d3c59dbb5f04e",
+      "size": 2730
+    },
+    {
+      "path": "project/components/Toggle/README.md",
+      "sourcePath": "design/katana-console/project/components/Toggle/README.md",
+      "sha256": "a9a49f83edb5542ff28e1b9dffc2ccc4dd9738b575a79632a8eda323e9160913",
+      "size": 1349
+    },
+    {
+      "path": "project/components/TradeStats/preview.html",
+      "sourcePath": "design/katana-console/project/components/TradeStats/preview.html",
+      "sha256": "0c1d2afc204f9a679b9c47c0dbf5441880a55b2a925733c78fc452e40679b153",
+      "size": 6302
+    },
+    {
+      "path": "project/components/TradeStats/README.md",
+      "sourcePath": "design/katana-console/project/components/TradeStats/README.md",
+      "sha256": "4b8a68418a55528146b2de7e4a11af2afb19a72651bd63c917d41935a402c210",
+      "size": 2470
+    },
+    {
+      "path": "project/components/VolSurface/preview.html",
+      "sourcePath": "design/katana-console/project/components/VolSurface/preview.html",
+      "sha256": "f71da79de98018f895bfc11b28b81c104d9cf9017dfcd3c0e4c3dd6cb9afe154",
+      "size": 7280
+    },
+    {
+      "path": "project/components/VolSurface/README.md",
+      "sourcePath": "design/katana-console/project/components/VolSurface/README.md",
+      "sha256": "49515cfdaed6b4e97e447cd876640b12c129921c80baa561566091c6c0a936f3",
+      "size": 1662
+    },
+    {
+      "path": "project/components/VolumeProfile/preview.html",
+      "sourcePath": "design/katana-console/project/components/VolumeProfile/preview.html",
+      "sha256": "74c1ceae25e84431530a066cc6b48d6ea71a82e0f7b7b02b41dac53fc370d549",
+      "size": 3666
+    },
+    {
+      "path": "project/components/VolumeProfile/README.md",
+      "sourcePath": "design/katana-console/project/components/VolumeProfile/README.md",
+      "sha256": "6738e4476463bf4c7c20cda09610a20d1cddda8251edb30fc7930d325fd5deea",
+      "size": 2014
+    },
+    {
+      "path": "project/components/WalkForward/preview.html",
+      "sourcePath": "design/katana-console/project/components/WalkForward/preview.html",
+      "sha256": "a8ec43b8339e23949c66ab9139f2c7063441e7a1f06445aa81491474d7839a17",
+      "size": 5880
+    },
+    {
+      "path": "project/components/WalkForward/README.md",
+      "sourcePath": "design/katana-console/project/components/WalkForward/README.md",
+      "sha256": "08d018f573b00ee462d3c816d9cdb0cffbee1a9fad6c61eb764be797dc7c3be9",
+      "size": 1841
+    },
+    {
+      "path": "project/components/Watchlist/preview.html",
+      "sourcePath": "design/katana-console/project/components/Watchlist/preview.html",
+      "sha256": "601e170cf1d1f26ef74ab9263b00915d8e80ccc79517d32178746026ebc020dc",
+      "size": 6128
+    },
+    {
+      "path": "project/components/Watchlist/README.md",
+      "sourcePath": "design/katana-console/project/components/Watchlist/README.md",
+      "sha256": "8f3d5c425c6640e3647fe254ca17d839f39c6068f6a832daef677102516664c7",
+      "size": 2242
+    },
+    {
+      "path": "project/components/Workspaces/preview.html",
+      "sourcePath": "design/katana-console/project/components/Workspaces/preview.html",
+      "sha256": "34c8d008d114ca3305c0b49e22b01c9c92b00f8b3d7a7eb66b4f92a91eeaff85",
+      "size": 6871
+    },
+    {
+      "path": "project/components/Workspaces/README.md",
+      "sourcePath": "design/katana-console/project/components/Workspaces/README.md",
+      "sha256": "3758ef7549411d1cbb70eb353ca18bac44433acb315b9e75a325535c491a9c3b",
+      "size": 1815
+    },
+    {
+      "path": "project/components/WorkspaceTabs/preview.html",
+      "sourcePath": "design/katana-console/project/components/WorkspaceTabs/preview.html",
+      "sha256": "c0dc52d761d86e94018a399a503cb5de9205a4be05f5e67d17f4ead5ce0b793a",
+      "size": 2235
+    },
+    {
+      "path": "project/components/WorkspaceTabs/README.md",
+      "sourcePath": "design/katana-console/project/components/WorkspaceTabs/README.md",
+      "sha256": "96ebe28d1a94876b052d5fcd9cacbd63b404ea7b51a840324f461848dac45128",
+      "size": 1230
+    },
+    {
+      "path": "project/components/YieldCurve/preview.html",
+      "sourcePath": "design/katana-console/project/components/YieldCurve/preview.html",
+      "sha256": "844337ef20d3a2daaa0553607bdfbf6d92eca5f4970d4cdfa036397fdb61f84c",
+      "size": 5844
+    },
+    {
+      "path": "project/components/YieldCurve/README.md",
+      "sourcePath": "design/katana-console/project/components/YieldCurve/README.md",
+      "sha256": "70aeafef52073e9380bde93d87204bf82f7cba6e5da53cdcf3abd7565ee2ac56",
+      "size": 1466
+    },
+    {
+      "path": "project/coverage.md",
+      "sourcePath": "design/katana-console/project/coverage.md",
+      "sha256": "ed089ef02002ea7c3fc03ae7035d72f35a4c6933981a1416a1cb79869e2bb00f",
+      "size": 14669
+    },
+    {
+      "path": "project/dataviz.md",
+      "sourcePath": "design/katana-console/project/dataviz.md",
+      "sha256": "5d4e63b3d059adda6c60babeb0bc9787a50114eb01b09e88308c2174459f04ca",
+      "size": 6320
+    },
+    {
+      "path": "project/design-system.json",
+      "sourcePath": "design/katana-console/project/design-system.json",
+      "sha256": "d73766a5e8a366bb7ca87ca712a1cc19699cc143d8c231a8606e314808f8cea0",
+      "size": 1555
+    },
+    {
+      "path": "project/engineering.md",
+      "sourcePath": "design/katana-console/project/engineering.md",
+      "sha256": "c818ed4917e0ababc5a009565608f76939656f836086c171cc8654487df771e1",
+      "size": 19735
+    },
+    {
+      "path": "project/gamefeel.md",
+      "sourcePath": "design/katana-console/project/gamefeel.md",
+      "sha256": "fb1176c81adaac4453f28996f52932b56849d03e21ba69b354d982bd49948cbb",
+      "size": 8954
+    },
+    {
+      "path": "project/icons.md",
+      "sourcePath": "design/katana-console/project/icons.md",
+      "sha256": "556c44b1ad0863ed011d539b807a55f0c4f87131591329438f7683ce8fad67ec",
+      "size": 1874
+    },
+    {
+      "path": "project/layout.md",
+      "sourcePath": "design/katana-console/project/layout.md",
+      "sha256": "1cf94fca91a9be74db9a412a1e7904ba5cb500cd5073ad110106262196831a13",
+      "size": 2594
+    },
+    {
+      "path": "project/markets.md",
+      "sourcePath": "design/katana-console/project/markets.md",
+      "sha256": "67737a6cf5c1b4f28d9a6391bef3f51d447e3ec24688dc4322485072b84712ec",
+      "size": 5451
+    },
+    {
+      "path": "project/motion.md",
+      "sourcePath": "design/katana-console/project/motion.md",
+      "sha256": "0a3cb2311ecb03f39e87d5eb700313bf922cbc8590f29af44c5fe0a6ae4b0099",
+      "size": 3536
+    },
+    {
+      "path": "project/pixel.md",
+      "sourcePath": "design/katana-console/project/pixel.md",
+      "sha256": "4c522f02c4fe11c43848a3cfcaa34b966c1b728b336e857cf283dc64b8a24e90",
+      "size": 5123
+    },
+    {
+      "path": "project/portfolio.md",
+      "sourcePath": "design/katana-console/project/portfolio.md",
+      "sha256": "32978b9b8b6768da9007daafa4520cb80300fc91b3558e6e833020150b22617a",
+      "size": 5009
+    },
+    {
+      "path": "project/product.md",
+      "sourcePath": "design/katana-console/project/product.md",
+      "sha256": "2ca3dfa56643054f65d5cdce0e6e18075e08d163d54d8ede367cd75a16882fed",
+      "size": 15235
+    },
+    {
+      "path": "project/readability.md",
+      "sourcePath": "design/katana-console/project/readability.md",
+      "sha256": "388c8abaa1f882aeae69900d374f37580de21be124dc0145c3b8d147b60e453a",
+      "size": 12623
+    },
+    {
+      "path": "project/README.md",
+      "sourcePath": "design/katana-console/project/README.md",
+      "sha256": "8e54ffe6d65d1eaf162c26ccb3378fb25847ddfbd6fc3b2b6c71e3315840d6f2",
+      "size": 27154
+    },
+    {
+      "path": "project/rendering.md",
+      "sourcePath": "design/katana-console/project/rendering.md",
+      "sha256": "3eac9c9271f8a4624611fa112aa651a9965a4b17e0d3d2af1d8db82eaf304035",
+      "size": 2058
+    },
+    {
+      "path": "project/research.md",
+      "sourcePath": "design/katana-console/project/research.md",
+      "sha256": "634dd6027c1fc24deb84117b6f5e2df7511a59216758c07e4d665bba34222fda",
+      "size": 7151
+    },
+    {
+      "path": "project/signature.md",
+      "sourcePath": "design/katana-console/project/signature.md",
+      "sha256": "da8e7e4594a97b25026ac9634f64d841ab9816d51825684a4509e3844b03d903",
+      "size": 4578
+    },
+    {
+      "path": "project/sound.md",
+      "sourcePath": "design/katana-console/project/sound.md",
+      "sha256": "b30750c2ee560ddaca4637b2141854a7022a6850cbfe6c45ff92363982c9b0c6",
+      "size": 2906
+    },
+    {
+      "path": "project/spec.md",
+      "sourcePath": "design/katana-console/project/spec.md",
+      "sha256": "b937ed015a0096fdfdbe5007315050aa8423949c7571984feb85dae34b1ebdcb",
+      "size": 18680
+    },
+    {
+      "path": "project/stack.md",
+      "sourcePath": "design/katana-console/project/stack.md",
+      "sha256": "b03b1c4343de03ba43b8ef0287cd2f932a72e235cedd947f5d28c633860971d9",
+      "size": 5227
+    },
+    {
+      "path": "project/states.md",
+      "sourcePath": "design/katana-console/project/states.md",
+      "sha256": "0228defe6a9ff94177c9c2c78bf79e4e93245c34f46f7fd28058805704b34ee6",
+      "size": 3731
+    },
+    {
+      "path": "project/themes.md",
+      "sourcePath": "design/katana-console/project/themes.md",
+      "sha256": "459528a95ecf1a1035629a3a24497725f2033055bd3003dabcec6edc11f1cafd",
+      "size": 3786
+    },
+    {
+      "path": "project/tokens.json",
+      "sourcePath": "design/katana-console/project/tokens.json",
+      "sha256": "24026ad7aca67daaa4d797133e4433e90662a400e9088c67649d856e71eab836",
+      "size": 31253
+    },
+    {
+      "path": "project/tools.md",
+      "sourcePath": "design/katana-console/project/tools.md",
+      "sha256": "9706c8bd452bde20a4144b75b3dfaef14c1c346817219ae7a81dfb00f4ea0b5e",
+      "size": 49913
+    },
+    {
+      "path": "project/typography.md",
+      "sourcePath": "design/katana-console/project/typography.md",
+      "sha256": "682ed9a37960db3c04b337e86257553e9bce911a62449967aa2e672c158ff4ae",
+      "size": 4454
+    },
+    {
+      "path": "project/wheels.md",
+      "sourcePath": "design/katana-console/project/wheels.md",
+      "sha256": "0fb4309a0dd0704221ec568b4c746dd840acf5ee2bbe0a3452c89a59042e9d58",
+      "size": 16128
+    },
+    {
+      "path": "prototypes/chart-engine/.gitignore",
+      "sourcePath": "design/katana-console/prototypes/chart-engine/.gitignore",
+      "sha256": "36f7542f05f45e18dcb711511d0fd0d63b05c75f2f4bfc6262d88cca66c3503b",
+      "size": 20
+    },
+    {
+      "path": "prototypes/chart-engine/base.css",
+      "sourcePath": "design/katana-console/prototypes/chart-engine/base.css",
+      "sha256": "6396fa6691438d5ef839132fb715f1120e7ceeddd9aa8d85840aa6f0fe63bb39",
+      "size": 3459
+    },
+    {
+      "path": "prototypes/chart-engine/build_kc.py",
+      "sourcePath": "design/katana-console/prototypes/chart-engine/build_kc.py",
+      "sha256": "2cce82db9d10c865d1c646112ad3fa4479baef27e918e19bc25d563ab7ad94eb",
+      "size": 1926
+    },
+    {
+      "path": "prototypes/chart-engine/index.html",
+      "sourcePath": "design/katana-console/prototypes/chart-engine/index.html",
+      "sha256": "2c64ada88888ce35aa98de431945874890777ae1f1fa1210a5cc46b5beedc7c5",
+      "size": 75040
+    },
+    {
+      "path": "prototypes/chart-engine/kc_body.html",
+      "sourcePath": "design/katana-console/prototypes/chart-engine/kc_body.html",
+      "sha256": "5d79c93d1c7711ff259d8f0c90352ed829654d96312d94954a82e0bd6218b950",
+      "size": 1542
+    },
+    {
+      "path": "prototypes/chart-engine/kc_style.css",
+      "sourcePath": "design/katana-console/prototypes/chart-engine/kc_style.css",
+      "sha256": "1ac216616d77a7831b0ba2a5fabccc012ccecbdc653f7116ed10bdc16ed1f9df",
+      "size": 5393
+    },
+    {
+      "path": "prototypes/chart-engine/kchart.js",
+      "sourcePath": "design/katana-console/prototypes/chart-engine/kchart.js",
+      "sha256": "b7eefe0634ad6fc2e18e5c526c41810aeb5765c1cf6cb716a884ec88ebe8c552",
+      "size": 60846
+    },
+    {
+      "path": "prototypes/chart-engine/test_kc2.js",
+      "sourcePath": "design/katana-console/prototypes/chart-engine/test_kc2.js",
+      "sha256": "16a6e7d5b8af96e83ebc6b5289ba6cbdb827aaf2af0c17f6198eb3f0c6559c05",
+      "size": 4406
+    },
+    {
+      "path": "prototypes/chart-engine/test_kc3.js",
+      "sourcePath": "design/katana-console/prototypes/chart-engine/test_kc3.js",
+      "sha256": "c56cb6070ea93a60d5e94bae447c42cd3e3ba1666ea6b8bb211625e71cac9a25",
+      "size": 3109
+    },
+    {
+      "path": "prototypes/chart-engine/tokens.css",
+      "sourcePath": "design/katana-console/prototypes/chart-engine/tokens.css",
+      "sha256": "0555d8c61254ea272b4e4947a9e634246eb456fb6160c97e2360dd9a5b34038c",
+      "size": 3514
+    },
+    {
+      "path": "prototypes/dom-ladder/.gitignore",
+      "sourcePath": "design/katana-console/prototypes/dom-ladder/.gitignore",
+      "sha256": "2fdd014e29943273d3c2d664b34bcff9eff239347edd356442aad1a2a305b6cc",
+      "size": 20
+    },
+    {
+      "path": "prototypes/dom-ladder/build_kd.py",
+      "sourcePath": "design/katana-console/prototypes/dom-ladder/build_kd.py",
+      "sha256": "ee3ae4538f8551cbcfe1c52c1ca45c9953db271d2f1661da85bbe1037443fdc3",
+      "size": 2413
+    },
+    {
+      "path": "prototypes/dom-ladder/index.html",
+      "sourcePath": "design/katana-console/prototypes/dom-ladder/index.html",
+      "sha256": "35e9246d7ecce5f58d6f0018a3fc5da40d783c619d0b1c2fa9c3321536720cbd",
+      "size": 112689
+    },
+    {
+      "path": "prototypes/dom-ladder/kd_body.html",
+      "sourcePath": "design/katana-console/prototypes/dom-ladder/kd_body.html",
+      "sha256": "2b5fc4ecb7782f4907940cdaef86a97c7fc14ece4f09f9580b2d638cfd5a05ad",
+      "size": 4745
+    },
+    {
+      "path": "prototypes/dom-ladder/kd_style.css",
+      "sourcePath": "design/katana-console/prototypes/dom-ladder/kd_style.css",
+      "sha256": "7294e84301ab0d0cbe42d577437f7917eaa84ca95bc81cdc7a65470f195090ff",
+      "size": 16618
+    },
+    {
+      "path": "prototypes/dom-ladder/kdom.js",
+      "sourcePath": "design/katana-console/prototypes/dom-ladder/kdom.js",
+      "sha256": "08cb64b3745e16457e62c72a804992b2dbaf4e8c3fc8d24b8bbd1430228106ab",
+      "size": 84069
+    },
+    {
+      "path": "prototypes/dom-ladder/test_engine.js",
+      "sourcePath": "design/katana-console/prototypes/dom-ladder/test_engine.js",
+      "sha256": "4639bc9151492c03d855ca7e2f87a09543333be084dcc3334d014e5d810295af",
+      "size": 5780
+    },
+    {
+      "path": "prototypes/dom-ladder/test_kd.js",
+      "sourcePath": "design/katana-console/prototypes/dom-ladder/test_kd.js",
+      "sha256": "3a0867c79c98feb445972337db1905ad275fd58cc5e7ae475de6da433e357087",
+      "size": 778
+    },
+    {
+      "path": "prototypes/dom-ladder/test_kd2.js",
+      "sourcePath": "design/katana-console/prototypes/dom-ladder/test_kd2.js",
+      "sha256": "ccf670c3e98c04b250ed7a2b15fb2d312de9a38e048bddfdcafa7da69ead5af4",
+      "size": 8913
+    },
+    {
+      "path": "prototypes/dom-ladder/test_kd3.js",
+      "sourcePath": "design/katana-console/prototypes/dom-ladder/test_kd3.js",
+      "sha256": "4bc594b6fe0b82baca7cec96301ad7c3916f36a4a121c195da298b7ee24e4302",
+      "size": 20087
+    },
+    {
+      "path": "prototypes/footprint-live/fp_body.html",
+      "sourcePath": "design/katana-console/prototypes/footprint-live/fp_body.html",
+      "sha256": "5659becf7bc8fcb1f7b7fc6501ab94aeea9ac6a2a1773661988382dce2184d72",
+      "size": 1214
+    },
+    {
+      "path": "prototypes/footprint-live/fp_script.js",
+      "sourcePath": "design/katana-console/prototypes/footprint-live/fp_script.js",
+      "sha256": "8e2938018c1ffa6b539b9a9c3e47d10443fe7e37c25d3fabf9ad91a2ffafb70b",
+      "size": 26483
+    },
+    {
+      "path": "prototypes/footprint-live/fp_style.css",
+      "sourcePath": "design/katana-console/prototypes/footprint-live/fp_style.css",
+      "sha256": "33c2e4296416fa67a33068653bcfbdae0c56cf700dc3fd39cec7b1d0c2eaee2e",
+      "size": 3199
+    },
+    {
+      "path": "prototypes/footprint-live/index.html",
+      "sourcePath": "design/katana-console/prototypes/footprint-live/index.html",
+      "sha256": "1bd2cbe8e892c3b2cfaade3fb01e987db58aa870de2339d3a7515e28f0435133",
+      "size": 38043
+    },
+    {
+      "path": "prototypes/hub/hub_script.js",
+      "sourcePath": "design/katana-console/prototypes/hub/hub_script.js",
+      "sha256": "72910acb07acd9e33a3b8099d8a980cde646a5f1be578bc2179c21a2c35dc99d",
+      "size": 28061
+    },
+    {
+      "path": "prototypes/hub/index.html",
+      "sourcePath": "design/katana-console/prototypes/hub/index.html",
+      "sha256": "12bb9bb3b6a2a605ea5a904af6c9fce080528bc3573be8a760e6e68baddc3b8d",
+      "size": 74604
+    },
+    {
+      "path": "prototypes/link-proto/index.html",
+      "sourcePath": "design/katana-console/prototypes/link-proto/index.html",
+      "sha256": "66eab5c3664e01c2ad1ad89d54e9f6ca39e1cb72593f49a5941389b4a001ca4c",
+      "size": 40445
+    },
+    {
+      "path": "prototypes/link-proto/ws_body.html",
+      "sourcePath": "design/katana-console/prototypes/link-proto/ws_body.html",
+      "sha256": "36ebd135b1c64e9f75ae889ba2bc5c8b6aee94be3b9dff0319e0ebe6cc544922",
+      "size": 425
+    },
+    {
+      "path": "prototypes/link-proto/ws_script.js",
+      "sourcePath": "design/katana-console/prototypes/link-proto/ws_script.js",
+      "sha256": "fe0389d4f43b025eb54672ff7be1e8ccce4812fe4b3b850eb7444256140bfa97",
+      "size": 32657
+    },
+    {
+      "path": "prototypes/link-proto/ws_style.css",
+      "sourcePath": "design/katana-console/prototypes/link-proto/ws_style.css",
+      "sha256": "1194464cf2ae1457bf9231078380f2c0c9d636f7222b0698e34401cff5625e4b",
+      "size": 7293
+    },
+    {
+      "path": "README.md",
+      "sourcePath": "design/katana-console/README.md",
+      "sha256": "a5771ecedc391c140a81fa9c736d9a48347217bfe2030633245092b57284c989",
+      "size": 5237
+    },
+    {
+      "path": "research/ATAS X 功能清单与覆盖对照.md",
+      "sourcePath": "design/katana-console/research/ATAS X 功能清单与覆盖对照.md",
+      "sha256": "e866d3f1bbf1386a1f30a48bec00c50a803e02af1bdd2212cca79e74b98026cc",
+      "size": 72410
+    },
+    {
+      "path": "research/ATAS能力对照-重分类清单.xlsx",
+      "sourcePath": "design/katana-console/research/ATAS能力对照-重分类清单.xlsx",
+      "sha256": "c87ffb8ec04cfef62e673073e9a5c736a3f1e7e21225a81de1a3796a6290880c",
+      "size": 15893
+    },
+    {
+      "path": "research/evaluations/vela_fp.js",
+      "sourcePath": "design/katana-console/research/evaluations/vela_fp.js",
+      "sha256": "b49331ade8971bfc4492c94dfc5990f5ba0d0da1b41db4dc1d3f4c4b7d7bb65e",
+      "size": 26073
+    },
+    {
+      "path": "research/evaluations/vela-spike.html",
+      "sourcePath": "design/katana-console/research/evaluations/vela-spike.html",
+      "sha256": "85590f2353c9f8e9ce2bd07c1382062fe0c86d138bb87faabc78eecc298c5e35",
+      "size": 38163
+    },
+    {
+      "path": "research/professional-tool-specs-原稿.md",
+      "sourcePath": "design/katana-console/research/professional-tool-specs-原稿.md",
+      "sha256": "5e3da7081fb0d19b784a63c31c875b80c895a51d715fb899e29dd0ff06977c92",
+      "size": 66749
+    },
+    {
+      "path": "research/量化工作台联动模式调研.md",
+      "sourcePath": "design/katana-console/research/量化工作台联动模式调研.md",
+      "sha256": "8325753cca0f3f467f688790260e9fd4bf3ade6f6f1d96626210c8c23302d03e",
+      "size": 52999
+    }
+  ],
+  "components": [
+    {
+      "id": "AccountMirror",
+      "name": "AccountMirror",
+      "path": "project/components/AccountMirror",
+      "readmePath": "project/components/AccountMirror/README.md",
+      "previewPath": "project/components/AccountMirror/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/AccountMirror/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "AccountRail",
+      "name": "AccountRail",
+      "path": "project/components/AccountRail",
+      "readmePath": "project/components/AccountRail/README.md",
+      "previewPath": "project/components/AccountRail/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "静态预览 + 规格",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 778
+      }
+    },
+    {
+      "id": "AgentsStatus",
+      "name": "AgentsStatus",
+      "path": "project/components/AgentsStatus",
+      "readmePath": "project/components/AgentsStatus/README.md",
+      "previewPath": "project/components/AgentsStatus/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/AgentsStatus/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "AlertCenter",
+      "name": "AlertCenter",
+      "path": "project/components/AlertCenter",
+      "readmePath": "project/components/AlertCenter/README.md",
+      "previewPath": "project/components/AlertCenter/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/AlertCenter/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "AliceSessions",
+      "name": "AliceSessions",
+      "path": "project/components/AliceSessions",
+      "readmePath": "project/components/AliceSessions/README.md",
+      "previewPath": "project/components/AliceSessions/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/AliceSessions/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "AlphaLedger",
+      "name": "AlphaLedger",
+      "path": "project/components/AlphaLedger",
+      "readmePath": "project/components/AlphaLedger/README.md",
+      "previewPath": "project/components/AlphaLedger/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/AlphaLedger/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "BondCalc",
+      "name": "BondCalc",
+      "path": "project/components/BondCalc",
+      "readmePath": "project/components/BondCalc/README.md",
+      "previewPath": "project/components/BondCalc/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/BondCalc/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "BreakWorkbench",
+      "name": "BreakWorkbench",
+      "path": "project/components/BreakWorkbench",
+      "readmePath": "project/components/BreakWorkbench/README.md",
+      "previewPath": "project/components/BreakWorkbench/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/BreakWorkbench/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "BrinsonAttribution",
+      "name": "BrinsonAttribution",
+      "path": "project/components/BrinsonAttribution",
+      "readmePath": "project/components/BrinsonAttribution/README.md",
+      "previewPath": "project/components/BrinsonAttribution/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/BrinsonAttribution/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Calendar",
+      "name": "Calendar",
+      "path": "project/components/Calendar",
+      "readmePath": "project/components/Calendar/README.md",
+      "previewPath": "project/components/Calendar/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Calendar/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "CashLedger",
+      "name": "CashLedger",
+      "path": "project/components/CashLedger",
+      "readmePath": "project/components/CashLedger/README.md",
+      "previewPath": "project/components/CashLedger/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "静态预览 + 规格",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 778
+      }
+    },
+    {
+      "id": "ChartTrader",
+      "name": "ChartTrader",
+      "path": "project/components/ChartTrader",
+      "readmePath": "project/components/ChartTrader/README.md",
+      "previewPath": "project/components/ChartTrader/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/ChartTrader/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "ClusterSearch",
+      "name": "ClusterSearch",
+      "path": "project/components/ClusterSearch",
+      "readmePath": "project/components/ClusterSearch/README.md",
+      "previewPath": "project/components/ClusterSearch/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/ClusterSearch/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "CommandLine",
+      "name": "CommandLine",
+      "path": "project/components/CommandLine",
+      "readmePath": "project/components/CommandLine/README.md",
+      "previewPath": "project/components/CommandLine/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/CommandLine/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "ConsensusBlock",
+      "name": "ConsensusBlock",
+      "path": "project/components/ConsensusBlock",
+      "readmePath": "project/components/ConsensusBlock/README.md",
+      "previewPath": "project/components/ConsensusBlock/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "静态预览 + 规格",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 776
+      }
+    },
+    {
+      "id": "Controls",
+      "name": "Controls",
+      "path": "project/components/Controls",
+      "readmePath": "project/components/Controls/README.md",
+      "previewPath": "project/components/Controls/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Controls/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "CorporateActions",
+      "name": "CorporateActions",
+      "path": "project/components/CorporateActions",
+      "readmePath": "project/components/CorporateActions/README.md",
+      "previewPath": "project/components/CorporateActions/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/CorporateActions/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Cover",
+      "name": "Cover",
+      "path": "project/components/Cover",
+      "readmePath": null,
+      "previewPath": "project/components/Cover/preview.html",
+      "sourceMaturity": "preview-only",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": true,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Cover/preview.html",
+        "line": 1
+      }
+    },
+    {
+      "id": "DOMHeatmap",
+      "name": "DOMHeatmap",
+      "path": "project/components/DOMHeatmap",
+      "readmePath": "project/components/DOMHeatmap/README.md",
+      "previewPath": "project/components/DOMHeatmap/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "静态预览 + 规格",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 771
+      }
+    },
+    {
+      "id": "DOMLadder",
+      "name": "DOMLadder",
+      "path": "project/components/DOMLadder",
+      "readmePath": "project/components/DOMLadder/README.md",
+      "previewPath": "project/components/DOMLadder/preview.html",
+      "sourceMaturity": "implemented-reported",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "**实装**（2026-10-04）：ATAS Smart DOM 21 列 + DOM Trader 四模式，引擎侧 L2 reducer（gap / resync / stale / offline 真实侦测），默认锁定 → 草稿 → PAPER 撮合（FIFO / LIFO · DAY / GTC），DOMArtifact；**一切可定制**：设置 schema → 面板（常规 / 列 / 交易 / DOM Trader / 颜色 / 模板）= `set` 命令 = Agent 入口，列宽 / 排序 / 显隐、Liquidity map 参数组、颜色回 token、模板九动作 + 三预设、右键菜单、设计模式，localStorage 持久化且不带锁定；IMPLEMENTED",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 769
+      }
+    },
+    {
+      "id": "DataGrid",
+      "name": "DataGrid",
+      "path": "project/components/DataGrid",
+      "readmePath": "project/components/DataGrid/README.md",
+      "previewPath": "project/components/DataGrid/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/DataGrid/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "DataQuality",
+      "name": "DataQuality",
+      "path": "project/components/DataQuality",
+      "readmePath": "project/components/DataQuality/README.md",
+      "previewPath": "project/components/DataQuality/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/DataQuality/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "DataSources",
+      "name": "DataSources",
+      "path": "project/components/DataSources",
+      "readmePath": "project/components/DataSources/README.md",
+      "previewPath": "project/components/DataSources/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/DataSources/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "DatasetCatalog",
+      "name": "DatasetCatalog",
+      "path": "project/components/DatasetCatalog",
+      "readmePath": "project/components/DatasetCatalog/README.md",
+      "previewPath": "project/components/DatasetCatalog/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/DatasetCatalog/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "DecisionJournal",
+      "name": "DecisionJournal",
+      "path": "project/components/DecisionJournal",
+      "readmePath": "project/components/DecisionJournal/README.md",
+      "previewPath": "project/components/DecisionJournal/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/DecisionJournal/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "DecisionQueue",
+      "name": "DecisionQueue",
+      "path": "project/components/DecisionQueue",
+      "readmePath": "project/components/DecisionQueue/README.md",
+      "previewPath": "project/components/DecisionQueue/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/DecisionQueue/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "DeploymentBoard",
+      "name": "DeploymentBoard",
+      "path": "project/components/DeploymentBoard",
+      "readmePath": "project/components/DeploymentBoard/README.md",
+      "previewPath": "project/components/DeploymentBoard/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/DeploymentBoard/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "DotMatrix",
+      "name": "DotMatrix",
+      "path": "project/components/DotMatrix",
+      "readmePath": "project/components/DotMatrix/README.md",
+      "previewPath": "project/components/DotMatrix/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/DotMatrix/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "DrawingToolbar",
+      "name": "DrawingToolbar",
+      "path": "project/components/DrawingToolbar",
+      "readmePath": "project/components/DrawingToolbar/README.md",
+      "previewPath": "project/components/DrawingToolbar/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/DrawingToolbar/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Entitlements",
+      "name": "Entitlements",
+      "path": "project/components/Entitlements",
+      "readmePath": "project/components/Entitlements/README.md",
+      "previewPath": "project/components/Entitlements/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Entitlements/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "EquityCurve",
+      "name": "EquityCurve",
+      "path": "project/components/EquityCurve",
+      "readmePath": "project/components/EquityCurve/README.md",
+      "previewPath": "project/components/EquityCurve/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/EquityCurve/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "EventStudy",
+      "name": "EventStudy",
+      "path": "project/components/EventStudy",
+      "readmePath": "project/components/EventStudy/README.md",
+      "previewPath": "project/components/EventStudy/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/EventStudy/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "EventTimeline",
+      "name": "EventTimeline",
+      "path": "project/components/EventTimeline",
+      "readmePath": "project/components/EventTimeline/README.md",
+      "previewPath": "project/components/EventTimeline/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/EventTimeline/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "ExitStrategy",
+      "name": "ExitStrategy",
+      "path": "project/components/ExitStrategy",
+      "readmePath": "project/components/ExitStrategy/README.md",
+      "previewPath": "project/components/ExitStrategy/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/ExitStrategy/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "ExposureTimeline",
+      "name": "ExposureTimeline",
+      "path": "project/components/ExposureTimeline",
+      "readmePath": "project/components/ExposureTimeline/README.md",
+      "previewPath": "project/components/ExposureTimeline/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/ExposureTimeline/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "FactorDecay",
+      "name": "FactorDecay",
+      "path": "project/components/FactorDecay",
+      "readmePath": "project/components/FactorDecay/README.md",
+      "previewPath": "project/components/FactorDecay/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/FactorDecay/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "FactorExposure",
+      "name": "FactorExposure",
+      "path": "project/components/FactorExposure",
+      "readmePath": "project/components/FactorExposure/README.md",
+      "previewPath": "project/components/FactorExposure/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/FactorExposure/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "FactorIC",
+      "name": "FactorIC",
+      "path": "project/components/FactorIC",
+      "readmePath": "project/components/FactorIC/README.md",
+      "previewPath": "project/components/FactorIC/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/FactorIC/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "FactorLibrary",
+      "name": "FactorLibrary",
+      "path": "project/components/FactorLibrary",
+      "readmePath": "project/components/FactorLibrary/README.md",
+      "previewPath": "project/components/FactorLibrary/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/FactorLibrary/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "FillLog",
+      "name": "FillLog",
+      "path": "project/components/FillLog",
+      "readmePath": "project/components/FillLog/README.md",
+      "previewPath": "project/components/FillLog/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "静态预览 + 规格",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 777
+      }
+    },
+    {
+      "id": "FlowGauges",
+      "name": "FlowGauges",
+      "path": "project/components/FlowGauges",
+      "readmePath": "project/components/FlowGauges/README.md",
+      "previewPath": "project/components/FlowGauges/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/FlowGauges/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Footprint",
+      "name": "Footprint",
+      "path": "project/components/Footprint",
+      "readmePath": "project/components/Footprint/README.md",
+      "previewPath": "project/components/Footprint/preview.html",
+      "sourceMaturity": "implemented-reported",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "**实装**（首版，自带 ChartSurface），IMPLEMENTED",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 768
+      }
+    },
+    {
+      "id": "Fundamentals",
+      "name": "Fundamentals",
+      "path": "project/components/Fundamentals",
+      "readmePath": "project/components/Fundamentals/README.md",
+      "previewPath": "project/components/Fundamentals/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Fundamentals/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "GreeksBoard",
+      "name": "GreeksBoard",
+      "path": "project/components/GreeksBoard",
+      "readmePath": "project/components/GreeksBoard/README.md",
+      "previewPath": "project/components/GreeksBoard/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/GreeksBoard/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Heatmap",
+      "name": "Heatmap",
+      "path": "project/components/Heatmap",
+      "readmePath": "project/components/Heatmap/README.md",
+      "previewPath": "project/components/Heatmap/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Heatmap/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "HypothesisLedger",
+      "name": "HypothesisLedger",
+      "path": "project/components/HypothesisLedger",
+      "readmePath": "project/components/HypothesisLedger/README.md",
+      "previewPath": "project/components/HypothesisLedger/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/HypothesisLedger/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "IndicatorPanel",
+      "name": "IndicatorPanel",
+      "path": "project/components/IndicatorPanel",
+      "readmePath": "project/components/IndicatorPanel/README.md",
+      "previewPath": "project/components/IndicatorPanel/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/IndicatorPanel/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "IntradayPnL",
+      "name": "IntradayPnL",
+      "path": "project/components/IntradayPnL",
+      "readmePath": "project/components/IntradayPnL/README.md",
+      "previewPath": "project/components/IntradayPnL/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/IntradayPnL/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "LCDReadout",
+      "name": "LCDReadout",
+      "path": "project/components/LCDReadout",
+      "readmePath": "project/components/LCDReadout/README.md",
+      "previewPath": "project/components/LCDReadout/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/LCDReadout/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "LiveDivergence",
+      "name": "LiveDivergence",
+      "path": "project/components/LiveDivergence",
+      "readmePath": "project/components/LiveDivergence/README.md",
+      "previewPath": "project/components/LiveDivergence/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/LiveDivergence/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "LossLimits",
+      "name": "LossLimits",
+      "path": "project/components/LossLimits",
+      "readmePath": "project/components/LossLimits/README.md",
+      "previewPath": "project/components/LossLimits/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/LossLimits/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "MBOTrackers",
+      "name": "MBOTrackers",
+      "path": "project/components/MBOTrackers",
+      "readmePath": "project/components/MBOTrackers/README.md",
+      "previewPath": "project/components/MBOTrackers/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/MBOTrackers/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Meter",
+      "name": "Meter",
+      "path": "project/components/Meter",
+      "readmePath": "project/components/Meter/README.md",
+      "previewPath": "project/components/Meter/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Meter/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "ModelCard",
+      "name": "ModelCard",
+      "path": "project/components/ModelCard",
+      "readmePath": "project/components/ModelCard/README.md",
+      "previewPath": "project/components/ModelCard/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/ModelCard/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "NewsFeed",
+      "name": "NewsFeed",
+      "path": "project/components/NewsFeed",
+      "readmePath": "project/components/NewsFeed/README.md",
+      "previewPath": "project/components/NewsFeed/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/NewsFeed/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Notes",
+      "name": "Notes",
+      "path": "project/components/Notes",
+      "readmePath": "project/components/Notes/README.md",
+      "previewPath": "project/components/Notes/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Notes/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "OptionsChain",
+      "name": "OptionsChain",
+      "path": "project/components/OptionsChain",
+      "readmePath": "project/components/OptionsChain/README.md",
+      "previewPath": "project/components/OptionsChain/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/OptionsChain/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "OptionsFlow",
+      "name": "OptionsFlow",
+      "path": "project/components/OptionsFlow",
+      "readmePath": "project/components/OptionsFlow/README.md",
+      "previewPath": "project/components/OptionsFlow/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/OptionsFlow/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "OrderBasket",
+      "name": "OrderBasket",
+      "path": "project/components/OrderBasket",
+      "readmePath": "project/components/OrderBasket/README.md",
+      "previewPath": "project/components/OrderBasket/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/OrderBasket/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "OrderBlotter",
+      "name": "OrderBlotter",
+      "path": "project/components/OrderBlotter",
+      "readmePath": "project/components/OrderBlotter/README.md",
+      "previewPath": "project/components/OrderBlotter/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "静态预览 + 规格",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 777
+      }
+    },
+    {
+      "id": "OrderTicket",
+      "name": "OrderTicket",
+      "path": "project/components/OrderTicket",
+      "readmePath": "project/components/OrderTicket/README.md",
+      "previewPath": "project/components/OrderTicket/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "静态预览 + 规格",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 776
+      }
+    },
+    {
+      "id": "Overlays",
+      "name": "Overlays",
+      "path": "project/components/Overlays",
+      "readmePath": "project/components/Overlays/README.md",
+      "previewPath": "project/components/Overlays/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Overlays/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "PanelFrame",
+      "name": "PanelFrame",
+      "path": "project/components/PanelFrame",
+      "readmePath": "project/components/PanelFrame/README.md",
+      "previewPath": "project/components/PanelFrame/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/PanelFrame/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "ParamScatter",
+      "name": "ParamScatter",
+      "path": "project/components/ParamScatter",
+      "readmePath": "project/components/ParamScatter/README.md",
+      "previewPath": "project/components/ParamScatter/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/ParamScatter/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "PerformanceReport",
+      "name": "PerformanceReport",
+      "path": "project/components/PerformanceReport",
+      "readmePath": "project/components/PerformanceReport/README.md",
+      "previewPath": "project/components/PerformanceReport/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/PerformanceReport/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "PnLAttribution",
+      "name": "PnLAttribution",
+      "path": "project/components/PnLAttribution",
+      "readmePath": "project/components/PnLAttribution/README.md",
+      "previewPath": "project/components/PnLAttribution/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/PnLAttribution/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "PnLLedger",
+      "name": "PnLLedger",
+      "path": "project/components/PnLLedger",
+      "readmePath": "project/components/PnLLedger/README.md",
+      "previewPath": "project/components/PnLLedger/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/PnLLedger/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "PositionBook",
+      "name": "PositionBook",
+      "path": "project/components/PositionBook",
+      "readmePath": "project/components/PositionBook/README.md",
+      "previewPath": "project/components/PositionBook/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "静态预览 + 规格",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 778
+      }
+    },
+    {
+      "id": "PositionHistory",
+      "name": "PositionHistory",
+      "path": "project/components/PositionHistory",
+      "readmePath": "project/components/PositionHistory/README.md",
+      "previewPath": "project/components/PositionHistory/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/PositionHistory/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Preferences",
+      "name": "Preferences",
+      "path": "project/components/Preferences",
+      "readmePath": "project/components/Preferences/README.md",
+      "previewPath": "project/components/Preferences/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Preferences/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "PriceChart",
+      "name": "PriceChart",
+      "path": "project/components/PriceChart",
+      "readmePath": "project/components/PriceChart/README.md",
+      "previewPath": "project/components/PriceChart/preview.html",
+      "sourceMaturity": "implemented-reported",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "**实装**：`@katana/chart` 段 1–3（见 engineering §2.2），IMPLEMENTED",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 767
+      }
+    },
+    {
+      "id": "QuantileLayers",
+      "name": "QuantileLayers",
+      "path": "project/components/QuantileLayers",
+      "readmePath": "project/components/QuantileLayers/README.md",
+      "previewPath": "project/components/QuantileLayers/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/QuantileLayers/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "RebalanceDesk",
+      "name": "RebalanceDesk",
+      "path": "project/components/RebalanceDesk",
+      "readmePath": "project/components/RebalanceDesk/README.md",
+      "previewPath": "project/components/RebalanceDesk/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/RebalanceDesk/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "RegimeStrip",
+      "name": "RegimeStrip",
+      "path": "project/components/RegimeStrip",
+      "readmePath": "project/components/RegimeStrip/README.md",
+      "previewPath": "project/components/RegimeStrip/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/RegimeStrip/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "ReplayBar",
+      "name": "ReplayBar",
+      "path": "project/components/ReplayBar",
+      "readmePath": "project/components/ReplayBar/README.md",
+      "previewPath": "project/components/ReplayBar/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "静态预览 + 规格",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 773
+      }
+    },
+    {
+      "id": "ReportBuilder",
+      "name": "ReportBuilder",
+      "path": "project/components/ReportBuilder",
+      "readmePath": "project/components/ReportBuilder/README.md",
+      "previewPath": "project/components/ReportBuilder/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/ReportBuilder/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "RiskBoard",
+      "name": "RiskBoard",
+      "path": "project/components/RiskBoard",
+      "readmePath": "project/components/RiskBoard/README.md",
+      "previewPath": "project/components/RiskBoard/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/RiskBoard/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "RobustnessGate",
+      "name": "RobustnessGate",
+      "path": "project/components/RobustnessGate",
+      "readmePath": "project/components/RobustnessGate/README.md",
+      "previewPath": "project/components/RobustnessGate/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/RobustnessGate/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "RunInspector",
+      "name": "RunInspector",
+      "path": "project/components/RunInspector",
+      "readmePath": "project/components/RunInspector/README.md",
+      "previewPath": "project/components/RunInspector/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/RunInspector/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "RunLauncher",
+      "name": "RunLauncher",
+      "path": "project/components/RunLauncher",
+      "readmePath": "project/components/RunLauncher/README.md",
+      "previewPath": "project/components/RunLauncher/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/RunLauncher/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "RunQueue",
+      "name": "RunQueue",
+      "path": "project/components/RunQueue",
+      "readmePath": "project/components/RunQueue/README.md",
+      "previewPath": "project/components/RunQueue/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/RunQueue/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Screener",
+      "name": "Screener",
+      "path": "project/components/Screener",
+      "readmePath": "project/components/Screener/README.md",
+      "previewPath": "project/components/Screener/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "静态预览 + 规格",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 775
+      }
+    },
+    {
+      "id": "SeriesBrowser",
+      "name": "SeriesBrowser",
+      "path": "project/components/SeriesBrowser",
+      "readmePath": "project/components/SeriesBrowser/README.md",
+      "previewPath": "project/components/SeriesBrowser/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/SeriesBrowser/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "SignalMonitor",
+      "name": "SignalMonitor",
+      "path": "project/components/SignalMonitor",
+      "readmePath": "project/components/SignalMonitor/README.md",
+      "previewPath": "project/components/SignalMonitor/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/SignalMonitor/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "SmartTape",
+      "name": "SmartTape",
+      "path": "project/components/SmartTape",
+      "readmePath": "project/components/SmartTape/README.md",
+      "previewPath": "project/components/SmartTape/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "静态预览 + 规格",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 770
+      }
+    },
+    {
+      "id": "SparkTile",
+      "name": "SparkTile",
+      "path": "project/components/SparkTile",
+      "readmePath": "project/components/SparkTile/README.md",
+      "previewPath": "project/components/SparkTile/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/SparkTile/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Splitter",
+      "name": "Splitter",
+      "path": "project/components/Splitter",
+      "readmePath": "project/components/Splitter/README.md",
+      "previewPath": "project/components/Splitter/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Splitter/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "StatusBar",
+      "name": "StatusBar",
+      "path": "project/components/StatusBar",
+      "readmePath": "project/components/StatusBar/README.md",
+      "previewPath": "project/components/StatusBar/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/StatusBar/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "StatusLED",
+      "name": "StatusLED",
+      "path": "project/components/StatusLED",
+      "readmePath": "project/components/StatusLED/README.md",
+      "previewPath": "project/components/StatusLED/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/StatusLED/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "StrategyCompare",
+      "name": "StrategyCompare",
+      "path": "project/components/StrategyCompare",
+      "readmePath": "project/components/StrategyCompare/README.md",
+      "previewPath": "project/components/StrategyCompare/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/StrategyCompare/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "StressTest",
+      "name": "StressTest",
+      "path": "project/components/StressTest",
+      "readmePath": "project/components/StressTest/README.md",
+      "previewPath": "project/components/StressTest/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/StressTest/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "SymbolMap",
+      "name": "SymbolMap",
+      "path": "project/components/SymbolMap",
+      "readmePath": "project/components/SymbolMap/README.md",
+      "previewPath": "project/components/SymbolMap/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/SymbolMap/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "SystemHealth",
+      "name": "SystemHealth",
+      "path": "project/components/SystemHealth",
+      "readmePath": "project/components/SystemHealth/README.md",
+      "previewPath": "project/components/SystemHealth/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/SystemHealth/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "TCA",
+      "name": "TCA",
+      "path": "project/components/TCA",
+      "readmePath": "project/components/TCA/README.md",
+      "previewPath": "project/components/TCA/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/TCA/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Talk",
+      "name": "Talk",
+      "path": "project/components/Talk",
+      "readmePath": "project/components/Talk/README.md",
+      "previewPath": "project/components/Talk/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Talk/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "TaxLots",
+      "name": "TaxLots",
+      "path": "project/components/TaxLots",
+      "readmePath": "project/components/TaxLots/README.md",
+      "previewPath": "project/components/TaxLots/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/TaxLots/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Toggle",
+      "name": "Toggle",
+      "path": "project/components/Toggle",
+      "readmePath": "project/components/Toggle/README.md",
+      "previewPath": "project/components/Toggle/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Toggle/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "TradeStats",
+      "name": "TradeStats",
+      "path": "project/components/TradeStats",
+      "readmePath": "project/components/TradeStats/README.md",
+      "previewPath": "project/components/TradeStats/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/TradeStats/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "VolSurface",
+      "name": "VolSurface",
+      "path": "project/components/VolSurface",
+      "readmePath": "project/components/VolSurface/README.md",
+      "previewPath": "project/components/VolSurface/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/VolSurface/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "VolumeProfile",
+      "name": "VolumeProfile",
+      "path": "project/components/VolumeProfile",
+      "readmePath": "project/components/VolumeProfile/README.md",
+      "previewPath": "project/components/VolumeProfile/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "静态预览 + 规格",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 772
+      }
+    },
+    {
+      "id": "WalkForward",
+      "name": "WalkForward",
+      "path": "project/components/WalkForward",
+      "readmePath": "project/components/WalkForward/README.md",
+      "previewPath": "project/components/WalkForward/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/WalkForward/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Watchlist",
+      "name": "Watchlist",
+      "path": "project/components/Watchlist",
+      "readmePath": "project/components/Watchlist/README.md",
+      "previewPath": "project/components/Watchlist/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "静态预览 + 规格",
+      "maturityEvidence": {
+        "path": "project/tools.md",
+        "line": 774
+      }
+    },
+    {
+      "id": "WorkspaceTabs",
+      "name": "WorkspaceTabs",
+      "path": "project/components/WorkspaceTabs",
+      "readmePath": "project/components/WorkspaceTabs/README.md",
+      "previewPath": "project/components/WorkspaceTabs/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/WorkspaceTabs/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "Workspaces",
+      "name": "Workspaces",
+      "path": "project/components/Workspaces",
+      "readmePath": "project/components/Workspaces/README.md",
+      "previewPath": "project/components/Workspaces/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/Workspaces/README.md",
+        "line": 1
+      }
+    },
+    {
+      "id": "YieldCurve",
+      "name": "YieldCurve",
+      "path": "project/components/YieldCurve",
+      "readmePath": "project/components/YieldCurve/README.md",
+      "previewPath": "project/components/YieldCurve/preview.html",
+      "sourceMaturity": "specification-with-preview",
+      "verificationStatus": "not-independently-verified",
+      "documentationMissing": false,
+      "maturityDeclaration": "No explicit implementation maturity recorded in the source progress table; README and preview are reference material.",
+      "maturityEvidence": {
+        "path": "project/components/YieldCurve/README.md",
+        "line": 1
+      }
+    }
+  ],
+  "externalLinks": [
+    {
+      "url": "http://www.w3.org/2000/svg",
+      "paths": [
+        "prototypes/hub/hub_script.js",
+        "prototypes/hub/index.html"
+      ]
+    },
+    {
+      "url": "https://atas.net/atas-crypto/",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://atas.net/atas-possibilities/atas-market-replay/",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://atas.net/atas-x/",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://atas.net/blog/latest-8-0-12/",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://atas.net/blog/market-data-in-atas-how-to-connect/",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://atas.net/blog/new-atas-tariff-plans/",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://atas.net/heatmap/",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://atas.net/modules/charts/",
+      "paths": [
+        "research/professional-tool-specs-原稿.md"
+      ]
+    },
+    {
+      "url": "https://atas.net/modules/market-replay/",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://atas.net/pricing/",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://atas.net/spring-promo-x/",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://autotradelab.com/blog/nautilus-vs-vectorbt-vs-freqtrade-20-python-quant-trading-frameworks-compared",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://bookmap.com/en/features/",
+      "paths": [
+        "research/professional-tool-specs-原稿.md"
+      ]
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@luxalgo/vela@0.8.1/dist/vela.global.min.js",
+      "paths": [
+        "research/evaluations/vela-spike.html"
+      ]
+    },
+    {
+      "url": "https://cefr.uel.edu.vn/Resources/Docs/SubDomain/cefr/Eikon%20User%20Guide.pdf",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://code.visualstudio.com/docs/editing/editingevolved",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://community.developers.lseg.com/discussion/comment/36452",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://community.developers.lseg.com/discussion/comment/55623",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://community.interop.io/t/fdc3-and-ai-using-fdc3-intents-as-mcp-tools-osff-2025-nyc-session-recording/397",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://completetradersedge.com/atas-review/",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://completetradersedge.com/atas-vs-atas-x/",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://deephaven.io/core/docs/how-to-guides/user-interface/filters/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://deephaven.io/enterprise/docs/interfaces/web/controls/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://deephaven.io/enterprise/docs/interfaces/web/working-with-tables/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://developer.openfin.co/workspace/docs/platform/latest/index.html",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://developers.binance.com/docs/binance-spot-api-docs/web-socket-streams",
+      "paths": [
+        "research/professional-tool-specs-原稿.md"
+      ]
+    },
+    {
+      "url": "https://dict.thinktrader.net/freshman/rookie.html",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://docs.atas.net/en/md_DataFeedsCore_2Docs_2en_20200__ATASX__Indicator.html",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://docs.atas.net/en/md_Indicators_2Heatmap_2README.html",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://docs.atas.net/en/namespaceATAS_1_1Indicators.html",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://docs.coreweave.com/products/registry/link_version.md",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://docs.coreweave.com/products/wandb/artifacts/explore-and-traverse-an-artifact-graph.md",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://docs.datadoghq.com/dashboards/guide/context-links/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://docs.datadoghq.com/dashboards/template_variables/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://docs.datadoghq.com/logs/explorer/saved_views/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://docs.honeycomb.io/investigate/analyze/identify-outliers",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://docs.interop.io/desktop/capabilities/data-sharing/channels/overview/index.html",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://docs.interop.io/desktop/capabilities/windows/workspaces/overview/index.html",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://docs.kedro.org/projects/kedro-viz/en/stable/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://docs.openbb.co/workspace/apps-json-reference",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://docs.openbb.co/workspace/developers/json-specs/widgets-json-reference",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://fdc3.finos.org/docs/api/spec",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://fdc3.finos.org/docs/api/specs/webConnectionProtocol",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://fdc3.finos.org/docs/context/ref/Chart",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://fdc3.finos.org/docs/context/ref/Position",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://fdc3.finos.org/docs/context/spec",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://fdc3.finos.org/docs/intents/spec",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://feedback.atas.net/changelog",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://feedback.atas.net/changelog/atas-x-beta-8014602-and-newer",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://feedback.atas.net/changelog/beta-8015",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://feedback.atas.net/changelog/new-mbo-bundle-and-options-analysis-are-now-in-atas",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://finsemble.interop.io/docs/connect-apps/interop/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;700&display=swap",
+      "paths": [
+        "project/components/Overlays/preview.html",
+        "project/components/PanelFrame/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=DM+Mono:wght@500&family=Noto+Sans+SC:wght@400;700&display=swap",
+      "paths": [
+        "project/components/WorkspaceTabs/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600&family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;700&display=swap",
+      "paths": [
+        "project/components/Controls/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Noto+Sans+SC:wght@400&display=swap",
+      "paths": [
+        "project/components/Cover/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap",
+      "paths": [
+        "project/components/DOMHeatmap/preview.html",
+        "project/components/StatusLED/preview.html",
+        "project/components/VolumeProfile/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500;700&family=Noto+Sans+SC:wght@400&display=swap",
+      "paths": [
+        "project/components/AccountRail/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&display=swap",
+      "paths": [
+        "project/components/LCDReadout/preview.html",
+        "project/components/ReplayBar/preview.html",
+        "project/components/SmartTape/preview.html",
+        "project/components/SparkTile/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Barlow+Condensed:wght@800&family=Noto+Sans+SC:wght@400;700&display=swap",
+      "paths": [
+        "project/components/AccountMirror/preview.html",
+        "project/components/ClusterSearch/preview.html",
+        "project/components/DrawingToolbar/preview.html",
+        "project/components/Entitlements/preview.html",
+        "project/components/ExitStrategy/preview.html",
+        "project/components/FlowGauges/preview.html",
+        "project/components/IndicatorPanel/preview.html",
+        "project/components/MBOTrackers/preview.html",
+        "project/components/OptionsFlow/preview.html",
+        "project/components/Talk/preview.html",
+        "project/components/Workspaces/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Barlow+Condensed:wght@800&family=Noto+Sans+SC:wght@400&display=swap",
+      "paths": [
+        "project/components/AlphaLedger/preview.html",
+        "project/components/BreakWorkbench/preview.html",
+        "project/components/DecisionJournal/preview.html",
+        "project/components/DecisionQueue/preview.html",
+        "project/components/HypothesisLedger/preview.html",
+        "project/components/RobustnessGate/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400;500&display=swap",
+      "paths": [
+        "project/components/Preferences/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400;700&display=swap",
+      "paths": [
+        "project/components/DOMLadder/preview.html",
+        "project/components/Footprint/preview.html",
+        "project/components/PriceChart/preview.html",
+        "prototypes/chart-engine/build_kc.py",
+        "prototypes/chart-engine/index.html",
+        "prototypes/dom-ladder/build_kd.py",
+        "prototypes/dom-ladder/index.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap",
+      "paths": [
+        "project/components/AgentsStatus/preview.html",
+        "project/components/AlertCenter/preview.html",
+        "project/components/AliceSessions/preview.html",
+        "project/components/BondCalc/preview.html",
+        "project/components/BrinsonAttribution/preview.html",
+        "project/components/Calendar/preview.html",
+        "project/components/CashLedger/preview.html",
+        "project/components/ChartTrader/preview.html",
+        "project/components/CorporateActions/preview.html",
+        "project/components/DataQuality/preview.html",
+        "project/components/DataSources/preview.html",
+        "project/components/DatasetCatalog/preview.html",
+        "project/components/DeploymentBoard/preview.html",
+        "project/components/EventStudy/preview.html",
+        "project/components/EventTimeline/preview.html",
+        "project/components/ExposureTimeline/preview.html",
+        "project/components/FactorDecay/preview.html",
+        "project/components/FactorExposure/preview.html",
+        "project/components/FactorLibrary/preview.html",
+        "project/components/FillLog/preview.html",
+        "project/components/Fundamentals/preview.html",
+        "project/components/GreeksBoard/preview.html",
+        "project/components/IntradayPnL/preview.html",
+        "project/components/LiveDivergence/preview.html",
+        "project/components/LossLimits/preview.html",
+        "project/components/ModelCard/preview.html",
+        "project/components/NewsFeed/preview.html",
+        "project/components/Notes/preview.html",
+        "project/components/OptionsChain/preview.html",
+        "project/components/OrderBasket/preview.html",
+        "project/components/OrderBlotter/preview.html",
+        "project/components/OrderTicket/preview.html",
+        "project/components/ParamScatter/preview.html",
+        "project/components/PerformanceReport/preview.html",
+        "project/components/PnLAttribution/preview.html",
+        "project/components/PnLLedger/preview.html",
+        "project/components/PositionBook/preview.html",
+        "project/components/PositionHistory/preview.html",
+        "project/components/RebalanceDesk/preview.html",
+        "project/components/RegimeStrip/preview.html",
+        "project/components/ReportBuilder/preview.html",
+        "project/components/RiskBoard/preview.html",
+        "project/components/RunInspector/preview.html",
+        "project/components/RunLauncher/preview.html",
+        "project/components/RunQueue/preview.html",
+        "project/components/Screener/preview.html",
+        "project/components/SeriesBrowser/preview.html",
+        "project/components/SignalMonitor/preview.html",
+        "project/components/StrategyCompare/preview.html",
+        "project/components/StressTest/preview.html",
+        "project/components/SymbolMap/preview.html",
+        "project/components/SystemHealth/preview.html",
+        "project/components/TCA/preview.html",
+        "project/components/TaxLots/preview.html",
+        "project/components/TradeStats/preview.html",
+        "project/components/VolSurface/preview.html",
+        "project/components/WalkForward/preview.html",
+        "project/components/Watchlist/preview.html",
+        "project/components/YieldCurve/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Sixtyfour&family=Noto+Sans+SC:wght@400&display=swap",
+      "paths": [
+        "project/components/StatusBar/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;700&display=swap",
+      "paths": [
+        "project/components/DataGrid/preview.html",
+        "project/components/EquityCurve/preview.html",
+        "project/components/FactorIC/preview.html",
+        "project/components/Heatmap/preview.html",
+        "project/components/Meter/preview.html",
+        "project/components/QuantileLayers/preview.html",
+        "project/components/Toggle/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400&display=swap",
+      "paths": [
+        "project/components/CommandLine/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400&display=swap",
+      "paths": [
+        "project/components/Splitter/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Doto:wght@400;500;700&family=Sixtyfour:BLED,SCAN@0..60,-20..40&family=Workbench:BLED,SCAN@0..60,0..40&family=Tiny5&family=Micro+5&family=Jersey+25&family=Jersey+20&family=Barlow+Condensed:wght@800&family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400&display=swap",
+      "paths": [
+        "project/components/DotMatrix/preview.html"
+      ]
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Doto:wght@500&family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400&display=swap",
+      "paths": [
+        "project/components/ConsensusBlock/preview.html"
+      ]
+    },
+    {
+      "url": "https://forum.ninjatrader.com/forum/ninjatrader-8/platform-technical-support-aa/103450-linking-superdom-to-chart",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://github.com/AtasPlatform/Indicators",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://github.com/bparlan/omp-agent",
+      "paths": [
+        "project/wheels.md"
+      ]
+    },
+    {
+      "url": "https://github.com/BRCOO/ohmypi-craft",
+      "paths": [
+        "project/wheels.md"
+      ]
+    },
+    {
+      "url": "https://github.com/can1357/oh-my-pi",
+      "paths": [
+        "project/wheels.md"
+      ]
+    },
+    {
+      "url": "https://github.com/elastic/kibana/issues/2349",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://github.com/finos/FDC3-Sail",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://github.com/finos/FDC3/blob/main/CHANGELOG.md",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://github.com/finos/FDC3/issues/242",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://github.com/finos/FDC3/issues/717",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://github.com/finos/perspective",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://github.com/InteropIO/finsemble-bloomberg/blob/master/docs/README.md",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://github.com/LuxAlgo/Vela",
+      "paths": [
+        "research/evaluations/vela-spike.html"
+      ]
+    },
+    {
+      "url": "https://github.com/nautechsystems/nautilus_trader/discussions/245",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://github.com/shy3130/tick-stock-panel",
+      "paths": [
+        "research/professional-tool-specs-原稿.md"
+      ]
+    },
+    {
+      "url": "https://grafana.com/docs/grafana/latest/administration/correlations/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://grafana.com/docs/grafana/latest/dashboards/variables/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://grafana.com/docs/grafana/latest/dashboards/variables/add-template-variables/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://grafana.com/docs/grafana/latest/explore/get-started-with-explore/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://grafana.com/docs/grafana/latest/panels-visualizations/configure-data-links/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602238-alerts",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602252-settings-menu",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602349-chart-display-modes",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602350-chart-periods-and-types",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602352-chart-strategies",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602378-drawing-objects-management",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602396-hot-keys-configuration",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602462-scale-function",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602469-smart-dom-window-columns",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602476-statistics-tab",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602496-visual-settings-of-the-chart",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602504-watchlist",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602516-workspace-setting",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602557-layout-settings",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602576-trading-functions-smart-dom",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602608-description-setting-templates-smart-tape-",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602621-smart-dom-window-overview",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000602624-cluster-statistics",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000606631-footprint-settings",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000610247-following-manager",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000625592-trading-panel-for-classical-markets",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000636828-alerts-in-smart-tape",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000636862-sl-tp-automatic-exit-strategy-",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000637162-windows-linking",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000648977-atas-webhooks",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000657084-cross-trading",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000660059-heatmap",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000660331-mbo-indicators-icebergs-stops-sweeps",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/articles/72000660390-link-price-axis",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/folders/72000569858",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/folders/72000569861",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/folders/72000569863",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.atas.net/en/support/solutions/folders/72000569869",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    },
+    {
+      "url": "https://help.quantower.com/quantower/general-settings/link-panels",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://help.quantower.com/quantower/trading-panels/order-entry",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://help.quantower.in/getting-started/workspaces-binds-groups",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://help.tableau.com/current/pro/desktop/en-us/actions_filter.htm",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://hex.tech/blog/beyond-linear-notebooks/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://home.lib.fju.edu.tw/TC/sites/default/files/2022-05/WFT_userguide.pdf",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://hummingbot.org/dashboard/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://learn.hex.tech/docs/explore-data/projects/project-execution/run-modes-and-cell-staleness",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-drillthrough",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/power-bi/create-reports/service-reports-visual-interactions",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/power-bi/visuals/power-bi-visualization-slicers",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://library-guides.imperial.ac.uk/bloomberg/functions",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://library.fuqua.duke.edu/docs/Bloomberg-Getting-Started-Guide-for-Students-English.pdf",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://licai.cofool.com/ask/vipqa_7291791_42749905.html",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://mlflow.org/docs/latest/ml/model-registry/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://my.lerner.udel.edu/wp-content/uploads/BB-Getting-Started-in-Launchpad.pdf",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://ninza.co/ninjatrader-8-linking-charts",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://obsidian.md/help/plugins/backlinks",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://static.ninjatrader.com/support/helpGuides/nt8/linking_windows.htm",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://tapedelta.com/examples",
+      "paths": [
+        "research/professional-tool-specs-原稿.md"
+      ]
+    },
+    {
+      "url": "https://thesource.lseg.com/TheSource/getfile/download/e3c972e1-0610-499f-a292-15c8739db94c",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://toslc.thinkorswim.com/center/howToTos/thinkManual/Getting-Started/Account-Features",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://toslc.thinkorswim.com/center/howToTos/thinkManual/Getting-Started/Interactive-Elements",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.cgws.com/fintech-oss-monthnews/cczqths_help.pdf",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.databricks.com/blog/accelerate-your-model-development-new-mlflow-experiments-ui",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.elastic.co/docs/explore-analyze/dashboards/drilldowns",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.elastic.co/docs/explore-analyze/query-filter/filtering",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.elastic.co/docs/extend/kibana/key-concepts/platform-architecture/routing-navigation-and-url",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.freqtrade.io/en/stable/freq-ui/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.metatrader5.com/en/terminal/help/charts_analysis/charts",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.myquant.cn/docs2/quickStart/%E6%8A%95%E7%A0%94.html",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.quantconnect.com/docs/v2/cloud-platform/live-trading/deployment",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.quantconnect.com/docs/v2/cloud-platform/live-trading/results",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.quantconnect.com/docs/v2/cloud-platform/projects/ide",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.sierrachart.com/index.php?page=doc%2FChartSettings.html",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.tradingview.com/",
+      "paths": [
+        "research/professional-tool-specs-原稿.md"
+      ]
+    },
+    {
+      "url": "https://www.tradingview.com/support/solutions/43000473336-how-do-i-change-the-ticker-symbol-for-all-charts-of-layout-simultaneously/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.tradingview.com/support/solutions/43000629992-how-to-sync-the-charts-of-my-layout/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.tradingview.com/support/solutions/43000746975-tradingview-layouts-a-quick-guide/",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.ulethbridge.ca/sites/default/files/FactSetQuickStart_Manual%201%20of%202.pdf",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.vnpy.com/docs/cn/community/app/cta_backtester.html",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.vnpy.com/docs/cn/community/app/cta_strategy.html",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://www.vnpy.com/forum/topic/4470-vnpyde-ying-gai-wei-mei-ge-yun-xing-ce-lue-chuang-jian-yi-ge-ce-lue-zhang-hu",
+      "paths": [
+        "research/量化工作台联动模式调研.md"
+      ]
+    },
+    {
+      "url": "https://x.com/AtasTrading/status/1925529961181442218",
+      "paths": [
+        "project/atas.md",
+        "research/ATAS X 功能清单与覆盖对照.md"
+      ]
+    }
+  ],
+  "fontPolicy": "External font links and fallback families are preserved; importer never downloads fonts or other remote assets.",
+  "verificationStatus": "source-integrity-only; component conformance and visual acceptance are not evaluated"
+}

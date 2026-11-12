@@ -1,0 +1,47 @@
+<!-- @dsCard group="资产管理" height=280 subtitle="StressTest：历史情景 + 自定义冲击，对组合与各账户的损益零轴条；超过限额 amber；相关性压力开关；结果来自 Lab run" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.est{color:var(--signal-amber)}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.grid{width:620px}
+.row{display:grid;grid-template-columns:170px 1fr 84px 64px 64px 64px;height:var(--row-base);align-items:center;border-bottom:var(--hairline)}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .cn{color:var(--ink-200)}
+.row small{display:block;color:var(--ink-300);font-size:10px}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:70%;top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.over{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.ax s{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--signal-red);text-decoration:none}
+.v{text-align:right;color:var(--ink-100)}.v.over{color:var(--signal-amber)}
+.custom{background:var(--bg-000);box-shadow:var(--recess)}
+</style></head><body>
+<div class="top"><div class="seg"><span class="on">历史情景</span><span>因子冲击</span><span>自定义</span></div><span>相关性压力 <b style="font-weight:400;color:var(--signal-orange)">ON</b></span><span>RUN <b style="font-weight:400;color:var(--signal-blue)">9b11 · 09-30 持仓</b></span><span style="margin-left:auto">限额 日内 -2.5% · 净值 2,265,380</span></div>
+<div class="grid" role="grid" aria-label="压力测试">
+  <div class="row hd"><div>情景</div><div>组合损益（零轴右 = 盈）</div><div class="r">合计</div><div class="r">A</div><div class="r">B</div><div class="r">F</div></div>
+  <div class="row"><div><span class="cn">2015-06 去杠杆</span><small>-43% · 18 日</small></div><div class="ax"><i class="over" style="left:12%;width:58%"></i><s style="left:40%"></s></div><div class="v over">-19.4%</div><div class="r">-21.0</div><div class="r">-24.8</div><div class="r up">+8.1</div></div>
+  <div class="row"><div><span class="cn">2018 全年</span><small>-25% · 慢熊</small></div><div class="ax"><i class="over" style="left:28%;width:42%"></i><s style="left:40%"></s></div><div class="v over">-14.2%</div><div class="r">-15.6</div><div class="r">-16.9</div><div class="r">-2.0</div></div>
+  <div class="row"><div><span class="cn">2020-02 开市</span><small>-8% · 1 日</small></div><div class="ax"><i class="over" style="left:49%;width:21%"></i><s style="left:40%"></s></div><div class="v over">-6.9%</div><div class="r">-7.8</div><div class="r">-8.2</div><div class="r up">+3.4</div></div>
+  <div class="row"><div><span class="cn">2024-02 微盘</span><small>小盘 -30%</small></div><div class="ax"><i style="left:58%;width:12%"></i><s style="left:40%"></s></div><div class="v">-4.1%</div><div class="r">-5.2</div><div class="r">-3.0</div><div class="r">-0.4</div></div>
+  <div class="row"><div><span class="cn">利率 +100bp</span><small>因子冲击</small></div><div class="ax"><i style="left:64%;width:6%"></i><s style="left:40%"></s></div><div class="v">-2.0%</div><div class="r">-2.4</div><div class="r">-1.9</div><div class="r">-0.2</div></div>
+  <div class="row"><div><span class="cn">动量反转 -2σ</span><small>因子冲击</small></div><div class="ax"><i class="over" style="left:40%;width:30%"></i><s style="left:40%"></s></div><div class="v over">-9.8%</div><div class="r">-10.9</div><div class="r">-11.4</div><div class="r">-0.8</div></div>
+  <div class="row custom"><div><span class="cn" style="color:var(--ink-300)">+ 自定义</span><small>按行业 / 因子 / 单票设冲击</small></div><div class="ax"></div><div class="v" style="color:var(--ink-400)">—</div><div></div><div></div><div></div></div>
+  <div class="foot"><span><b>6</b> 情景 · 4 越限</span><span>最差 <b>2015-06 · -19.4%</b></span><span>流动性折价 <b>含</b></span><span style="margin-left:auto">加入报告 · 重跑</span></div>
+</div>
+</body></html>

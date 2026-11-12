@@ -1,0 +1,51 @@
+<!-- @dsCard group="交易" height=260 subtitle="ChartTrader：图上下单与改单；自己的单 amber 标签贴右轴、拖动改价、括号单 TP/SL、仓位线 + 浮盈；用 Primitives 画，不进 React" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.ch{position:relative;width:600px;height:220px;background:var(--bg-000);box-shadow:var(--recess);overflow:hidden}
+.g{position:absolute;left:0;right:64px;border-top:1px solid var(--chart-grid)}
+.ax{position:absolute;right:0;top:0;bottom:0;width:64px;border-left:1px solid var(--line-100);background:var(--bg-100)}
+.ax span{position:absolute;right:6px;font-size:10px;color:var(--chart-axis);transform:translateY(-50%)}
+.c{position:absolute;width:5px}
+.c i{position:absolute;left:2px;width:1px;background:var(--ink-300)}
+.c b{position:absolute;left:0;width:5px;background:var(--ink-200)}
+.ln{position:absolute;left:0;right:64px;height:0;border-top:1px dashed}
+.tag{position:absolute;right:0;width:64px;height:16px;display:flex;align-items:center;padding:0 6px;font-size:10px;transform:translateY(-50%);box-sizing:border-box}
+.own{border-color:var(--order-own)}.own .tag{background:var(--order-own);color:var(--bg-000)}
+.tp{border-color:var(--signal-green)}.tp .tag{background:var(--bg-300);color:var(--signal-green);border:1px solid var(--signal-green)}
+.sl{border-color:var(--signal-red)}.sl .tag{background:var(--bg-300);color:var(--signal-red);border:1px solid var(--signal-red)}
+.pos{border-top:1px solid var(--ink-100)}
+.pos .tag{background:var(--ink-100);color:var(--bg-000)}
+.last{border-top:1px solid var(--poc)}.last .tag{background:var(--poc);color:var(--bg-000)}
+.lbl{position:absolute;left:8px;transform:translateY(-50%);font-size:10px;padding:1px 6px;background:var(--bg-300);border:var(--hairline)}
+.lbl.own{color:var(--order-own)}.lbl.pos{color:var(--ink-100)}
+.grip{position:absolute;left:50%;width:8px;height:8px;border-radius:var(--radius-pill);background:var(--order-own);box-shadow:var(--glow-orange);transform:translate(-50%,-50%)}
+.tb{position:absolute;left:8px;top:8px;display:flex;gap:2px;background:var(--bg-300);box-shadow:var(--plate);padding:2px}
+.tb span{height:22px;padding:0 8px;display:flex;align-items:center;font-size:10px;color:var(--ink-300)}
+.tb span.on{background:var(--bg-000);color:var(--signal-orange)}
+.tb .acc{font-family:var(--font-dot);color:var(--signal-orange);-webkit-font-smoothing:none}
+</style></head><body>
+<div class="ch" role="img" aria-label="图上交易 · 300750 · 账户 A">
+  <div class="tb"><span class="acc">A · LIVE</span><span class="on">1,000</span><span>2,000</span><span>5,000</span><span>括号 TP 2% / SL 1%</span></div>
+  <div class="g" style="top:40px"></div><div class="g" style="top:80px"></div><div class="g" style="top:120px"></div><div class="g" style="top:160px"></div><div class="g" style="top:200px"></div>
+  <div class="ax"><span style="top:40px">252.00</span><span style="top:80px">248.00</span><span style="top:120px">244.00</span><span style="top:160px">240.00</span><span style="top:200px">236.00</span></div>
+  <div class="c" style="left:40px"><i style="top:150px;height:40px"></i><b style="top:160px;height:20px"></b></div>
+  <div class="c" style="left:60px"><i style="top:140px;height:34px"></i><b style="top:148px;height:18px"></b></div>
+  <div class="c" style="left:80px"><i style="top:128px;height:36px"></i><b style="top:132px;height:22px"></b></div>
+  <div class="c" style="left:100px"><i style="top:120px;height:30px"></i><b style="top:124px;height:14px"></b></div>
+  <div class="c" style="left:120px"><i style="top:104px;height:36px"></i><b style="top:110px;height:24px"></b></div>
+  <div class="c" style="left:140px"><i style="top:96px;height:30px"></i><b style="top:100px;height:16px"></b></div>
+  <div class="c" style="left:160px"><i style="top:88px;height:40px"></i><b style="top:92px;height:26px"></b></div>
+  <div class="c" style="left:180px"><i style="top:84px;height:28px"></i><b style="top:88px;height:14px"></b></div>
+  <div class="c" style="left:200px"><i style="top:90px;height:30px"></i><b style="top:96px;height:18px"></b></div>
+  <div class="c" style="left:220px"><i style="top:94px;height:26px"></i><b style="top:98px;height:12px"></b></div>
+  <div class="c" style="left:240px"><i style="top:86px;height:30px"></i><b style="top:90px;height:20px"></b></div>
+  <div class="ln tp" style="top:58px"><div class="tag">TP 250.2</div></div>
+  <div class="ln pos" style="top:132px"><div class="tag">3,000</div></div><div class="lbl pos" style="top:132px">持仓 3,000 @ 243.10 · <span style="color:var(--pnl-up)">+11,100</span> · 平</div>
+  <div class="ln last" style="top:92px"><div class="tag">246.80</div></div>
+  <div class="ln own" style="top:112px"><div class="tag">B 2,000</div><div class="grip"></div></div><div class="lbl own" style="top:112px">BUY 2,000 @ 245.50 · 拖动改价 · ×</div>
+  <div class="ln sl" style="top:168px"><div class="tag">SL 240.6</div></div>
+</div>
+</body></html>

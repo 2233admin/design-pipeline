@@ -1,0 +1,67 @@
+<!-- @dsCard group="工作台" height=170 subtitle="StatusBar：顶栏 / 底栏的分段模型（参考 oh-my-posh）——segments[] 声明，每段类型 / 模板 / 颜色 / 连接符；斜切连接；无事则隐藏；用户可改主题 JSON" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Sixtyfour&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.ly{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;border:1px solid var(--line-200);padding:0 4px;color:var(--ink-300)}
+.ly.hypo{color:var(--signal-blue);border-color:var(--signal-blue)}.ly.fcst{border-style:dashed}.ly.plan{background:transparent;color:var(--ink-200)}.ly.fact{color:var(--ink-100);border-color:var(--ink-300)}
+.bar{display:flex;align-items:stretch;height:28px;background:var(--bg-300);box-shadow:var(--plate);width:620px;font-size:10px}
+.sg{display:flex;align-items:center;gap:6px;padding:0 10px 0 14px;position:relative;color:var(--ink-200);white-space:nowrap}
+.sg+.sg{margin-left:-6px;clip-path:polygon(8px 0,100% 0,100% 100%,0 100%,0 8px)}
+.sg.a{background:var(--bg-400)}.sg.b{background:var(--bg-200)}
+.sg .k{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;color:var(--ink-300)}
+.sg .v{color:var(--ink-100)}
+.sg.live{background:var(--bg-000);box-shadow:inset 0 0 0 1px var(--signal-amber)}
+.sg.live .k{color:var(--signal-amber)}
+.clock{font-family:"Sixtyfour",var(--font-mono);font-size:14px;color:var(--signal-orange);font-variation-settings:"BLED" 30,"SCAN" 20;-webkit-font-smoothing:none;margin-left:auto;padding:0 12px;display:flex;align-items:center}
+.json{margin-top:10px;background:var(--bg-000);box-shadow:var(--recess);padding:8px 10px;font-size:10px;color:var(--ink-300);line-height:1.5;width:600px;white-space:pre}
+.json b{font-weight:400;color:var(--ink-200)}
+</style></head><body>
+<div class="bar" role="status" aria-label="底栏">
+<div class="sg a"><span class="led ok"></span><span class="k">QUOTE</span><span class="v">6ms</span></div>
+<div class="sg b"><span class="led ok"></span><span class="k">EXEC</span><span class="v">8ms</span></div>
+<div class="sg a"><span class="led on"></span><span class="k">ALICE</span><span class="v">2 RUN · 1 等人</span></div>
+<div class="sg b live"><span class="k">ACCOUNTS</span><span class="v"><span class="acc">A B F</span> · LIVE</span></div>
+<div class="sg a"><span class="k">LINK</span><span class="v" style="color:var(--link-a)">■</span><span class="v">300750 · 5m</span></div>
+<div class="sg b"><span class="led warn"></span><span class="k">BREAK</span><span class="v">3</span></div>
+<div class="sg a"><span class="k">QUIET</span><span class="v" style="color:var(--ink-400)">OFF</span></div>
+<div class="clock">14:32:07</div></div>
+<div class="json">{ <b>"segments"</b>: [
+  { <b>"type"</b>: "feed",     <b>"template"</b>: "{{led}} QUOTE {{latency}}",      <b>"hideWhen"</b>: "never" },
+  { <b>"type"</b>: "alice",    <b>"template"</b>: "{{led}} ALICE {{runs}} RUN{{#waiting}} · {{waiting}} 等人{{/waiting}}" },
+  { <b>"type"</b>: "accounts", <b>"template"</b>: "ACCOUNTS {{codes}} · {{kind}}",    <b>"frame"</b>: "live-amber" },
+  { <b>"type"</b>: "breaks",   <b>"template"</b>: "{{led}} BREAK {{open}}",            <b>"hideWhen"</b>: "open == 0" } ],
+  <b>"joiner"</b>: "chamfer-8",  <b>"alternate"</b>: ["bg-400","bg-200"] }</div>
+</body></html>

@@ -1,0 +1,33 @@
+<!-- @dsCard group="组合" height=200 subtitle="FillLog：今日成交，append-only；时间左、账户短码、方向订单流色、同单多笔折叠、滑点列" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.grid{width:620px;border:var(--hairline);background:var(--bg-200)}
+.row{display:grid;grid-template-columns:76px 28px 130px 48px 84px 72px 72px 1fr;height:var(--row-tight);align-items:center;border-bottom:var(--hairline)}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.t{color:var(--ink-300)}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.code{color:var(--ink-200)}.cn{font-family:var(--font-sans)}
+.side{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none}
+.buy{color:var(--bid)}.sell{color:var(--ask)}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none;margin-left:6px}
+.neg{color:var(--signal-amber)}
+.new{box-shadow:inset 2px 0 0 var(--signal-orange)}
+.sep{height:18px;display:flex;align-items:center;padding:0 8px;color:var(--ink-400);font-size:9px;letter-spacing:.1em;font-family:var(--font-dot);-webkit-font-smoothing:none;border-bottom:var(--hairline);background:var(--bg-300)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+</style></head><body>
+<div class="grid" role="log" aria-label="今日成交" aria-live="polite">
+  <div class="row hd" role="row"><div>时间</div><div></div><div>代码 · 名称</div><div>方向</div><div class="r">成交价 × 量</div><div class="r">金额</div><div class="r">滑点</div><div>来源</div></div>
+  <div class="row new" role="row"><div class="t">10:42:07.3</div><div><span class="acc">B</span></div><div><span class="code">300308</span> <span class="cn">中际旭创</span><span class="tag">3 笔</span></div><div class="side buy">BUY</div><div class="r">187.92 × 1,200</div><div class="r">225,504</div><div class="r neg">+0.02</div><div class="t">手动 · GO</div></div>
+  <div class="row" role="row"><div class="t">10:31:55.0</div><div><span class="acc">F</span></div><div><span class="code">IF2510</span> <span class="cn">沪深300</span></div><div class="side sell">SELL</div><div class="r">3,948.2 × 1 手</div><div class="r">1,184,460</div><div class="r">0.0</div><div class="t">策略 momo-7</div></div>
+  <div class="sep">— 10:30 重连 · 之前数据已对账 —</div>
+  <div class="row" role="row"><div class="t">09:35:12.8</div><div><span class="acc">A</span></div><div><span class="code">300750</span> <span class="cn">宁德时代</span><span class="tag">2 笔</span></div><div class="side buy">BUY</div><div class="r">244.96 × 3,000</div><div class="r">734,880</div><div class="r">-0.04</div><div class="t">OpenAlice · run 2c91</div></div>
+  <div class="row" role="row"><div class="t">09:30:03.1</div><div><span class="acc">A</span></div><div><span class="code">600519</span> <span class="cn">贵州茅台</span></div><div class="side sell">SELL</div><div class="r">1,485.00 × 200</div><div class="r">297,000</div><div class="r">0.00</div><div class="t">手动 · 梯子</div></div>
+  <div class="row" role="row" style="color:var(--ink-300)"><div class="t">09:30:00.0</div><div><span class="acc" style="color:var(--ink-400)">A</span></div><div><span>000858</span> <span class="cn">五粮液</span></div><div class="side" style="color:var(--ink-400)">BUY</div><div class="r">— —</div><div class="r">— —</div><div class="r">—</div><div class="t">待确认超时 · 放弃</div></div>
+  <div class="foot"><span>5 单 · 7 笔</span><span>买 960,384 · 卖 1,481,460</span><span>均滑点 <span style="color:var(--ink-100)">-0.01</span></span><span style="margin-left:auto">导出 CSV</span></div>
+</div>
+</body></html>

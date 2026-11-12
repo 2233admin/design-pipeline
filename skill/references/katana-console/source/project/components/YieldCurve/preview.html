@@ -1,0 +1,50 @@
+<!-- @dsCard group="固收" height=230 subtitle="YieldCurve：收益率曲线——多条曲线叠加（今日 / 历史 / 他国），期限对数轴，关键期限点，利差 LCD；PriceChart 多线皮肤" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{width:620px;background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.lg{display:flex;gap:12px;font-size:10px;color:var(--ink-300);margin-top:4px}.lg i{display:inline-block;width:10px;height:2px;vertical-align:middle;margin-right:4px}
+</style></head><body>
+<div class="kpi"><div><small>10Y</small><b>2.14%</b><i>-2bp</i></div><div><small>2Y</small><b>1.52%</b><i>+1bp</i></div><div><small>10Y-2Y</small><b>62</b><i>bp · 昨 65</i></div><div><small>10Y-1Y</small><b>78</b><i>bp</i></div><div><small>CN-US 10Y</small><b>-212</b><i>bp</i></div></div>
+<div class="wrap"><svg width="600" height="130" viewBox="0 0 600 130" role="img" aria-label="收益率曲线"><g class="gl"><line x1="30" y1="20" x2="560" y2="20"/><line x1="30" y1="60" x2="560" y2="60"/><line x1="30" y1="100" x2="560" y2="100"/></g>
+<text x="564" y="23">4.5</text><text x="564" y="63">3.0</text><text x="564" y="103">1.5</text>
+<path d="M40 112 L110 108 L170 104 L230 100 L300 94 L370 88 L440 84 L510 78 L560 74" fill="none" stroke="var(--series-1)" stroke-width="2"/>
+<g fill="var(--series-1)"><circle cx="40" cy="112" r="2.5"/><circle cx="110" cy="108" r="2.5"/><circle cx="170" cy="104" r="2.5"/><circle cx="230" cy="100" r="2.5"/><circle cx="300" cy="94" r="2.5"/><circle cx="370" cy="88" r="2.5"/><circle cx="440" cy="84" r="2.5"/><circle cx="510" cy="78" r="2.5"/><circle cx="560" cy="74" r="2.5"/></g>
+<path d="M40 100 L110 98 L170 96 L230 95 L300 92 L370 88 L440 86 L510 82 L560 80" fill="none" stroke="var(--ink-300)" stroke-width="1.2" stroke-dasharray="3 3"/>
+<path d="M40 28 L110 30 L170 34 L230 38 L300 40 L370 40 L440 38 L510 34 L560 30" fill="none" stroke="var(--series-2)" stroke-width="1.5"/>
+<text x="36" y="124">1M</text><text x="104" y="124">3M</text><text x="164" y="124">1Y</text><text x="224" y="124">2Y</text><text x="294" y="124">3Y</text><text x="364" y="124">5Y</text><text x="434" y="124">7Y</text><text x="504" y="124">10Y</text><text x="552" y="124">30Y</text></svg>
+<div class="lg"><span><i style="background:var(--series-1)"></i>中国国债 · 今日</span><span><i style="background:var(--ink-300)"></i>一年前</span><span><i style="background:var(--series-2)"></i>美国国债 · 今日</span><span style="margin-left:auto">期限对数轴 · 来源 中债 / FRED</span></div></div>
+</body></html>

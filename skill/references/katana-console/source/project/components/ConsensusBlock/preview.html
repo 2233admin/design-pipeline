@@ -1,0 +1,25 @@
+<!-- @dsCard group="交易" height=200 subtitle="ConsensusBlock：三方表决块——执行网关预检 · 账户服务限额 · 规则引擎，各一灯一短句 + 结论；斜切壳；OrderTicket / OrderBasket / DeploymentBoard 推进前用" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@500&family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cons{clip-path:var(--chamfer-8);background:var(--bg-000);padding:2px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.cons>div{background:var(--bg-300);padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+.cons small{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.cons .msg{font-size:10px;color:var(--ink-200);font-family:var(--font-sans)}
+.cons .msg.w{color:var(--signal-amber)}.cons .msg.d{color:var(--signal-red)}
+.dot{width:8px;height:8px;border-radius:var(--radius-pill);background:var(--signal-green);box-shadow:var(--glow-orange)}
+.dot.w{background:var(--signal-amber)}.dot.d{background:var(--signal-red)}.dot.o{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}
+.v{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:10px;color:var(--ink-300)}
+.v b{font-weight:400;color:var(--ink-100)}
+.v .hash{font-family:var(--font-lcd);letter-spacing:.06em;color:var(--signal-orange)}
+.cap{font-size:10px;color:var(--ink-300);margin-bottom:6px;letter-spacing:.06em}
+</style></head><body>
+<div><div class="cap">下单 · 账户 A · 买 300750 × 2,000</div>
+<div class="cons" role="group" aria-label="三方表决"><div><small>GATEWAY</small><span class="dot"></span><span class="msg">可用 ✓ 整手 ✓</span></div><div><small>ACCOUNT</small><span class="dot w"></span><span class="msg w">集中度 58 / 60</span></div><div><small>RULES</small><span class="dot"></span><span class="msg">无规则命中</span></div></div>
+<div class="v"><span>2 通过 · 1 接近 · <b>可提交</b></span><span class="hash">7f3a</span></div></div>
+<div><div class="cap">推进 · alice-rev → LIVE</div>
+<div class="cons" role="group" aria-label="三方表决"><div><small>GATES</small><span class="dot d"></span><span class="msg d">偏离门未过 19.4%</span></div><div><small>CAPACITY</small><span class="dot"></span><span class="msg">0.9 / 5 亿</span></div><div><small>ACCOUNT</small><span class="dot o"></span><span class="msg" style="color:var(--ink-400)">未指定</span></div></div>
+<div class="v"><span>1 未过 · 1 未填 · <b style="color:var(--signal-red)">不可推进</b></span><span class="hash">—</span></div></div>
+</body></html>

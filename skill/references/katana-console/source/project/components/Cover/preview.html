@@ -1,0 +1,38 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:var(--bg-100);width:960px;height:288px;position:relative;overflow:hidden;font-family:var(--font-display)}
+.name{position:absolute;left:32px;bottom:44px;max-width:440px;color:var(--ink-100);font-size:96px;line-height:.92;font-weight:700;letter-spacing:.02em;text-transform:uppercase}
+.tag{position:absolute;left:34px;bottom:22px;max-width:440px;color:var(--ink-300);font-family:var(--font-sans);font-size:13px;letter-spacing:.02em}
+.orange{fill:var(--signal-orange)}.amber{fill:var(--signal-amber)}.green{fill:var(--signal-green)}.recess{fill:var(--bg-000)}.plate{fill:var(--bg-300)}.ink{fill:var(--ink-100)}.ground{fill:var(--bg-100)}.hair{stroke:var(--line-100)}
+.sq{rx:var(--radius-0)}
+</style></head><body>
+<!--
+blocks: signal-orange 192×288 (space-8 ×6 × full height) · bg-000 recess 144×144 (space-8 ×4.5) · bg-300 plate 144×96 · signal-amber 48×96 (space-8 ×1.5 × ×3) · signal-green 48×48 · ink-100 tint 96×48
+arrangement: one tall orange slab bleeding off the right edge, a plate + recess stack to its left, two thin signal bands between — a control panel seen head-on
+pattern: "precise, technical, mono, 4px grid → dot grid at one spacing step": the LED point matrix is the system's own motif; dots at space-4 (16px) pitch, ground cut out of the orange slab, 60 units
+scales: pitch space-4 16px, gaps space-2 8px, radii radius-0 (square) and radius-pill for the dots
+-->
+<svg width="960" height="288" viewBox="0 0 960 288" aria-hidden="true" style="position:absolute;left:0;top:0">
+  <rect class="plate sq" x="488" y="0" width="144" height="96"/>
+  <rect class="recess sq" x="488" y="104" width="144" height="144"/>
+  <rect class="amber sq" x="640" y="0" width="48" height="96"/>
+  <rect class="green sq" x="640" y="200" width="48" height="48"/>
+  <rect class="ink sq" x="640" y="104" width="96" height="48"/>
+  <rect class="orange sq" x="768" y="0" width="192" height="288"/>
+  <g class="ground">
+    <circle cx="792" cy="24" r="3"/><circle cx="808" cy="24" r="3"/><circle cx="824" cy="24" r="3"/><circle cx="840" cy="24" r="3"/><circle cx="856" cy="24" r="3"/><circle cx="872" cy="24" r="3"/><circle cx="888" cy="24" r="3"/><circle cx="904" cy="24" r="3"/><circle cx="920" cy="24" r="3"/><circle cx="936" cy="24" r="3"/>
+    <circle cx="792" cy="40" r="3"/><circle cx="808" cy="40" r="3"/><circle cx="824" cy="40" r="3"/><circle cx="840" cy="40" r="3"/><circle cx="856" cy="40" r="3"/><circle cx="872" cy="40" r="3"/><circle cx="888" cy="40" r="3"/><circle cx="904" cy="40" r="3"/><circle cx="920" cy="40" r="3"/><circle cx="936" cy="40" r="3"/>
+    <circle cx="792" cy="56" r="3"/><circle cx="808" cy="56" r="3"/><circle cx="824" cy="56" r="3"/><circle cx="840" cy="56" r="3"/><circle cx="856" cy="56" r="3"/><circle cx="872" cy="56" r="3"/><circle cx="888" cy="56" r="3"/><circle cx="904" cy="56" r="3"/><circle cx="920" cy="56" r="3"/><circle cx="936" cy="56" r="3"/>
+    <circle cx="792" cy="72" r="3"/><circle cx="808" cy="72" r="3"/><circle cx="824" cy="72" r="3"/><circle cx="840" cy="72" r="3"/><circle cx="856" cy="72" r="3"/><circle cx="872" cy="72" r="3"/><circle cx="888" cy="72" r="3"/><circle cx="904" cy="72" r="3"/><circle cx="920" cy="72" r="3"/><circle cx="936" cy="72" r="3"/>
+    <circle cx="792" cy="88" r="3"/><circle cx="808" cy="88" r="3"/><circle cx="824" cy="88" r="3"/><circle cx="840" cy="88" r="3"/><circle cx="856" cy="88" r="3"/><circle cx="872" cy="88" r="3"/><circle cx="888" cy="88" r="3"/><circle cx="904" cy="88" r="3"/><circle cx="920" cy="88" r="3"/><circle cx="936" cy="88" r="3"/>
+    <circle cx="792" cy="104" r="3"/><circle cx="808" cy="104" r="3"/><circle cx="824" cy="104" r="3"/><circle cx="840" cy="104" r="3"/><circle cx="856" cy="104" r="3"/><circle cx="872" cy="104" r="3"/><circle cx="888" cy="104" r="3"/><circle cx="904" cy="104" r="3"/><circle cx="920" cy="104" r="3"/><circle cx="936" cy="104" r="3"/>
+  </g>
+  <line class="hair" x1="488" y1="256" x2="736" y2="256" stroke-width="1"/>
+  <line class="hair" x1="488" y1="272" x2="736" y2="272" stroke-width="1"/>
+</svg>
+<div class="name">KATANA<br>Console</div>
+<div class="tag">工业控制台的材质，Apple 式的物理交互。</div>
+</body></html>

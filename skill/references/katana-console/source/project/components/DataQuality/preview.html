@@ -1,0 +1,56 @@
+<!-- @dsCard group="研究" height=230 subtitle="DataQuality：数据质量热力——日期 × 字段的缺失 / 异常 / 停牌 / 复权不一致；顺序色按问题密度；点击格看样本；来自 Great Expectations 类作业" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.hm{display:grid;grid-template-columns:110px repeat(12,1fr);gap:1px;width:620px;font-size:9px}
+.hm div{height:16px;display:flex;align-items:center;justify-content:center}
+.hm .l{justify-content:flex-start;color:var(--ink-200);padding-left:4px}
+.hm .h{color:var(--ink-300)}
+.q0{background:var(--bg-200)}.q1{background:var(--seq-200)}.q2{background:var(--seq-300)}.q3{background:var(--seq-400)}.q4{background:var(--seq-600);color:var(--bg-000)}
+.halt{background:var(--bg-100);color:var(--ink-400)}
+</style></head><body>
+<div class="top"><span>cn_equity_daily @ v2026.09.28 · 2026-09</span><div class="seg"><span class="on">缺失</span><span>异常</span><span>复权一致性</span><span>全部</span></div><span style="margin-left:auto">问题率 <b style="font-weight:400;color:var(--ink-100)">0.31%</b> · 阈值 0.5%</span></div>
+<div class="hm" role="img" aria-label="质量热力">
+<div></div><div class="h">01</div><div class="h">02</div><div class="h">03</div><div class="h">04</div><div class="h">05</div><div class="h">08</div><div class="h">09</div><div class="h">10</div><div class="h">11</div><div class="h">12</div><div class="h">15</div><div class="h">16</div>
+<div class="l">close</div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div>
+<div class="l">volume</div><div class="q0"></div><div class="q1">3</div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q2">12</div><div class="q0"></div><div class="q0"></div><div class="q0"></div>
+<div class="l">adj_factor</div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q4">88</div><div class="q3">41</div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div>
+<div class="l">turnover</div><div class="q0"></div><div class="q0"></div><div class="q1">2</div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q1">4</div><div class="q0"></div><div class="q0"></div><div class="q0"></div>
+<div class="l">pe_ttm</div><div class="q1">6</div><div class="q1">6</div><div class="q1">6</div><div class="q1">6</div><div class="q1">6</div><div class="q1">7</div><div class="q1">7</div><div class="q1">7</div><div class="q1">7</div><div class="q1">7</div><div class="q1">7</div><div class="q1">7</div>
+<div class="l">north_hold</div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="q0"></div><div class="halt">休</div><div class="halt">休</div><div class="q0"></div>
+</div>
+<div class="top" style="margin-top:8px;margin-bottom:0"><span>09-09 adj_factor · 88 只异常：送转后因子未更新 · 影响 factors_v3 当日 · 建议重跑 <span class="run">RUN 2c00</span></span></div>
+</body></html>

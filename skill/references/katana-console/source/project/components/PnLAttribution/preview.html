@@ -1,0 +1,36 @@
+<!-- @dsCard group="组合" height=240 subtitle="PnLAttribution：零轴条形归因；按品种 / 账户 / 策略切维度；方向用位置不用颜色，数字才用涨跌色" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.top{display:flex;gap:6px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300);letter-spacing:.06em}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300)}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{margin-left:auto;font-family:var(--font-lcd);font-size:16px;letter-spacing:.08em;color:var(--pnl-up)}
+.lcd small{font-size:9px;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none;margin-left:6px}
+.chart{width:600px;background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.r{display:grid;grid-template-columns:120px 1fr 84px;height:22px;align-items:center;gap:12px}
+.lab{color:var(--ink-200);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lab .cn{font-family:var(--font-sans)}
+.lab .acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none;margin-right:4px}
+.ax{position:relative;height:12px}
+.ax:before{content:"";position:absolute;left:50%;top:-5px;bottom:-5px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:8px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.focus{background:repeating-linear-gradient(90deg,var(--signal-orange) 0 3px,transparent 3px 5px)}
+.v{text-align:right}.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}
+.other{color:var(--ink-300)}
+.foot{display:flex;gap:16px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;margin-top:6px;padding-top:6px;border-top:var(--hairline)}
+</style></head><body>
+<div class="top"><span>归因</span><div class="seg"><span class="on">品种</span><span>账户</span><span>策略</span><span>资产类别</span></div><span>今日</span><div class="lcd">+44,440<small>EST · A B F</small></div></div>
+<div class="chart" role="img" aria-label="今日盈亏归因 · 按品种">
+  <div class="r"><div class="lab"><span style="color:var(--ink-200)">300750</span> <span class="cn">宁德时代</span></div><div class="ax"><i class="focus" style="left:50%;width:46%"></i></div><div class="v up">+73,920</div></div>
+  <div class="r"><div class="lab"><span style="color:var(--ink-200)">00700</span> <span class="cn">腾讯控股</span></div><div class="ax"><i style="left:50%;width:9%"></i></div><div class="v up">+14,300</div></div>
+  <div class="r"><div class="lab"><span style="color:var(--ink-200)">002475</span> <span class="cn">立讯精密</span></div><div class="ax"><i style="left:50%;width:5%"></i></div><div class="v up">+8,760</div></div>
+  <div class="r"><div class="lab other">其他 ×4</div><div class="ax"><i style="left:50%;width:2%"></i></div><div class="v up">+3,240</div></div>
+  <div class="r"><div class="lab"><span style="color:var(--ink-200)">600519</span> <span class="cn">贵州茅台</span></div><div class="ax"><i style="left:43%;width:7%"></i></div><div class="v dn">-11,200</div></div>
+  <div class="r"><div class="lab"><span style="color:var(--ink-200)">IF2510</span> <span class="cn">沪深300 期货</span></div><div class="ax"><i style="left:30%;width:20%"></i></div><div class="v dn">-32,580</div></div>
+  <div class="r"><div class="lab other">费用 · 税</div><div class="ax"><i style="left:49%;width:1%"></i></div><div class="v dn">-2,000</div></div>
+  <div class="foot"><span>7 项 · 排序 |贡献|</span><span>刻度 ±80,000</span><span style="margin-left:auto">研究账本不计入</span></div>
+</div>
+</body></html>

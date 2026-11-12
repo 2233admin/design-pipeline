@@ -1,0 +1,43 @@
+<!-- @dsCard group="组合" height=300 subtitle="PositionBook：多账户多品种持仓；按品种聚合、子行展开到账户；可卖量按市场规则、估算角标、研究账本只对照" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.bar{display:flex;gap:6px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300);letter-spacing:.06em}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300)}
+.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.grid{width:620px;border:var(--hairline);background:var(--bg-200)}
+.row{display:grid;grid-template-columns:22px 150px 72px 72px 72px 84px 84px 1fr;height:var(--row-base);align-items:center;border-bottom:var(--hairline)}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em;height:24px}
+.agg{color:var(--ink-100)}
+.sub{color:var(--ink-200)}
+.sub>div:nth-child(2){padding-left:24px}
+.code{color:var(--ink-200)}.agg .code{color:var(--ink-100)}
+.cn{font-family:var(--font-sans)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none;margin-left:6px}
+.tag.est{color:var(--signal-amber)}.tag.res{color:var(--signal-blue)}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.caret{color:var(--ink-300)}
+.w{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.w>i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.res{color:var(--ink-300)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+</style></head><body>
+<div class="bar"><span>视角</span><div class="seg"><span class="on">品种</span><span>账户</span><span>策略</span><span>资产类别</span><span>品种×账户</span></div><span style="margin-left:auto">账户 A B F · 3/5</span></div>
+<div class="grid" role="treegrid" aria-label="持仓 · 按品种">
+  <div class="row hd" role="row"><div></div><div>代码 · 名称</div><div class="r">持仓 / 可卖</div><div class="r">均价</div><div class="r">现价</div><div class="r">浮盈</div><div class="r">市值</div><div>权重</div></div>
+  <div class="row agg" role="row" aria-expanded="true"><div class="caret">▾</div><div><span class="code">300750</span> <span class="cn">宁德时代</span><span class="tag">×2 账户</span></div><div class="r">4,800 / 4,000</div><div class="r">231.40</div><div class="r">246.80</div><div class="r up">+73,920</div><div class="r">1,184,640</div><div><div class="w"><i style="width:52%"></i></div></div></div>
+  <div class="row sub" role="row"><div></div><div><span class="acc">A</span> 中信 · 普通</div><div class="r">3,000 / 3,000</div><div class="r">228.10</div><div class="r">246.80</div><div class="r up">+56,100</div><div class="r">740,400</div><div></div></div>
+  <div class="row sub" role="row"><div></div><div><span class="acc">B</span> 华泰 · 两融</div><div class="r">1,800 / 1,000</div><div class="r">236.90</div><div class="r">246.80</div><div class="r up">+17,820</div><div class="r">444,240</div><div></div></div>
+  <div class="row agg" role="row" aria-expanded="false"><div class="caret">▸</div><div><span class="code">IF2510</span> <span class="cn">沪深300 期货</span><span class="tag">×1</span></div><div class="r">-3 手</div><div class="r">3,912.0</div><div class="r">3,948.2</div><div class="r dn">-32,580</div><div class="r">3,553,380<span class="tag">名义</span></div><div><div class="w"><i style="width:18%;background:repeating-linear-gradient(90deg,var(--ink-300) 0 3px,transparent 3px 5px)"></i></div></div></div>
+  <div class="row agg" role="row" aria-expanded="false"><div class="caret">▸</div><div><span class="code">600519</span> <span class="cn">贵州茅台</span><span class="tag">×1</span></div><div class="r">400 / 400</div><div class="r">1,510.00</div><div class="r">1,482.00</div><div class="r dn">-11,200</div><div class="r">592,800</div><div><div class="w"><i style="width:26%"></i></div></div></div>
+  <div class="row agg" role="row"><div class="caret"></div><div><span class="code">00700</span> <span class="cn">腾讯控股</span><span class="tag">HKD</span></div><div class="r">1,000 / 1,000</div><div class="r">412.60</div><div class="r">428.20</div><div class="r up">+14,300<span class="tag est">估算</span></div><div class="r">392,900<span class="tag est">估算</span></div><div><div class="w"><i style="width:17%"></i></div></div></div>
+  <div class="row res" role="row"><div class="caret"></div><div><span class="code">002475</span> <span class="cn">立讯精密</span><span class="tag res">RUN 2c91</span></div><div class="r">6,000</div><div class="r">39.80</div><div class="r">41.26</div><div class="r">+8,760</div><div class="r">247,560</div><div><span class="tag res">研究 · 不计入</span></div></div>
+  <div class="foot"><span>6 品种 · 9 持仓行</span><span>视角 品种</span><span>密度 BASE</span><span style="margin-left:auto">合计 <span style="color:var(--ink-100)">2,170,340</span> · 浮盈 <span class="up">+44,440</span> <span class="tag est">估算</span></span></div>
+</div>
+</body></html>

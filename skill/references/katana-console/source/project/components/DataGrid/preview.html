@@ -1,0 +1,33 @@
+<!-- @dsCard group="数据" height=240 subtitle="DataGrid：TanStack Table + Virtual；三档密度、列配置、固定列、选中、涨跌闪、空/载/错态" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.grid{width:560px;border:var(--hairline);background:var(--bg-200)}
+.row{display:grid;grid-template-columns:28px 120px 84px 76px 84px 76px 1fr;height:var(--row-tight);align-items:center;border-bottom:var(--hairline)}
+.row > div{padding:0 8px 0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row > div.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em;position:sticky;top:0}
+.hd .sort{color:var(--signal-orange)}
+.row:hover{background:var(--bg-400)}
+.row.sel{background:var(--bg-000);box-shadow:inset 2px 0 0 var(--signal-orange)}
+.row:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}
+.flash{background:rgba(255,106,31,.18)}
+.dot{width:8px;height:8px;border-radius:var(--radius-pill);background:var(--link-a);box-shadow:var(--glow-orange);display:inline-block}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar > i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+</style></head><body>
+<div class="grid" role="grid" aria-label="自选 · 核心池" aria-rowcount="24">
+  <div class="row hd" role="row"><div></div><div>代码 · 名称</div><div class="r sort">现价 ▼</div><div class="r">涨跌</div><div class="r">量比</div><div class="r">RS-20</div><div>敞口</div></div>
+  <div class="row sel" role="row" tabindex="0" aria-selected="true"><div><span class="dot"></span></div><div><span style="color:var(--ink-200)">300750</span> <span style="font-family:var(--font-sans)">宁德时代</span></div><div class="r flash" title="穿越整数位才闪">246.80</div><div class="r up">+2.14%</div><div class="r">4.2</div><div class="r" style="color:var(--signal-orange)">94</div><div><div class="bar"><i style="width:62%"></i></div></div></div>
+  <div class="row" role="row" tabindex="-1"><div></div><div><span style="color:var(--ink-200)">002475</span> <span style="font-family:var(--font-sans)">立讯精密</span></div><div class="r">41.26</div><div class="r up">+2.90%</div><div class="r">1.8</div><div class="r">88</div><div><div class="bar"><i style="width:48%"></i></div></div></div>
+  <div class="row" role="row" tabindex="-1"><div></div><div><span style="color:var(--ink-200)">600519</span> <span style="font-family:var(--font-sans)">贵州茅台</span></div><div class="r">1,482.00</div><div class="r dn">-0.60%</div><div class="r">0.9</div><div class="r">44</div><div><div class="bar"><i style="width:30%"></i></div></div></div>
+  <div class="row" role="row" tabindex="-1"><div></div><div><span style="color:var(--ink-200)">300308</span> <span style="font-family:var(--font-sans)">中际旭创</span></div><div class="r">188.40</div><div class="r up">+4.10%</div><div class="r">3.1</div><div class="r" style="color:var(--signal-orange)">91</div><div><div class="bar"><i style="width:55%"></i></div></div></div>
+  <div class="row" role="row" tabindex="-1" style="color:var(--ink-300)"><div></div><div><span>600900</span> <span style="font-family:var(--font-sans)">长江电力</span></div><div class="r">— —</div><div class="r" style="color:var(--signal-amber)">对账中</div><div class="r">—</div><div class="r">61</div><div><div class="bar"><i style="width:19%;background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)"></i></div></div></div>
+  <div class="row" role="row" tabindex="-1"><div></div><div><span style="color:var(--ink-200)">000858</span> <span style="font-family:var(--font-sans)">五粮液</span></div><div class="r">128.30</div><div class="r dn">-1.12%</div><div class="r">1.1</div><div class="r">39</div><div><div class="bar"><i style="width:0%"></i></div></div></div>
+  <div class="foot"><span>24 行 · 虚拟化渲染 7</span><span>密度 TIGHT</span><span>列 7/12</span><span style="margin-left:auto;color:var(--signal-green)">● LIVE 12ms</span></div>
+</div>
+</body></html>

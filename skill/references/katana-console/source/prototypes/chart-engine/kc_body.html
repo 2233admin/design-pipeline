@@ -1,0 +1,21 @@
+<div class="fpwrap" id="fp">
+ <div class="tb">
+  <span class="sym">300750 <small>宁德时代 · 1m · 组 A · @katana/chart</small></span>
+  <span class="chips" id="chips"></span>
+  <span class="sp"></span>
+  <span class="lcd" id="lcdDelta">Δ +0</span>
+  <span class="qst" id="qst"></span>
+  <span class="fx" title="确定性样例驱动（Worker 代替本机引擎），不是实时行情">FIXTURE</span>
+  <button class="btn agent" id="btnAgent">Agent 解读</button>
+  <button class="btn" id="btnCmd" title="/ 命令">/ 命令</button>
+ </div>
+ <div class="cv">
+  <div class="dtb" id="dtb"></div>
+  <canvas id="c"></canvas>
+  <div class="readout" id="readout"></div>
+  <div class="tip" id="tip"></div>
+  <div class="note" id="note"></div>
+  <div class="cmd" id="cmd" hidden><span>›</span><input id="cmdIn" placeholder="style line · fp mode delta · ind vwap · pane cvd · bars range 6 · tool fib · h 246.8 alert · state gap · replay 30 4 · order buy 246.4 · artifact · agent"><small id="cmdHint">Enter 执行 · Esc 关</small></div>
+ </div>
+ <div class="ft"><span id="ftStat"></span><span id="ftTool"></span><span id="ftPerf"></span><span class="sp"></span><span class="help">滚轮缩放 · ⇧滚轮价格 · 拖动平移 · 双击回自动 · 左移到头自动分页 · 点 K 线锁定 · 右键下单草稿 · T/H/V/R/F/X/M/W 绘图 · ⌘Z 撤销 · / 命令</span><span id="ftEngine">数据流：Worker（代替本机引擎）建柱 / 聚合 / 失衡 / POC / VA / 指标 / 回放 → 前端只画</span></div>
+</div>

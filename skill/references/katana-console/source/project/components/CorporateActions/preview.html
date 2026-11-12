@@ -1,0 +1,53 @@
+<!-- @dsCard group="资产管理" height=230 subtitle="CorporateActions：公司行动——分红 / 送转 / 配股 / 拆合 / 解禁 / 指数调整，按生效日排；对持仓的影响预估（现金、数量、成本调整）；来源公告" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.row{display:grid;grid-template-columns:64px 130px 70px 1fr 110px 90px;height:var(--row-base);align-items:center;border-bottom:var(--hairline)}
+.kind{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;color:var(--ink-300)}
+.row small{display:block;color:var(--ink-300);font-size:10px}
+</style></head><body>
+<div class="top"><div class="seg"><span class="on">持仓</span><span>自选</span><span>全部</span></div><span>未来 30 天 · 账户 A B</span><span style="margin-left:auto">需要操作 <b style="font-weight:400;color:var(--signal-amber)">1</b>（配股缴款）</span></div>
+<div class="grid" role="grid" aria-label="公司行动">
+<div class="row hd"><div>生效</div><div>品种</div><div>类型</div><div>内容</div><div class="r">对持仓影响</div><div>状态</div></div>
+<div class="row"><div>10-09</div><div><span class="code">600519</span> <span class="cn">贵州茅台</span></div><div class="kind">DIVIDEND</div><div>每股 30.88 现金 · 登记 10-08<small>公告 09-28 · 税率按持有期</small></div><div class="r up">+11,117<small>税后估</small></div><div style="color:var(--ink-300)">自动</div></div>
+<div class="row"><div>10-14</div><div><span class="code">300750</span> <span class="cn">宁德时代</span></div><div class="kind">BUYBACK</div><div>回购注销 0.4%<small>公告 10-02</small></div><div class="r">—</div><div style="color:var(--ink-300)">无需操作</div></div>
+<div class="row"><div>10-17</div><div><span class="code">002475</span> <span class="cn">立讯精密</span></div><div class="kind est">RIGHTS</div><div>10 配 3 @ 28.50 · 缴款 10-15–10-21<small>公告 10-01</small></div><div class="r">1,800 股 · 51,300<small>如全额认购</small></div><div class="est">需决定 · 13 天</div></div>
+<div class="row"><div>10-20</div><div><span class="code">300308</span> <span class="cn">中际旭创</span></div><div class="kind">UNLOCK</div><div>首发限售解禁 1.2 亿股 · 占流通 14%<small>公告 09-30</small></div><div class="r">—</div><div style="color:var(--ink-300)">关注</div></div>
+<div class="row"><div>10-28</div><div><span class="code">688041</span> <span class="cn">海光信息</span></div><div class="kind">INDEX</div><div>调入 CSI300 · 生效前被动买入<small>指数公司公告</small></div><div class="r">—</div><div style="color:var(--ink-300)">关注</div></div>
+<div class="row"><div>11-03</div><div><span class="code">IF2510</span> <span class="cn">沪深300 期货</span></div><div class="kind">EXPIRY</div><div>最后交易日 · 需移仓 IF2512<small>Profile 合约表</small></div><div class="r">-3 手</div><div style="color:var(--ink-300)">提醒 T-5</div></div>
+<div class="foot"><span>6 项</span><span>现金预计 <b class="up">+11,117</b></span><span>成本调整 <b>1</b> 项待确认</span><span style="margin-left:auto">生成警报 · 导出</span></div>
+</div>
+</body></html>

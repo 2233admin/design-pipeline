@@ -1,0 +1,254 @@
+<title>KATANA 联动样机</title>
+<style>
+:root{--bg0:#0b0b09;--bg1:#141311;--bg2:#171511;--bg3:#1d1b18;--bg4:#26231e;--ink:#ece6d8;--ink2:#b9b2a3;--ink3:#7d776b;--ink4:#4a463f;--line:#2a2722;--or:#ff6a1f;--am:#ffc03a;--bl:#4fa3ff;--gr:#5bd36b;--rd:#ff4d3d;--up:#ff4d3d;--dn:#5bd36b;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;--sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;color-scheme:dark}
+html,body{height:100%}body{margin:0;background:var(--bg0);color:var(--ink);font:12px/1.4 var(--sans);overflow:hidden}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+#app{height:100%;display:grid;grid-template-rows:38px 1fr 110px;gap:6px;padding:6px;box-sizing:border-box}
+/* top bar */
+.top{display:flex;align-items:center;gap:14px;padding:0 10px;background:var(--bg3);border:1px solid var(--line)}
+.top b{letter-spacing:.14em;font-size:13px}.top .ctx{display:flex;gap:10px;font-family:var(--mono);font-size:11px;color:var(--ink2)}
+.top .ctx span{padding:3px 8px;background:var(--bg1);border:1px solid var(--line)}.top .ctx span i{font-style:normal;color:var(--ink3);margin-right:6px}
+.top .ctx span.scope{border-color:#3a3631}.top .ctx span.focus{border-color:var(--bl)}.top .ctx span.sel{border-color:var(--am)}
+.top .sp{flex:1}.top button{font:inherit}
+/* grid */
+.grid{display:grid;grid-template-columns:300px 1fr 340px;grid-template-rows:1fr 1fr;gap:6px;min-height:0}
+.grid.two{grid-template-columns:300px 1fr 1fr 340px}
+.col{display:contents}
+.panel{background:var(--bg3);border:1px solid var(--line);display:flex;flex-direction:column;min-height:0;min-width:0;position:relative}
+.panel.g-A{border-top:2px solid var(--gA)}.panel.g-B{border-top:2px solid var(--gB)}
+:root{--gA:transparent;--gB:transparent}body.multi{--gA:#4fa3ff;--gB:#ffc03a}
+.hd{display:flex;align-items:center;gap:8px;padding:5px 8px;border-bottom:1px solid var(--line);background:var(--bg2);font-size:11px}
+.hd b{font-weight:600}.hd .c{font-family:var(--mono);color:var(--ink3);font-size:10px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd .c em{font-style:normal;color:var(--ink2)}
+.hd .grp{display:none;width:14px;height:14px;border-radius:2px;font:bold 9px/14px var(--mono);text-align:center;color:#111;cursor:pointer}
+body.multi .hd .grp{display:block}.grp.A{background:var(--gA)}.grp.B{background:var(--gB)}
+.hd .pin{cursor:pointer;color:var(--ink4);font-size:12px;padding:0 2px}.hd .pin.on{color:var(--or)}
+.hd .tag{font:10px var(--mono);padding:1px 6px;border:1px solid var(--line);color:var(--ink3)}.hd .tag.bound{border-color:var(--or);color:var(--or)}.hd .tag.stale{border-color:var(--am);color:var(--am)}
+.bd{flex:1;min-height:0;overflow:auto;position:relative}
+table{border-collapse:collapse;width:100%}th{font-weight:500;color:var(--ink3);text-align:left;padding:3px 6px;border-bottom:1px solid var(--line);font-size:10px;position:sticky;top:0;background:var(--bg3)}
+td{padding:3px 6px;border-bottom:1px solid #1f1d19;white-space:nowrap}tr.row{cursor:pointer}tr.row:hover{background:var(--bg4)}tr.row.on{background:#2a2114;box-shadow:inset 2px 0 0 var(--or)}tr.row.sel{background:#2a2614;box-shadow:inset 2px 0 0 var(--am)}
+td.r,th.r{text-align:right}.up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--ink3)}
+.obj{border-bottom:1px dotted var(--ink4);cursor:pointer}.obj:hover{color:var(--or);border-color:var(--or)}
+canvas{display:block;width:100%;height:100%}
+.tools{display:flex;gap:4px;padding:4px 8px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:10px}
+.tools span{padding:2px 7px;border:1px solid var(--line);cursor:pointer;color:var(--ink3)}.tools span.on{color:var(--ink);border-color:var(--ink3);background:var(--bg4)}
+.sel-bar{display:flex;gap:6px;align-items:center;padding:4px 8px;border-bottom:1px solid var(--line);font-size:11px}
+select,input{font:inherit;background:var(--bg1);color:var(--ink);border:1px solid var(--line);padding:3px 6px}
+button{font:inherit;background:var(--bg4);color:var(--ink);border:1px solid var(--line);padding:3px 10px;cursor:pointer}button:hover{border-color:var(--ink3)}button.p{background:var(--ink);color:#111;border-color:var(--ink)}button.p:hover{background:#fff}
+/* order ticket */
+.ot{padding:10px;display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center;font-size:12px}.ot label{color:var(--ink3)}
+.ot .sym{font-family:var(--mono);font-size:15px;grid-column:1/-1}
+.ot .lock{grid-column:1/-1;font-size:11px;color:var(--or);background:#2a1a10;padding:5px 8px;border:1px solid #4a2a14;display:none}.ot.bound .lock{display:block}
+.ot .acts{grid-column:1/-1;display:flex;gap:6px}
+/* run inspector */
+.ri{display:grid;grid-template-columns:120px 1fr;height:100%}.ri .list{border-right:1px solid var(--line);overflow:auto}.ri .list div{padding:6px 8px;cursor:pointer;border-bottom:1px solid #1f1d19;font-family:var(--mono);font-size:11px}.ri .list div:hover{background:var(--bg4)}.ri .list div.on{background:#1a2230;box-shadow:inset 2px 0 0 var(--bl)}
+.ri .det{overflow:auto}.kv{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;padding:8px}.kv div{background:var(--bg1);padding:5px 8px}.kv small{display:block;color:var(--ink3);font-size:10px}.kv b{font-family:var(--mono);font-size:13px;font-weight:500}
+.empty{padding:20px;color:var(--ink3);text-align:center}
+/* menu / resolver / card / peek */
+.menu{position:fixed;z-index:50;background:var(--bg4);border:1px solid var(--ink4);min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:12px}
+.menu h5{margin:0;padding:6px 10px;font:10px var(--mono);color:var(--ink3);border-bottom:1px solid var(--line)}.menu div{padding:6px 10px;cursor:pointer;display:flex;justify-content:space-between;gap:16px}.menu div:hover{background:var(--bg3);color:var(--or)}.menu div small{color:var(--ink4);font-family:var(--mono)}
+.menu div.first{color:var(--ink)}.menu div.first:after{content:"↵";color:var(--ink4);font-family:var(--mono)}
+.card{position:fixed;z-index:40;background:var(--bg3);border:1px solid var(--ink4);padding:8px 10px;font-size:11px;pointer-events:none;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.card b{display:block;font-size:13px;margin-bottom:4px}.card .bl{display:grid;grid-template-columns:1fr auto;gap:2px 10px;color:var(--ink2);font-family:var(--mono);font-size:10px;margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}.card .bl i{font-style:normal;color:var(--ink3)}
+.peek{position:absolute;top:0;right:0;bottom:0;width:100%;background:var(--bg3);border-left:1px solid var(--ink4);box-shadow:-8px 0 24px rgba(0,0,0,.4);display:flex;flex-direction:column;z-index:5}
+.peek .hd{background:var(--bg4)}
+.flash{animation:fl .6s ease-out}@keyframes fl{0%{box-shadow:0 0 0 2px var(--or)}100%{box-shadow:0 0 0 2px transparent}}
+.hl{outline:2px solid var(--or);outline-offset:-2px}
+/* log */
+.log{background:var(--bg1);border:1px solid var(--line);font:10.5px/1.5 var(--mono);padding:4px 8px;overflow:auto;color:var(--ink2)}
+.log div{white-space:nowrap}.log .t{color:var(--ink4);margin-right:8px}.log .k{color:var(--bl)}.log .k.scope{color:var(--ink2)}.log .k.focus{color:var(--or)}.log .k.sel{color:var(--am)}.log .src{color:var(--ink3)}.log .no{color:var(--ink3)}.log .no:before{content:"⊘ ";color:var(--rd)}.log .yes:before{content:"→ ";color:var(--gr)}
+.log .hint{color:var(--ink3)}
+</style>
+<div id="app">
+ <div class="top"><b>KATANA · 联动样机</b><div class="ctx" id="ctxbar"></div><div class="sp"></div><span style="color:var(--ink3);font-size:11px">右键任何对象 = 动作 · 双击 Watchlist = 广播到全部组 · 悬停 = 对象卡</span><button id="btnB">＋ 对照组 B</button><button id="btnReset">重置</button></div>
+ <div class="grid" id="grid"></div>
+ <div class="log" id="log"></div>
+</div>
+<script>
+/* =========================== 数据（mock） =========================== */
+const SYMS={
+ '600519':{name:'贵州茅台',ex:'SSE',px:1688.00,chg:+1.24,tick:.01,lot:100},
+ '000858':{name:'五粮液',ex:'SZSE',px:152.30,chg:-0.62,tick:.01,lot:100},
+ '300750':{name:'宁德时代',ex:'SZSE',px:243.80,chg:+2.95,tick:.01,lot:100},
+ '510300':{name:'沪深300ETF',ex:'SSE',px:4.012,chg:+0.40,tick:.001,lot:100},
+ 'IF2312':{name:'沪深300 期货',ex:'CFFEX',px:3618.4,chg:-0.21,tick:.2,lot:1},
+ 'IM2312':{name:'中证1000 期货',ex:'CFFEX',px:5302.6,chg:+0.73,tick:.2,lot:1},
+};
+const STRATS={
+ 'mom-core':{name:'mom-core',interval:'1d',ver:'v17',status:'LIVE',runs:['BT-5821','BT-5790','LV-0031']},
+ 'liq-hedge':{name:'liq-hedge',interval:'5m',ver:'v4',status:'LIVE',runs:['BT-4102','LV-0028']},
+ 'momo-7':{name:'momo-7',interval:'1m',ver:'v2',status:'PAPER',runs:['BT-6001','PP-0012']},
+};
+const RUNS={
+ 'BT-5821':{strat:'mom-core',mode:'backtest',range:'2025-01-02 → 2025-09-30',sharpe:1.42,mdd:-8.1,trades:[{id:'T-381',sym:'600519',side:'买',qty:300,px:1620.5,bar:88},{id:'T-382',sym:'600519',side:'卖',qty:300,px:1701.0,bar:104},{id:'T-390',sym:'300750',side:'买',qty:1000,px:221.3,bar:95}]},
+ 'BT-5790':{strat:'mom-core',mode:'backtest',range:'2025-01-02 → 2025-08-31',sharpe:1.31,mdd:-9.4,trades:[{id:'T-301',sym:'600519',side:'买',qty:200,px:1598.0,bar:70}]},
+ 'LV-0031':{strat:'mom-core',mode:'live',range:'2025-09-01 → 运行中',sharpe:0.98,mdd:-3.2,trades:[{id:'F-8291a',sym:'600519',side:'买',qty:400,px:1655.2,bar:110},{id:'F-8292a',sym:'300750',side:'买',qty:2000,px:236.1,bar:112}]},
+ 'BT-4102':{strat:'liq-hedge',mode:'backtest',range:'2025-03-01 → 2025-09-30',sharpe:2.05,mdd:-2.6,trades:[{id:'T-511',sym:'IF2312',side:'卖',qty:4,px:3640.2,bar:60}]},
+ 'LV-0028':{strat:'liq-hedge',mode:'live',range:'2025-09-10 → 运行中',sharpe:1.7,mdd:-1.1,trades:[{id:'F-7731',sym:'IF2312',side:'卖',qty:6,px:3625.0,bar:100},{id:'F-7740',sym:'IM2312',side:'买',qty:2,px:5280.0,bar:108}]},
+ 'BT-6001':{strat:'momo-7',mode:'backtest',range:'2025-06-01 → 2025-09-30',sharpe:0.94,mdd:-11.2,trades:[{id:'T-771',sym:'000858',side:'买',qty:2000,px:149.8,bar:90}]},
+ 'PP-0012':{strat:'momo-7',mode:'paper',range:'2025-08-20 → 第 38 日',sharpe:0.81,mdd:-5.0,trades:[{id:'P-120',sym:'000858',side:'买',qty:3000,px:151.2,bar:105},{id:'P-121',sym:'510300',side:'买',qty:50000,px:3.98,bar:107}]},
+};
+const POS=[
+ {id:'P-8291',acct:'A',sym:'600519',qty:400,avg:1655.2,strat:'mom-core',run:'LV-0031',fills:['F-8291a']},
+ {id:'P-8292',acct:'A',sym:'300750',qty:2000,avg:236.1,strat:'mom-core',run:'LV-0031',fills:['F-8292a']},
+ {id:'P-7731',acct:'B',sym:'IF2312',qty:-6,avg:3625.0,strat:'liq-hedge',run:'LV-0028',fills:['F-7731']},
+ {id:'P-7740',acct:'B',sym:'IM2312',qty:2,avg:5280.0,strat:'liq-hedge',run:'LV-0028',fills:['F-7740']},
+ {id:'P-0120',acct:'P',sym:'000858',qty:3000,avg:151.2,strat:'momo-7',run:'PP-0012',fills:['P-120']},
+ {id:'P-0121',acct:'P',sym:'510300',qty:50000,avg:3.98,strat:'momo-7',run:'PP-0012',fills:['P-121']},
+];
+const ACCTS={all:'全部账户',A:'A · 华泰',B:'B · 中信期货',P:'P · 模拟'};
+const BACK={'600519':{策略:3,组合:2,持仓:1,研究笔记:12,Run:9,告警:4},'000858':{策略:1,组合:1,持仓:1,研究笔记:6,Run:4,告警:2},'300750':{策略:2,组合:1,持仓:1,研究笔记:8,Run:5,告警:3},'IF2312':{策略:1,组合:1,持仓:1,研究笔记:3,Run:3,告警:5}};
+/* seeded series */
+const seriesCache={};function series(sym,iv){const k=sym+iv;if(seriesCache[k])return seriesCache[k];let s=0;for(const c of k)s=(s*31+c.charCodeAt(0))>>>0;const rnd=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296};const base=SYMS[sym].px,vol={'1m':.0012,'5m':.003,'1d':.018}[iv];const out=[];let p=base*(1-vol*20);for(let i=0;i<120;i++){const o=p,c=p*(1+(rnd()-.48)*vol*2);const h=Math.max(o,c)*(1+rnd()*vol),l=Math.min(o,c)*(1-rnd()*vol);out.push({o,h,l,c});p=c}return seriesCache[k]=out}
+
+/* =========================== Context 四层 =========================== */
+const ctx={
+ groups:{A:{instrument:'600519',interval:'1d',timeRange:'30d'}},   // Ambient：按组
+ scope:{account:'all',strategy:null},                               // Scope：显式选
+ focus:{position:null,run:null,strategy:null},                      // Focus：显式打开才变
+ selection:null,                                                    // Selection：临时选中（成交）
+};
+const listeners=[];const on=f=>listeners.push(f);
+function log(cls,html){const l=document.getElementById('log');const d=document.createElement('div');d.className=cls;d.innerHTML=`<span class="t">${new Date().toTimeString().slice(0,8)}</span>${html}`;l.appendChild(d);l.scrollTop=l.scrollHeight;while(l.children.length>60)l.removeChild(l.firstChild)}
+function setAmbient(group,key,val,src){const g=ctx.groups[group];if(!g)return;if(g[key]===val){log('hint',`<span class="k">${group}.${key}</span> 已是 ${val}，无变化`);return}g[key]=val;log('yes',`<span class="k">${group}.${key}</span> = <b>${val}</b> <span class="src">← ${src}</span>`);emit({layer:'ambient',group,key,val,src})}
+function setScope(key,val,src){if(ctx.scope[key]===val)return;ctx.scope[key]=val;log('yes',`<span class="k scope">scope.${key}</span> = <b>${val??'∅'}</b> <span class="src">← ${src}（显式）</span>`);emit({layer:'scope',key,val,src})}
+function setFocus(key,val,src){if(ctx.focus[key]===val)return;ctx.focus[key]=val;log('yes',`<span class="k focus">focus.${key}</span> = <b>${val??'∅'}</b> <span class="src">← ${src}（显式打开）</span>`);emit({layer:'focus',key,val,src})}
+function setSelection(val,src){ctx.selection=val;log('yes',`<span class="k sel">selection</span> = <b>${val?val.id:'∅'}</b> <span class="src">← ${src}（只高亮，不过滤）</span>`);emit({layer:'selection',val,src})}
+function emit(ev){listeners.forEach(f=>f(ev));renderCtxBar()}
+function renderCtxBar(){const b=document.getElementById('ctxbar');b.innerHTML=Object.entries(ctx.groups).map(([g,a])=>`<span><i>${Object.keys(ctx.groups).length>1?g+'·':''}环境</i>${a.instrument} · ${a.interval} · ${a.timeRange}</span>`).join('')+`<span class="scope"><i>范围</i>${ACCTS[ctx.scope.account]}${ctx.scope.strategy?' · '+ctx.scope.strategy:''}</span><span class="focus"><i>焦点</i>${[ctx.focus.strategy,ctx.focus.run,ctx.focus.position].filter(Boolean).join(' · ')||'∅'}</span><span class="sel"><i>选中</i>${ctx.selection?ctx.selection.id:'∅'}</span>`}
+
+/* =========================== 面板框架 =========================== */
+const panels=[];const grid=document.getElementById('grid');
+function panel(def){const el=document.createElement('div');el.className='panel g-'+def.group;el.id='p-'+def.id;el.style.gridArea=def.area||'';
+ el.innerHTML=`<div class="hd"><span class="grp ${def.group}" title="切换联动组">${def.group}</span><b>${def.name}</b><span class="c"></span><span class="tags"></span>${def.pinnable?'<span class="pin" title="固定在当前对象，不再跟随">⊙</span>':''}</div><div class="bd"></div>`;
+ grid.appendChild(el);const p={...def,el,bd:el.querySelector('.bd'),bound:null};panels.push(p);
+ el.querySelector('.grp').addEventListener('click',()=>{if(!def.group||Object.keys(ctx.groups).length<2)return;p.group=p.group==='A'?'B':'A';el.className='panel g-'+p.group;el.querySelector('.grp').textContent=p.group;el.querySelector('.grp').className='grp '+p.group;log('hint',`${def.name} 改到联动组 <b>${p.group}</b>`);p.render()});
+ const pin=el.querySelector('.pin');if(pin)pin.addEventListener('click',()=>{if(p.bound){p.bound=null;pin.classList.remove('on');log('hint',`${def.name} 解除固定，重新跟随 focus`)}else{const cur=p.currentObject&&p.currentObject();if(!cur){log('no',`${def.name} 没有对象可固定`);return}p.bound=cur;pin.classList.add('on');log('hint',`${def.name} <b>固定</b>在 ${cur}，后续 focus 变化将被忽略`)}p.render()});
+ p.setHeader=(ctxText,tags)=>{el.querySelector('.c').innerHTML=ctxText||'';el.querySelector('.tags').innerHTML=(tags||[]).map(t=>`<span class="tag ${t.cls||''}">${t.t}</span>`).join('')};
+ on(ev=>{if(p.onCtx)p.onCtx(ev)});return p}
+const amb=p=>ctx.groups[p.group]||ctx.groups.A;
+const flash=el=>{el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash')};
+
+/* =========================== 动作菜单 / 对象卡 / 解析器 =========================== */
+let menuEl=null,cardEl=null;
+function closeMenu(){if(menuEl){menuEl.remove();menuEl=null}}
+document.addEventListener('click',e=>{if(menuEl&&!menuEl.contains(e.target))closeMenu()});
+function showMenu(x,y,title,items){closeMenu();menuEl=document.createElement('div');menuEl.className='menu';menuEl.innerHTML=`<h5>${title}</h5>`+items.map((it,i)=>`<div class="${i===0?'first':''}">${it.t}<small>${it.k||''}</small></div>`).join('');document.body.appendChild(menuEl);const r=menuEl.getBoundingClientRect();menuEl.style.left=Math.min(x,innerWidth-r.width-8)+'px';menuEl.style.top=Math.min(y,innerHeight-r.height-8)+'px';[...menuEl.querySelectorAll('div')].forEach((d,i)=>d.addEventListener('click',()=>{closeMenu();items[i].f()}))}
+function card(e,html){if(!cardEl){cardEl=document.createElement('div');cardEl.className='card';document.body.appendChild(cardEl)}cardEl.innerHTML=html;cardEl.style.left=Math.min(e.clientX+14,innerWidth-240)+'px';cardEl.style.top=(e.clientY+14)+'px';cardEl.style.display='block'}
+function hideCard(){if(cardEl)cardEl.style.display='none'}
+function symCard(sym){const s=SYMS[sym],b=BACK[sym]||{};return `<b>${sym} ${s.name}</b><span class="num">${s.px.toFixed(2)} <span class="${s.chg>=0?'up':'dn'}">${s.chg>=0?'+':''}${s.chg}%</span></span> · ${s.ex}<div class="bl">${Object.entries(b).map(([k,v])=>`<i>${k}</i><span>${v}</span>`).join('')||'<i>反链</i><span>—</span>'}</div>`}
+/* resolver：多张图表时问用哪张 */
+function resolveChart(cb){const charts=panels.filter(p=>p.kind==='chart');if(charts.length===1)return cb(charts[0]);
+ setTimeout(()=>{closeMenu();menuEl=document.createElement('div');menuEl.className='menu';menuEl.innerHTML=`<h5>用哪张图表？</h5>`+charts.map(c=>`<div>图表 ${c.group}<small>${amb(c).instrument} · ${amb(c).interval}</small></div>`).join('');document.body.appendChild(menuEl);menuEl.style.left=(innerWidth/2-100)+'px';menuEl.style.top='120px';
+ [...menuEl.querySelectorAll('div')].forEach((d,i)=>{d.addEventListener('mouseenter',()=>charts[i].el.classList.add('hl'));d.addEventListener('mouseleave',()=>charts[i].el.classList.remove('hl'));d.addEventListener('click',()=>{charts.forEach(c=>c.el.classList.remove('hl'));closeMenu();cb(charts[i])})})},0)}
+/* intents */
+const I={
+ ViewChart(sym,opts={}){resolveChart(ch=>{setAmbient(ch.group,'instrument',sym,opts.src||'ViewChart');if(opts.interval)setAmbient(ch.group,'interval',opts.interval,opts.src+'（切到策略周期）');flash(ch.el)})},
+ ViewChartInGroup(sym,g){ensureGroupB();setAmbient(g,'instrument',sym,'在对照组打开');flash(panels.find(p=>p.kind==='chart'&&p.group===g).el)},
+ OpenPosition(pos){setFocus('position',pos.id,'PositionBook');},
+ ViewFills(pos){setFocus('position',pos.id,'查看成交');panels.find(p=>p.kind==='positions').peek(pos)},
+ OpenStrategy(id){setFocus('strategy',id,'打开策略');setFocus('run',STRATS[id].runs[0],'打开策略 → 默认最新 run');flash(panels.find(p=>p.kind==='runs').el)},
+ ScopeStrategy(id){setScope('strategy',ctx.scope.strategy===id?null:id,'PositionBook 策略列')},
+ OpenRun(id){setFocus('strategy',RUNS[id].strat,'打开 run');setFocus('run',id,'RunInspector 列表')},
+ LocateTrade(tr){setSelection({id:tr.id,sym:tr.sym,bar:tr.bar,px:tr.px,side:tr.side},'成交列表');resolveChart(ch=>{if(amb(ch).instrument!==tr.sym){setAmbient(ch.group,'instrument',tr.sym,'定位成交（图表切品种）')}flash(ch.el)})},
+ Order(sym,px){const ot=panels.find(p=>p.kind==='ticket');if(ot.dirty&&ot.bound!==sym){log('no',`OrderTicket 有未提交草稿（${ot.bound}），拒绝切到 ${sym}；请先提交或清空`);flash(ot.el);return}setAmbient(ot.group,'instrument',sym,'下单');ot.prefill(px);flash(ot.el)},
+};
+
+/* =========================== 1 Watchlist =========================== */
+const wl=panel({id:'wl',name:'Watchlist',kind:'watch',group:'A',area:'1/1/2/2'});
+wl.produces=['instrument'];
+wl.render=()=>{wl.setHeader(`produces <em>instrument</em> · 单击=本组 · 双击=全部组`);wl.bd.innerHTML=`<table><tr><th>代码</th><th>名称</th><th class="r">最新</th><th class="r">涨跌</th></tr>${Object.entries(SYMS).map(([k,s])=>`<tr class="row ${Object.values(ctx.groups).some(g=>g.instrument===k)?'on':''}" data-sym="${k}"><td class="num">${k}</td><td>${s.name}</td><td class="num r">${s.px.toFixed(s.tick<.01?3:2)}</td><td class="num r ${s.chg>=0?'up':'dn'}">${s.chg>=0?'+':''}${s.chg.toFixed(2)}%</td></tr>`).join('')}</table>`;
+ wl.bd.querySelectorAll('tr.row').forEach(tr=>{const sym=tr.dataset.sym;
+  tr.addEventListener('click',()=>setAmbient(wl.group,'instrument',sym,'Watchlist 单击'));
+  tr.addEventListener('dblclick',()=>{Object.keys(ctx.groups).forEach(g=>setAmbient(g,'instrument',sym,'Watchlist 双击（无视分组）'))});
+  tr.addEventListener('contextmenu',e=>{e.preventDefault();showMenu(e.clientX,e.clientY,`${sym} ${SYMS[sym].name}`,[{t:'打开图表',k:'↵',f:()=>I.ViewChart(sym,{src:'Watchlist 动作'})},{t:'在对照组 B 打开',k:'⇧↵',f:()=>I.ViewChartInGroup(sym,'B')},{t:'下单',k:'O',f:()=>I.Order(sym)},{t:'看持仓',k:'P',f:()=>{const ps=panels.find(p=>p.kind==='positions');ps.filterSym=sym;ps.render();flash(ps.el)}}])});
+  tr.addEventListener('mousemove',e=>card(e,symCard(sym)));tr.addEventListener('mouseleave',hideCard)})};
+wl.onCtx=ev=>{if(ev.layer==='ambient'&&ev.key==='instrument')wl.render()};
+
+/* =========================== 2 PriceChart =========================== */
+function makeChart(group,area){const ch=panel({id:'chart'+group,name:'PriceChart',kind:'chart',group,area});ch.consumes=['instrument','interval','timeRange'];
+ ch.render=()=>{const a=amb(ch);const s=SYMS[a.instrument];const st=ctx.focus.strategy;const strat=st&&STRATS[st];
+  ch.setHeader(`consumes <em>${a.instrument} ${s.name}</em> · <em>${a.interval}</em> · ${a.timeRange}`,[]);
+  if(!ch.bd.querySelector('canvas')){ch.bd.innerHTML=`<div class="tools"><span data-iv="1m">1m</span><span data-iv="5m">5m</span><span data-iv="1d">1d</span><span style="margin-left:auto;border:0;color:var(--ink4)">点击价格 = 下单草稿</span></div><div style="position:absolute;inset:26px 0 0 0"><canvas></canvas></div>`;
+   ch.bd.querySelectorAll('[data-iv]').forEach(b=>b.addEventListener('click',()=>setAmbient(ch.group,'interval',b.dataset.iv,'PriceChart 周期按钮')));
+   const cv=ch.bd.querySelector('canvas');cv.addEventListener('click',e=>{const r=cv.getBoundingClientRect();const px=ch.yToPx((e.clientY-r.top)*devicePixelRatio);I.Order(amb(ch).instrument,px)});cv.addEventListener('contextmenu',e=>{e.preventDefault();showMenu(e.clientX,e.clientY,`${a.instrument} 图表`,[{t:'在此价下单',k:'↵',f:()=>{const r=cv.getBoundingClientRect();I.Order(amb(ch).instrument,ch.yToPx((e.clientY-r.top)*devicePixelRatio))}},{t:'看持仓',f:()=>{const ps=panels.find(p=>p.kind==='positions');ps.filterSym=amb(ch).instrument;ps.render();flash(ps.el)}}])})}
+  ch.bd.querySelectorAll('[data-iv]').forEach(b=>b.classList.toggle('on',b.dataset.iv===a.interval));
+  draw()};
+ function draw(){const a=amb(ch),cv=ch.bd.querySelector('canvas'),g=cv.getContext('2d');const W=cv.clientWidth*devicePixelRatio,H=cv.clientHeight*devicePixelRatio;cv.width=W;cv.height=H;const d=series(a.instrument,a.interval);const lo=Math.min(...d.map(x=>x.l)),hi=Math.max(...d.map(x=>x.h));const pad=10*devicePixelRatio,bw=(W-60*devicePixelRatio)/d.length;const y=v=>pad+(hi-v)/(hi-lo)*(H-2*pad);ch.yToPx=py=>hi-(py-pad)/(H-2*pad)*(hi-lo);
+  g.fillStyle='#141311';g.fillRect(0,0,W,H);g.strokeStyle='#2a2722';g.lineWidth=1;for(let i=0;i<5;i++){const yy=pad+i*(H-2*pad)/4;g.beginPath();g.moveTo(0,yy);g.lineTo(W-60*devicePixelRatio,yy);g.stroke();g.fillStyle='#7d776b';g.font=`${10*devicePixelRatio}px JetBrains Mono,monospace`;g.fillText((hi-(hi-lo)*i/4).toFixed(2),W-56*devicePixelRatio,yy+4*devicePixelRatio)}
+  d.forEach((c,i)=>{const x=i*bw+bw/2;const up=c.c>=c.o;g.strokeStyle=g.fillStyle=up?'#ff4d3d':'#5bd36b';g.beginPath();g.moveTo(x,y(c.h));g.lineTo(x,y(c.l));g.stroke();g.fillRect(x-bw*.35,y(Math.max(c.o,c.c)),bw*.7,Math.max(1,Math.abs(y(c.o)-y(c.c))))});
+  /* 高亮：焦点持仓的成交 + selection 成交，仅当品种匹配 */
+  const marks=[];const fp=ctx.focus.position&&POS.find(p=>p.id===ctx.focus.position);if(fp&&fp.sym===a.instrument){const run=RUNS[fp.run];run.trades.filter(t=>fp.fills.includes(t.id)).forEach(t=>marks.push({...t,kind:'fill'}))}
+  const fr=ctx.focus.run&&RUNS[ctx.focus.run];if(fr)fr.trades.filter(t=>t.sym===a.instrument).forEach(t=>marks.push({...t,kind:'run'}));
+  if(ctx.selection&&ctx.selection.sym===a.instrument)marks.push({...ctx.selection,kind:'sel'});
+  marks.forEach(m=>{const x=m.bar*bw+bw/2,yy=y(m.px);g.fillStyle=m.kind==='sel'?'#ffc03a':m.kind==='fill'?'#ff6a1f':'#4fa3ff';g.beginPath();g.moveTo(x,yy-(m.side==='买'?10:-10)*devicePixelRatio);g.lineTo(x-5*devicePixelRatio,yy-(m.side==='买'?18:-18)*devicePixelRatio);g.lineTo(x+5*devicePixelRatio,yy-(m.side==='买'?18:-18)*devicePixelRatio);g.closePath();g.fill();if(m.kind==='sel'){g.strokeStyle='#ffc03a';g.setLineDash([4,4]);g.beginPath();g.moveTo(0,yy);g.lineTo(W-60*devicePixelRatio,yy);g.stroke();g.setLineDash([])}});
+  const tags=[];if(marks.some(m=>m.kind==='fill'))tags.push({t:'● 焦点持仓成交'});if(marks.some(m=>m.kind==='run'))tags.push({t:'● run 成交'});if(ctx.selection&&ctx.selection.sym!==a.instrument)tags.push({t:`选中 ${ctx.selection.id} 在 ${ctx.selection.sym}，本图不显示`,cls:'stale'});ch.setHeader(`consumes <em>${a.instrument} ${SYMS[a.instrument].name}</em> · <em>${a.interval}</em> · ${a.timeRange}`,tags)}
+ ch.onCtx=ev=>{if(ev.layer==='ambient'&&ev.group!==ch.group)return;ch.render()};
+ new ResizeObserver(()=>ch.bd.querySelector('canvas')&&draw()).observe(ch.bd);return ch}
+const chartA=makeChart('A','1/2/2/3');
+
+/* =========================== 3 DOM =========================== */
+const dom=panel({id:'dom',name:'DOM',kind:'dom',group:'A',area:'2/2/3/3'});dom.consumes=['instrument'];
+dom.render=()=>{const a=amb(dom),s=SYMS[a.instrument];dom.setHeader(`consumes <em>${a.instrument}</em> · 只跟品种，不跟周期`);let seed=a.instrument.length*7;const r=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
+ let rows='';for(let i=6;i>=-6;i--){if(i===0)continue;const px=s.px+i*s.tick*(s.tick<.1?10:1);const q=Math.round(r()*900+50);rows+=`<tr><td class="num r ${i>0?'':'mut'}">${i<0?q:''}</td><td class="num r ${i>0?'up':'dn'}" style="text-align:center">${px.toFixed(s.tick<.01?3:s.tick<1?2:1)}</td><td class="num ${i<0?'':'mut'}">${i>0?q:''}</td></tr>`}
+ dom.bd.innerHTML=`<table><tr><th class="r">买量</th><th style="text-align:center">价</th><th>卖量</th></tr>${rows}</table>`;
+ dom.bd.querySelectorAll('tr').forEach(tr=>{const td=tr.children[1];if(!td||td.tagName!=='TD')return;tr.classList.add('row');tr.addEventListener('click',()=>I.Order(a.instrument,parseFloat(td.textContent)))})};
+dom.onCtx=ev=>{if(ev.layer==='ambient'&&ev.group===dom.group&&ev.key==='instrument')dom.render()};
+
+/* =========================== 4 OrderTicket =========================== */
+const ot=panel({id:'ot',name:'OrderTicket',kind:'ticket',group:'A',area:'2/3/3/4'});ot.consumes=['instrument'];ot.dirty=false;ot.acct='A';
+ot.render=()=>{const a=amb(ot);const sym=ot.dirty?ot.bound:a.instrument;const s=SYMS[sym];
+ ot.setHeader(ot.dirty?`<em>已绑定 ${sym}</em>（草稿） · 账户由本面板决定`:`consumes <em>${sym}</em> · 账户由本面板决定，不跟广播`,ot.dirty?[{t:'BOUND · 草稿',cls:'bound'}]:[]);
+ if(!ot.bd.querySelector('.ot')){ot.bd.innerHTML=`<div class="ot"><div class="sym"></div><div class="lock">有未提交草稿：切换品种被忽略（联动日志里能看到）。提交或清空后恢复跟随。</div><label>账户</label><select id="otAcct"><option value="A">A · 华泰</option><option value="B">B · 中信期货</option><option value="P">P · 模拟</option></select><label>方向</label><div><button data-side="买" class="p">买</button> <button data-side="卖">卖</button></div><label>价格</label><input id="otPx" class="num" placeholder="点图表或 DOM 填入"><label>数量</label><input id="otQty" class="num" placeholder="手"><div class="acts"><button class="p" id="otSubmit">提交（进确认）</button><button id="otClear">清空</button></div></div>`;
+  ot.bd.querySelector('#otAcct').addEventListener('change',e=>{ot.acct=e.target.value;log('hint',`OrderTicket 账户改为 <b>${ACCTS[ot.acct]}</b>（面板属性，不进 context）`)});
+  ['otPx','otQty'].forEach(id=>ot.bd.querySelector('#'+id).addEventListener('input',()=>{if(!ot.dirty){ot.dirty=true;ot.bound=amb(ot).instrument;log('hint',`OrderTicket 开始编辑 → <b>绑定</b> ${ot.bound}`);ot.render()}}));
+  ot.bd.querySelector('#otClear').addEventListener('click',()=>{ot.dirty=false;ot.bound=null;ot.bd.querySelector('#otPx').value='';ot.bd.querySelector('#otQty').value='';log('hint','OrderTicket 清空 → 解除绑定，重新跟随 instrument');ot.render()});
+  ot.side=ot.side||'买';ot.bd.querySelectorAll('[data-side]').forEach(b=>b.addEventListener('click',()=>{ot.side=b.dataset.side;ot.bd.querySelectorAll('[data-side]').forEach(x=>x.classList.toggle('p',x===b));log('hint',`OrderTicket 方向 → <b>${ot.side}</b>`)}));
+  ot.bd.querySelector('#otSubmit').addEventListener('click',()=>{log('hint',`OrderTicket 提交 <b>${ot.side}</b> ${ot.bound||amb(ot).instrument} ${ot.bd.querySelector('#otPx').value} × ${ot.bd.querySelector('#otQty').value}（${ACCTS[ot.acct]}）→ 进入确认框（样机不做）`);ot.dirty=false;ot.bound=null;ot.bd.querySelector('#otPx').value='';ot.bd.querySelector('#otQty').value='';ot.render()})}
+ ot.bd.querySelector('.ot').classList.toggle('bound',ot.dirty);ot.bd.querySelector('.sym').textContent=`${sym} ${s.name}`;ot.bd.querySelector('#otAcct').value=ot.acct};
+ot.prefill=px=>{if(px!=null){ot.bd.querySelector('#otPx').value=px.toFixed(SYMS[ot.dirty?ot.bound:amb(ot).instrument].tick<.01?3:2);if(!ot.dirty){ot.dirty=true;ot.bound=amb(ot).instrument;log('hint',`OrderTicket 预填价格 → <b>绑定</b> ${ot.bound}`)}}ot.render()};
+ot.onCtx=ev=>{if(ev.layer==='ambient'&&ev.key==='instrument'&&ev.group===ot.group){if(ot.dirty){log('no',`OrderTicket 忽略 instrument → ${ev.val}（草稿绑定 ${ot.bound}）`);return}ot.render()}};
+
+/* =========================== 5 PositionBook =========================== */
+const pb=panel({id:'pb',name:'PositionBook',kind:'positions',group:'A',area:'2/1/3/2'});pb.produces=['instrument','focus.position'];pb.filterSym=null;
+pb.render=()=>{const rows=POS.filter(p=>(ctx.scope.account==='all'||p.acct===ctx.scope.account)&&(!ctx.scope.strategy||p.strat===ctx.scope.strategy)&&(!pb.filterSym||p.sym===pb.filterSym));
+ pb.setHeader(`scope <em>${ACCTS[ctx.scope.account]}</em>${ctx.scope.strategy?` · 策略 <em>${ctx.scope.strategy}</em>`:''}${pb.filterSym?` · 本地过滤 ${pb.filterSym}`:''} · 点行=广播 instrument + focus.position，<em>不广播账户</em>`);
+ pb.bd.innerHTML=`<div class="sel-bar">账户 <select id="pbAcct">${Object.entries(ACCTS).map(([k,v])=>`<option value="${k}" ${ctx.scope.account===k?'selected':''}>${v}</option>`).join('')}</select>${ctx.scope.strategy?`<button id="pbClearS">✕ 策略 ${ctx.scope.strategy}</button>`:''}${pb.filterSym?`<button id="pbClearF">✕ ${pb.filterSym}</button>`:''}</div><table><tr><th>账户</th><th>代码</th><th class="r">数量</th><th class="r">均价</th><th class="r">浮盈</th><th>策略</th></tr>${rows.map(p=>{const s=SYMS[p.sym];const pnl=(s.px-p.avg)*p.qty*(s.lot===1?300:1);return `<tr class="row ${ctx.focus.position===p.id?'on':''}" data-id="${p.id}"><td class="mut">${p.acct}</td><td class="num"><span class="obj" data-sym="${p.sym}">${p.sym}</span> <span class="mut">${s.name}</span></td><td class="num r">${p.qty}</td><td class="num r">${p.avg}</td><td class="num r ${pnl>=0?'up':'dn'}">${pnl>=0?'+':''}${Math.round(pnl).toLocaleString()}</td><td><span class="obj strat ${ctx.scope.strategy===p.strat?'on':''}" data-strat="${p.strat}">${p.strat}</span></td></tr>`}).join('')||'<tr><td colspan="6" class="empty">范围内没有持仓</td></tr>'}</table>`;
+ pb.bd.querySelector('#pbAcct').addEventListener('change',e=>setScope('account',e.target.value,'PositionBook 账户下拉'));
+ const cs=pb.bd.querySelector('#pbClearS');if(cs)cs.addEventListener('click',()=>setScope('strategy',null,'清除'));const cf=pb.bd.querySelector('#pbClearF');if(cf)cf.addEventListener('click',()=>{pb.filterSym=null;pb.render()});
+ pb.bd.querySelectorAll('tr.row').forEach(tr=>{const pos=POS.find(p=>p.id===tr.dataset.id);
+  tr.addEventListener('click',e=>{if(e.target.classList.contains('strat'))return;setAmbient(pb.group,'instrument',pos.sym,'PositionBook 行');I.OpenPosition(pos);log('hint',`（账户 ${pos.acct} <b>没有</b>广播：OrderTicket 账户仍是 ${ACCTS[ot.acct]}）`)});
+  tr.addEventListener('contextmenu',e=>{e.preventDefault();const st=STRATS[pos.strat];showMenu(e.clientX,e.clientY,`持仓 ${pos.id} · ${pos.sym}`,[{t:'打开图表（切到策略周期 '+st.interval+'，高亮成交）',k:'↵',f:()=>{I.OpenPosition(pos);I.ViewChart(pos.sym,{interval:st.interval,src:'持仓 → 图表'})}},{t:'查看成交（Peek）',k:'F',f:()=>I.ViewFills(pos)},{t:'打开策略 '+pos.strat,k:'S',f:()=>I.OpenStrategy(pos.strat)},{t:'打开实例 run '+pos.run,k:'R',f:()=>I.OpenRun(pos.run)},{t:'平仓（下单票）',k:'O',f:()=>I.Order(pos.sym,SYMS[pos.sym].px)}])});
+  tr.querySelector('.strat').addEventListener('click',e=>{e.stopPropagation();I.ScopeStrategy(pos.strat)});
+  tr.querySelector('.strat').addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();showMenu(e.clientX,e.clientY,`策略 ${pos.strat}`,[{t:'只看这个策略（Scope）',k:'↵',f:()=>I.ScopeStrategy(pos.strat)},{t:'打开策略（Focus → RunInspector）',k:'S',f:()=>I.OpenStrategy(pos.strat)}])});
+  const o=tr.querySelector('[data-sym]');o.addEventListener('mousemove',e=>card(e,symCard(pos.sym)));o.addEventListener('mouseleave',hideCard)})};
+pb.peek=pos=>{const old=pb.el.querySelector('.peek');if(old)old.remove();const run=RUNS[pos.run];const fills=run.trades.filter(t=>pos.fills.includes(t.id));const pk=document.createElement('div');pk.className='peek';pk.innerHTML=`<div class="hd"><b>成交 · ${pos.id}</b><span class="c">${pos.sym} · ${pos.strat} · ${pos.run}</span><span class="pin" title="关闭">✕</span></div><div class="bd"><table><tr><th>成交</th><th>方向</th><th class="r">量</th><th class="r">价</th><th></th></tr>${fills.map(t=>`<tr class="row ${ctx.selection&&ctx.selection.id===t.id?'sel':''}" data-id="${t.id}"><td class="num">${t.id}</td><td>${t.side}</td><td class="num r">${t.qty}</td><td class="num r">${t.px}</td><td class="mut">在图上定位 →</td></tr>`).join('')}</table><div class="empty" style="text-align:left;padding:10px">Peek：不离开当前工作区。再按一次 = 全导航到 OrderBlotter（样机不做）。</div></div>`;pb.el.appendChild(pk);
+ pk.querySelector('.pin').addEventListener('click',()=>pk.remove());pk.querySelectorAll('tr.row').forEach(tr=>tr.addEventListener('click',()=>{const t=fills.find(x=>x.id===tr.dataset.id);I.LocateTrade(t);pk.querySelectorAll('tr.row').forEach(r=>r.classList.toggle('sel',r===tr))}))};
+pb.onCtx=ev=>{if(ev.layer==='scope'||(ev.layer==='focus'&&ev.key==='position'))pb.render()};
+
+/* =========================== 6 RunInspector =========================== */
+const ri=panel({id:'ri',name:'RunInspector',kind:'runs',group:'A',area:'1/3/2/4',pinnable:true});ri.follows=['focus.strategy','focus.run'];
+ri.currentObject=()=>ctx.focus.run;
+ri.render=()=>{const runId=ri.bound||ctx.focus.run;const stId=ri.bound?RUNS[ri.bound].strat:ctx.focus.strategy;
+ ri.setHeader(ri.bound?`<em>固定 ${ri.bound}</em> · 忽略 focus`:`follows <em>focus.strategy / focus.run</em> · 切 instrument <em>不影响</em>本面板`,ri.bound?[{t:'BOUND',cls:'bound'}]:[]);
+ if(!stId){ri.bd.innerHTML=`<div class="empty">没有焦点策略。<br>在 PositionBook 右键策略名 → 打开策略，或右键持仓 → 打开实例 run。<br><br><span style="color:var(--ink4)">现在去 Watchlist 点别的股票，这里不会变——这是 Focus 与 Ambient 的区别。</span></div>`;return}
+ const st=STRATS[stId];const run=runId&&RUNS[runId];
+ ri.bd.innerHTML=`<div class="ri"><div class="list"><div style="color:var(--ink3);cursor:default">${st.name} ${st.ver} · ${st.status}</div>${st.runs.map(r=>`<div class="${r===runId?'on':''}" data-run="${r}">${r}<br><span class="mut">${RUNS[r].mode}</span></div>`).join('')}</div><div class="det">${run?`<div class="kv"><div><small>run</small><b>${runId}</b></div><div><small>模式</small><b>${run.mode}</b></div><div><small>区间</small><b style="font-size:11px">${run.range}</b></div><div><small>周期</small><b>${st.interval}</b></div><div><small>Sharpe</small><b>${run.sharpe}</b></div><div><small>最大回撤</small><b class="dn">${run.mdd}%</b></div></div><table><tr><th>成交</th><th>代码</th><th>方向</th><th class="r">量</th><th class="r">价</th></tr>${run.trades.map(t=>`<tr class="row ${ctx.selection&&ctx.selection.id===t.id?'sel':''}" data-id="${t.id}"><td class="num">${t.id}</td><td class="num"><span class="obj" data-sym="${t.sym}">${t.sym}</span></td><td>${t.side}</td><td class="num r">${t.qty}</td><td class="num r">${t.px}</td></tr>`).join('')}</table><div class="empty" style="text-align:left;padding:8px;font-size:11px">点成交 = selection（图表高亮，品种不同会先切品种）</div>`:'<div class="empty">选择一个 run</div>'}</div></div>`;
+ ri.bd.querySelectorAll('[data-run]').forEach(d=>d.addEventListener('click',()=>{if(ri.bound){log('no',`RunInspector 已固定在 ${ri.bound}，点击 ${d.dataset.run} 不生效（解除固定或开第二台）`);return}I.OpenRun(d.dataset.run)}));
+ ri.bd.querySelectorAll('tr.row').forEach(tr=>{const t=run.trades.find(x=>x.id===tr.dataset.id);tr.addEventListener('click',()=>I.LocateTrade(t));tr.addEventListener('contextmenu',e=>{e.preventDefault();showMenu(e.clientX,e.clientY,`成交 ${t.id}`,[{t:'在图表上定位',k:'↵',f:()=>I.LocateTrade(t)},{t:'打开图表 '+t.sym,f:()=>I.ViewChart(t.sym,{src:'成交 → 图表'})}])});const o=tr.querySelector('[data-sym]');o.addEventListener('mousemove',e=>card(e,symCard(t.sym)));o.addEventListener('mouseleave',hideCard)})};
+ri.onCtx=ev=>{if(ev.layer==='focus'||ev.layer==='selection'){if(ri.bound&&ev.layer==='focus'){log('no',`RunInspector 固定中，忽略 focus.${ev.key} → ${ev.val}`);return}ri.render()}if(ev.layer==='ambient'&&ev.key==='instrument'&&(ctx.focus.run||ctx.focus.strategy))log('hint',`RunInspector 不消费 instrument，保持 ${ri.bound||ctx.focus.run}`)};
+
+/* =========================== 对照组 B =========================== */
+let chartB=null;
+function ensureGroupB(){if(ctx.groups.B)return;ctx.groups.B={instrument:'000858',interval:'1d',timeRange:'30d'};document.body.classList.add('multi');grid.classList.add('two');
+ /* 重新布局：A 图 1/2，B 图 1/3，DOM 2/2，Ticket 2/3，RI 1/4 */
+ chartA.el.style.gridArea='1/2/2/3';dom.el.style.gridArea='2/2/3/3';ot.el.style.gridArea='2/3/3/4';ri.el.style.gridArea='1/4/3/5';
+ chartB=makeChart('B','1/3/2/4');chartB.render();log('hint','创建对照组 <b>B</b>：颜色此时才出现（A 蓝 / B 黄）。点面板左上角的组标可以换组。');renderCtxBar();wl.render()}
+document.getElementById('btnB').addEventListener('click',()=>ensureGroupB());
+document.getElementById('btnReset').addEventListener('click',()=>location.reload());
+
+/* =========================== 启动 =========================== */
+panels.forEach(p=>p.render());renderCtxBar();
+log('hint','样机只验证四层 context 的手感。看这条日志：谁改了什么、谁跟了、谁拒绝了。');
+log('hint','建议路径：① Watchlist 点 300750 → 图/DOM 跟，RunInspector 不动 ② PositionBook 右键 P-8291 → 打开图表（切周期+高亮） ③ 右键 → 查看成交 → 点成交 → 图上定位 ④ 策略名右键 → 打开策略 → 点 run → 点成交 ⑤ 在 OrderTicket 填数量后再点 Watchlist → 被拒绝 ⑥ ＋对照组 B → Watchlist 右键 → 在对照组打开 → 再右键"打开图表"会问用哪张');
+</script>

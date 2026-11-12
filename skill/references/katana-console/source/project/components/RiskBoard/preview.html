@@ -1,0 +1,32 @@
+<!-- @dsCard group="组合" height=230 subtitle="RiskBoard：集中的限额板；每条限额一根 Meter + 当前/限额 LCD；限额只读来自账户权威；越线走告警阶梯" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.board{width:600px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.m{background:var(--bg-200);border:var(--hairline);padding:8px 10px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}
+.lab{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.lab .scope{color:var(--ink-400);margin-left:6px}
+.val{font-family:var(--font-lcd);font-size:16px;letter-spacing:.08em;color:var(--ink-100);text-align:right}
+.val small{font-size:10px;color:var(--ink-300);letter-spacing:.06em;margin-left:4px}
+.val.warn{color:var(--signal-amber)}
+.bar{grid-column:1/3;height:8px;background:var(--bg-000);box-shadow:var(--recess);position:relative}
+.bar>i{position:absolute;left:0;top:0;bottom:0;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.bar>i.warn{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar>b{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--signal-red)}
+.bar>s{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--signal-amber);opacity:.7}
+.foot{grid-column:1/3;display:flex;justify-content:space-between;color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.lock{grid-column:1/3;display:flex;align-items:center;gap:8px;background:var(--bg-000);box-shadow:var(--recess);padding:6px 10px;font-size:10px;color:var(--ink-300);letter-spacing:.06em}
+.led{width:8px;height:8px;border-radius:var(--radius-pill);background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}
+</style></head><body>
+<div class="board">
+  <div class="m"><div class="lab">总敞口 / 净值<span class="scope">A B F</span></div><div class="val">1.42<small>× / 2.0</small></div><div class="bar"><i style="width:71%"></i><s style="left:80%"></s><b style="left:100%"></b></div></div>
+  <div class="m"><div class="lab">保证金占用<span class="scope">F</span></div><div class="val warn">71<small>% / 80</small></div><div class="bar"><i class="warn" style="width:71%"></i><s style="left:70%"></s><b style="left:80%"></b></div></div>
+  <div class="m"><div class="lab">TOP-1 集中度<span class="scope">A B</span></div><div class="val">26<small>% / 30</small></div><div class="bar"><i style="width:87%"></i><s style="left:83%"></s><b style="left:100%"></b></div></div>
+  <div class="m"><div class="lab">行业集中度 · 电新<span class="scope">A B</span></div><div class="val">38<small>% / 40</small></div><div class="bar"><i style="width:95%"></i><s style="left:90%"></s><b style="left:100%"></b></div></div>
+  <div class="m"><div class="lab">VAR 1D 95%</div><div class="val">48,200<small>/ 90,000</small></div><div class="bar"><i style="width:54%"></i><b style="left:100%"></b></div></div>
+  <div class="m"><div class="lab">日内回撤<span class="scope">ALL</span></div><div class="val">-0.6<small>% / -2.5</small></div><div class="bar"><i style="width:24%"></i><s style="left:80%"></s><b style="left:100%"></b></div></div>
+  <div class="lock"><span class="led"></span>交易锁 · 未触发 · 限额来自账户服务 09:00 快照 · 1 项接近（保证金 F）</div>
+</div>
+</body></html>

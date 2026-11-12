@@ -1,0 +1,48 @@
+<!-- @dsCard group="发现" height=260 subtitle="AlertCenter：规则列表 + 今日命中；规则是命令（可存可分享），命中走告警阶梯，同类合并计数；Webhook / OpenAlice 作为动作" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.wrap{display:grid;grid-template-columns:300px 300px;gap:8px}
+.box{background:var(--bg-200);border:var(--hairline)}
+.hd{height:24px;display:flex;align-items:center;gap:8px;padding:0 10px;background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-bottom:var(--hairline)}
+.hd b{font-weight:400;color:var(--ink-100)}
+.rule{display:grid;grid-template-columns:30px 1fr 60px;height:var(--row-base);align-items:center;border-bottom:var(--hairline);padding:0 10px 0 6px;gap:8px}
+.tg{width:22px;height:12px;background:var(--bg-000);box-shadow:var(--recess);position:relative}
+.tg i{position:absolute;top:2px;left:2px;width:8px;height:8px;background:var(--ink-400)}
+.tg.on i{left:12px;background:var(--signal-orange);box-shadow:var(--glow-orange)}
+.cond{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cond .cn{font-family:var(--font-sans)}
+.cond .op{color:var(--signal-orange)}
+.cond small{display:block;color:var(--ink-300);font-size:10px}
+.lvl{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;text-align:right;color:var(--ink-300)}
+.lvl.l2{color:var(--signal-amber)}.lvl.l3{color:var(--signal-red)}
+.hit{display:grid;grid-template-columns:62px 1fr 36px;height:var(--row-tight);align-items:center;border-bottom:var(--hairline);padding:0 10px;gap:8px}
+.t{color:var(--ink-300)}
+.n{font-family:var(--font-dot);font-size:9px;color:var(--ink-300);letter-spacing:.08em;-webkit-font-smoothing:none;text-align:right}
+.n.hot{color:var(--signal-orange)}
+.hit.now{box-shadow:inset 2px 0 0 var(--signal-orange)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+</style></head><body>
+<div class="wrap">
+  <div class="box" role="list" aria-label="规则">
+    <div class="hd">规则 <b>7</b> · 启用 5<span style="margin-left:auto">+ 新建</span></div>
+    <div class="rule"><div class="tg on"><i></i></div><div class="cond"><span class="cn">核心池</span> 量比 <span class="op">></span> 3 且 涨幅 <span class="op">></span> 2%<small>动作：灯 + ping · 加入观察</small></div><div class="lvl">L1</div></div>
+    <div class="rule"><div class="tg on"><i></i></div><div class="cond">300750 价格 <span class="op">穿</span> 250.00<small>动作：常亮 · Webhook</small></div><div class="lvl l2">L2</div></div>
+    <div class="rule"><div class="tg on"><i></i></div><div class="cond"><span class="cn">账户</span> F 保证金 <span class="op">></span> 75%<small>动作：边框 + 大字 · OpenAlice 评估</small></div><div class="lvl l3">L3</div></div>
+    <div class="rule"><div class="tg on"><i></i></div><div class="cond">IF2510 CVD 背离 · 5m<small>动作：灯 + ping</small></div><div class="lvl">L1</div></div>
+    <div class="rule"><div class="tg"><i></i></div><div class="cond" style="color:var(--ink-300)">momo-7 日内回撤 <span class="op" style="color:var(--ink-400)">></span> 1.5%<small>停用 · 09:41</small></div><div class="lvl">L2</div></div>
+    <div class="foot"><span>规则即命令</span><span>可导出</span></div>
+  </div>
+  <div class="box" role="log" aria-label="今日命中">
+    <div class="hd">今日命中 <b>23</b> · 合并后 9</div>
+    <div class="hit now"><div class="t">10:42:07</div><div><span style="color:var(--ink-200)">300308</span> 量比 4.1 · 涨 4.1%</div><div class="n hot">×1</div></div>
+    <div class="hit"><div class="t">10:31</div><div><span style="color:var(--ink-200)">300750</span> 穿 246 → 247 ↑</div><div class="n">×3</div></div>
+    <div class="hit"><div class="t">10:12</div><div><span class="cn" style="font-family:var(--font-sans)">核心池</span> 异动 ×5 <span class="t">（合并）</span></div><div class="n hot">×5</div></div>
+    <div class="hit"><div class="t">09:58</div><div>IF2510 CVD 背离</div><div class="n">×1</div></div>
+    <div class="hit" style="color:var(--ink-300)"><div class="t">09:41</div><div>momo-7 回撤 1.6% · 规则已停用</div><div class="n">×1</div></div>
+    <div class="foot"><span>20 分钟内同级 >5 自动合并</span><span style="margin-left:auto">清除</span></div>
+  </div>
+</div>
+</body></html>

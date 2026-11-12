@@ -1,0 +1,51 @@
+<!-- @dsCard group="研究" height=230 subtitle="EventStudy：事件研究——事件前后 N 日累计超额收益（CAR）均值线 + 置信带（点阵纹理）+ 样本数；多事件类型对比；来自 Lab run" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{display:grid;grid-template-columns:420px 192px;gap:8px;width:620px}
+.kv{display:grid;grid-template-columns:70px 1fr;gap:4px 8px;font-size:10px}.kv span{color:var(--ink-300)}.kv b{font-weight:400;color:var(--ink-100)}
+</style></head><body>
+<div class="top"><span class="run">RUN 3e22</span><span>事件：业绩预告超预期 · 2019 → 2026 · n=1,284</span><div class="seg"><span class="on">CAR</span><span>AR 逐日</span><span>换手</span></div><span style="margin-left:auto">窗口 -10 → +20</span></div>
+<div class="wrap"><div class="box"><svg width="400" height="150" viewBox="0 0 400 150" role="img" aria-label="事件研究"><defs><pattern id="dots" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="2" height="2" fill="var(--seq-300)"/></pattern></defs>
+<g class="gl"><line x1="30" y1="20" x2="390" y2="20"/><line x1="30" y1="75" x2="390" y2="75" stroke="var(--line-200)"/><line x1="30" y1="130" x2="390" y2="130"/></g>
+<text x="26" y="23" text-anchor="end">+4%</text><text x="26" y="78" text-anchor="end">0</text><text x="26" y="133" text-anchor="end">-4%</text>
+<line x1="150" y1="15" x2="150" y2="135" stroke="var(--signal-orange)" stroke-dasharray="3 3"/><text x="154" y="24" fill="var(--signal-orange)">T0</text>
+<path d="M30 78 L70 76 L110 74 L150 70 L170 50 L190 44 L230 40 L270 38 L310 37 L350 38 L390 40 L390 56 L350 54 L310 53 L270 52 L230 54 L190 60 L170 66 L150 80 L110 82 L70 84 L30 82 Z" fill="url(#dots)" opacity=".7"/>
+<path d="M30 80 L70 80 L110 78 L150 75 L170 58 L190 52 L230 47 L270 45 L310 45 L350 46 L390 48" fill="none" stroke="var(--series-1)" stroke-width="2"/>
+<path d="M30 76 L70 77 L110 76 L150 75 L170 72 L190 71 L230 70 L270 70 L310 71 L350 72 L390 73" fill="none" stroke="var(--ink-300)" stroke-width="1.2" stroke-dasharray="3 3"/>
+<text x="30" y="146">-10</text><text x="146" y="146">0</text><text x="266" y="146">+10</text><text x="380" y="146">+20</text></svg></div>
+<div class="box"><h4>统计</h4><div class="kv"><span>CAR[0,+5]</span><b>+2.1% · t 6.8</b><span>CAR[0,+20]</span><b>+2.6% · t 5.1</b><span>漂移前</span><b>+0.4% · t 1.9</b><span>命中率</span><b>61%</b><span>样本</span><b>1,284 · 剔重叠</b><span>对照</span><b style="color:var(--ink-300)">随机日 · 灰虚</b><span>衰减</span><b>+10 日后无增量</b></div><div style="font-size:10px;color:var(--ink-300);margin-top:8px">带 = 95% 置信（bootstrap）· 点阵纹理 · 超额 vs 行业中性基准</div></div></div>
+</body></html>

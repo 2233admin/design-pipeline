@@ -1,0 +1,29 @@
+<!-- @dsCard group="工作台" height=120 subtitle="拨杆开关：跟手拖、松手按速度落位、到位咔哒" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-sans);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-4);align-items:center}
+.cell{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);padding:var(--space-2) var(--space-3);background:var(--bg-200);border:var(--hairline)}
+.lab{font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;color:var(--ink-300)}
+.sw{position:relative;width:34px;height:18px;border-radius:var(--radius-pill);background:var(--bg-000);border:1px solid var(--line-100);box-shadow:var(--recess);cursor:pointer;flex-shrink:0}
+.sw > i{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:var(--radius-pill);background:var(--line-200);box-shadow:0 1px 0 rgba(255,255,255,.1)}
+.sw.on{background:#3a1e0e;border-color:var(--signal-orange-dim)}
+.sw.on > i{left:18px;background:var(--signal-orange);box-shadow:var(--glow-orange)}
+.sw:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.sw.dis{opacity:.4;cursor:not-allowed}
+.sw.drag > i{left:10px;background:var(--signal-orange);box-shadow:var(--glow-orange)}
+</style></head><body>
+<div class="grid">
+  <label class="cell"><span>OFF</span><button class="sw" role="switch" aria-checked="false" aria-label="声音"><i></i></button></label>
+  <label class="cell"><span>ON</span><button class="sw on" role="switch" aria-checked="true" aria-label="声音"><i></i></button></label>
+  <label class="cell"><span>拖动中</span><button class="sw drag" role="switch" aria-checked="false" aria-label="声音"><i></i></button></label>
+  <label class="cell"><span style="color:var(--ink-400)">禁用</span><button class="sw dis" role="switch" aria-checked="false" aria-label="声音" disabled><i></i></button></label>
+</div>
+<div style="margin-top:var(--space-3);display:flex;gap:var(--space-4);align-items:center" class="lab">
+  <span>SOUND <button class="sw on" role="switch" aria-checked="true" aria-label="SOUND" style="vertical-align:middle"><i></i></button></span>
+  <span>QUIET <button class="sw" role="switch" aria-checked="false" aria-label="QUIET" style="vertical-align:middle"><i></i></button></span>
+  <span>PAPER <button class="sw on" role="switch" aria-checked="true" aria-label="PAPER" style="vertical-align:middle"><i></i></button></span>
+</div>
+</body></html>

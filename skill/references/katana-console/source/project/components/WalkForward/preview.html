@@ -1,0 +1,51 @@
+<!-- @dsCard group="研究" height=260 subtitle="WalkForward：训练 / 评估窗口甘特 + 每窗样本外收益零轴条 + 样本内外 Sharpe 对照；衰减一眼可见" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+.gates{display:inline-flex;gap:3px}
+.chart{width:620px;background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.row{display:grid;grid-template-columns:40px 1fr 90px 60px;height:22px;align-items:center;gap:10px;font-size:10px}
+.row.h{color:var(--ink-300);height:18px}
+.w{position:relative;height:10px}
+.w i{position:absolute;top:2px;height:6px;background:var(--line-200)}
+.w b{position:absolute;top:0;height:10px;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:40%;top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.v{text-align:right;color:var(--ink-100)}
+.v small{color:var(--ink-300);margin-left:4px}
+.lab{color:var(--ink-300)}
+.tl{display:grid;grid-template-columns:40px 1fr 90px 60px;gap:10px;font-size:9px;color:var(--chart-axis);margin-bottom:4px}
+.tl div:nth-child(2){display:flex;justify-content:space-between}
+</style></head><body>
+<div class="top"><span class="run">RUN 2d10</span><span>walkforward · MOM_RS_V3 · 训练 24m / 评估 6m · 滚动</span><span style="margin-left:auto">样本外 Sharpe <b class="lcd" style="color:var(--ink-100);font-weight:400">0.94</b> · 样本内 1.41 · 比 <b style="color:var(--signal-amber);font-weight:400">0.67</b></span></div>
+<div class="chart">
+  <div class="tl"><div></div><div><span>2019</span><span>2020</span><span>2021</span><span>2022</span><span>2023</span><span>2024</span><span>2025</span><span>2026</span></div><div style="text-align:right">样本外收益</div><div style="text-align:right">IS / OOS</div></div>
+  <div class="row h"><span class="lab">窗</span><div></div><div></div><div></div></div>
+  <div class="row"><span class="lab">W1</span><div class="w"><i style="left:0;width:28%"></i><b style="left:28%;width:7%"></b></div><div class="ax"><i style="left:40%;width:22%"></i></div><div class="v">1.6<small>/1.1</small></div></div>
+  <div class="row"><span class="lab">W2</span><div class="w"><i style="left:7%;width:28%"></i><b style="left:35%;width:7%"></b></div><div class="ax"><i style="left:40%;width:30%"></i></div><div class="v">1.5<small>/1.4</small></div></div>
+  <div class="row"><span class="lab">W3</span><div class="w"><i style="left:14%;width:28%"></i><b style="left:42%;width:7%"></b></div><div class="ax"><i style="left:29%;width:11%"></i></div><div class="v">1.4<small style="color:var(--signal-amber)">/-0.3</small></div></div>
+  <div class="row"><span class="lab">W4</span><div class="w"><i style="left:21%;width:28%"></i><b style="left:49%;width:7%"></b></div><div class="ax"><i style="left:40%;width:12%"></i></div><div class="v">1.3<small>/0.6</small></div></div>
+  <div class="row"><span class="lab">W5</span><div class="w"><i style="left:28%;width:28%"></i><b style="left:56%;width:7%"></b></div><div class="ax"><i style="left:40%;width:26%"></i></div><div class="v">1.4<small>/1.2</small></div></div>
+  <div class="row"><span class="lab">W6</span><div class="w"><i style="left:35%;width:28%"></i><b style="left:63%;width:7%"></b></div><div class="ax"><i style="left:40%;width:18%"></i></div><div class="v">1.3<small>/0.9</small></div></div>
+  <div class="row"><span class="lab">W7</span><div class="w"><i style="left:42%;width:28%"></i><b style="left:70%;width:7%"></b></div><div class="ax"><i style="left:34%;width:6%"></i></div><div class="v">1.5<small style="color:var(--signal-amber)">/-0.1</small></div></div>
+  <div class="row"><span class="lab">W8</span><div class="w"><i style="left:49%;width:28%"></i><b style="left:77%;width:7%"></b></div><div class="ax"><i style="left:40%;width:20%"></i></div><div class="v">1.4<small>/1.0</small></div></div>
+  <div class="row"><span class="lab">W9</span><div class="w"><i style="left:56%;width:28%"></i><b style="left:84%;width:7%"></b></div><div class="ax"><i style="left:40%;width:14%"></i></div><div class="v">1.3<small>/0.7</small></div></div>
+</div>
+</body></html>

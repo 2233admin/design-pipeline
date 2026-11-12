@@ -1,0 +1,60 @@
+<!-- @dsCard group="盈亏" height=280 subtitle="PositionHistory：一个仓位的一生——价格线 + 买卖标记 + 均价阶梯 + 数量带 + 盈亏路径；回答怎么走到现在的" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{width:620px;background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.ev{display:grid;grid-template-columns:70px 36px 1fr 70px 70px;height:20px;align-items:center;font-size:10px;border-bottom:var(--hairline)}
+.ev>div{padding:0 6px}
+.side{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none}.b{color:var(--bid)}.s{color:var(--ask)}
+</style></head><body>
+<div class="top"><span class="code">300750</span><span class="cn" style="color:var(--ink-100)">宁德时代</span><span>账户 <span class="acc">A</span>+<span class="acc">B</span> 合并</span><span>持有 <b style="font-weight:400;color:var(--ink-100)">47</b> 天 · 5 次加减</span><span style="margin-left:auto">均价 231.40 · 现价 246.80 · 浮盈 <span class="up">+73,920</span> · 已实现 <span class="up">+12,300</span></span></div>
+<div class="wrap"><svg width="600" height="130" viewBox="0 0 600 130" role="img" aria-label="仓位历史">
+<g class="gl"><line x1="0" y1="20" x2="540" y2="20"/><line x1="0" y1="60" x2="540" y2="60"/><line x1="0" y1="100" x2="540" y2="100"/></g>
+<text x="544" y="23">260</text><text x="544" y="63">240</text><text x="544" y="103">220</text>
+<path d="M0 90 L40 84 L80 92 L120 70 L160 76 L200 62 L240 66 L280 52 L320 58 L360 44 L400 50 L440 40 L480 46 L520 38 L540 36" fill="none" stroke="var(--ink-200)" stroke-width="1.5"/>
+<path d="M40 88 L160 88 L160 80 L280 80 L280 72 L400 72 L400 76 L540 76" fill="none" stroke="var(--signal-orange)" stroke-width="1.5" stroke-dasharray="4 2"/>
+<path d="M40 128 L40 118 L160 118 L160 112 L280 112 L280 108 L400 108 L400 114 L540 114 L540 128 Z" fill="var(--series-1)" opacity=".35"/>
+<polygon points="40,96 36,104 44,104" fill="var(--bid)"/><polygon points="160,84 156,92 164,92" fill="var(--bid)"/><polygon points="280,60 276,68 284,68" fill="var(--bid)"/><polygon points="400,42 396,34 404,34" fill="var(--ask)"/>
+<circle cx="540" cy="36" r="3" fill="var(--signal-orange)"/>
+<text x="0" y="128" fill="var(--ink-300)">数量带</text><text x="548" y="78" fill="var(--signal-orange)">均价</text>
+</svg>
+<div class="ev hd" style="margin-top:6px"><div>日期</div><div></div><div>事件</div><div class="r">数量 →</div><div class="r">均价 →</div></div>
+<div class="ev"><div style="color:var(--ink-300)">08-17</div><div class="side b">BUY</div><div><span class="acc">A</span> 1,000 @ 221.30 · 手动</div><div class="r">1,000</div><div class="r">221.30</div></div>
+<div class="ev"><div style="color:var(--ink-300)">08-28</div><div class="side b">BUY</div><div><span class="acc">A</span> 2,000 @ 228.00 · momo-7</div><div class="r">3,000</div><div class="r">225.77</div></div>
+<div class="ev"><div style="color:var(--ink-300)">09-10</div><div class="side b">BUY</div><div><span class="acc">B</span> 1,800 @ 236.90 · 手动</div><div class="r">4,800</div><div class="r">229.94</div></div>
+<div class="ev"><div style="color:var(--ink-300)">09-24</div><div class="side s">SELL</div><div><span class="acc">A</span> 500 @ 254.60 · 止盈 · 已实现 <span class="up">+12,300</span></div><div class="r">4,300</div><div class="r">229.94</div></div>
+</div>
+</body></html>

@@ -1,0 +1,59 @@
+<!-- @dsCard group="衍生品" height=230 subtitle="VolSurface：波动率曲面——到期 × 行权（或 Δ）的 IV 热力 + 选中到期的微笑曲线；顺序色；不做 3D；历史对比虚线" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{display:grid;grid-template-columns:330px 282px;gap:8px;width:620px}
+.hm{display:grid;grid-template-columns:36px repeat(7,1fr);gap:1px;font-size:9px}
+.hm div{height:18px;display:flex;align-items:center;justify-content:center;color:var(--ink-200)}
+.hm .l{color:var(--ink-300);justify-content:flex-end;padding-right:4px}
+.hm .sel{box-shadow:inset 0 0 0 1px var(--signal-orange)}
+</style></head><body>
+<div class="top"><span class="code">510300</span><span>IV 曲面 · 14:30</span><div class="seg"><span class="on">按 Δ</span><span>按行权</span></div><span style="margin-left:auto">ATM 期限结构 14d 18.2 · 42d 17.6 · 70d 17.1 · 161d 16.8</span></div>
+<div class="wrap"><div class="box"><h4>到期 × Δ · IV%</h4>
+<div class="hm"><div></div><div class="l">10P</div><div class="l">25P</div><div class="l">40P</div><div class="l">ATM</div><div class="l">40C</div><div class="l">25C</div><div class="l">10C</div>
+<div class="l">14d</div><div style="background:var(--seq-500)">23.1</div><div style="background:var(--seq-400)">20.4</div><div style="background:var(--seq-300)">18.9</div><div class="sel" style="background:var(--seq-300)">18.2</div><div style="background:var(--seq-300)">18.4</div><div style="background:var(--seq-400)">19.6</div><div style="background:var(--seq-500)">21.8</div>
+<div class="l">42d</div><div style="background:var(--seq-400)">21.0</div><div style="background:var(--seq-300)">19.1</div><div style="background:var(--seq-300)">18.0</div><div style="background:var(--seq-200)">17.6</div><div style="background:var(--seq-200)">17.7</div><div style="background:var(--seq-300)">18.5</div><div style="background:var(--seq-400)">20.1</div>
+<div class="l">70d</div><div style="background:var(--seq-400)">20.2</div><div style="background:var(--seq-300)">18.6</div><div style="background:var(--seq-200)">17.5</div><div style="background:var(--seq-200)">17.1</div><div style="background:var(--seq-200)">17.2</div><div style="background:var(--seq-300)">17.9</div><div style="background:var(--seq-300)">19.2</div>
+<div class="l">161d</div><div style="background:var(--seq-300)">19.4</div><div style="background:var(--seq-300)">18.1</div><div style="background:var(--seq-200)">17.2</div><div style="background:var(--seq-200)">16.8</div><div style="background:var(--seq-200)">16.9</div><div style="background:var(--seq-200)">17.4</div><div style="background:var(--seq-300)">18.6</div></div></div>
+<div class="box"><h4>微笑 · 14d（橙）vs 昨收（虚）</h4>
+<svg width="260" height="150" viewBox="0 0 260 150" role="img" aria-label="微笑曲线"><g class="gl"><line x1="24" y1="20" x2="250" y2="20"/><line x1="24" y1="70" x2="250" y2="70"/><line x1="24" y1="120" x2="250" y2="120"/></g>
+<text x="20" y="23" text-anchor="end">24</text><text x="20" y="73" text-anchor="end">20</text><text x="20" y="123" text-anchor="end">16</text>
+<path d="M30 32 L66 66 L102 84 L138 93 L174 90 L210 76 L246 48" fill="none" stroke="var(--ink-300)" stroke-width="1.2" stroke-dasharray="3 3"/>
+<path d="M30 28 L66 62 L102 80 L138 90 L174 88 L210 72 L246 44" fill="none" stroke="var(--signal-orange)" stroke-width="2"/>
+<g fill="var(--signal-orange)"><circle cx="30" cy="28" r="2.5"/><circle cx="66" cy="62" r="2.5"/><circle cx="102" cy="80" r="2.5"/><circle cx="138" cy="90" r="2.5"/><circle cx="174" cy="88" r="2.5"/><circle cx="210" cy="72" r="2.5"/><circle cx="246" cy="44" r="2.5"/></g>
+<text x="30" y="144">10P</text><text x="130" y="144">ATM</text><text x="236" y="144">10C</text></svg>
+<div style="font-size:10px;color:var(--ink-300);margin-top:2px">偏度 25Δ P−C <b style="font-weight:400;color:var(--ink-100)">+0.8</b> · 昨 +0.6 · 来源 数据源 / 拟合 SVI <span class="run">RUN 3c02</span></div></div></div>
+</body></html>

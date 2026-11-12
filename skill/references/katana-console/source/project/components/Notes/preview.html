@@ -1,0 +1,54 @@
+<!-- @dsCard group="工具" height=240 subtitle="Notes：研究与交易笔记——Markdown，行内引用品种 / run / 订单 / 信号 / 新闻（点阵标，可点）；按日 / 按对象两种视图；是 ReportBuilder 的文字源" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{display:grid;grid-template-columns:170px 450px;gap:8px;width:620px}
+.list div{height:26px;display:flex;align-items:center;gap:6px;padding:0 8px;border-bottom:var(--hairline);font-size:10px;color:var(--ink-200)}
+.list div.on{background:var(--bg-000);box-shadow:inset 2px 0 0 var(--signal-orange);color:var(--ink-100)}
+.list small{color:var(--ink-300);margin-left:auto}
+.doc{font-family:var(--font-sans);font-size:11px;line-height:1.7;color:var(--ink-200)}
+.doc h3{margin:0 0 6px;font:inherit;font-weight:500;color:var(--ink-100);font-size:12px}
+.ref{font-family:var(--font-dot);font-size:9px;letter-spacing:.06em;-webkit-font-smoothing:none;border:var(--hairline);padding:0 4px;color:var(--signal-orange);vertical-align:middle}
+.ref.r{color:var(--signal-blue)}.ref.o{color:var(--order-own)}
+.doc .meta{font-family:var(--font-mono);font-size:10px;color:var(--ink-300);margin-top:8px}
+</style></head><body>
+<div class="wrap"><div class="box list" style="padding:0"><div class="hd" style="height:22px;padding:0 8px;display:flex;align-items:center">按日 · 10 月<span style="margin-left:auto" class="tag">按对象</span></div><div class="on">10-02 收盘<small>3 引用</small></div><div>10-02 换手门<small>run</small></div><div>09-30 北向缺口<small>决定</small></div><div>09-28 配股<small>待办</small></div><div>09-24 止盈复盘<small>订单</small></div><div style="color:var(--ink-300)">+ 新笔记 · ⌘N</div></div>
+<div class="box doc"><h3>10-02 收盘</h3>
+<span class="ref">300750</span> 回购公告后放量，<span class="ref o">ORD 9f3</span> 的 500 股止盈成交在 254.60，略早。<span class="ref">300308</span> 业绩预告 <span class="ref">NEWS 14:20</span> 待看明早竞价。<br>
+<span class="ref r">RUN 2e52</span> skip=3 把换手降到 690%，Sharpe 只掉 0.06——倾向推进 paper，等 <span class="ref r">RUN 2d10</span> walkforward。<br>
+待办：<span class="ref">002475</span> 配股 10-15 前决定（<span class="ref">CA 10-17</span>）。
+<div class="meta">引用 7 · 最后编辑 15:12 · 可进报告 · 不公开</div></div></div>
+</body></html>

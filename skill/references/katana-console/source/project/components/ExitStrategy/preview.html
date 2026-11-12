@@ -1,0 +1,60 @@
+<!-- @dsCard group="交易" height=250 subtitle="ExitStrategy：SL/TP 自动出场——Simple / Multi-Level、Breakeven、Trailing；OrderTicket · ChartTrader · DOMLadder 三入口共用；执行在网关" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Barlow+Condensed:wght@800&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.ly{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;border:1px solid var(--line-200);padding:0 4px;color:var(--ink-300)}
+.ly.hypo{color:var(--signal-blue);border-color:var(--signal-blue)}.ly.fcst{border-style:dashed}.ly.plan{background:transparent;color:var(--ink-200)}.ly.fact{color:var(--ink-100);border-color:var(--ink-300)}
+
+
+.es{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:620px}
+.pane{background:var(--bg-200);border:var(--hairline);padding:6px 8px}
+.pane h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none;display:flex;justify-content:space-between}
+.kv2{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center}.kv2 label{color:var(--ink-300)}.kv2 .in{background:var(--bg-000);box-shadow:var(--recess);padding:1px 6px;color:var(--ink-100)}
+.tgl{display:inline-flex;align-items:center;gap:6px}.tgl i{width:22px;height:10px;background:var(--bg-000);box-shadow:var(--recess);position:relative}.tgl i:after{content:"";position:absolute;top:1px;left:12px;width:8px;height:8px;background:var(--signal-orange);box-shadow:var(--glow-orange)}.tgl i.off:after{left:2px;background:var(--ink-300);box-shadow:none}
+.ml .row{display:grid;grid-template-columns:30px 60px 70px 70px 1fr;padding:3px 0;color:var(--ink-200)}.ml .row.hd{color:var(--ink-300);font-size:9px}
+.note{grid-column:1/-1;background:var(--bg-000);box-shadow:var(--recess);padding:5px 8px;color:var(--ink-300);font-size:10px;display:flex;gap:14px}
+.note b{color:var(--ink-100);font-weight:400}
+
+</style></head><body>
+
+<div class="top"><span class="cn" style="font-weight:700;font-size:13px;color:var(--ink-100)">出场策略 · 账户 A · 默认</span><span class="seg"><span class="on">Simple</span><span>Multi-Level</span></span><span class="tag" style="margin-left:auto">GATEWAY · 服务端执行</span></div>
+<div class="es">
+ <div class="pane"><h4>SIMPLE <span class="tgl"><i></i>启用</span></h4><div class="kv2"><label>止损</label><span><span class="in">12</span> ticks · <span class="seg" style="display:inline-flex"><span class="on">ticks</span><span>%</span><span>价</span></span></span><label>止盈</label><span><span class="in">24</span> ticks</span><label>Stop as StopLimit</label><span class="tgl"><i class="off"></i>滑点 2</span><label>Breakeven</label><span>触发 <span class="in">+10</span> · 偏移 <span class="in">+1</span></span><label>Trailing</label><span>距离 <span class="in">8</span> · 步长 <span class="in">2</span></span><label>TIF</label><span class="seg" style="display:inline-flex"><span class="on">DAY</span><span>GTC</span></span><label>平仓后</label><span>撤销全部挂单</span></div></div>
+ <div class="pane ml"><h4>MULTI-LEVEL · 3 层 <span style="color:var(--ink-300)">Absolute / <b style="color:var(--ink-100);font-weight:400">Percentage</b></span></h4><div class="row hd"><span>层</span><span>数量</span><span>止盈</span><span>止损</span><span></span></div><div class="row"><span>1</span><span>40%</span><span>+12 t</span><span>−12 t</span><span></span></div><div class="row"><span>2</span><span>30%</span><span>+24 t</span><span>−12 t</span><span>BE 后</span></div><div class="row"><span>3</span><span>30%</span><span>+48 t</span><span>trail 8/2</span><span></span></div><div style="margin-top:6px;color:var(--ink-300);font-size:10px">层间止损按已实现盈亏上移；追踪只在最后一层</div></div>
+ <div class="note"><span>入口：<b>OrderTicket · ChartTrader 括号 · DOMLadder SL/TP 放置</b> 共用本配置</span><span>命令：position.setStop / setTarget / breakeven / trail</span><span>前端关闭仍生效</span></div>
+</div>
+
+</body></html>

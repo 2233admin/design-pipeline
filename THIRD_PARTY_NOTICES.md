@@ -453,3 +453,16 @@ as an external program with MIT-licensed template scripts from this package. Whe
 given a Poly Haven HDRI id, the HDRI is downloaded from https://polyhaven.com (CC0) into the
 user's project and verified against the published md5. Neither Blender nor Poly Haven assets are
 included in this package.
+
+## KATANA Console (user-authorized internal reference)
+
+`skill/references/katana-console/source/` contains the original tracked design files from
+`2233admin/KATANAview`, `design/katana-console/`, at commit
+`65f1a5317b7b7217d8ad6c453315cd30e89aee5b`. The adjacent manifest records source paths,
+SHA256 hashes, sizes and declared maturity. The imported bytes are unchanged.
+
+The source repository declares no open-source license. This local copy is authorized by the
+user for internal reuse and is labeled `LicenseRef-User-Authorized-Internal-Reuse`; it is not
+relicensed under the design-pipeline MIT license. Public redistribution is outside this
+authorization. Linked font and icon dependencies are recorded without downloading their
+assets into the reference bundle.

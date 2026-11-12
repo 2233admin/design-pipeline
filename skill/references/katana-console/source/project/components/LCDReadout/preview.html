@@ -1,0 +1,26 @@
+<!-- @dsCard group="工作台" height=130 subtitle="LCD 读数窗：标签 · 数值 · 单位；低频数值做数字滚动" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-lcd)}
+.lcd{display:inline-flex;flex-direction:column;gap:2px;background:var(--bg-000);border:var(--hairline);box-shadow:var(--recess);padding:6px 12px;letter-spacing:.1em;font-variant-numeric:tabular-nums}
+.lcd .t{font-family:var(--font-dot);font-size:9px;letter-spacing:.12em;color:var(--ink-300)}
+.lcd .v{font-size:26px;line-height:30px;font-weight:500;color:var(--ink-100)}
+.lcd .v.o{color:var(--signal-orange)}
+.lcd .v.g{color:var(--signal-green)}
+.lcd .v.a{color:var(--signal-amber)}
+.lcd .v.r{color:var(--signal-red)}
+.lcd.md .v{font-size:16px;line-height:20px}
+.lcd .u{font-size:10px;color:var(--ink-300)}
+</style></head><body>
+<div style="display:flex;gap:var(--space-3);align-items:flex-end;flex-wrap:wrap">
+  <div class="lcd"><span class="t">NET ASSET</span><span class="v">¥ 2,418,660</span><span class="u" style="color:var(--signal-green)">+31,207 · +1.31%</span></div>
+  <div class="lcd"><span class="t">CLOCK</span><span class="v">14:32:07</span></div>
+  <div class="lcd md"><span class="t">RS-20</span><span class="v o">94</span></div>
+  <div class="lcd md"><span class="t">LAG</span><span class="v">012<span class="u"> ms</span></span></div>
+  <div class="lcd md"><span class="t">VaR 95</span><span class="v a">-2.4%</span></div>
+  <div class="lcd md"><span class="t">STATE</span><span class="v r">LOCKED</span></div>
+  <div class="lcd md"><span class="t">FEED</span><span class="v" style="color:var(--ink-400)">— —</span></div>
+</div>
+</body></html>

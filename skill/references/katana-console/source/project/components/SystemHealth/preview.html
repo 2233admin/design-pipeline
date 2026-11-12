@@ -1,0 +1,54 @@
+<!-- @dsCard group="运行中心" height=230 subtitle="SystemHealth：机器体征——Quote Hub 延迟、Worker 帧时 p95、长任务、内存、磁盘、WS 重连次数；迷你线 + LCD；与性能验收共用计量" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:620px}
+.m{background:var(--bg-200);border:var(--hairline);padding:8px 10px;display:grid;grid-template-columns:1fr auto;gap:2px 8px}
+.m small{grid-column:1/3;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none;display:flex;gap:6px;align-items:center}
+.m b{font-weight:500;font-family:var(--font-lcd);font-size:16px;letter-spacing:.06em;color:var(--ink-100)}
+.m b.w{color:var(--signal-amber)}
+.m i{font-style:normal;font-size:10px;color:var(--ink-300);align-self:end}
+.m svg{grid-column:1/3;height:22px;width:100%}
+</style></head><body>
+<div class="wrap">
+<div class="m"><small>QUOTE HUB → WORKER<span class="led ok" style="margin-left:auto"></span></small><b>6 ms</b><i>p95 · 1h</i><svg viewBox="0 0 180 22"><path d="M0 14 L20 12 L40 15 L60 10 L80 13 L100 9 L120 12 L140 8 L160 11 L180 10" fill="none" stroke="var(--ink-300)" stroke-width="1.2"/></svg></div>
+<div class="m"><small>FRAME TIME p95<span class="led ok" style="margin-left:auto"></span></small><b>7.8 ms</b><i>目标 &lt; 12 · 60 Hz</i><svg viewBox="0 0 180 22"><path d="M0 12 L20 11 L40 13 L60 10 L80 16 L100 9 L120 11 L140 10 L160 12 L180 9" fill="none" stroke="var(--ink-300)" stroke-width="1.2"/></svg></div>
+<div class="m"><small>LONG TASKS &gt; 50ms<span class="led warn" style="margin-left:auto"></span></small><b class="w">4</b><i>1h · 最长 86ms · Screener 重算</i><svg viewBox="0 0 180 22"><rect x="40" y="6" width="2" height="14" fill="var(--signal-amber)"/><rect x="41" y="10" width="2" height="10" fill="var(--signal-amber)"/><rect x="120" y="8" width="2" height="12" fill="var(--signal-amber)"/><rect x="150" y="12" width="2" height="8" fill="var(--signal-amber)"/></svg></div>
+<div class="m"><small>JS HEAP<span class="led ok" style="margin-left:auto"></span></small><b>412 MB</b><i>ring buffer 180 · 上限 1.5 GB</i><svg viewBox="0 0 180 22"><path d="M0 16 L30 15 L60 14 L90 14 L120 13 L150 13 L180 12" fill="none" stroke="var(--ink-300)" stroke-width="1.2"/></svg></div>
+<div class="m"><small>WS RECONNECTS<span class="led ok" style="margin-left:auto"></span></small><b>1</b><i>今日 · 10:30 · 2.1s 恢复</i><svg viewBox="0 0 180 22"><rect x="52" y="4" width="2" height="16" fill="var(--ink-300)"/></svg></div>
+<div class="m"><small>RENDER<span class="led ok" style="margin-left:auto"></span></small><b style="font-size:12px">WebGPU · 4x · 2.0</b><i>Apple M4 · 14 面板 · 3 后台停绘</i><svg viewBox="0 0 180 22"><text x="0" y="16" style="font-size:9px;fill:var(--ink-400)">设置 → RENDER 面板</text></svg></div>
+</div>
+</body></html>

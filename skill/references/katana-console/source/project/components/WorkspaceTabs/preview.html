@@ -1,0 +1,25 @@
+<!-- @dsCard group="工作台" height=110 subtitle="顶层工作区标签：当前项凹陷 + orange 下划线；下划线弹簧滑移" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=DM+Mono:wght@500&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-100);color:var(--ink-100);font-family:var(--font-display)}
+.rail{display:flex;align-items:stretch;height:48px;background:var(--bg-300);border-bottom:2px solid #0d0c0a;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.logo{display:flex;align-items:center;gap:10px;padding:0 var(--space-4);border-right:var(--hairline);font-size:17px;font-weight:700;letter-spacing:.06em}
+.tab{display:flex;align-items:center;gap:8px;padding:0 18px;border-right:var(--hairline);font-size:14px;font-weight:600;letter-spacing:.06em;color:var(--ink-300);text-decoration:none;text-transform:uppercase}
+.tab:hover{color:var(--ink-200);background:var(--bg-400)}
+.tab.on{background:var(--bg-000);color:var(--ink-100);box-shadow:inset 0 -2px 0 var(--signal-orange)}
+.tab:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
+.k{font-family:var(--font-mono);font-size:9px;color:var(--ink-400);letter-spacing:.1em}
+.dot{width:8px;height:8px;border-radius:var(--radius-pill);background:var(--signal-orange);box-shadow:var(--glow-orange)}
+</style></head><body>
+<nav class="rail" aria-label="工作区">
+  <div class="logo"><span class="dot"></span>KATANA<span style="color:var(--signal-orange)">VIEW</span></div>
+  <a class="tab on" href="#overview" aria-current="page">总览<span class="k">⌘1</span></a>
+  <a class="tab" href="#desk">Desk<span class="k">⌘2</span></a>
+  <a class="tab" href="#lab">Lab<span class="k">⌘3</span></a>
+  <a class="tab" href="#portfolio">组合<span class="k">⌘4</span></a>
+  <a class="tab" href="#ops">运行<span class="k">⌘5</span></a>
+  <a class="tab" href="#new" aria-label="新建工作区" style="padding:0 14px"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 2v10M2 7h10"/></svg></a>
+</nav>
+</body></html>

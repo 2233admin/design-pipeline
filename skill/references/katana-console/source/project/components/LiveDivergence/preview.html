@@ -1,0 +1,64 @@
+<!-- @dsCard group="研究" height=290 subtitle="LiveDivergence：实盘 vs 回测偏离三层拆解——信号一致率、成交率、成本差；上方实盘 / 影子回测双线；偏离门阈值线" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+.gates{display:inline-flex;gap:3px}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.wrap{width:620px;background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:16px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi b.w{color:var(--signal-amber)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.dec{margin-top:8px}
+.r2{display:grid;grid-template-columns:110px 1fr 70px;height:22px;align-items:center;gap:10px;font-size:10px}
+.lab{color:var(--ink-200)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:30%;top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.v{text-align:right;color:var(--ink-100)}.v.w{color:var(--signal-amber)}
+</style></head><body>
+<div class="wrap">
+  <div class="top" style="margin-bottom:6px"><span>alice-rev · <span style="color:var(--signal-blue)">PAPER</span> 账户 P · 第 12 / 60 日</span><span>影子回测 <span class="run">RUN 2f88</span>（同信号、同日重跑）</span><span style="margin-left:auto">偏离门 ≤ 15%</span></div>
+  <div class="kpi">
+    <div><small>偏离</small><b class="w">19.4%</b><i>净值差 / 回测收益</i></div>
+    <div><small>信号一致</small><b>96%</b><i>142 / 148 信号</i></div>
+    <div><small>成交率</small><b class="w">81%</b><i>19 单未成 · 多为涨停</i></div>
+    <div><small>成本差</small><b>+0.08%</b><i>每笔 · 滑点为主</i></div>
+  </div>
+  <svg width="600" height="90" viewBox="0 0 600 90" role="img" aria-label="实盘 vs 影子回测">
+    <g class="gl"><line x1="0" y1="20" x2="560" y2="20"/><line x1="0" y1="50" x2="560" y2="50"/><line x1="0" y1="80" x2="560" y2="80"/></g>
+    <text x="564" y="23">1.06</text><text x="564" y="53">1.03</text><text x="564" y="83">1.00</text>
+    <path d="M0 80 L50 76 L100 70 L150 64 L200 66 L250 56 L300 50 L350 44 L400 40 L450 34 L500 30 L560 24" fill="none" stroke="var(--ink-300)" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <path d="M0 80 L50 78 L100 74 L150 70 L200 72 L250 64 L300 60 L350 56 L400 54 L450 50 L500 48 L560 44" fill="none" stroke="var(--series-1)" stroke-width="2"/>
+    <text x="4" y="14" fill="var(--ink-300)">— 影子回测（灰虚）  — 实盘（彩）</text>
+  </svg>
+  <div class="dec">
+    <div class="r2"><span class="lab">信号不一致</span><div class="ax"><i style="left:22%;width:8%"></i></div><span class="v">-0.9%</span></div>
+    <div class="r2"><span class="lab">未成交（涨停 / 停牌）</span><div class="ax"><i class="w" style="left:2%;width:28%"></i></div><span class="v w">-3.1%</span></div>
+    <div class="r2"><span class="lab">滑点与冲击</span><div class="ax"><i style="left:16%;width:14%"></i></div><span class="v">-1.5%</span></div>
+    <div class="r2"><span class="lab">费用差</span><div class="ax"><i style="left:27%;width:3%"></i></div><span class="v">-0.3%</span></div>
+    <div class="r2"><span class="lab">时点（收盘 vs 实际）</span><div class="ax"><i style="left:30%;width:4%"></i></div><span class="v">+0.4%</span></div>
+    <div class="r2" style="color:var(--ink-300)"><span class="lab" style="color:var(--ink-300)">未解释</span><div class="ax"><i style="left:28%;width:2%"></i></div><span class="v" style="color:var(--ink-300)">-0.2%</span></div>
+  </div>
+</div>
+</body></html>

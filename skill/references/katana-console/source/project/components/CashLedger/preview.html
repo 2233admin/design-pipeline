@@ -1,0 +1,55 @@
+<!-- @dsCard group="资产管理" height=280 subtitle="CashLedger：现金流账——出入金 / 股息 / 利息 / 费用 / FX / 保证金划转，按账户按币种；期末余额对账灯；一行一事" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.est{color:var(--signal-amber)}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.bal{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:620px;margin-bottom:8px}
+.bal div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px;display:flex;flex-direction:column;gap:2px}
+.bal small{font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none;display:flex;gap:6px;align-items:center}
+.bal b{font-weight:500;font-family:var(--font-lcd);font-size:16px;letter-spacing:.06em}
+.bal i{font-style:normal;font-size:10px;color:var(--ink-300)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block;margin-left:auto}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}
+.grid{width:620px}
+.row{display:grid;grid-template-columns:76px 28px 90px 1fr 90px 90px;height:var(--row-tight);align-items:center;border-bottom:var(--hairline)}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t{color:var(--ink-300)}
+.kind{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;color:var(--ink-300)}
+.in{color:var(--ink-100)}.out{color:var(--ink-200)}
+.pend{color:var(--signal-amber)}
+</style></head><body>
+<div class="bal">
+  <div><small><span class="acc">A</span> CNY<span class="led ok"></span></small><b>268,340</b><i>可用 · 冻结 21,000</i></div>
+  <div><small><span class="acc">B</span> CNY<span class="led ok"></span></small><b>94,120</b><i>融资负债 310,000</i></div>
+  <div><small><span class="acc">F</span> CNY<span class="led warn"></span></small><b>92,600</b><i>保证金占用 226,300 · 对账差 120</i></div>
+  <div><small><span class="acc">A</span> HKD<span class="led ok"></span></small><b>41,860</b><i>≈ 38,500 CNY <span class="est">估算</span></i></div>
+</div>
+<div class="grid" role="log" aria-label="现金流水">
+  <div class="row hd"><div>日期</div><div></div><div>类型</div><div>说明</div><div class="r">金额</div><div class="r">余额</div></div>
+  <div class="row"><div class="t">10-02</div><div><span class="acc">B</span></div><div class="kind">INTEREST</div><div>融资利息 · 日结</div><div class="r out">-52.40</div><div class="r">94,120</div></div>
+  <div class="row"><div class="t">10-02</div><div><span class="acc">A</span></div><div class="kind">FEE</div><div>佣金 + 过户费 · 3 笔</div><div class="r out">-186.20</div><div class="r">268,340</div></div>
+  <div class="row"><div class="t">10-02</div><div><span class="acc">A</span></div><div class="kind">TAX</div><div>印花税 · 卖出 600519</div><div class="r out">-297.00</div><div class="r">268,526</div></div>
+  <div class="row"><div class="t">10-01</div><div><span class="acc">F</span></div><div class="kind">MARGIN</div><div>保证金划转 A → F</div><div class="r in">+100,000</div><div class="r">92,600</div></div>
+  <div class="row"><div class="t">10-01</div><div><span class="acc">A</span></div><div class="kind">MARGIN</div><div>保证金划转 A → F</div><div class="r out">-100,000</div><div class="r">268,823</div></div>
+  <div class="row"><div class="t">09-30</div><div><span class="acc">A</span></div><div class="kind">DIVIDEND</div><div>600519 现金分红 · 400 股 × 30.88 · 税后</div><div class="r in">+11,117</div><div class="r">368,823</div></div>
+  <div class="row"><div class="t">09-30</div><div><span class="acc">A</span></div><div class="kind">FX</div><div>HKD → CNY 20,000 @ 0.9196</div><div class="r in">+18,392</div><div class="r">357,706</div></div>
+  <div class="row"><div class="t">09-28</div><div><span class="acc">B</span></div><div class="kind pend">DEPOSIT</div><div>银证转入 · 待到账</div><div class="r pend">+200,000</div><div class="r t">—</div></div>
+  <div class="foot"><span>本月 <b>31</b> 条</span><span>净流入 <b>+129,212</b></span><span>费用合计 <b>-2,418</b></span><span>股息 <b>+11,117</b></span><span style="margin-left:auto">对账 · 导出</span></div>
+</div>
+</body></html>

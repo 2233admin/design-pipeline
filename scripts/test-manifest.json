@@ -49,6 +49,8 @@
     "install-local.test.cjs",
     "impeccable-product-design.test.cjs",
     "interface-discipline.test.cjs",
+    "katana-console-snapshot.test.cjs",
+    "katana-console-preview.test.cjs",
     "interoperability.test.cjs",
     "mengto-skills.test.cjs",
     "animation-opportunity-reference.test.cjs",

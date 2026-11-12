@@ -303,6 +303,16 @@ node skill/scripts/check-motion-foundation.cjs --project-root . --json
 
 ### 组件能力路由
 
+KATANA Console 已作为可同步的本地参考接入：语义 tokens、Console/Paper 主题、排版、动效、布局、状态规范，以及组件说明和预览。来源版本、文件哈希、样机成熟度保存在独立 manifest 中；使用时按目标项目的设计基础适配。
+
+```powershell
+node skill/scripts/designer-pipeline.cjs design-system search --root . --snapshot skill/references/katana-console-design-system-snapshot.json --query DOMLadder --json
+node skill/scripts/designer-pipeline.cjs design-system project-tokens --root . --snapshot skill/references/katana-console-design-system-snapshot.json --json
+node skill/scripts/preview-katana-console.cjs --port 0
+```
+
+完整使用与更新方法见 [KATANA Console 参考](skill/references/katana-console.md)。上游未声明仓库开源许可，本次按用户授权用于内部复用，并保留来源和依赖声明；此导入内容不改标为管线的 MIT 许可。
+
 组件库不直接变成项目依赖。流水线先把需求拆成稳定的行为能力，再按项目框架、已有依赖、
 来源证据、接入方式和许可证选路；没有授权的远程库只会得到 `review`，不会被静默复制。
 当前内置的用户策展参考来源包括 `Beautiful UI`、`beUI`、`Rare UI`、`Transitions.dev`、

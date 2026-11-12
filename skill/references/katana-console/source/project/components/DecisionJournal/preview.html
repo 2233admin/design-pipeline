@@ -1,0 +1,57 @@
+<!-- @dsCard group="决策" height=240 subtitle="DecisionJournal：决策日志——人与 Agent 的每个关键动作：actor / input / reason / result / 影响；可搜索；append-only；复盘与审计的源" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Barlow+Condensed:wght@800&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.ly{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;border:1px solid var(--line-200);padding:0 4px;color:var(--ink-300)}
+.ly.hypo{color:var(--signal-blue);border-color:var(--signal-blue)}.ly.fcst{border-style:dashed}.ly.plan{background:transparent;color:var(--ink-200)}.ly.fact{color:var(--ink-100);border-color:var(--ink-300)}
+.row{display:grid;grid-template-columns:70px 70px 1fr 120px 70px;height:30px;align-items:center;border-bottom:var(--hairline);font-size:10px}
+.row>div{padding:0 6px}
+.who{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none}
+.who.h{color:var(--signal-orange)}.who.a{color:var(--signal-blue)}.who.s{color:var(--ink-300)}
+.what{color:var(--ink-100);font-family:var(--font-sans)}.what small{display:block;color:var(--ink-300);font-family:var(--font-mono)}
+.res{color:var(--ink-200)}.res.bad{color:var(--signal-red)}
+</style></head><body>
+<div class="top"><div class="seg"><span class="on">今日</span><span>本周</span><span>按对象</span><span>按 actor</span></div><span>42 条 · 人 11 · Agent 28 · 系统 3</span><span style="margin-left:auto">搜索 /</span></div>
+<div class="grid" role="log" aria-label="决策日志"><div class="row hd"><div>时间</div><div>actor</div><div>动作 · 理由</div><div>结果</div><div>影响</div></div>
+<div class="row"><div style="color:var(--ink-300)">14:35:10</div><div class="who h">HUMAN</div><div class="what">停止 alice-rev 信号<small>理由：账户 B 距日限 0.76% · 偏离 19.4% · 采纳 Ops Agent 提案</small></div><div class="res">已停 · 执行网关 14:35:12</div><div>B · 1 策略</div></div>
+<div class="row"><div style="color:var(--ink-300)">14:32:01</div><div class="who a">OPS AGENT</div><div class="what">提案 STOP? alice-rev<small>证据：IntradayPnL · LossLimits · LiveDivergence</small></div><div class="res">→ 决策队列</div><div>—</div></div>
+<div class="row"><div style="color:var(--ink-300)">14:12:40</div><div class="who h">HUMAN</div><div class="what">批准篓子 RB-1410 B2 · 1 笔<small>hash 7f3a · ConsensusBlock 2 过 1 接近</small></div><div class="res">已提交 · 部分成交</div><div>A · 148k</div></div>
+<div class="row"><div style="color:var(--ink-300)">13:58:22</div><div class="who a">QUANT AGENT</div><div class="what">启动 RUN 2f33 · skip=3 回测<small>来源：session 41 · 换手门未过</small></div><div class="res">排队 → 运行</div><div>研究</div></div>
+<div class="row"><div style="color:var(--ink-300)">13:40:05</div><div class="who s">SYSTEM</div><div class="what">Tushare 429 限流 · 退避 60s<small>DataSources · 自动</small></div><div class="res">恢复 13:41</div><div>数据</div></div>
+<div class="row"><div style="color:var(--ink-300)">10:12:33</div><div class="who s">SYSTEM</div><div class="what">LossLimits 触发 · alice-rev 日 -1.62%<small>动作 L3 暂停信号 · 执行网关</small></div><div class="res bad">已触发</div><div>B · 策略</div></div>
+<div class="row"><div style="color:var(--ink-300)">09:31:00</div><div class="who h">HUMAN</div><div class="what">判定 H-019 SUPPORTED<small>6 证据 0 反例 · → QUAL_ROE_STAB</small></div><div class="res">已记录</div><div>研究</div></div>
+<div class="foot"><span>append-only · 关键资金动作 100% 有 actor / input / reason / result</span><span style="margin-left:auto">导出 · 加入报告</span></div></div>
+</body></html>

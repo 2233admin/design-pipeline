@@ -1,0 +1,66 @@
+<!-- @dsCard group="资产管理" height=280 subtitle="TradeStats：交易统计——KPI 行、按时段 / 品种 / 策略分布条、MAE/MFE 散点、持仓时长直方；按已平仓交易算；无评分" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.est{color:var(--signal-amber)}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.kpi{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:16px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.wrap{display:grid;grid-template-columns:260px 352px;gap:8px;width:620px}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:10px;color:var(--ink-300);letter-spacing:.06em;display:flex;gap:8px}
+.box h4 span.on{color:var(--signal-orange)}
+.r2{display:grid;grid-template-columns:56px 1fr 56px;height:18px;align-items:center;gap:8px;font-size:10px}
+.lab{color:var(--ink-200)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.v{text-align:right;color:var(--ink-100)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+</style></head><body>
+<div class="kpi">
+  <div><small>TRADES</small><b>142</b><i>已平仓 · YTD</i></div>
+  <div><small>WIN RATE</small><b>54%</b><i>多 58 · 空 41</i></div>
+  <div><small>PROFIT FACTOR</small><b>1.71</b><i>均赢/均亏 1.46</i></div>
+  <div><small>EXPECTANCY</small><b class="up">+0.42%</b><i>每笔 · 费后</i></div>
+  <div><small>AVG HOLD</small><b>3.2d</b><i>中位 1.8d</i></div>
+  <div><small>MAX LOSS</small><b class="dn">-4.8%</b><i>连亏 5</i></div>
+</div>
+<div class="wrap">
+  <div class="box"><h4><span class="on">按策略</span><span>按品种</span><span>按时段</span><span>按账户</span> · 费后盈亏贡献</h4>
+    <div class="r2"><span class="lab">momo-7</span><div class="bar"><i style="width:82%"></i></div><span class="v">+61,200</span></div>
+    <div class="r2"><span class="lab">手动</span><div class="bar"><i style="width:40%"></i></div><span class="v">+29,800</span></div>
+    <div class="r2"><span class="lab">alice-rev</span><div class="bar"><i style="width:18%"></i></div><span class="v">+13,100</span></div>
+    <div class="r2"><span class="lab">pair-01</span><div class="bar"><i style="width:9%;background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)"></i></div><span class="v dn">-6,900</span></div>
+    <div class="r2" style="margin-top:6px"><span class="lab" style="color:var(--ink-300)">持仓时长</span><div class="bar" style="border:0;background:transparent;display:flex;gap:1px;align-items:flex-end;height:14px"><i style="width:12%;height:30%"></i><i style="width:12%;height:100%"></i><i style="width:12%;height:70%"></i><i style="width:12%;height:45%"></i><i style="width:12%;height:25%"></i><i style="width:12%;height:12%"></i><i style="width:12%;height:6%"></i></div><span class="v" style="color:var(--ink-300)">&lt;1h … &gt;10d</span></div>
+  </div>
+  <div class="box"><h4>MAE / MFE（% · 每笔）<span style="margin-left:auto">● 盈 ○ 亏</span></h4>
+    <svg width="330" height="150" viewBox="0 0 330 150" role="img" aria-label="MAE MFE 散点">
+      <g class="gl"><line x1="30" y1="10" x2="30" y2="130"/><line x1="30" y1="130" x2="320" y2="130"/><line x1="30" y1="70" x2="320" y2="70"/><line x1="175" y1="10" x2="175" y2="130"/></g>
+      <text x="4" y="14">MFE</text><text x="300" y="144">MAE</text><text x="22" y="73" text-anchor="end">4</text><text x="175" y="144" text-anchor="middle">-4</text>
+      <g fill="var(--ink-200)"><circle cx="60" cy="40" r="3"/><circle cx="80" cy="55" r="3"/><circle cx="95" cy="30" r="3"/><circle cx="110" cy="62" r="3"/><circle cx="70" cy="80" r="3"/><circle cx="130" cy="48" r="3"/><circle cx="150" cy="70" r="3"/><circle cx="90" cy="95" r="3"/><circle cx="120" cy="20" r="3"/><circle cx="55" cy="105" r="3"/><circle cx="140" cy="88" r="3"/><circle cx="105" cy="110" r="3"/></g>
+      <g fill="none" stroke="var(--ink-300)"><circle cx="200" cy="100" r="3"/><circle cx="230" cy="115" r="3"/><circle cx="260" cy="108" r="3"/><circle cx="215" cy="90" r="3"/><circle cx="290" cy="120" r="3"/><circle cx="245" cy="124" r="3"/><circle cx="190" cy="118" r="3"/><circle cx="275" cy="98" r="3"/></g>
+      <circle cx="290" cy="120" r="5" fill="none" stroke="var(--signal-orange)"/>
+      <text x="300" y="112" fill="var(--signal-orange)">最差</text>
+    </svg>
+  </div>
+</div>
+</body></html>

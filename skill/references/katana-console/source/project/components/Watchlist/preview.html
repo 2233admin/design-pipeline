@@ -1,0 +1,40 @@
+<!-- @dsCard group="发现" height=250 subtitle="Watchlist：多列表自选；列表切换用 Segmented 不用 tab；LinkGroup 色标写入；异动灯列；拖入排序、分组行" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.top{display:flex;gap:6px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300);letter-spacing:.06em}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300)}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.grid{width:560px;border:var(--hairline);background:var(--bg-200)}
+.row{display:grid;grid-template-columns:22px 140px 84px 76px 64px 1fr;height:var(--row-tight);align-items:center;border-bottom:var(--hairline)}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grp{height:20px;background:var(--bg-300);color:var(--ink-300);font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;-webkit-font-smoothing:none;display:flex;align-items:center;padding:0 8px 0 30px;border-bottom:var(--hairline)}
+.grp b{font-weight:400;color:var(--ink-400);margin-left:8px}
+.code{color:var(--ink-200)}.cn{font-family:var(--font-sans)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}
+.led{width:8px;height:8px;border-radius:var(--radius-pill);display:inline-block;background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}
+.led.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}
+.lg{width:3px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px}
+.spark{height:14px;width:100%;position:relative}
+.spark i{position:absolute;bottom:0;width:2px;background:var(--ink-300)}
+.held{font-family:var(--font-dot);font-size:9px;color:var(--signal-orange);letter-spacing:.08em;-webkit-font-smoothing:none;margin-left:6px}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+</style></head><body>
+<div class="top"><div class="seg"><span class="on">核心池</span><span>电新</span><span>观察</span><span>可转债</span></div><span>24 · 排序 异动</span><span style="margin-left:auto"><span class="lg" style="background:var(--link-a)"></span>写入 A 组</span></div>
+<div class="grid" role="grid" aria-label="自选 · 核心池">
+  <div class="row hd" role="row"><div></div><div>代码 · 名称</div><div class="r">现价</div><div class="r">涨跌</div><div class="r">量比</div><div>30m</div></div>
+  <div class="grp">持有<b>×3</b></div>
+  <div class="row" role="row"><div><span class="led on"></span></div><div><span class="code">300750</span> <span class="cn">宁德时代</span><span class="held">A B</span></div><div class="r">246.80</div><div class="r up">+2.14%</div><div class="r">4.2</div><div class="spark"><i style="left:0;height:4px"></i><i style="left:6px;height:6px"></i><i style="left:12px;height:5px"></i><i style="left:18px;height:9px"></i><i style="left:24px;height:12px"></i><i style="left:30px;height:11px;background:var(--signal-orange)"></i></div></div>
+  <div class="row" role="row"><div><span class="led"></span></div><div><span class="code">600519</span> <span class="cn">贵州茅台</span><span class="held">A</span></div><div class="r">1,482.00</div><div class="r dn">-0.60%</div><div class="r">0.9</div><div class="spark"><i style="left:0;height:10px"></i><i style="left:6px;height:9px"></i><i style="left:12px;height:8px"></i><i style="left:18px;height:7px"></i><i style="left:24px;height:6px"></i><i style="left:30px;height:6px;background:var(--signal-orange)"></i></div></div>
+  <div class="row" role="row"><div><span class="led"></span></div><div><span class="code">IF2510</span> <span class="cn">沪深300</span><span class="held">F</span></div><div class="r">3,948.2</div><div class="r up">+0.92%</div><div class="r">1.3</div><div class="spark"><i style="left:0;height:5px"></i><i style="left:6px;height:5px"></i><i style="left:12px;height:7px"></i><i style="left:18px;height:8px"></i><i style="left:24px;height:8px"></i><i style="left:30px;height:9px;background:var(--signal-orange)"></i></div></div>
+  <div class="grp">观察<b>×21</b></div>
+  <div class="row" role="row"><div><span class="led on"></span></div><div><span class="code">300308</span> <span class="cn">中际旭创</span></div><div class="r">188.40</div><div class="r up">+4.10%</div><div class="r">3.1</div><div class="spark"><i style="left:0;height:3px"></i><i style="left:6px;height:4px"></i><i style="left:12px;height:8px"></i><i style="left:18px;height:10px"></i><i style="left:24px;height:12px"></i><i style="left:30px;height:13px;background:var(--signal-orange)"></i></div></div>
+  <div class="row" role="row"><div><span class="led"></span></div><div><span class="code">002475</span> <span class="cn">立讯精密</span></div><div class="r">41.26</div><div class="r up">+2.90%</div><div class="r">1.8</div><div class="spark"><i style="left:0;height:6px"></i><i style="left:6px;height:7px"></i><i style="left:12px;height:7px"></i><i style="left:18px;height:8px"></i><i style="left:24px;height:9px"></i><i style="left:30px;height:9px;background:var(--signal-orange)"></i></div></div>
+  <div class="row" role="row" style="color:var(--ink-300)"><div><span class="led"></span></div><div><span>000858</span> <span class="cn">五粮液</span></div><div class="r">— —</div><div class="r" style="color:var(--signal-amber)">停牌</div><div class="r">—</div><div class="spark"></div></div>
+  <div class="foot"><span>24 · 显示 6</span><span>2 异动</span><span style="margin-left:auto">+ 加入（粘贴代码 / 从筛选）</span></div>
+</div>
+</body></html>

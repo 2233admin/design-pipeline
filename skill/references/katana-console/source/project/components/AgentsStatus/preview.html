@@ -1,0 +1,55 @@
+<!-- @dsCard group="运行中心" height=220 subtitle="AgentsStatus：模型与 MCP 状态——每个 LLM 提供方的可用灯、延迟、今日用量 / 额度 Meter、费用；MCP 服务器连接；只读" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:620px}
+.row{display:grid;grid-template-columns:22px 100px 60px 1fr 70px;height:var(--row-base);align-items:center;border-bottom:var(--hairline);font-size:10px}
+.row>div{padding:0 6px}
+</style></head><body>
+<div class="wrap"><div class="box"><h4>LLM 提供方 · OpenAlice 路由</h4>
+<div class="row hd"><div></div><div>提供方</div><div class="r">延迟</div><div>今日 / 额度</div><div class="r">费用</div></div>
+<div class="row"><div><span class="led ok"></span></div><div>Anthropic</div><div class="r lcd">1.8 s</div><div><div class="bar"><i style="width:44%"></i></div></div><div class="r">¥ 86</div></div>
+<div class="row"><div><span class="led ok"></span></div><div>DeepSeek</div><div class="r lcd">2.4 s</div><div><div class="bar"><i style="width:71%"></i></div></div><div class="r">¥ 12</div></div>
+<div class="row"><div><span class="led warn"></span></div><div>OpenRouter</div><div class="r lcd">6.1 s</div><div><div class="bar"><i style="width:93%;background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)"></i></div></div><div class="r">¥ 31</div></div>
+<div class="row"><div><span class="led ok"></span></div><div>Ollama · 本地</div><div class="r lcd">0.9 s</div><div><div class="bar"><i style="width:30%"></i></div></div><div class="r">—</div></div>
+</div><div class="box"><h4>MCP 服务器 · 23 工具</h4>
+<div class="row hd"><div></div><div>服务器</div><div class="r">工具</div><div>最近调用</div><div class="r">错误</div></div>
+<div class="row"><div><span class="led ok"></span></div><div>katana-commands</div><div class="r">15</div><div style="color:var(--ink-300)">14:30 run.start</div><div class="r">0</div></div>
+<div class="row"><div><span class="led ok"></span></div><div>mlflow</div><div class="r">4</div><div style="color:var(--ink-300)">14:28 log_metric</div><div class="r">0</div></div>
+<div class="row"><div><span class="led ok"></span></div><div>data-platform</div><div class="r">3</div><div style="color:var(--ink-300)">13:58 dataset.read</div><div class="r est">1 · 缺口</div></div>
+<div class="row"><div><span class="led bad"></span></div><div>broker-sandbox</div><div class="r">1</div><div style="color:var(--ink-300)">— 断 12:10</div><div class="r">—</div></div>
+</div></div>
+</body></html>

@@ -1,0 +1,43 @@
+<!-- @dsCard group="基元" height=250 subtitle="浮层皮肤：Dialog（交易确认，不可皮肤化）/ Popover / Menu / Tooltip；从面板升起" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-100);color:var(--ink-100);font-family:var(--font-sans);font-size:12px}
+.row{display:flex;gap:var(--space-4);align-items:flex-start}
+.dlg{width:300px;background:var(--bg-400);border:1px solid var(--signal-orange-dim);box-shadow:var(--lift);border-radius:var(--radius-md);overflow:hidden}
+.dlg header{display:flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-bottom:var(--hairline);font:700 14px var(--font-display);letter-spacing:.06em;text-transform:uppercase}
+.dlg header i{width:8px;height:8px;border-radius:50%;background:var(--signal-amber);box-shadow:0 0 6px var(--signal-amber)}
+.dlg .b{padding:12px;display:flex;flex-direction:column;gap:8px}
+.kv{display:grid;grid-template-columns:72px 1fr;gap:4px 8px;font-family:var(--font-mono);font-size:12px}
+.kv span:nth-child(odd){color:var(--ink-300)}
+.lcd{background:var(--bg-000);border:var(--hairline);box-shadow:var(--recess);padding:6px 10px;font-family:var(--font-mono);letter-spacing:.06em}
+.dlg footer{display:flex;gap:8px;justify-content:flex-end;padding:10px 12px;border-top:var(--hairline);background:var(--bg-300)}
+.btn{height:28px;padding:0 12px;background:var(--bg-200);border:1px solid var(--line-200);color:var(--ink-100);font:600 13px var(--font-display);letter-spacing:.06em;text-transform:uppercase;border-radius:var(--radius-sm)}
+.btn.pri{background:#3a1e0e;border-color:var(--signal-orange-dim);color:var(--signal-orange)}
+.pop{width:180px;background:var(--bg-400);border:var(--hairline);box-shadow:var(--lift);border-radius:var(--radius-md);overflow:hidden;font-family:var(--font-mono);font-size:12px}
+.pop div{height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;border-bottom:var(--hairline)}
+.pop div:last-child{border-bottom:0}
+.pop .on{background:var(--bg-000);box-shadow:inset 2px 0 0 var(--signal-orange)}
+.pop small{font-size:9px;color:var(--ink-400);letter-spacing:.1em}
+.pop .sep{height:1px;background:var(--line-100);padding:0}
+.tip{background:var(--bg-000);border:var(--hairline);box-shadow:var(--recess);padding:4px 8px;font-family:var(--font-mono);font-size:10px;letter-spacing:.04em;line-height:1.5;color:var(--ink-200);display:inline-block}
+.tip b{color:var(--ink-100);font-weight:500}
+.lab{font:600 11px var(--font-display);letter-spacing:.1em;color:var(--ink-300);text-transform:uppercase;margin-bottom:6px}
+</style></head><body>
+<div class="row">
+  <div><div class="lab">Dialog · 交易确认</div>
+  <div class="dlg" role="dialog" aria-labelledby="d1" aria-modal="true">
+    <header id="d1"><i></i>确认下单 · 实盘</header>
+    <div class="b">
+      <div class="kv"><span>标的</span><span>300750 宁德时代</span><span>方向</span><span style="color:var(--bid)">买入</span><span>价格</span><span>246.90 限价</span><span>数量</span><span>200 股 · ¥ 49,380</span><span>策略</span><span>手动 · 未归属</span></div>
+      <div class="lcd" style="font-size:10px;color:var(--ink-300)">参数 hash 8f3a·2c91 · 改动即失效</div>
+    </div>
+    <footer><button class="btn">取消</button><button class="btn pri">确认 ⏎</button></footer>
+  </div></div>
+  <div><div class="lab">Menu / Select</div>
+  <div class="pop" role="menu"><div class="on" role="menuitem">换面板…<small>⌘P</small></div><div role="menuitem">联动组 <span style="display:inline-flex;gap:4px"><i style="width:8px;height:8px;border-radius:50%;background:var(--link-a)"></i><i style="width:8px;height:8px;border-radius:50%;background:var(--link-b)"></i><i style="width:8px;height:8px;border-radius:50%;background:var(--link-c)"></i></span></div><div role="menuitem">固定 Pin<small>P</small></div><div class="sep" role="separator"></div><div role="menuitem">复制实例</div><div role="menuitem" style="color:var(--signal-red)">关闭<small>⌘W</small></div></div></div>
+  <div><div class="lab">Tooltip · LCD</div>
+  <span class="tip">2026-03-14<br><b>策略 1.54</b> · 沪深300 1.19<br>回撤 <b style="color:var(--signal-amber)">-3.1%</b></span></div>
+</div>
+</body></html>

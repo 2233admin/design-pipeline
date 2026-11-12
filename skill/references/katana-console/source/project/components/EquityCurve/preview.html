@@ -1,0 +1,37 @@
+<!-- @dsCard group="图表" height=260 subtitle="净值 + 镜像回撤；基准永远灰；回撤用点阵纹理" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px}
+.head{display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-2)}
+.lg{display:flex;align-items:center;gap:6px;color:var(--ink-200)}
+.lg i{width:12px;height:2px;background:var(--series-1);display:inline-block}
+.lg i.b{background:var(--chart-bench);height:1px;border-top:1px dashed var(--chart-bench);background:none}
+.tip{position:absolute;left:300px;top:40px;background:var(--bg-000);border:var(--hairline);box-shadow:var(--recess);padding:4px 8px;font-size:10px;letter-spacing:.04em;line-height:1.5}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.grid{stroke:var(--chart-grid);stroke-width:1}
+.line{fill:none;stroke:var(--series-1);stroke-width:2;stroke-linejoin:round}
+.bench{fill:none;stroke:var(--chart-bench);stroke-width:1;stroke-dasharray:3 3}
+.dd{fill:url(#dots)}
+.cross{stroke:var(--chart-crosshair);stroke-width:1;stroke-dasharray:2 3}
+</style></head><body>
+<div class="head"><span style="font-family:var(--font-sans);font-weight:700;font-size:13px">RS-20 · 费率敏感性 · 基准 0.15‰</span><span class="lg"><i></i>策略</span><span class="lg"><i class="b"></i>沪深300</span><span style="margin-left:auto;color:var(--ink-300);font-size:10px">2024-01 → 2026-09 · run 2c91</span></div>
+<div style="position:relative;width:560px">
+<svg width="560" height="200" viewBox="0 0 560 200" role="img" aria-label="净值曲线与回撤">
+  <defs><pattern id="dots" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="4" height="4" fill="#9a4414"/></pattern></defs>
+  <g class="grid"><line x1="40" y1="20" x2="540" y2="20"/><line x1="40" y1="60" x2="540" y2="60"/><line x1="40" y1="100" x2="540" y2="100"/><line x1="40" y1="130" x2="540" y2="130"/><line x1="40" y1="170" x2="540" y2="170"/></g>
+  <text x="34" y="24" text-anchor="end">1.8</text><text x="34" y="64" text-anchor="end">1.4</text><text x="34" y="104" text-anchor="end">1.0</text>
+  <text x="34" y="134" text-anchor="end">0%</text><text x="34" y="174" text-anchor="end">-12%</text>
+  <path class="bench" d="M40 100 L80 97 L120 102 L160 95 L200 98 L240 90 L280 94 L320 86 L360 92 L400 84 L440 88 L480 80 L520 83 L540 81"/>
+  <path class="line" d="M40 100 L80 94 L120 96 L160 84 L200 88 L240 70 L280 76 L320 58 L360 66 L400 46 L440 52 L480 34 L520 40 L540 28"/>
+  <path class="dd" d="M40 130 L80 130 L120 138 L160 130 L200 142 L240 130 L280 146 L320 130 L360 150 L400 130 L440 145 L480 130 L520 152 L540 130 Z"/>
+  <line class="cross" x1="400" y1="20" x2="400" y2="170"/>
+  <circle cx="400" cy="46" r="4" fill="var(--series-1)" stroke="var(--bg-300)" stroke-width="2"/>
+  <circle cx="540" cy="28" r="4" fill="var(--signal-orange)" style="filter:drop-shadow(0 0 4px #ff6a1f)"/>
+  <text x="546" y="31" style="fill:var(--ink-100);font-size:10px">1.72</text>
+  <text x="40" y="190">2024-01</text><text x="290" y="190" text-anchor="middle">2025-05</text><text x="540" y="190" text-anchor="end">2026-09</text>
+</svg>
+<div class="tip"><div style="color:var(--ink-300)">2026-03-14</div><div>策略 <span style="color:var(--ink-100)">1.54</span> · 沪深300 <span style="color:var(--ink-200)">1.19</span></div><div>回撤 <span style="color:var(--signal-amber)">-3.1%</span></div></div>
+</div>
+</body></html>

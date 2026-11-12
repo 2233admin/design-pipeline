@@ -95,6 +95,13 @@ The bundled Astryx snapshot is an attributed, inert reference surface that agent
 inventing components. It does not override project `DESIGN.md`, `MOTION.md`, existing components,
 tokens, or runtime choices.
 
+The locally imported KATANA Console reference is indexed in the component source catalog as
+`katana-console/system`. Read `references/katana-console.md`, then select
+`references/katana-console-design-system-snapshot.json` explicitly for its full component catalog
+and token projection. Its manifest preserves Git version, original bytes and source maturity;
+reference routing requires review and does not promote fixture prototypes to production components.
+The import is user-authorized internal content with its own permission statement.
+
 Use the public CLI for the complete lifecycle:
 
 - `design-system options` lists the governed styling choices, UI libraries, current shadcn preset

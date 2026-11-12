@@ -1,0 +1,47 @@
+<!-- @dsCard group="研究" height=270 subtitle="RunLauncher：启动 run 的命令表单——类型 → 对象 → 参数 → 数据版本 → 成本模型，五步各一行，Enter 下移；研究类无确认，预估时长与资源" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+.gates{display:inline-flex;gap:3px}
+.form{width:520px;background:var(--bg-200);border:var(--hairline);box-shadow:var(--plate)}
+.hd2{height:28px;display:flex;align-items:center;gap:8px;padding:0 10px;background:var(--bg-300);border-bottom:var(--hairline);font-size:10px;color:var(--ink-300)}
+.step{display:grid;grid-template-columns:20px 72px 1fr;align-items:center;gap:8px;height:34px;padding:0 10px;border-bottom:var(--hairline)}
+.n{font-family:var(--font-dot);font-size:12px;color:var(--ink-400);-webkit-font-smoothing:none}
+.step.cur .n{color:var(--signal-orange)}
+.step.done .n{color:var(--signal-green)}
+.lab{font-size:10px;color:var(--ink-300);letter-spacing:.06em}
+.in{height:24px;display:flex;align-items:center;gap:8px;padding:0 8px;background:var(--bg-000);box-shadow:var(--recess);font-size:11px;color:var(--ink-100)}
+.in small{color:var(--ink-300);font-size:10px;margin-left:auto}
+.step.cur .in{box-shadow:var(--recess),inset 0 0 0 1px var(--signal-orange-dim)}
+.chips{display:flex;gap:4px}
+.chips span{padding:2px 6px;border:var(--hairline);font-size:10px;color:var(--ink-200)}
+.ft{display:flex;align-items:center;gap:12px;padding:8px 10px;font-size:10px;color:var(--ink-300)}
+.ft b{font-weight:400;color:var(--ink-100)}
+.btn{margin-left:auto;height:28px;padding:0 12px;display:flex;align-items:center;background:var(--bg-400);border:1px solid var(--line-200);color:var(--ink-100);font-size:11px}
+</style></head><body>
+<div class="form" role="form" aria-label="启动 run">
+  <div class="hd2">RUN LAUNCHER · <span class="run">来自 RUN 2c91 重跑</span><span style="margin-left:auto">⌘⏎ 启动 · Esc 取消</span></div>
+  <div class="step done"><span class="n">1</span><span class="lab">类型</span><div class="seg" style="justify-self:start"><span>factor</span><span class="on">backtest</span><span>walkforward</span><span>stress</span><span>optimize</span></div></div>
+  <div class="step done"><span class="n">2</span><span class="lab">对象</span><div class="in">MOM_RS_V3 <small>策略 · alice-strats/strategies/mom_rs.py</small></div></div>
+  <div class="step cur"><span class="n">3</span><span class="lab">参数</span><div class="in"><div class="chips"><span>lookback 20</span><span style="border-color:var(--signal-orange);color:var(--signal-orange)">skip 3</span><span>top 10%</span><span>rebalance 5d</span></div><small>改了 1 项</small></div></div>
+  <div class="step"><span class="n">4</span><span class="lab">数据</span><div class="in">cn_equity_daily @ v2026.09.28 <small>point-in-time · 最新</small></div></div>
+  <div class="step"><span class="n">5</span><span class="lab">成本</span><div class="in">标准 · 佣金 0.03% · 冲击 √V <small>税费 ← Profile</small></div></div>
+  <div class="ft"><span>预估 <b>~4 min</b> · 1 worker</span><span>队列 <b>2</b> 在前</span><span>快照 hash 将在启动时生成</span><span class="btn">启动 run</span></div>
+</div>
+</body></html>

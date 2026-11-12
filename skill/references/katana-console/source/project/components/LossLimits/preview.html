@@ -1,0 +1,53 @@
+<!-- @dsCard group="盈亏" height=260 subtitle="LossLimits：亏损限额与自动动作——按账户 / 策略的日 / 周 / 月限额、当前使用、触发动作（告警 / 暂停信号 / 锁交易）；限额只读来自账户服务，动作由执行网关执行" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.row{display:grid;grid-template-columns:100px 60px 1fr 84px 110px 1fr;height:var(--row-base);align-items:center;border-bottom:var(--hairline)}
+.act{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;color:var(--ink-300)}
+.act.l3{color:var(--signal-amber)}.act.l4{color:var(--signal-red)}
+</style></head><body>
+<div class="top"><div class="seg"><span class="on">日</span><span>周</span><span>月</span></div><span>限额来自账户服务 · 09:00 快照 · 只读</span><span style="margin-left:auto">触发历史 本月 <b style="font-weight:400;color:var(--ink-100)">2</b> 次</span></div>
+<div class="grid" role="grid" aria-label="亏损限额">
+<div class="row hd"><div>对象</div><div>限额</div><div>使用</div><div class="r">当前</div><div>触发动作</div><div>状态</div></div>
+<div class="row"><div><span class="acc">A</span> 中信</div><div>-2.5%</div><div><div class="bar"><i style="width:0%"></i></div></div><div class="r up">+1.2%</div><div class="act l4">锁交易 L4</div><div style="color:var(--ink-300)">正常</div></div>
+<div class="row"><div><span class="acc">B</span> 华泰</div><div>-2.0%</div><div><div class="bar"><i style="width:62%;background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)"></i></div></div><div class="r dn">-1.24%</div><div class="act l4">锁交易 L4</div><div class="est">接近 · 80% 预警</div></div>
+<div class="row"><div><span class="acc">F</span> 期货</div><div>-3.0%</div><div><div class="bar"><i style="width:70%;background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)"></i></div></div><div class="r dn">-2.09%</div><div class="act l4">锁开仓 L4</div><div class="est">接近 · 只允许平仓</div></div>
+<div class="row"><div>momo-7 <span class="tag">策略</span></div><div>-1.5%</div><div><div class="bar"><i style="width:20%"></i></div></div><div class="r dn">-0.3%</div><div class="act l3">暂停信号 L3</div><div style="color:var(--ink-300)">正常</div></div>
+<div class="row"><div>alice-rev <span class="tag">策略</span></div><div>-1.5%</div><div><div class="bar"><i style="width:100%;background:repeating-linear-gradient(90deg,var(--signal-red) 0 3px,transparent 3px 5px)"></i></div></div><div class="r dn">-1.62%</div><div class="act l3">暂停信号 L3</div><div style="color:var(--signal-red)">已触发 10:12 · 信号已停</div></div>
+<div class="row"><div>连亏 <span class="tag">全局</span></div><div>5 笔</div><div><div class="bar"><i style="width:60%"></i></div></div><div class="r">3 笔</div><div class="act">告警 L2</div><div style="color:var(--ink-300)">正常</div></div>
+<div class="foot"><span>6 条 · 1 已触发 · 2 接近</span><span>触发由执行网关执行，面板只显示</span><span style="margin-left:auto">触发历史 · 申请调整</span></div>
+</div>
+</body></html>

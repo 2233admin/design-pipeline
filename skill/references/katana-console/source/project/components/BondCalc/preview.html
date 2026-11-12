@@ -1,0 +1,59 @@
+<!-- @dsCard group="固收" height=240 subtitle="BondCalc：债券计算——价格 ↔ 收益率、久期 / 凸性 / DV01、现金流表、利差（G / Z）；输入 LCD，输出键值；可转债加转股价值与溢价率" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{display:grid;grid-template-columns:260px 352px;gap:8px;width:620px}
+.kv{display:grid;grid-template-columns:90px 1fr;gap:4px 8px;font-size:10px}
+.kv span{color:var(--ink-300)}.kv b{font-weight:400;color:var(--ink-100)}
+.in{height:24px;display:flex;align-items:center;padding:0 8px;background:var(--bg-000);box-shadow:var(--recess);font-family:var(--font-lcd);font-size:13px;letter-spacing:.06em}
+.in small{margin-left:auto;font-size:9px;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.cf{display:grid;grid-template-columns:70px 1fr 70px;height:18px;align-items:center;font-size:10px;border-bottom:var(--hairline)}
+.cf>div{padding:0 4px}
+</style></head><body>
+<div class="top"><span class="code">113050</span><span class="cn" style="color:var(--ink-100)">南银转债</span><span>剩余 3.2 年 · 票息 0.3→2.0 递进 · AAA</span><span style="margin-left:auto">账户 <span class="acc">A</span> 持有 200 张</span></div>
+<div class="wrap"><div class="box"><h4>输入（任改一项其余重算）</h4>
+<div class="kv"><span>价格</span><div class="in">118.42<small>净价</small></div><span>到期收益率</span><div class="in">-3.86<small>% YTM</small></div><span>结算日</span><div class="in">2026-10-09<small>T+0</small></div><span>曲线</span><div class="in" style="font-family:var(--font-mono);font-size:10px">AAA 企业债 · 今日<small>G/Z 基准</small></div></div>
+<h4 style="margin-top:8px">输出</h4>
+<div class="kv"><span>修正久期</span><b>2.94</b><span>凸性</span><b>11.2</b><span>DV01 / 张</span><b>0.035</b><span>G-spread</span><b>-612 bp</b><span>Z-spread</span><b>-598 bp</b><span>应计利息</span><b>0.21</b></div></div>
+<div class="box"><h4>可转债 · 转股价 8.42 · 正股 9.86</h4>
+<div class="kv" style="grid-template-columns:90px 1fr 90px 1fr"><span>转股价值</span><b>117.10</b><span>转股溢价率</span><b>1.1%</b><span>纯债价值</span><b>96.4</b><span>纯债溢价率</span><b>22.9%</b><span>Δ（估）</span><b>0.86</b><span>强赎触发</span><b class="est">10.95 · 距 11%</b></div>
+<h4 style="margin-top:8px">现金流 · 每张</h4>
+<div class="cf hd"><div>日期</div><div>内容</div><div class="r">金额</div></div>
+<div class="cf"><div>2027-02-20</div><div>票息 1.0%</div><div class="r">1.00</div></div>
+<div class="cf"><div>2028-02-20</div><div>票息 1.5%</div><div class="r">1.50</div></div>
+<div class="cf"><div>2029-02-20</div><div>票息 2.0% + 到期赎回 110</div><div class="r">112.00</div></div>
+<div class="cf" style="color:var(--ink-300)"><div>—</div><div>回售 2028-02 @ 100（持有人权）</div><div class="r">—</div></div></div></div>
+</body></html>

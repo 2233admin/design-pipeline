@@ -1,0 +1,35 @@
+<!-- @dsCard group="订单流" height=240 subtitle="Smart Tape：逐笔自动滚动、大单高亮与过滤、同向聚合、速度条" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tape{width:420px;border:var(--hairline);background:var(--bg-200)}
+.bar{display:flex;align-items:center;gap:10px;height:26px;padding:0 8px;background:var(--bg-300);border-bottom:var(--hairline);font-size:10px;color:var(--ink-300)}
+.chip{border:1px solid var(--line-100);padding:1px 6px;letter-spacing:.06em}
+.chip.on{border-color:var(--signal-orange-dim);color:var(--signal-orange);background:#2a1a0f}
+.spd{flex:1;height:6px;background:var(--bg-000);border:1px solid var(--line-100);position:relative}
+.spd i{position:absolute;left:0;top:0;bottom:0;background:repeating-linear-gradient(90deg,var(--signal-orange) 0 3px,transparent 3px 5px)}
+.r{display:grid;grid-template-columns:64px 64px 64px 1fr;height:22px;align-items:center;border-bottom:1px solid var(--bg-100);padding:0 8px}
+.r > div{text-align:right}.r > div:first-child{text-align:left;color:var(--ink-300)}
+.b{color:var(--bid)}.a{color:var(--ask)}
+.big{background:var(--bid-100)}.big.a{background:var(--ask-100)}
+.big .q{font-weight:500;color:var(--ink-100)}
+.agg{color:var(--ink-400);font-size:9px;text-align:right}
+.hd{font-family:var(--font-dot);font-size:9px;letter-spacing:.12em;color:var(--ink-300);background:var(--bg-300)}
+.paused{position:relative}
+.paused::after{content:"已暂停 · 新 47 笔 · 点击恢复";position:absolute;left:0;right:0;bottom:0;height:22px;display:flex;align-items:center;justify-content:center;background:rgba(11,11,9,.9);color:var(--signal-amber);font-size:10px;letter-spacing:.06em;border-top:1px solid var(--signal-orange-dim)}
+</style></head><body>
+<div class="tape" role="log" aria-label="300750 逐笔成交">
+  <div class="bar"><span class="chip on">≥ 500</span><span class="chip">聚合</span><span class="chip">仅大单</span><span>速度</span><div class="spd"><i style="width:68%"></i></div><span style="color:var(--ink-100)">34/s</span></div>
+  <div class="r hd"><div>时间</div><div>价格</div><div>数量</div><div>方向 · 聚合</div></div>
+  <div class="r big a"><div>14:32:07.412</div><div class="a">246.90</div><div class="q">2,400</div><div class="a">卖 ▼ <span class="agg">×3</span></div></div>
+  <div class="r"><div>14:32:07.380</div><div class="b">246.90</div><div>300</div><div class="b">买 ▲</div></div>
+  <div class="r"><div>14:32:07.221</div><div class="b">246.90</div><div>180</div><div class="b">买 ▲</div></div>
+  <div class="r big"><div>14:32:06.905</div><div class="b">246.80</div><div class="q">5,100</div><div class="b">买 ▲ <span class="agg">×7</span></div></div>
+  <div class="r"><div>14:32:06.640</div><div class="a">246.80</div><div>120</div><div class="a">卖 ▼</div></div>
+  <div class="r"><div>14:32:06.611</div><div class="b">246.80</div><div>400</div><div class="b">买 ▲</div></div>
+  <div class="r"><div>14:32:06.402</div><div class="b">246.70</div><div>260</div><div class="b">买 ▲</div></div>
+  <div class="r paused"><div>14:32:06.108</div><div class="a">246.70</div><div>700</div><div class="a">卖 ▼</div></div>
+</div>
+</body></html>

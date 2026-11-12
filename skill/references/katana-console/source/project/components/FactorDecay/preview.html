@@ -1,0 +1,52 @@
+<!-- @dsCard group="研究" height=220 subtitle="FactorDecay：IC 随持有期衰减曲线 + 半衰期 LCD + 换手成本线；多因子叠加对比；告诉你该多久调仓一次" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.wrap{display:grid;grid-template-columns:400px 212px;gap:8px;width:620px}
+</style></head><body>
+<div class="top"><span>衰减 · 持有期 1…20 日 · <span class="run">RUN 2c91 / 2b07 / 2812</span></span><span style="margin-left:auto">CSI800 · 2019 → 2026</span></div>
+<div class="wrap"><div class="box"><svg width="380" height="150" viewBox="0 0 380 150" role="img" aria-label="IC 衰减"><g class="gl"><line x1="30" y1="20" x2="370" y2="20"/><line x1="30" y1="65" x2="370" y2="65"/><line x1="30" y1="110" x2="370" y2="110" stroke="var(--line-200)"/></g>
+<text x="26" y="23" text-anchor="end">0.04</text><text x="26" y="68" text-anchor="end">0.02</text><text x="26" y="113" text-anchor="end">0</text>
+<path d="M40 24 L74 32 L108 44 L142 58 L176 70 L210 80 L244 88 L278 94 L312 99 L346 103" fill="none" stroke="var(--series-1)" stroke-width="2"/>
+<path d="M40 50 L74 51 L108 52 L142 53 L176 55 L210 57 L244 58 L278 60 L312 62 L346 64" fill="none" stroke="var(--series-2)" stroke-width="2"/>
+<path d="M40 40 L74 46 L108 54 L142 60 L176 66 L210 72 L244 76 L278 80 L312 84 L346 88" fill="none" stroke="var(--series-3)" stroke-width="2"/>
+<line x1="30" y1="96" x2="370" y2="96" stroke="var(--signal-amber)" stroke-dasharray="3 3"/><text x="300" y="92" fill="var(--signal-amber)">成本后盈亏平衡 IC</text>
+<line x1="176" y1="20" x2="176" y2="110" stroke="var(--series-1)" stroke-dasharray="2 2" opacity=".6"/><text x="180" y="30" fill="var(--series-1)">半衰 11d</text>
+<text x="36" y="126">1</text><text x="104" y="126">5</text><text x="172" y="126">10</text><text x="240" y="126">15</text><text x="340" y="126">20</text></svg></div>
+<div class="box"><h4>半衰期与建议调仓</h4>
+<div style="display:grid;grid-template-columns:1fr auto auto;gap:4px 10px;font-size:10px;color:var(--ink-300)"><span style="color:var(--series-1)">MOM_RS_V3</span><b style="font-weight:400;color:var(--ink-100)">11d</b><b style="font-weight:400;color:var(--ink-100)">5d</b><span style="color:var(--series-2)">QUAL_ROE_STAB</span><b style="font-weight:400;color:var(--ink-100)">64d</b><b style="font-weight:400;color:var(--ink-100)">20d</b><span style="color:var(--series-3)">LIQ_AMIHUD</span><b style="font-weight:400;color:var(--ink-100)">30d</b><b style="font-weight:400;color:var(--ink-100)">10d</b></div>
+<div style="font-size:10px;color:var(--ink-300);margin-top:8px">建议调仓 = IC 降到成本线前的最长持有期 / 2；三因子合成按最短 5d 或分层调仓</div></div></div>
+</body></html>

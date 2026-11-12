@@ -1,0 +1,50 @@
+<!-- @dsCard group="运行中心" height=230 subtitle="DataSources：数据源连接板——每个源的连接灯、延迟 LCD、今日拉取量、覆盖 Meter、凭证到期、最近错误；重连是命令" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.row{display:grid;grid-template-columns:22px 110px 70px 70px 1fr 90px 80px;height:var(--row-base);align-items:center;border-bottom:var(--hairline);font-size:10px}
+.row>div{padding:0 6px}
+</style></head><body>
+<div class="top"><span>12 源 · 11 在线 · 1 降级</span><div class="seg"><span class="on">全部</span><span>行情</span><span>执行</span><span>数据</span></div><span style="margin-left:auto">开盘自检 09:28 读这里</span></div>
+<div class="grid" role="grid" aria-label="数据源"><div class="row hd"><div></div><div>源</div><div class="r">延迟</div><div class="r">今日</div><div>覆盖 / 配额</div><div>凭证</div><div></div></div>
+<div class="row"><div><span class="led ok"></span></div><div>QMT · L2</div><div class="r lcd">8 ms</div><div class="r">41.2M 笔</div><div><div class="bar"><i style="width:100%"></i></div></div><div style="color:var(--ink-300)">—</div><div class="r" style="color:var(--ink-300)">重连</div></div>
+<div class="row"><div><span class="led ok"></span></div><div>CTP · 期货</div><div class="r lcd">3 ms</div><div class="r">2.1M 笔</div><div><div class="bar"><i style="width:100%"></i></div></div><div style="color:var(--ink-300)">—</div><div class="r" style="color:var(--ink-300)">重连</div></div>
+<div class="row"><div><span class="led ok"></span></div><div>AkShare</div><div class="r lcd">—</div><div class="r">38 任务</div><div><div class="bar"><i style="width:62%"></i></div></div><div style="color:var(--ink-300)">—</div><div class="r" style="color:var(--ink-300)">刷新</div></div>
+<div class="row"><div><span class="led warn"></span></div><div>Tushare</div><div class="r lcd">—</div><div class="r">12 任务</div><div><div class="bar"><i style="width:94%;background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)"></i></div><span class="est" style="font-size:9px">配额 94%</span></div><div class="est">12 天到期</div><div class="r" style="color:var(--ink-300)">刷新</div></div>
+<div class="row"><div><span class="led ok"></span></div><div>ccxt · Binance</div><div class="r lcd">42 ms</div><div class="r">880k 笔</div><div><div class="bar"><i style="width:100%"></i></div></div><div style="color:var(--ink-300)">只读</div><div class="r" style="color:var(--ink-300)">重连</div></div>
+<div class="row"><div><span class="led ok"></span></div><div>FRED / DBnomics</div><div class="r lcd">—</div><div class="r">6 任务</div><div><div class="bar"><i style="width:100%"></i></div></div><div style="color:var(--ink-300)">—</div><div class="r" style="color:var(--ink-300)">刷新</div></div>
+<div class="foot"><span>最近错误 Tushare 13:40 · 429 限流 · 已退避</span><span style="margin-left:auto">映射 → SymbolMap</span></div></div>
+</body></html>

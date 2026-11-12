@@ -1,0 +1,78 @@
+<!-- @dsCard group="图表" height=260 subtitle="DrawingToolbar：33 类绘图对象的 Primitives 插件；Global / Locked / Hidden、周期掩码、对象列表；体量型对象（Anchored VWAP · TPO · Dynamic POC）" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Barlow+Condensed:wght@800&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.ly{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;border:1px solid var(--line-200);padding:0 4px;color:var(--ink-300)}
+.ly.hypo{color:var(--signal-blue);border-color:var(--signal-blue)}.ly.fcst{border-style:dashed}.ly.plan{background:transparent;color:var(--ink-200)}.ly.fact{color:var(--ink-100);border-color:var(--ink-300)}
+
+
+.dt{display:grid;grid-template-columns:34px 1fr 230px;gap:8px;width:620px;height:210px}
+.strip{background:var(--bg-200);border:var(--hairline);display:flex;flex-direction:column;align-items:center;padding:4px 0;gap:2px}
+.strip span{width:24px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--ink-200);font-size:11px}.strip span.on{background:var(--bg-400);color:var(--signal-orange)}.strip hr{width:18px;border:0;border-top:var(--hairline);margin:3px 0}
+.cv{background:var(--bg-000);box-shadow:var(--recess);position:relative}
+.cv svg text{fill:var(--ink-200)}
+.ol{background:var(--bg-200);border:var(--hairline)}
+.ol h4{margin:0;padding:5px 8px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none;border-bottom:var(--hairline)}
+.ol .row{display:grid;grid-template-columns:1fr 34px 18px 18px 18px;padding:3px 8px;align-items:center;color:var(--ink-200)}.ol .row.on{background:var(--bg-400);color:var(--ink-100)}
+.ol .row i{font-style:normal;font-size:9px;color:var(--ink-300);text-align:center}.ol .row i.g{color:var(--signal-blue)}.ol .row i.l{color:var(--signal-amber)}
+.ol .tf{font-family:var(--font-dot);font-size:9px;letter-spacing:.06em;-webkit-font-smoothing:none;color:var(--ink-300)}
+.ol .foot{padding:5px 8px;gap:8px}
+
+</style></head><body>
+
+<div class="top"><span class="cn" style="font-weight:700;font-size:13px;color:var(--ink-100)">绘图 · 300750</span><span class="tag">OBJECTS 7</span><span class="seg" style="margin-left:auto"><span class="on">磁吸</span><span>连续绘制</span><span>隐藏全部</span></span></div>
+<div class="dt">
+ <div class="strip"><span>↖</span><span class="on">╱</span><span>─</span><span>│</span><span>┼</span><span>▭</span><span>◯</span><span>△</span><span>T</span><span>✎</span><hr><span style="font-size:8px">FIB</span><span style="font-size:8px">VWAP</span><span style="font-size:8px">TPO</span><span style="font-size:8px">POC</span></div>
+ <div class="cv"><svg width="100%" height="100%" viewBox="0 0 340 210">
+  <g class="gl" stroke-width="1"><line x1="0" y1="52" x2="340" y2="52"/><line x1="0" y1="104" x2="340" y2="104"/><line x1="0" y1="156" x2="340" y2="156"/></g>
+  <g stroke="var(--ink-300)" stroke-width="1"><line x1="20" y1="150" x2="20" y2="120"/><rect x="17" y="126" width="6" height="18" fill="var(--pnl-down)"/><line x1="40" y1="140" x2="40" y2="100"/><rect x="37" y="110" width="6" height="22" fill="var(--pnl-up)"/><line x1="60" y1="130" x2="60" y2="96"/><rect x="57" y="100" width="6" height="20" fill="var(--pnl-up)"/><line x1="80" y1="124" x2="80" y2="90"/><rect x="77" y="96" width="6" height="22" fill="var(--pnl-down)"/><line x1="100" y1="120" x2="100" y2="80"/><rect x="97" y="84" width="6" height="24" fill="var(--pnl-up)"/><line x1="120" y1="110" x2="120" y2="70"/><rect x="117" y="76" width="6" height="20" fill="var(--pnl-up)"/><line x1="140" y1="104" x2="140" y2="74"/><rect x="137" y="78" width="6" height="18" fill="var(--pnl-down)"/><line x1="160" y1="96" x2="160" y2="60"/><rect x="157" y="64" width="6" height="22" fill="var(--pnl-up)"/><line x1="180" y1="90" x2="180" y2="56"/><rect x="177" y="60" width="6" height="20" fill="var(--pnl-up)"/><line x1="200" y1="84" x2="200" y2="50"/><rect x="197" y="54" width="6" height="22" fill="var(--pnl-down)"/><line x1="220" y1="80" x2="220" y2="44"/><rect x="217" y="48" width="6" height="20" fill="var(--pnl-up)"/><line x1="240" y1="74" x2="240" y2="40"/><rect x="237" y="44" width="6" height="18" fill="var(--pnl-up)"/><line x1="260" y1="70" x2="260" y2="36"/><rect x="257" y="40" width="6" height="22" fill="var(--pnl-down)"/><line x1="280" y1="66" x2="280" y2="30"/><rect x="277" y="34" width="6" height="20" fill="var(--pnl-up)"/></g>
+  <line x1="12" y1="150" x2="300" y2="40" stroke="var(--signal-orange)" stroke-width="1.5"/><circle cx="12" cy="150" r="3" fill="var(--signal-orange)"/><circle cx="300" cy="40" r="3" fill="var(--signal-orange)"/>
+  <polyline fill="none" stroke="var(--series-2)" stroke-width="1.5" stroke-dasharray="4 3" points="40,120 80,112 120,100 160,92 200,84 240,76 280,66"/><text x="286" y="64" font-size="8">AVWAP</text>
+  <rect x="300" y="58" width="36" height="34" fill="rgba(79,163,255,.12)" stroke="var(--signal-blue)" stroke-dasharray="3 2"/><text x="304" y="70" font-size="8">VA</text>
+  <line x1="0" y1="96" x2="340" y2="96" stroke="var(--signal-amber)" stroke-width="1"/><text x="4" y="93" font-size="8" fill="var(--signal-amber)">H · 246.80 · 全局 → DOM · 告警</text>
+ </svg></div>
+ <div class="ol"><h4>对象 · 周期 · G L H</h4>
+  <div class="row on"><span>趋势线 #3</span><span class="tf">1m 5m</span><i class="g">G</i><i></i><i></i></div>
+  <div class="row"><span>Anchored VWAP · 09:30</span><span class="tf">ALL</span><i></i><i class="l">L</i><i></i></div>
+  <div class="row"><span>Horizontal 246.80 · 告警</span><span class="tf">ALL</span><i class="g">G</i><i></i><i></i></div>
+  <div class="row"><span>Market profile and TPO</span><span class="tf">1m</span><i></i><i></i><i></i></div>
+  <div class="row"><span>Dynamic POC</span><span class="tf">ALL</span><i></i><i></i><i>H</i></div>
+  <div class="row"><span>Fibonacci Retracements</span><span class="tf">5m</span><i></i><i></i><i></i></div>
+  <div class="row"><span>Text「突破失败」</span><span class="tf">1m</span><i></i><i class="l">L</i><i></i></div>
+  <div class="foot"><span>⌘Z 撤销</span><span>⌘C/V</span><span>存为默认</span></div></div>
+</div>
+
+</body></html>

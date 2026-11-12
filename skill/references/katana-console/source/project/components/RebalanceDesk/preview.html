@@ -1,0 +1,45 @@
+<!-- @dsCard group="资产管理" height=300 subtitle="RebalanceDesk：目标 vs 当前双条、漂移阈值、交易清单（整手取整、不可卖量、涨跌停不可成交来自 Profile）、成本估算；出口是 OrderBasket" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.est{color:var(--signal-amber)}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.top .src{color:var(--ink-300);font-size:10px}
+.top .src b{font-weight:400;color:var(--signal-blue)}
+.grid{width:620px}
+.row{display:grid;grid-template-columns:140px 150px 64px 64px 84px 1fr;height:var(--row-base);align-items:center;border-bottom:var(--hairline)}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dual{position:relative;height:10px;background:var(--bg-000);box-shadow:var(--recess)}
+.dual i{position:absolute;left:0;top:2px;bottom:2px;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.dual b{position:absolute;top:0;bottom:0;border:1px solid var(--ink-100);box-sizing:border-box}
+.drift{color:var(--ink-100)}.drift.over{color:var(--signal-amber)}
+.note{color:var(--ink-300);font-size:10px}
+.note .tag{margin-left:4px}
+</style></head><body>
+<div class="top"><div class="seg"><span class="on">目标权重</span><span>目标数量</span></div><span class="src">目标来源 <b>RUN 3f1a · 风险平价 · 09-30</b></span><span class="src">阈值 ±1.5%</span><span class="src" style="margin-left:auto">账户 A B · <span class="lcd" style="color:var(--ink-100)">1,946,480</span></span></div>
+<div class="grid" role="grid" aria-label="再平衡">
+  <div class="row hd"><div>代码 · 名称</div><div>当前 ▮ / 目标 ▯</div><div class="r">当前</div><div class="r">目标</div><div class="r">漂移</div><div>交易清单</div></div>
+  <div class="row"><div><span class="code">300750</span> <span class="cn">宁德时代</span></div><div><div class="dual"><i style="width:61%"></i><b style="left:0;width:48%"></b></div></div><div class="r">30.4%</div><div class="r">24.0%</div><div class="r drift over">+6.4</div><div class="note">卖 <b style="font-weight:400;color:var(--ink-100)">500</b> @ 246.80 · <span class="acc">A</span> 可卖 3,000 <span class="tag">整手</span></div></div>
+  <div class="row"><div><span class="code">600519</span> <span class="cn">贵州茅台</span></div><div><div class="dual"><i style="width:30%"></i><b style="left:0;width:36%"></b></div></div><div class="r">15.2%</div><div class="r">18.0%</div><div class="r drift over">-2.8</div><div class="note">买 <b style="font-weight:400;color:var(--ink-100)">100</b> @ 1,482.00 · <span class="acc">A</span></div></div>
+  <div class="row"><div><span class="code">002475</span> <span class="cn">立讯精密</span></div><div><div class="dual"><i style="width:18%"></i><b style="left:0;width:20%"></b></div></div><div class="r">9.1%</div><div class="r">10.0%</div><div class="r drift">-0.9</div><div class="note" style="color:var(--ink-400)">阈值内 · 不交易</div></div>
+  <div class="row"><div><span class="code">300308</span> <span class="cn">中际旭创</span></div><div><div class="dual"><i style="width:22%"></i><b style="left:0;width:16%"></b></div></div><div class="r">11.3%</div><div class="r">8.0%</div><div class="r drift over">+3.3</div><div class="note">卖 300 · <span class="acc">B</span> 可卖 0 <span class="tag est">T+1 明日</span></div></div>
+  <div class="row"><div><span class="code">688041</span> <span class="cn">海光信息</span></div><div><div class="dual"><i style="width:0"></i><b style="left:0;width:12%"></b></div></div><div class="r">0.0%</div><div class="r">6.0%</div><div class="r drift over">-6.0</div><div class="note">买 <b style="font-weight:400;color:var(--ink-100)">400</b> @ 142.10 · <span class="acc">A</span> <span class="tag est">涨停 · 可能不成</span></div></div>
+  <div class="row" style="color:var(--ink-300)"><div><span>现金</span></div><div><div class="dual"><i style="width:14%;background:repeating-linear-gradient(90deg,var(--ink-300) 0 3px,transparent 3px 5px)"></i><b style="left:0;width:10%"></b></div></div><div class="r">7.0%</div><div class="r">5.0%</div><div class="r">+2.0</div><div class="note">结余</div></div>
+  <div class="foot"><span><b>4</b> 笔交易 · 2 账户</span><span>换手 <b>9.2%</b></span><span>费用估 <b>412</b> <span class="tag est">估算</span></span><span>再平衡后漂移 max <b>0.4%</b></span><span style="margin-left:auto">生成篓子 →</span></div>
+</div>
+</body></html>

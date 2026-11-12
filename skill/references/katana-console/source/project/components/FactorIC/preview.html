@@ -1,0 +1,33 @@
+<!-- @dsCard group="图表" height=230 subtitle="因子 IC：正负柱 + 累计 IC 线 + 五道门 LED；正负色跟随市场约定" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px}
+.head{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2)}
+.dot{width:8px;height:8px;border-radius:var(--radius-pill);background:var(--led-off)}
+.dot.ok{background:var(--signal-green);box-shadow:0 0 6px var(--signal-green)}
+.dot.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}
+.dot.warn{background:var(--signal-amber);box-shadow:0 0 6px var(--signal-amber)}
+.kpi{display:flex;gap:var(--space-3);margin-top:var(--space-2)}
+.kpi div{background:var(--bg-000);border:var(--hairline);box-shadow:var(--recess);padding:4px 10px;display:flex;flex-direction:column;gap:1px}
+.kpi small{font-size:9px;letter-spacing:.12em;color:var(--ink-300)}
+.kpi b{font-weight:500;font-size:14px}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.grid{stroke:var(--chart-grid)}
+.pos{fill:var(--div-pos)}.neg{fill:var(--div-neg)}
+.cum{fill:none;stroke:var(--series-1);stroke-width:2}
+</style></head><body>
+<div class="head"><span style="font-family:var(--font-sans);font-weight:700;font-size:13px">MOM_RS_V3 · IC 序列（月）</span><span style="display:flex;gap:4px;align-items:center;color:var(--ink-300);font-size:9px;letter-spacing:.12em">GATE <span class="dot ok"></span><span class="dot ok"></span><span class="dot ok"></span><span class="dot warn"></span><span class="dot"></span> 4 FAIL</span></div>
+<svg width="560" height="120" viewBox="0 0 560 120" role="img" aria-label="IC 柱与累计 IC">
+  <g class="grid"><line x1="40" y1="20" x2="540" y2="20"/><line x1="40" y1="60" x2="540" y2="60" stroke="var(--line-200)"/><line x1="40" y1="100" x2="540" y2="100"/></g>
+  <text x="34" y="24" text-anchor="end">0.1</text><text x="34" y="64" text-anchor="end">0</text><text x="34" y="104" text-anchor="end">-0.1</text>
+  <g>
+    <rect class="pos" x="44" y="42" width="10" height="18"/><rect class="neg" x="60" y="60" width="10" height="9"/><rect class="pos" x="76" y="36" width="10" height="24"/><rect class="pos" x="92" y="50" width="10" height="10"/><rect class="neg" x="108" y="60" width="10" height="22"/><rect class="pos" x="124" y="30" width="10" height="30"/><rect class="pos" x="140" y="46" width="10" height="14"/><rect class="pos" x="156" y="38" width="10" height="22"/><rect class="neg" x="172" y="60" width="10" height="6"/><rect class="pos" x="188" y="44" width="10" height="16"/><rect class="pos" x="204" y="26" width="10" height="34"/><rect class="neg" x="220" y="60" width="10" height="14"/><rect class="pos" x="236" y="48" width="10" height="12"/><rect class="pos" x="252" y="40" width="10" height="20"/><rect class="pos" x="268" y="52" width="10" height="8"/><rect class="neg" x="284" y="60" width="10" height="18"/><rect class="pos" x="300" y="34" width="10" height="26"/><rect class="pos" x="316" y="44" width="10" height="16"/><rect class="neg" x="332" y="60" width="10" height="4"/><rect class="pos" x="348" y="38" width="10" height="22"/><rect class="pos" x="364" y="50" width="10" height="10"/><rect class="neg" x="380" y="60" width="10" height="12"/><rect class="pos" x="396" y="42" width="10" height="18"/><rect class="pos" x="412" y="56" width="10" height="4"/><rect class="neg" x="428" y="60" width="10" height="20"/><rect class="pos" x="444" y="48" width="10" height="12"/><rect class="neg" x="460" y="60" width="10" height="8"/><rect class="pos" x="476" y="54" width="10" height="6"/><rect class="neg" x="492" y="60" width="10" height="16"/><rect class="pos" x="508" y="56" width="10" height="4"/><rect class="neg" x="524" y="60" width="10" height="10"/>
+  </g>
+  <path class="cum" d="M49 96 L65 92 L81 86 L97 84 L113 88 L129 80 L145 76 L161 70 L177 70 L193 66 L209 56 L225 58 L241 54 L257 48 L273 46 L289 50 L305 42 L321 38 L337 38 L353 32 L369 30 L385 32 L401 28 L417 28 L433 32 L449 30 L465 32 L481 32 L497 36 L513 36 L529 38"/>
+  <circle cx="529" cy="38" r="4" fill="var(--signal-orange)" style="filter:drop-shadow(0 0 4px #ff6a1f)"/>
+  <text x="44" y="116">2024-01</text><text x="529" y="116" text-anchor="end">2026-07</text>
+</svg>
+<div class="kpi"><div><small>IC MEAN</small><b>0.024</b></div><div><small>ICIR</small><b>0.41</b></div><div><small>T-STAT</small><b>2.18</b></div><div><small>IC AFTER COST</small><b style="color:var(--signal-amber)">0.011</b></div><div><small>BH-FDR q</small><b>0.07</b></div></div>
+</body></html>

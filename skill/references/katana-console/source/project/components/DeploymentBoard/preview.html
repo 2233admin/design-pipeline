@@ -1,0 +1,62 @@
+<!-- @dsCard group="研究" height=300 subtitle="DeploymentBoard：策略生命周期看板——research / paper / live / retired 四列（列是阶段不是 tab）；卡片五门 LED、容量、偏离；推进是写命令" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200)}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+.gates{display:inline-flex;gap:3px}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:620px}
+.col h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none;display:flex;gap:6px;align-items:center}
+.col h4 b{font-weight:400;color:var(--ink-100)}
+.col h4.live{color:var(--signal-amber)}
+.card{background:var(--bg-200);border:var(--hairline);padding:8px;margin-bottom:6px;display:grid;gap:4px;font-size:10px}
+.card.live{border-left:2px solid var(--signal-amber)}
+.card.paper{border-left:2px solid var(--signal-blue)}
+.card.dim{opacity:.55}
+.nm{display:flex;justify-content:space-between;align-items:center}
+.nm b{font-weight:500;color:var(--ink-100);font-size:11px}
+.meta{color:var(--ink-300)}
+.meta b{font-weight:400;color:var(--ink-200)}
+.meta b.w{color:var(--signal-amber)}
+.bar{height:5px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.next{color:var(--ink-400);font-size:9px}
+</style></head><body>
+<div class="board">
+  <div class="col"><h4>RESEARCH <b>6</b></h4>
+    <div class="card"><div class="nm"><b>MOM_RS_V3 · 2e52</b><span class="gates"><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led off"></span></span></div><div class="meta">OOS Sharpe <b>0.94</b> · 容量 <b>8.3 亿</b></div><div class="next">4/4 门 → 可推进 paper</div></div>
+    <div class="card"><div class="nm"><b>QUAL+MOM · 2a10</b><span class="gates"><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led off"></span></span></div><div class="meta">OOS Sharpe <b>0.88</b> · 容量 <b>21 亿</b></div><div class="next">等 walkforward</div></div>
+    <div class="card"><div class="nm"><b>pair-02</b><span class="gates"><span class="led ok"></span><span class="led warn"></span><span class="led off"></span><span class="led off"></span><span class="led off"></span></span></div><div class="meta">容量 <b class="w">0.9 亿 未过</b></div></div>
+    <div class="meta" style="padding:4px">+3 更多</div>
+  </div>
+  <div class="col"><h4>PAPER <b>2</b> · <span class="led" style="background:var(--signal-blue)"></span></h4>
+    <div class="card paper"><div class="nm"><b>momo-7</b><span class="gates"><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led on"></span></span></div><div class="meta">第 <b>38</b> / 60 日 · 偏离 <b>6.2%</b></div><div class="bar"><i style="width:63%"></i></div><div class="next">偏离门评估中 · 账户 P</div></div>
+    <div class="card paper"><div class="nm"><b>alice-rev</b><span class="gates"><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led warn"></span></span></div><div class="meta">第 <b>12</b> / 60 日 · 偏离 <b class="w">19.4%</b></div><div class="bar"><i style="width:20%;background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)"></i></div><div class="next">偏离超 15% · 查 LiveDivergence</div></div>
+  </div>
+  <div class="col"><h4 class="live">LIVE <b>2</b></h4>
+    <div class="card live"><div class="nm"><b>mom-core</b><span class="gates"><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span></span></div><div class="meta">账户 <b>A B</b> · 142 日 · 偏离 <b>4.1%</b></div><div class="meta">YTD <b>+14.2%</b> · 容量用 <b>31%</b></div></div>
+    <div class="card live"><div class="nm"><b>liq-hedge</b><span class="gates"><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span><span class="led ok"></span></span></div><div class="meta">账户 <b>F</b> · 88 日 · 偏离 <b>2.8%</b></div><div class="meta">YTD <b>+3.1%</b> · 容量用 <b>58%</b></div></div>
+  </div>
+  <div class="col"><h4>RETIRED <b>4</b></h4>
+    <div class="card dim"><div class="nm"><b>REV_5D</b></div><div class="meta">2026-06 · 成本后为负</div></div>
+    <div class="card dim"><div class="nm"><b>pair-01</b></div><div class="meta">2026-08 · 偏离持续 &gt; 25%</div></div>
+    <div class="meta" style="padding:4px">+2 更多</div>
+  </div>
+</div>
+</body></html>

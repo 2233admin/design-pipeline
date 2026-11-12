@@ -1,0 +1,66 @@
+<!-- @dsCard group="图表" height=300 subtitle="IndicatorPanel：Indicator Manager 三栏——分类 / 收藏 · 搜索 + 列表 · 预览 + 参数；指标在 Worker 算，图只画；同指标多实例" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Barlow+Condensed:wght@800&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.ly{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;border:1px solid var(--line-200);padding:0 4px;color:var(--ink-300)}
+.ly.hypo{color:var(--signal-blue);border-color:var(--signal-blue)}.ly.fcst{border-style:dashed}.ly.plan{background:transparent;color:var(--ink-200)}.ly.fact{color:var(--ink-100);border-color:var(--ink-300)}
+
+
+.im{display:grid;grid-template-columns:120px 200px 1fr;gap:8px;width:620px;height:250px}
+.col{background:var(--bg-200);border:var(--hairline);display:flex;flex-direction:column;min-height:0}
+.col h4{margin:0;padding:5px 8px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none;border-bottom:var(--hairline)}
+.cat div{padding:4px 8px;color:var(--ink-200);display:flex;justify-content:space-between}.cat div.on{background:var(--bg-400);color:var(--signal-orange)}.cat small{color:var(--ink-300)}
+.srch{margin:6px;background:var(--bg-000);box-shadow:var(--recess);padding:3px 6px;color:var(--ink-300)}
+.list{overflow:hidden}.list div{padding:3px 8px;display:flex;justify-content:space-between;color:var(--ink-200)}.list div.on{background:var(--bg-400);color:var(--ink-100)}.list div b{font-weight:400;color:var(--ink-300);font-size:9px}
+.list div .star{color:var(--signal-amber)}
+.prev{height:70px;margin:6px;background:var(--bg-000);box-shadow:var(--recess)}
+.pm{display:grid;grid-template-columns:1fr 1fr;gap:3px 8px;padding:0 8px 6px}.pm label{color:var(--ink-300)}.pm span{color:var(--ink-100)}
+.pm .seg{display:inline-flex}
+.foot2{margin-top:auto;display:flex;gap:10px;padding:6px 8px;border-top:var(--hairline);color:var(--ink-300);font-size:10px}
+.btn{background:var(--bg-400);border:var(--hairline);padding:2px 8px;color:var(--ink-100)}.btn.p{background:var(--ink-100);color:var(--bg-000)}
+
+</style></head><body>
+
+<div class="top"><span class="cn" style="font-weight:700;font-size:13px;color:var(--ink-100)">指标 · 300750 1m</span><span class="tag">INSTANCES 3 / ∞</span><span style="margin-left:auto" class="tag">⌘I</span></div>
+<div class="im">
+ <div class="col"><h4>分类</h4><div class="cat"><div class="on">★ 收藏 <small>12</small></div><div>Bid × Ask / Delta / Volume <small>14</small></div><div>Clusters / Profiles / Levels <small>11</small></div><div>Order Flow <small>9</small></div><div>订单簿 <small>6</small></div><div>热力 <small>6</small></div><div>期权 <small>14</small></div><div>Technical <small>231</small></div><div>COT <small>3</small></div></div></div>
+ <div class="col"><h4>搜索 + 列表</h4><div class="srch">delta ▏</div><div class="list"><div class="on"><span>CVD · Cumulative Volume Delta</span><b>副图</b></div><div><span>Delta <span class="star">★</span></span><b>副图</b></div><div><span>Delta Strength</span><b>副图</b></div><div><span>Delta Turnaround</span><b>标记</b></div><div><span>Centered Delta（Footprint 模式）</span><b>flow</b></div><div><span>Cluster Statistics · Delta 行</span><b>统计</b></div><div><span>Delta Divergence（Widget）</span><b>FlowGauges</b></div><div><span>Positive/Negative Delta Profile</span><b>flow</b></div></div></div>
+ <div class="col"><h4>预览 + 参数 · CVD #2</h4><div class="prev"><svg width="100%" height="70" viewBox="0 0 280 70"><polyline fill="none" stroke="var(--series-1)" stroke-width="1.5" points="4,50 30,46 56,52 82,40 108,36 134,42 160,30 186,26 212,32 238,20 264,18"/><line x1="4" y1="58" x2="276" y2="58" class="gl" stroke-width="1"/></svg></div>
+  <div class="pm"><label>可视化</label><span class="seg"><span class="on">Candles</span><span>Bars</span><span>Line</span></span><label>Session reset</label><span class="seg"><span>None</span><span class="on">Default</span><span>Custom</span></span><label>输入源</label><span>Volume · 逐笔方向</span><label>实例</label><span>#2 · 独立参数</span><label>透明度</label><span>80%</span><label>数据</label><span>逐笔 + L2 · Worker</span></div>
+  <div class="foot2"><span class="btn p">添加到图</span><span class="btn">存为模板</span><span class="btn">★</span><span style="margin-left:auto">闭源算法按文档参数自研</span></div></div>
+</div>
+
+</body></html>

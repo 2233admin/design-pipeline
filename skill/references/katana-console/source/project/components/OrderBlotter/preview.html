@@ -1,0 +1,36 @@
+<!-- @dsCard group="组合" height=220 subtitle="OrderBlotter：跨账户在途订单；状态点阵标、成交进度点阵条、待确认行 amber、撤改是写命令" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.grid{width:620px;border:var(--hairline);background:var(--bg-200)}
+.row{display:grid;grid-template-columns:28px 130px 48px 72px 84px 110px 72px 1fr;height:var(--row-tight);align-items:center;border-bottom:var(--hairline)}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.code{color:var(--ink-200)}.cn{font-family:var(--font-sans)}
+.side{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none}
+.buy{color:var(--bid)}.sell{color:var(--ask)}
+.st{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;-webkit-font-smoothing:none;color:var(--ink-300)}
+.st.work{color:var(--signal-green)}.st.part{color:var(--signal-orange)}.st.pend{color:var(--signal-amber)}.st.rej{color:var(--signal-red)}
+.pend-row{background:rgba(255,192,58,.06)}
+.p{display:flex;align-items:center;gap:6px}
+.w{flex:1;height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.w>i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--signal-orange) 0 3px,transparent 3px 5px)}
+.act{color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.act b{font-weight:400;color:var(--ink-200);border:var(--hairline);padding:1px 6px;margin-left:4px}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+</style></head><body>
+<div class="grid" role="grid" aria-label="在途订单">
+  <div class="row hd" role="row"><div></div><div>代码 · 名称</div><div>方向</div><div class="r">价格</div><div class="r">成交 / 委托</div><div>进度</div><div>状态</div><div>操作</div></div>
+  <div class="row pend-row" role="row"><div><span class="acc">A</span></div><div><span class="code">300750</span> <span class="cn">宁德时代</span></div><div class="side buy">BUY</div><div class="r">245.50</div><div class="r">0 / 2,000</div><div class="p"><div class="w"><i style="width:0"></i></div></div><div class="st pend">待确认 00:07</div><div class="act"><b>确认</b><b>放弃</b></div></div>
+  <div class="row" role="row"><div><span class="acc">B</span></div><div><span class="code">300308</span> <span class="cn">中际旭创</span></div><div class="side buy">BUY</div><div class="r">187.90</div><div class="r">1,200 / 3,000</div><div class="p"><div class="w"><i style="width:40%"></i></div></div><div class="st part">部分成交</div><div class="act"><b>改价</b><b>撤</b></div></div>
+  <div class="row" role="row"><div><span class="acc">F</span></div><div><span class="code">IF2510</span> <span class="cn">沪深300</span></div><div class="side sell">SELL</div><div class="r">3,950.0</div><div class="r">0 / 2 手</div><div class="p"><div class="w"><i style="width:0"></i></div></div><div class="st work">挂单 · 队列 14</div><div class="act"><b>改价</b><b>撤</b></div></div>
+  <div class="row" role="row"><div><span class="acc">A</span></div><div><span class="code">600519</span> <span class="cn">贵州茅台</span></div><div class="side sell">SELL</div><div class="r">1,490.00</div><div class="r">0 / 400</div><div class="p"><div class="w"><i style="width:0"></i></div></div><div class="st work">挂单</div><div class="act"><b>改价</b><b>撤</b></div></div>
+  <div class="row" role="row"><div><span class="acc">B</span></div><div><span class="code">002475</span> <span class="cn">立讯精密</span></div><div class="side buy">BUY</div><div class="r">41.00</div><div class="r">0 / 5,000</div><div class="p"><div class="w"><i style="width:0"></i></div></div><div class="st">算法 TWAP 09:35–10:30</div><div class="act"><b>暂停</b><b>撤</b></div></div>
+  <div class="row" role="row" style="color:var(--ink-300)"><div><span class="acc" style="color:var(--ink-400)">A</span></div><div><span>000858</span> <span class="cn">五粮液</span></div><div class="side" style="color:var(--ink-400)">BUY</div><div class="r">127.00</div><div class="r">0 / 1,000</div><div class="p"><div class="w"></div></div><div class="st rej">拒单 · 可用不足</div><div class="act"><b>重下</b></div></div>
+  <div class="foot"><span>6 单 · 3 账户</span><span>1 待确认</span><span>在途金额 <span style="color:var(--ink-100)">1,668,900</span></span><span style="margin-left:auto;color:var(--signal-green)">● EXEC 8ms</span></div>
+</div>
+</body></html>

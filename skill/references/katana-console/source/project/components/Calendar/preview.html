@@ -1,0 +1,57 @@
+<!-- @dsCard group="发现" height=270 subtitle="Calendar：月历热力（收益）+ 事件层（财报 / 分红 / 解禁 / 经济数据 / 交易日历）；格色发散低饱和，极值才全饱和；事件用点阵标不占色" -->
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Doto:wght@500&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--font-dot);font-size:9px;letter-spacing:.08em;color:var(--ink-300);-webkit-font-smoothing:none}
+.acc{font-family:var(--font-dot);font-size:12px;color:var(--signal-orange);-webkit-font-smoothing:none}
+.cn{font-family:var(--font-sans)}.code{color:var(--ink-200)}
+.up{color:var(--pnl-up)}.dn{color:var(--pnl-down)}.est{color:var(--signal-amber)}
+.r{text-align:right}
+.hd{background:var(--bg-300);color:var(--ink-300);font-size:10px;letter-spacing:.06em}
+.grid{border:var(--hairline);background:var(--bg-200);width:620px}
+.row>div{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:16px;padding:6px 10px;color:var(--ink-300);font-size:10px;letter-spacing:.06em;border-top:var(--hairline);background:var(--bg-300)}
+.foot b{font-weight:400;color:var(--ink-100)}
+.seg{display:flex;background:var(--bg-000);box-shadow:var(--recess);padding:2px}
+.seg span{padding:3px 8px;color:var(--ink-300);font-size:10px}.seg span.on{background:var(--bg-400);color:var(--signal-orange)}
+.lcd{font-family:var(--font-lcd);letter-spacing:.08em}
+.top{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--ink-300)}
+.run{color:var(--signal-blue)}
+.led{width:6px;height:6px;border-radius:var(--radius-pill);display:inline-block}
+.ok{background:var(--signal-green)}.warn{background:var(--signal-amber)}.off{background:var(--led-off);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}.on{background:var(--signal-orange);box-shadow:var(--glow-orange)}.bad{background:var(--signal-red)}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.gl{stroke:var(--chart-grid)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:620px;margin-bottom:8px}
+.kpi div{background:var(--bg-000);box-shadow:var(--recess);padding:6px 8px}
+.kpi small{display:block;font-family:var(--font-dot);font-size:9px;letter-spacing:.1em;color:var(--ink-300);-webkit-font-smoothing:none}
+.kpi b{font-weight:500;font-family:var(--font-lcd);font-size:15px;letter-spacing:.06em;color:var(--ink-100)}
+.kpi i{display:block;font-style:normal;font-size:10px;color:var(--ink-300)}
+.ax{position:relative;height:10px}
+.ax:before{content:"";position:absolute;left:var(--z,50%);top:-4px;bottom:-4px;width:1px;background:var(--line-200)}
+.ax i{position:absolute;top:2px;height:6px;background:repeating-linear-gradient(90deg,var(--ink-200) 0 3px,transparent 3px 5px)}
+.ax i.w{background:repeating-linear-gradient(90deg,var(--signal-amber) 0 3px,transparent 3px 5px)}
+.bar{height:6px;background:var(--bg-000);border:1px solid var(--line-100)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--series-1) 0 3px,transparent 3px 5px)}
+.box{background:var(--bg-200);border:var(--hairline);padding:8px 10px}
+.box h4{margin:0 0 6px;font:inherit;font-size:9px;letter-spacing:.1em;color:var(--ink-300);font-family:var(--font-dot);-webkit-font-smoothing:none}
+.cal{width:620px;display:grid;grid-template-columns:40px repeat(7,1fr);gap:2px}
+.cal .d{height:34px;background:var(--bg-200);padding:3px 4px;font-size:9px;color:var(--ink-300);position:relative}
+.cal .d b{position:absolute;right:4px;bottom:3px;font-weight:400;font-size:10px;color:var(--ink-100)}
+.cal .d .e{position:absolute;left:4px;bottom:3px;display:flex;gap:2px}
+.cal .d .e i{width:5px;height:5px;background:var(--ink-300)}
+.cal .d .e i.h{background:var(--signal-amber)}
+.cal .wk{height:34px;display:flex;align-items:center;font-size:9px;color:var(--ink-400)}
+.cal .hd{height:16px;background:transparent;text-align:center;font-size:9px}
+.p1{background:var(--div-pos-100)}.p2{background:var(--div-pos-200)}.n1{background:var(--div-neg-100)}.n2{background:var(--div-neg-200)}
+.off{background:var(--bg-100)}.off b{color:var(--ink-400)}
+</style></head><body>
+<div class="top"><div class="seg"><span class="on">收益</span><span>换手</span><span>事件</span></div><span>2026-10 · 账户 A B F</span><span>事件层 ▪ 财报 ▪ 分红 <span style="color:var(--signal-amber)">▪</span> 解禁 / 宏观</span><span style="margin-left:auto">本月 <span class="up">+2.1%</span> · 14 交易日</span></div>
+<div class="cal" role="grid" aria-label="收益日历">
+<div class="hd"></div><div class="hd">一</div><div class="hd">二</div><div class="hd">三</div><div class="hd">四</div><div class="hd">五</div><div class="hd">六</div><div class="hd">日</div>
+<div class="wk">W40</div><div class="d off">28<b>—</b></div><div class="d off">29<b>休</b></div><div class="d p1">30<b>+0.4</b><div class="e"><i></i></div></div><div class="d off">1<b>休</b></div><div class="d p1">2<b>+0.8</b></div><div class="d off">3</div><div class="d off">4</div>
+<div class="wk">W41</div><div class="d off">5<b>休</b></div><div class="d off">6<b>休</b></div><div class="d off">7<b>休</b></div><div class="d n1">8<b>-0.6</b><div class="e"><i class="h"></i></div></div><div class="d p2">9<b>+1.9</b><div class="e"><i></i><i></i></div></div><div class="d off">10</div><div class="d off">11</div>
+<div class="wk">W42</div><div class="d p1">12<b>+0.3</b></div><div class="d n2">13<b>-1.4</b><div class="e"><i class="h"></i></div></div><div class="d p1">14<b>+0.5</b></div><div class="d n1">15<b>-0.2</b><div class="e"><i></i></div></div><div class="d p1">16<b>+0.9</b></div><div class="d off">17</div><div class="d off">18</div>
+<div class="wk">W43</div><div class="d" style="box-shadow:inset 0 0 0 1px var(--signal-orange)">19<b>·</b><div class="e"><i></i><i></i><i class="h"></i></div></div><div class="d">20<b>·</b></div><div class="d">21<b>·</b><div class="e"><i></i></div></div><div class="d">22<b>·</b></div><div class="d">23<b>·</b></div><div class="d off">24</div><div class="d off">25</div>
+</div>
+</body></html>

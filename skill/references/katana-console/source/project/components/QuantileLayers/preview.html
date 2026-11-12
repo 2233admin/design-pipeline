@@ -1,0 +1,32 @@
+<!-- @dsCard group="图表" height=230 subtitle="分层净值：序数用顺序色阶，不用类别色；多空差用点阵面" -->
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:12px;background:var(--bg-300);color:var(--ink-100);font-family:var(--font-mono);font-size:11px}
+.head{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2)}
+.lg{display:flex;gap:10px;color:var(--ink-200);font-size:10px;margin-left:auto}
+.lg span{display:flex;align-items:center;gap:4px}
+.lg i{width:10px;height:2px;display:inline-block}
+svg text{font-family:var(--font-mono);font-size:9px;fill:var(--chart-axis)}
+.grid{stroke:var(--chart-grid)}
+.q{fill:none;stroke-width:2;stroke-linejoin:round}
+.ls{fill:url(#dots)}
+</style></head><body>
+<div class="head"><span style="font-family:var(--font-sans);font-weight:700;font-size:13px">MOM_RS_V3 · 5 分层累计超额</span>
+<div class="lg"><span><i style="background:var(--seq-200)"></i>Q1</span><span><i style="background:var(--seq-300)"></i>Q2</span><span><i style="background:var(--seq-400)"></i>Q3</span><span><i style="background:var(--seq-500)"></i>Q4</span><span><i style="background:var(--seq-600)"></i>Q5</span><span><i style="background:var(--ink-100);height:1px"></i>Q5−Q1</span></div></div>
+<svg width="560" height="170" viewBox="0 0 560 170" role="img" aria-label="五分层累计超额收益">
+  <defs><pattern id="dots" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="4" height="4" fill="#5c2e12"/></pattern></defs>
+  <g class="grid"><line x1="40" y1="20" x2="540" y2="20"/><line x1="40" y1="60" x2="540" y2="60"/><line x1="40" y1="100" x2="540" y2="100" stroke="var(--line-200)"/><line x1="40" y1="140" x2="540" y2="140"/></g>
+  <text x="34" y="24" text-anchor="end">+40%</text><text x="34" y="64" text-anchor="end">+20%</text><text x="34" y="104" text-anchor="end">0</text><text x="34" y="144" text-anchor="end">-20%</text>
+  <path class="ls" d="M40 100 L140 96 L240 86 L340 72 L440 60 L540 44 L540 100 Z" opacity=".6"/>
+  <path class="q" stroke="var(--seq-200)" d="M40 100 L140 108 L240 118 L340 126 L440 134 L540 142"/>
+  <path class="q" stroke="var(--seq-300)" d="M40 100 L140 104 L240 108 L340 112 L440 112 L540 116"/>
+  <path class="q" stroke="var(--seq-400)" d="M40 100 L140 100 L240 98 L340 100 L440 96 L540 98"/>
+  <path class="q" stroke="var(--seq-500)" d="M40 100 L140 96 L240 90 L340 84 L440 80 L540 72"/>
+  <path class="q" stroke="var(--seq-600)" d="M40 100 L140 92 L240 80 L340 66 L440 54 L540 40"/>
+  <text x="546" y="43" style="fill:var(--ink-100)">Q5</text><text x="546" y="145" style="fill:var(--ink-100)">Q1</text>
+  <text x="40" y="162">2024-01</text><text x="540" y="162" text-anchor="end">2026-07</text>
+</svg>
+<div style="display:flex;gap:var(--space-4);margin-top:var(--space-1);color:var(--ink-300);font-size:10px"><span>单调性 <span style="color:var(--signal-green)">通过</span></span><span>多空年化 <span style="color:var(--ink-100)">+18.4%</span></span><span>换手 <span style="color:var(--ink-100)">0.62/月</span></span><span>样本 <span style="color:var(--ink-100)">31 期 · 4,280 只</span></span></div>
+</body></html>
