@@ -1181,6 +1181,216 @@
       "committedAt": "2026-10-05T13:49:16-07:00"
     },
     {
+      "id": "web-scaffold-less",
+      "kind": "npm",
+      "package": "less",
+      "version": "4.9.1",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"less\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-postcss",
+      "kind": "npm",
+      "package": "postcss",
+      "version": "8.5.32",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"postcss\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-react",
+      "kind": "npm",
+      "package": "react",
+      "version": "19.3.1",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"react\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-react-dom",
+      "kind": "npm",
+      "package": "react-dom",
+      "version": "19.3.1",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"react-dom\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-sass",
+      "kind": "npm",
+      "package": "sass",
+      "version": "1.108.1",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"sass\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-solid-js",
+      "kind": "npm",
+      "package": "solid-js",
+      "version": "1.9.18",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"solid-js\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-svelte",
+      "kind": "npm",
+      "package": "svelte",
+      "version": "5.57.3",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"svelte\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-sveltejs-vite-plugin-svelte",
+      "kind": "npm",
+      "package": "@sveltejs/vite-plugin-svelte",
+      "version": "7.3.1",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"@sveltejs/vite-plugin-svelte\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-tailwindcss",
+      "kind": "npm",
+      "package": "tailwindcss",
+      "version": "4.3.5",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"tailwindcss\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-tailwindcss-vite",
+      "kind": "npm",
+      "package": "@tailwindcss/vite",
+      "version": "4.3.5",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"@tailwindcss/vite\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-vite",
+      "kind": "npm",
+      "package": "vite",
+      "version": "8.3.7",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"vite\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-vite-plugin-solid",
+      "kind": "npm",
+      "package": "vite-plugin-solid",
+      "version": "2.11.15",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"vite-plugin-solid\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-vitejs-plugin-react",
+      "kind": "npm",
+      "package": "@vitejs/plugin-react",
+      "version": "6.3.0",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"@vitejs/plugin-react\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-vitejs-plugin-vue",
+      "kind": "npm",
+      "package": "@vitejs/plugin-vue",
+      "version": "6.0.10",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"@vitejs/plugin-vue\": \"{version}\","
+        }
+      ]
+    },
+    {
+      "id": "web-scaffold-vue",
+      "kind": "npm",
+      "package": "vue",
+      "version": "3.5.45",
+      "reviewedAt": "2026-11-10",
+      "note": "web scaffold writes this version into the package.json of scaffolded web projects.",
+      "sites": [
+        {
+          "file": "skill/scripts/web-project-core.cjs",
+          "pattern": "\"vue\": \"{version}\","
+        }
+      ]
+    },
+    {
       "id": "zhuque-fangsong",
       "kind": "catalog-reference",
       "repo": "https://github.com/TrionesType/zhuque",
