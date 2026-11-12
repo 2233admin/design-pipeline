@@ -40,8 +40,10 @@ rule with its local target.
   remaining rows are `pending` until the metadata check is added.
 - `fixing-motion-performance`: the property tiers, `will-change`, inherited custom properties and
   blur limits are in [animation-opportunity-and-review.md](animation-opportunity-and-review.md#5-compositor-cost)
-  and [ui-transition-rules.md](ui-transition-rules.md). Scroll-linked motion, off-screen pausing and
-  FLIP are `pending` until the motion performance check is added.
+  and [ui-transition-rules.md](ui-transition-rules.md). `audit.motion-properties` measures
+  `transition: all`, animated layout properties, endless blur and loops running off screen; the
+  source-level rules (scroll-linked motion, one-shot over continuous, View Transitions, FLIP, one
+  animation API per component) are review rows `UC-42` to `UC-44`.
 
 ## Keeping it current
 

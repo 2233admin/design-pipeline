@@ -208,7 +208,14 @@ test("known decisions stay recorded: not adopted with a reason, missing rules pe
   }
   for (const id of ["baseline-ui/stack/02", "baseline-ui/stack/03", "baseline-ui/stack/04", "baseline-ui/components/04"]) assert.match(row(id).rule, /motion\/react|tw-animate-css|`cn`|Base UI/, id);
   const pendingIssues = new Set(coverage.sources.flatMap((source) => source.rules).filter((item) => item.status === "pending").map((item) => item.issue));
-  assert.deepEqual([...pendingIssues].sort(), [353, 354, 355]);
+  assert.deepEqual([...pendingIssues].sort(), [353, 354]);
+  // #355 landed as audit.motion-properties: its measurable rules are audit rows, the rest review rows.
+  for (const id of ["command/animation/03", "baseline-ui/animation/03", "baseline-ui/animation/07", "fixing-motion-performance/never-patterns/02", "fixing-motion-performance/scroll/04", "fixing-motion-performance/blur-and-filters/03"]) {
+    assert.equal(row(id).status, "audit", id);
+    assert.ok(row(id).targets.includes("audit.motion-properties"), id);
+  }
+  for (const id of ["baseline-ui/animation/07", "fixing-motion-performance/scroll/04"]) assert.match(row(id).note, /scrolls out of view later is reviewed under UC-43/, id);
+  assert.equal(coverage.sources[1].rules.filter((entry) => entry.id.startsWith("fixing-motion-performance/") && entry.status === "pending").length, 0);
   for (const item of coverage.sources[1].rules.filter((entry) => entry.id.startsWith("fixing-metadata/") && entry.status === "pending")) assert.equal(item.issue, 353, item.id);
   // No row is mapped for appearance: a status total is the sum of real rows.
   for (const source of coverage.sources) assert.equal(Object.values(counts(source)).reduce((sum, value) => sum + value, 0), source.rules.length, source.id);
