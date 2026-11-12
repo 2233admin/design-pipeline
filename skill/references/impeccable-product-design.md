@@ -61,3 +61,15 @@ for that intent. `critique`, `polish`, `distill` and `quieter` point at their se
 They enforce, maintain, select, or specialize the product-design workflow; they are not additional
 visual themes. A missing browser, image generator, or optional runtime lowers the evidence path and
 is recorded as a limitation, not silently replaced with a screenshot claim.
+
+## Upstream reference files
+
+`upstreamReferences` in the JSON records every reference file the locked revision ships beyond the
+command guides, each as adopted, partly adopted, mapped or not adopted with its reason:
+`craft-floor` and the three `mode-*` files are merged into [impeccable-contract.md](impeccable-contract.md)
+(craft floor and mode rules); `visualize` is the comp round; `component-review` contributes one rule
+(the owner answers a review, a waiting review is pending); `doctor`, `hooks`, `routing` and
+`region-map` need the impeccable CLI or write persistent configuration and are not adopted.
+`notAdopted` lists the CLI and cloud features left out on purpose: agents engine, rule packs, login
+and account commands, critique history upload, DESIGN.md viewer sync, Loop and the audit report
+store (the audit report goes to `qa.md`).

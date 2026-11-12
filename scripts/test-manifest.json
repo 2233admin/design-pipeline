@@ -60,6 +60,7 @@
     "graphics-runtime-catalog.test.cjs",
     "good-css.test.cjs",
     "graybox-gate.test.cjs",
+    "guide-section-reads.test.cjs",
     "holosticker.test.cjs",
     "install-doctor.test.cjs",
     "install-local.test.cjs",
@@ -85,6 +86,8 @@
     "animation-craft.test.cjs",
     "film-timeline-eval.test.cjs",
     "film-project.test.cjs",
+    "tunables.test.cjs",
+    "tunables-panel.test.cjs",
     "ff-tracking-hud.test.cjs",
     "product-source-admission.test.cjs",
     "composition-gate.test.cjs",
@@ -127,6 +130,8 @@
     "package-release.test.cjs",
     "pending-source.test.cjs",
     "pipeline-state.test.cjs",
+    "state-machine-tables.test.cjs",
+    "state-recovery.test.cjs",
     "plain-language.test.cjs",
     "publication-bridge.test.cjs",
     "record-feedback.test.cjs",
@@ -191,6 +196,7 @@
     "template-frontier-survey.test.cjs",
     "ablation-eval.test.cjs",
     "template-bank-browser.test.cjs",
+    "template-hue-budget.test.cjs",
     "template-distill.test.cjs"
   ]
 }

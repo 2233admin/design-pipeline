@@ -14,6 +14,8 @@ ordinary UI/CSS stays on its component/runtime route and acquires no storyboard 
 For reusable case structures, search the [Prompt Motion library](prompt-motion/README.md) with
 `film templates`; adopt selected inputs and rules through the existing reference flow.
 For a static cover, key visual, title card, banner or UI panel, start from the [template bank](template-bank.md): pick a style pack, `template render <id>` fills its layout and checks it on render; `template check --browser` checks any SVG or HTML page. To start a new style from reference images, `template distill` drafts its pack from their measured distribution.
+When a product-UI brief names tactile-design or asks for a tactile, layered, quiet look, read [tactile-product-ui.md](tactile-product-ui.md): it is an opt-in direction, so the project's `DESIGN.md` still governs, and the measured audit (`verify interaction`) stays the gate.
+For a poster, information sheet or archive card about a real subject in an industrial sci-fi document style (Arknights / Endfield, 舟工业, 工业 VI), read [industrial-document-sheets.md](industrial-document-sheets.md) first: the document test, dialects, colour and density budgets, then `template check --browser` on the finished page.
 
 1. Classify the brief with `designer-pipeline route --query "<brief>" --json`. The job registry
    `references/job-registry.json` is the Stage 0 extension point. A new capability is a job, not
