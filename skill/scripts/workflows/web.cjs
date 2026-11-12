@@ -16,6 +16,7 @@ const path = require("node:path");
 const { canonicalJson, fail, resolveInside, sha256 } = require("../contract-utils.cjs");
 const { COMPONENT_SOURCES, PERMISSIVE_LIST, validateComponentManifest } = require("../design-system-catalog-core.cjs");
 const { cliCommand, shellPath, REVIEW, componentDecisionDigest, deliveryRecorded, exists, invalidateCheckedEvidence, reference } = require("./shared.cjs");
+const frontend = require("./frontend.cjs");
 
 const REFERENCE = reference("Watch the supplied reference at full speed and inspect timed frames, or study 1-3 moving web references; write reference.md with observed structure, motion, timing, easing, invariants and uncertainties using references/reference-spec.md. For replication, follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next build starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
@@ -64,12 +65,12 @@ const OPENING = {
   page: "What site have you seen recently that felt the way this page should, and what about it?",
   replicate: "What must stay exactly as it is in the page you want reproduced?",
 };
-const CONVERSATION = "Facts are your job: before asking, take what you can from the conversation and the project's files (README, existing pages, DESIGN.md, brand assets; in an existing project run project inspect), and never ask the owner for something you can look up. Send the opening question as its own message, as it is: the skip line, then one open question. Then ask one open question per message, with no list of example answers unless they are stuck: anchor on real specifics (a site they saw, the moment a visitor arrives), ask what would make them wince and what they have seen elsewhere and loved or hated. When you can describe the page, play it back in about 200-300 words: who it is for, what a visitor should do, what it should feel like; mark what they said as theirs and what you guessed as your guess, and end by asking what is wrong or missing. Record each correction with the correction command (it becomes a project rule) and play back again until they confirm; then record the confirmed playback, adding each anti-goal they named (what the page must never be or do) to the record command as its own --anti-goal \"<text>\", which becomes a project rule too. If they say to just start, tell them in one line what you decided on their behalf and record that line with the skip command, with any anti-goal they named added the same way.";
+const CONVERSATION = "Use the bounded observation already returned and the supplied request, project and link. Do not repeat settled facts or ask the owner to name a style. Ask only unresolved questions that materially change the direction, one at a time; a known reference/reproduction purpose is not a new question. If everything needed is already settled or the owner authorized starting without questions, state the decisions in plain words and use the existing skip record. Otherwise play back the page in plain language, distinguishing the owner's facts from your assumptions; keep the current confirmation/correction authority. Record actual corrections as project rules and any named anti-goals. An observation is not owner acceptance.";
 
 // Intake ends with a confirmed playback or a stated skip, and a later correction reopens it.
 function intakeFinished(state) {
   const latest = history(state, "playbacks").at(-1);
-  return Boolean(state.decisions?.intake) && Boolean(latest) && latest.verdict !== "reject";
+  return Boolean(state.decisions?.intake) && state.decisions.intake.entry === frontend.entryDigest(state) && Boolean(latest) && latest.verdict !== "reject";
 }
 
 const INTAKE = {
@@ -82,8 +83,10 @@ const INTAKE = {
       type: "ask",
       // `first` is always a step for the agent before it asks; the opening question carries the skip line.
       ...(corrected ? { first: `The owner corrected the playback ("${latest.reason}"); each correction is now a project rule. Play it back again with the corrections applied, then ask:` } : {}),
-      question: corrected ? "What is wrong or missing in this?" : `${SKIP_LINE} ${OPENING[state.mode === "replicate" ? "replicate" : "page"]}`,
-      instruction: CONVERSATION,
+      question: corrected ? "What is wrong or missing in this?" : state.frontend?.request
+        ? `${SKIP_LINE} After the observations, ask only about an unresolved fact that would change the requested direction; if none remains, state the settled decisions and use skip.`
+        : `${SKIP_LINE} ${OPENING[state.mode === "replicate" ? "replicate" : "page"]}`,
+      instruction: `${CONVERSATION} ${frontend.optimizationBoundary(state)}`,
       record: `${decideCommand(root, "intake")} --verdict accept --answer "<the playback the owner confirmed>"${ANTI_GOALS}`,
       correction: `${decideCommand(root, "intake")} --verdict reject --answer "<what the owner said is wrong or missing>"`,
       skip: `${decideCommand(root, "intake")} --choice skip --answer "<the line telling the owner what you decided on their behalf>"${ANTI_GOALS}`,
@@ -98,7 +101,7 @@ const QUICK_INTAKE = {
   finished: intakeFinished,
   action: (_state, root) => ({
     type: "run",
-    instruction: "Do not interview the owner: a quick piece is settled by the request, the conversation and the project's files. Tell the owner in one plain line what you decided on their behalf (what you will build, for whom, the look or reference you follow), then record that line; add each thing the request rules out as its own --anti-goal \"<text>\", which becomes a project rule. Ask first only about something essential that you can neither look up nor reasonably decide.",
+    instruction: "Use the observation already returned; do not interview the owner or repeat settled facts. A quick piece follows the supplied request, purpose and project constraints. Tell the owner in one plain line what you will improve or build, the existing function/content/explicit brand preserved, and the supplied reference role, then record that line. Add named anti-goals as project rules. Ask only an unresolved essential fact that changes the direction; an already-authorized visual/layout adjustment or explicit scratch selection needs no extra approval.",
     command: `${decideCommand(root, "intake")} --choice skip --answer "<the line you told the owner>"${ANTI_GOALS}`,
     why: "Quick work stays short, and the owner hears every decision made for them instead of a silent default.",
   }),
@@ -109,7 +112,7 @@ function recordIntake(state, _root, options) {
   const at = new Date().toISOString();
   const antiGoals = [].concat(options.antiGoals ?? []).map(goal => reason(goal, "say in one sentence what the owner ruled out; it becomes a project rule", "--anti-goal"));
   if (options.choice !== undefined && options.choice !== null) {
-    if (options.choice !== "skip") fail("workflow", "web intake --choice accepts only skip: the owner asked you to start without questions");
+    if (options.choice !== "skip") fail("workflow", "frontend intake --choice accepts only skip: state the settled decisions for authorized work without another interview");
     if (options.verdict) fail("workflow", "web intake takes --choice skip or --verdict, not both");
     state.decisions.intake = { answer: statement(options.answer, "state in one sentence what you decided on the owner's behalf; a bare go-ahead is a silent default"), skipped: true };
     state.decisions.playbacks = [...playbacks, { verdict: "skip", at }];
@@ -124,6 +127,7 @@ function recordIntake(state, _root, options) {
   } else {
     fail("workflow", "web intake records the confirmed playback (--verdict accept --answer \"<playback>\"), a correction (--verdict reject --answer \"<what is wrong>\") or a stated skip (--choice skip --answer \"<what you decided for the owner>\"). Fix: follow the intake action from next");
   }
+  if (options.verdict !== "reject") state.decisions.intake.entry = frontend.entryDigest(state);
   // Each anti-goal is a "no" given in the conversation; one already among the rules is not repeated.
   for (const text of antiGoals) {
     if ((state.rules || []).some(rule => rule.text === text)) continue;
@@ -223,6 +227,15 @@ const COMPONENTS = {
   finished: (state) => typeof state.decisions?.components === "string" && Boolean(state.decisions.components.trim())
     && Array.isArray(state.decisions.componentSources) && state.decisions.componentSources.length > 0,
   action: (state, root) => {
+    const selection = state.decisions.designSystem?.selection;
+    const settled = selection?.basis === "owner-scratch" ? "scratch" : selection?.basis === "preserve-existing" ? "project" : null;
+    if (settled && !history(state, "rounds").length) return {
+      type: "run",
+      instruction: `The validated decision already settles component sources (${settled}). Reuse its actual recorded statement; do not ask the owner again. Determine sections from the supplied request, observation and chosen direction; unresolved material differences use the existing description/correction points. ${frontend.optimizationBoundary(state)} Record this settled choice using record, then follow next.`,
+      selection: { choice: settled, answer: selection.authority.text },
+      record: `${decideCommand(root, "components")} --choice ${settled} --answer "<the already recorded selection statement>"`,
+      why: "Explicit scratch and preserved project authority do not create a duplicate component interview.",
+    };
     const sectioned = state.tier !== "quick";
     const sources = { id: "components", ask: "Where should the components come from?", options: COMPONENT_OPTIONS, recommended: RECOMMENDED_SOURCES };
     const questions = [
@@ -285,7 +298,7 @@ function briefName(root) {
 // What an approval was given under: the confirmed playback, the variant pick and the component
 // decision. Changing any of them, or the brief's bytes, asks for approval again.
 function descriptionUpstream(state) {
-  return "sha256:" + sha256(canonicalJson({ playback: state.decisions?.intake?.answer ?? null, concept: state.decisions?.concept ?? null, conceptNotes: state.decisions?.conceptNotes ?? null, components: componentDecisionDigest(state) }));
+  return "sha256:" + sha256(canonicalJson({ playback: state.decisions?.intake?.answer ?? null, concept: state.decisions?.concept ?? null, conceptNotes: state.decisions?.conceptNotes ?? null, components: componentDecisionDigest(state), frontend: frontend.decisionDigest(state) }));
 }
 const approvalId = record => "sha256:" + sha256(canonicalJson({ brief: record.sha256, upstream: record.upstream, sections: record.sections }));
 // The approval the build follows, or null: the latest description verdict accepted the current
@@ -588,7 +601,7 @@ function declaresAudit(root) {
 const PROBE = {
   id: "probe",
   finished: (_state, root) => declaresAudit(root) === true,
-  gate: { name: "interaction", inputs: () => ["interaction.json", "index.html"] },
+  gate: { name: "interaction", inputs: state => ["interaction.json", "index.html", ...frontend.decisionInputs(state)] },
   action: (_state, root) => {
     if (!exists(root, "interaction.json")) return { type: "run", instruction: "Write interaction.json: one probe per key interaction plus one audit probe (\"kind\": \"audit\") that measures the local index.html at a desktop and a mobile viewport, with thresholds copied from DESIGN.md, the font families required (schema in references/workflow-web.md#probe)", why: "Every key interaction and the page's measurable craft are verified against the real page, not eyeballed." };
     if (declaresAudit(root) === false) return { type: "run", instruction: "Add an audit probe to interaction.json: one probes entry with \"kind\": \"audit\", a desktop and a mobile viewport, thresholds copied from DESIGN.md with the required font families, and the selectors to declare (references/workflow-web.md#probe); then run next again", why: "The probe stage passes only with a page audit at every tier; without one the verify command cannot finish this stage." };
@@ -606,11 +619,12 @@ const DELIVER = {
 // variants (not in replicate, which keeps its reference), the decision round, the approved
 // description, the section-by-section build, probe, final review and delivery.
 function stages(state) {
+  const entry = [frontend.OBSERVE, frontend.PURPOSE];
   if (state.mode === "replicate") return state.tier === "quick"
-    ? [QUICK_INTAKE, REFERENCE, COMPONENTS, BUILD, PROBE]
-    : [INTAKE, REFERENCE, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
-  if (state.tier === "quick") return [QUICK_INTAKE, COMPONENTS, BUILD, PROBE];
-  return [INTAKE, REFERENCE, CONCEPTS, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
+    ? [...entry, QUICK_INTAKE, REFERENCE, frontend.DESIGN_SYSTEM, COMPONENTS, BUILD, PROBE]
+    : [...entry, INTAKE, REFERENCE, frontend.DESIGN_SYSTEM, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
+  if (state.tier === "quick") return [...entry, QUICK_INTAKE, frontend.DESIGN_SYSTEM, COMPONENTS, BUILD, PROBE];
+  return [...entry, INTAKE, REFERENCE, frontend.DESIGN_SYSTEM, CONCEPTS, COMPONENTS, DESCRIPTION, BUILD, PROBE, REVIEW, DELIVER];
 }
 
 // Whether next, standing at `current`, has not yet reached the stage `id` (done is past every stage).
@@ -623,4 +637,4 @@ function before(state, current, id) {
 // returned before the record.
 const decisions = { intake: recordIntake, concept: recordConcept, components: recordComponents, description: recordDescription, section: recordSection };
 
-module.exports = { decisions, stages };
+module.exports = { INTAKE, QUICK_INTAKE, decisions, stages };

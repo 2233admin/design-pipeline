@@ -4,7 +4,7 @@
   "title": "Design System Runtime Decision",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "status", "mode", "projectAuthority", "selected", "rejected", "rationale", "evidence", "frontendStackDecision", "capabilityInventory"],
+  "required": ["schema", "status", "mode", "projectAuthority", "selected", "rejected", "rationale", "evidence", "frontendStackDecision", "capabilityInventory", "selection"],
   "properties": {
     "schema": {"const": "design-pipeline.design-system-decision.v1"},
     "status": {"enum": ["ready", "review", "blocked"]},
@@ -15,6 +15,118 @@
     "rationale": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "evidence": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "frontendStackDecision": {"type": ["object", "null"]},
-    "capabilityInventory": {"type": ["object", "null"]}
+    "capabilityInventory": {"type": ["object", "null"]},
+    "selection": {"oneOf": [{"$ref": "#/$defs/selection"}, {"type": "null"}]},
+    "request": {"type": "object", "description": "Resolved inputs for deterministic decision replay; publication does not itself authenticate owner authority."},
+    "sourceBindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requestPath", "inputHashes"],
+      "properties": {
+        "requestPath": {"$ref": "#/$defs/relativePath"},
+        "inputHashes": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {"$ref": "#/$defs/relativePath"},
+          "additionalProperties": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}
+        },
+        "catalogSource": {
+          "type": "object", "additionalProperties": false, "required": ["kind"],
+          "properties": {
+            "kind": {"enum": ["request", "bundled", "catalog", "snapshot"]},
+            "path": {"$ref": "#/$defs/relativePath"}
+          },
+          "allOf": [
+            {
+              "if": {"properties": {"kind": {"enum": ["catalog", "snapshot"]}}},
+              "then": {"required": ["path"]},
+              "else": {"not": {"required": ["path"]}}
+            }
+          ]
+        }
+      },
+      "description": "Workflow consumers must reread and hash every bound source, including requestPath; core validation checks shape and replay, not current filesystem bytes."
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "ready"}}},
+      "then": {"properties": {"selected": {"type": "object"}, "frontendStackDecision": {"type": "object"}, "selection": {"$ref": "#/$defs/selection"}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "ready"}, "mode": {"enum": ["reference", "adopt", "substitute"]}}},
+      "then": {"properties": {"capabilityInventory": {"type": "object"}, "selection": {"properties": {"basis": {"const": "capability-search"}}}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "ready"}, "mode": {"const": "custom"}, "selection": {"type": "object", "properties": {"basis": {"const": "capability-search"}}}}},
+      "then": {"properties": {"capabilityInventory": {"type": "object"}, "selection": {"$ref": "#/$defs/ownerFallback"}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "ready"}, "mode": {"const": "substitute"}}},
+      "then": {"properties": {"selection": {"$ref": "#/$defs/ownerFallback"}}}
+    }
+  ],
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.{1,2}(?:/|$))[^/]+(?:/[^/]+)*$"
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["basis", "authority", "rationale", "compared"],
+      "properties": {
+        "basis": {"enum": ["owner-scratch", "preserve-existing", "capability-search"]},
+        "authority": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["actor", "source", "text", "choice"],
+          "properties": {
+            "actor": {"enum": ["owner", "agent"]},
+            "source": {"enum": ["request", "reply", "project"]},
+            "text": {"type": "string", "minLength": 1, "pattern": "\\S"},
+            "choice": {"type": "string", "minLength": 1, "pattern": "\\S"}
+          }
+        },
+        "rationale": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "compatibility": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "compared": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "reason"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1, "pattern": "\\S"},
+              "reason": {"type": "string", "minLength": 1, "pattern": "\\S"}
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"basis": {"const": "owner-scratch"}}},
+          "then": {"properties": {"authority": {"properties": {"actor": {"const": "owner"}, "source": {"enum": ["request", "reply"]}, "choice": {"const": "custom"}}}}}
+        },
+        {
+          "if": {"properties": {"basis": {"const": "preserve-existing"}}},
+          "then": {"properties": {"authority": {"properties": {"source": {"const": "project"}}}}}
+        }
+      ]
+    },
+    "ownerFallback": {
+      "allOf": [
+        {"$ref": "#/$defs/selection"},
+        {
+          "required": ["compatibility"],
+          "properties": {
+            "basis": {"const": "capability-search"},
+            "authority": {"properties": {"actor": {"const": "owner"}, "source": {"enum": ["request", "reply"]}}},
+            "compared": {"minItems": 1}
+          }
+        }
+      ]
+    }
   }
 }

@@ -8,16 +8,16 @@ const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { STATE, initState, nextAction, decide, readState, recordGate } = require("../skill/scripts/workflow-core.cjs");
 const { validateComponentManifest } = require("../skill/scripts/design-system-catalog-core.cjs");
-const { acceptSections, approveDescription, toBuild, toComponents } = require("./helpers/web-flow.cjs");
+const { acceptSections, approveDescription, consumeScratchDecision, finishFrontendObservation, prepareFrontend, statedSkip, toBuild, toComponents } = require("./helpers/web-flow.cjs");
 const cli = path.resolve(__dirname, "../skill/scripts/designer-pipeline.cjs");
 const tiers = ["quick", "standard", "full"];
 const modes = ["brief", "freeform", "replicate"];
 
-function fixture(t, tier = "quick", mode = "brief") {
+function fixture(t, tier = "quick", mode = "brief", unsettledSources = false) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "web-components-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   initState(root, { deliverable: "web", tier, mode });
-  toComponents(root);
+  toComponents(root, { unsettledSources });
   return root;
 }
 function manifest(root, entries, fromScratch = false) {
@@ -47,7 +47,7 @@ function assertComponentsAsk(ask) {
 
 for (const tier of tiers) for (const mode of modes) {
   test(`web ${tier}/${mode} asks components before build and follows the recorded answer`, t => {
-    const root = fixture(t, tier, mode);
+    const root = fixture(t, tier, mode, true);
     const ask = nextAction(root);
     assert.equal(ask.stage, "components");
     assert.equal(ask.type, "ask");
@@ -165,6 +165,9 @@ test("ui keeps its generic work and evidence-delivery contract", t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "ui-components-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   initState(root, { deliverable: "ui", tier: "quick" });
+  assert.equal(nextAction(root).stage, "observe");
+  prepareFrontend(root);
+  statedSkip(root);
   const action = nextAction(root);
   assert.equal(action.stage, "work");
   assert.match(action.command, /--stage deliver --answer <evidence>/);
@@ -317,8 +320,11 @@ test("actual CLI outside the project accepts scratch and only valid real manifes
     return JSON.parse(result.stdout);
   }
   try {
-    assert.equal(run(["next", "--deliverable", "web", "--tier", "quick", "--mode", "brief"]).stage, "intake");
+    assert.equal(run(["next", "--deliverable", "web", "--tier", "quick", "--mode", "brief"]).stage, "observe");
+    finishFrontendObservation(root);
     run(["decide", "--stage", "intake", "--choice", "skip", "--answer", "I will build a one-screen navigation page from scratch."]);
+    assert.equal(run(["next"]).stage, "design-system");
+    consumeScratchDecision(root);
     assert.equal(run(["next"]).stage, "components");
     run(["decide", "--stage", "components", "--choice", "scratch", "--answer", "从零写"]);
     fs.writeFileSync(path.join(root, "index.html"), '<nav class="Navigation">Page</nav>');
@@ -378,7 +384,7 @@ test("round3 regression: canonical deduplicated choices preserve the user's answ
 });
 
 test("round3 regression: legacy answer-only decisions ask components again", t => {
-  const root = fixture(t);
+  const root = fixture(t, "quick", "brief", true);
   const statePath = path.join(root, ".design-pipeline/state.json");
   const state = JSON.parse(fs.readFileSync(statePath, "utf8"));
   state.decisions.components = "Write from scratch";
@@ -567,6 +573,7 @@ test("components decisions are rejected outside web workflows and leave their st
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "non-web-components-"));
     t.after(() => fs.rmSync(root, { recursive: true, force: true }));
     initState(root, { deliverable, tier: "quick", mode: "brief" });
+    if (deliverable === "ui") prepareFrontend(root);
     const file = path.join(root, STATE);
     const seeded = JSON.parse(fs.readFileSync(file, "utf8"));
     seeded.gates = { ...(seeded.gates || {}), [deliverable === "ui" ? "interaction" : deliverable]: { status: "passed", inputHashes: { "out.bin": "sha256:0" } } };
@@ -588,7 +595,7 @@ function discoveryFixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "web-discovery-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   initState(root, { deliverable: "web", tier: "quick", mode: "brief" });
-  toComponents(root);
+  toComponents(root, { unsettledSources: true });
   fs.writeFileSync(path.join(root, "index.html"), DISCOVERY_PAGE);
   fs.mkdirSync(path.join(root, "licenses"));
   fs.writeFileSync(path.join(root, "licenses/phosphor-core.txt"), "MIT License\n\nCopyright (c) Phosphor Icons\n");

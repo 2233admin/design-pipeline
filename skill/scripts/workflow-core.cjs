@@ -33,6 +33,7 @@ const MODES = ["brief", "replicate", "freeform"];
 // guides.
 const { cliCommand, shellPath, INTAKE, REVIEW, componentDecisionDigest, gateStatus, invalidateCheckedEvidence, reference, reviewInputHashes } = require("./workflows/shared.cjs");
 const SUB_WORKFLOWS = { film: require("./workflows/film.cjs"), edit: require("./workflows/edit.cjs"), web: require("./workflows/web.cjs") };
+const frontend = require("./workflows/frontend.cjs");
 const REFERENCE = reference("Inspect the supplied reference and its timed frames; write reference.md with reference regions, observable structure and motion, invariants and uncertainties using references/reference-spec.md. Follow references/reconstruction-spec.md and applicable references/3d-spec.md; the next work starts a bounded graybox. reference.md marks document delivery, not verified observation; do not require aggregate reference readiness before the graybox exists.");
 
 function codeStages(state) {
@@ -40,15 +41,17 @@ function codeStages(state) {
   const work = {
     id: "work",
     finished: (state) => Boolean(state.decisions?.delivered),
-    action: (_state, root) => ({
+    action: (state, root) => ({
       type: "run",
       instruction: `${tier === "full" ? "Open an OpenSpec change under openspec/changes/<id>/ and follow references/pipeline-reference.md" : `Follow references/pipeline-reference.md at the ${tier} tier (no OpenSpec; create DESIGN.md/MOTION.md only at standard if missing)`}${mode === "replicate" ? "; reproduce the reference and its invariants" : ""}. In tasks.md isolate one visual goal per task: source/reference region or applicable scene node, goal and invariants, inputs, literal modification scope, outputs, runtime/comparison checks and failure return step. For references, start a bounded graybox for structure and occlusion; once it exists, read the complete results of reference check, reconstruction check and applicable scene check. If required prerequisite stages are not ready, repair their findings before material, polish or motion that depends on them; follow the stage-specific permissions in references/reconstruction-spec.md, including optical work when graybox is ready but geometry is blocked. Verify the rendered surface; file delivery and engineering checks do not grant visual acceptance. When verified, run the command to record the delivery (replace <evidence>).`,
+      boundary: frontend.optimizationBoundary(state),
       command: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage deliver --answer <evidence>`,
       ...(mode === "replicate" ? { guide: "references/pipeline-reference.md" } : {}),
       why: tier === "full" ? "Full tier keeps OpenSpec lineage." : "Lighter tiers skip specification ceremony but keep the gates.",
     }),
   };
-  return [...(tier === "quick" ? [] : [INTAKE]), ...(mode === "replicate" ? [REFERENCE] : []), work];
+  return [frontend.OBSERVE, frontend.PURPOSE, tier === "quick" ? SUB_WORKFLOWS.web.QUICK_INTAKE : SUB_WORKFLOWS.web.INTAKE,
+    ...(mode === "replicate" ? [REFERENCE] : []), frontend.DESIGN_SYSTEM, work];
 }
 
 function stagesFor(state) {
@@ -138,9 +141,24 @@ function initState(root, options = {}) {
   let jobPlan = null;
   if (named) jobPlan = newJobPlan(root, options.jobPlan);
   else if (options.deliverable === "film" && fs.existsSync(path.join(root, JOB_PLAN))) jobPlan = newJobPlan(root, JOB_PLAN);
-  const state = { schema: SCHEMA, deliverable: options.deliverable, tier, mode, director: options.director || null, ...(jobPlan ? { jobPlan } : {}), decisions: {}, gates: {}, rules: [], createdAt: new Date().toISOString() };
+  const state = { schema: SCHEMA, deliverable: options.deliverable, tier, mode, director: options.director || null, ...(jobPlan ? { jobPlan } : {}), ...(frontend.isFrontend(options) ? { frontend: frontend.createFrontendContext({ ...options, mode }) } : {}), decisions: {}, gates: {}, rules: [], createdAt: new Date().toISOString() };
   writeState(root, state);
   return state;
+}
+
+function bindStateFrontend(root, options = {}) {
+  const state = readState(root);
+  if (!state || !frontend.isFrontend(state)) fail("workflow", "frontend input options require an existing web or UI workflow");
+  const current = state.frontend || {};
+  const changedRequest = options.query !== undefined && options.query !== current.request;
+  const mode = options.mode || (changedRequest ? "brief" : state.mode);
+  const input = frontend.createFrontendContext({ mode, query: options.query ?? current.request ?? undefined, url: options.url ?? current.url ?? undefined, scope: options.scope ?? current.scope ?? undefined, purpose: options.purpose ?? (changedRequest ? undefined : current.suppliedPurpose ?? undefined) });
+  if (canonicalJson(input) !== canonicalJson(current) || mode !== state.mode) {
+    state.frontend = input;
+    state.mode = mode;
+    frontend.synchronizeFrontend(state, root);
+    writeState(root, state);
+  }
 }
 
 // One line per action: the question (after any first step), the blocker, or the instruction and its command.
@@ -156,19 +174,25 @@ function nextAction(root) {
     return { type: "ask", stage: "start", question: "What are we making, and how big is it?", recommended: "film/standard for a promo or explainer; edit/standard for PV or MAD; quick for a single motion, shot or component; full only for large shared work.", record: `${cliCommand()} next --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --deliverable film|edit|web|ui --tier quick|standard|full [--mode brief|replicate|freeform] [--job-plan job-plan.json]`, line: "No project state yet: choose the deliverable and tier." };
   }
   stateJobPlan(root, state);
+  if (frontend.synchronizeFrontend(state, root)) writeState(root, state);
   const stages = stagesFor(state);
   const done = [];
   for (const stage of stages) {
     const verification = stage.gate ? gateStatus(state, root, stage.gate.name, stage.gate.inputs(state, root)) : null;
     if ((!stage.finished || stage.finished(state, root)) && (!verification || verification.status === "passed")) { done.push(stage.id); continue; }
-    const action = stage.action(state, root);
+    const runtimeDecision = frontend.isFrontend(state) && ["build", "work"].includes(stage.id) ? frontend.decisionStatus(state, root, { runtime: true }) : null;
+    const pending = runtimeDecision && runtimeDecision.status !== "ready"
+      ? { type: "blocked", blocker: { kind: "frontend-design-system", reason: runtimeDecision.reason, needs: "A current runtime-authorizing design-system decision, not reference-only adoption." }, instruction: "Record an explicit project-owned custom/adopt/substitute decision using the existing design-system action.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage design-system --artifact <decision.json>` }
+      : stage.action(state, root);
+    const action = frontend.isFrontend(state) && pending.type === "run" && pending.instruction && ["concepts", "description", "build", "work"].includes(stage.id)
+      ? { ...pending, instruction: `${frontend.optimizationBoundary(state)} ${pending.instruction}` } : pending;
     // Visual asks go to the art director: the concept pick, a sample, a built web section, the review.
     const directed = state.director && action.type === "ask" && ["concepts", "sample", "build", "review"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
     const rules = state.rules.length ? { rules: state.rules.map((rule) => rule.text) } : {};
     const guide = SUB_WORKFLOWS[state.deliverable] ? { guide: `references/workflow-${state.deliverable}.md#${stage.id}` } : {};
     return { ...action, ...guide, ...directed, ...rules, ...(verification ? { verification } : {}), stage: stage.id, deliverable: state.deliverable, tier: state.tier, completed: done, remaining: stages.length - done.length, line: `${state.deliverable}/${state.tier}: ${stage.id} (${done.length + 1}/${stages.length}) - ${actionLine(action)}` };
   }
-  return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...(state.deliverable === "ui" ? { visualAcceptance: "not-evaluated" } : {}), ...SUB_WORKFLOWS[state.deliverable]?.doneFields?.(state, root), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [] }, line: `${state.deliverable}/${state.tier}: done` };
+  return { type: "done", stage: "done", deliverable: state.deliverable, tier: state.tier, completed: done, ...(state.deliverable === "ui" ? { visualAcceptance: "not-evaluated" } : {}), ...SUB_WORKFLOWS[state.deliverable]?.doneFields?.(state, root), evidence: { delivered: state.decisions.delivered || null, gates: state.gates, drafts: state.decisions.drafts || [], ...(frontend.isFrontend(state) ? { designSystem: state.decisions.designSystem, frontendPurpose: state.decisions.frontendPurpose } : {}) }, line: `${state.deliverable}/${state.tier}: done` };
 }
 
 function decide(root, options = {}) {
@@ -176,14 +200,21 @@ function decide(root, options = {}) {
   if (!state) fail("workflow", "no project state. Fix: run next with --deliverable and --tier first", { code: "INPUT_MISSING" });
   stateJobPlan(root, state); // A stale Stage 0 binding records nothing.
   const stage = options.stage;
-  assertEnum(stage, ["intake", "reference", "concept", "components", "description", "section", "sample", "review", "deliver"], "stage", "workflow");
+  assertEnum(stage, ["observe", "purpose", "design-system", "intake", "reference", "concept", "components", "description", "section", "sample", "review", "deliver"], "stage", "workflow");
   state.decisions = state.decisions || {};
-  // Web records its conversation, variants, decision round, description and sections itself (workflows/web.cjs).
-  const webRecord = state.deliverable === "web" ? SUB_WORKFLOWS.web.decisions[stage] : null;
+  const front = frontend.isFrontend(state);
+  if (front && frontend.synchronizeFrontend(state, root)) writeState(root, state);
+  if (!front && ["observe", "purpose", "design-system"].includes(stage)) fail("workflow", `--stage ${stage} applies only to frontend workflows`);
+  if (front && !["observe", "purpose"].includes(stage) && !frontend.purposeFinished(state, root)) fail("workflow", "Observe the supplied frontend and resolve its purpose before further questions or work. Fix: follow next.", { code: "WORKFLOW_NOT_READY" });
+  if (front && ["concept", "components", "description", "section", "review", "deliver"].includes(stage) && frontend.decisionStatus(state, root).status !== "ready") fail("workflow", "A current consumed design-system decision is required before downstream decisions. Fix: follow next.", { code: "DESIGN_SYSTEM_DECISION_REQUIRED" });
+  if (front && ["section", "review", "deliver"].includes(stage)) frontend.requireRuntimeDecision(state, root);
+  const webRecord = state.deliverable === "web" || state.deliverable === "ui" && stage === "intake" ? SUB_WORKFLOWS.web.decisions[stage] : null;
   if (!webRecord && ["components", "description", "section"].includes(stage)) fail("workflow", `--stage ${stage} applies only to web workflows; this project is a ${state.deliverable} workflow. Fix: follow next.`);
-  // Anti-goals go with a web intake's confirmed playback or skip; elsewhere they would be dropped.
-  if ([].concat(options.antiGoals ?? []).length && !(webRecord && stage === "intake")) fail("workflow", "--anti-goal applies only to a web intake playback or skip. Fix: follow next.");
-  if (webRecord) {
+  if ([].concat(options.antiGoals ?? []).length && !(webRecord && stage === "intake")) fail("workflow", "--anti-goal applies only to a frontend intake playback or skip. Fix: follow next.");
+  if (stage === "observe") frontend.recordObservation(state, root, options);
+  else if (stage === "purpose") frontend.recordPurpose(state, root, options);
+  else if (stage === "design-system") frontend.recordDesignSystem(state, root, options);
+  else if (webRecord) {
     webRecord(state, root, options, () => nextAction(root));
   } else if (stage === "intake") {
     if (!options.answer) fail("workflow", "--answer is required: the user's reply to the intake questions");
@@ -264,7 +295,9 @@ function decide(root, options = {}) {
 function recordGate(root, gate, status, inputs = [], report = {}, lineage = null) {
   const state = readState(root);
   if (!state) return;
-  const bound = lineage ? [...inputs, ...lineage.files, ...lineage.tokens] : inputs;
+  if (frontend.isFrontend(state) && status === "passed") frontend.requireRuntimeDecision(state, root);
+  const evidenceInputs = frontend.isFrontend(state) ? frontend.decisionInputs(state) : [];
+  const bound = [...(lineage ? [...inputs, ...lineage.files, ...lineage.tokens] : inputs), ...evidenceInputs];
   const inputHashes = status === "passed" ? Object.fromEntries(bound.filter(Boolean).map(input => {
     const file = resolveInside(root, input, "checked input", { scope: "workflow", mustExist: true });
     return [path.relative(root, file).split(path.sep).join("/"), "sha256:" + sha256(fs.readFileSync(file))];
@@ -289,15 +322,23 @@ function visualContext(changeRoot, options) {
   const root = fs.realpathSync.native(path.resolve(changeRoot)), stateHash = sha256(fs.readFileSync(path.join(root, "state.json"))), native = readNativeState(root);
   native.stateHash = stateHash;
   if (native.state.phase !== "implementation") fail("workflow", "Visual task progress requires the native implementation phase.");
+  if (native.state.extensions.frontend && options.projectRoot && !samePath(fs.realpathSync.native(path.resolve(options.projectRoot)), native.state.extensions.frontend.projectRoot)) fail("workflow", "the provided frontend project differs from the native change's bound project; do not silently rebind its evidence", { code: "WORKFLOW_FRONTEND_CONTEXT_CHANGED" });
+  const suppliedProject = options.projectRoot || options.workspaceRoot;
+  if (!native.state.extensions.frontend && suppliedProject) {
+    const project = fs.realpathSync.native(path.resolve(suppliedProject));
+    const workflow = frontend.projectFrontendState(project);
+    if (workflow) native.state.extensions.frontend = { projectRoot: project, deliverable: workflow.deliverable };
+  }
+  const frontendEvidence = frontend.nativeFrontendStatus(native.state, { runtime: true });
   const stored = native.state.extensions.visualTasks;
   const requested = options.plan || stored?.planPath;
-  if (!requested) return { root, native };
+  if (!requested) return { root, native, frontendEvidence };
   const planFile = resolveInside(root, requested, "visual plan", { scope: "workflow" });
-  if (!fs.existsSync(planFile)) return { root, native, missingPlan: requested };
+  if (!fs.existsSync(planFile)) return { root, native, frontendEvidence, missingPlan: requested };
   const plan = validatePlan(readJson(planFile, "visual plan"), { requireVisualTasks: true });
   const planHash = visualHash(fs.readFileSync(planFile)), planPath = visualPath(path.relative(root, planFile));
   const progress = { planHash, planPath, completed: structuredClone(stored?.completed || {}), failures: { ...(stored?.failures || {}) }, ...(stored?.active ? { active: structuredClone(stored.active) } : {}) };
-  const context = { root, native, plan, progress, videoCache: new Map(), sourceEvidence: new Map() };
+  const context = { root, native, plan, progress, frontendEvidence, videoCache: new Map(), sourceEvidence: new Map() };
   if (stored && stored.planHash !== planHash) {
     for (const id of Object.keys(progress.completed)) markVisualStale(context, id, "visual plan changed");
   }
@@ -309,7 +350,7 @@ function persistVisual(context, summary, type = "visual-task-progress") {
   return advanceChange(native.stateFile, native.eventsFile, {
     expectedSha256: native.stateHash,
     timestamp: new Date().toISOString(), summary, type,
-    status: "implementing", visualTasks: progress,
+    status: "implementing", visualTasks: progress, ...(native.state.extensions.frontend ? { frontend: native.state.extensions.frontend } : {}),
   });
 }
 
@@ -332,6 +373,7 @@ function markVisualStale(context, id, reason) {
 
 function visualInputs(context, task) {
   const hashes = { $plan: context.progress.planHash, $task: visualHash(canonicalJson(task)) };
+  if (context.frontendEvidence) hashes.$frontend = context.frontendEvidence.digest || visualHash(canonicalJson(context.frontendEvidence));
   const dependencies = context.plan.phases.filter(phase => task.depends_on.includes(phase.id)).flatMap(phase => phase.outputs);
   const binding = task.visual.sourceObservation, videoReferences = [];
   for (const reference of task.visual.references) {
@@ -351,7 +393,7 @@ function visualInputs(context, task) {
   const sourceInputs = evidence ? [binding.report, evidence.source.path, ...evidence.frames.map(frame => frame.path)] : [];
   for (const input of new Set([...task.inputs, ...task.visual.references, ...task.visual.guides, ...sourceInputs, ...dependencies])) {
     const key = visualPath(input);
-    if (key === "$plan" || key === "$task" || key.startsWith("output:")) fail("workflow", `reserved visual input key: ${key}`);
+    if (key === "$plan" || key === "$task" || key === "$frontend" || key.startsWith("output:")) fail("workflow", `reserved visual input key: ${key}`);
     const file = resolveInside(context.root, input, "visual input", { scope: "workflow", mustExist: true });
     if (!fs.statSync(file).isFile()) fail("workflow", `visual input is not a file: ${input}`);
     hashes[key] = visualHash(fs.readFileSync(file));
@@ -520,8 +562,27 @@ function visualFailureFeedback(context, task, inputHashes) {
   };
 }
 
+function blockedNativeFrontend(context) {
+  const evidence = context.frontendEvidence;
+  if (!evidence || evidence.status === "ready") return null;
+  const progress = context.progress || structuredClone(context.native.state.extensions.visualTasks || { completed: {}, failures: {} });
+  for (const record of Object.values(progress.completed || {})) {
+    record.status = "stale";
+    record.artifacts = (record.artifacts || []).map(artifact => ({ ...artifact, status: "stale", stale_cause: evidence.reason }));
+    if (record.review) record.review.valid = false;
+  }
+  advanceChange(context.native.stateFile, context.native.eventsFile, {
+    expectedSha256: context.native.stateHash, timestamp: new Date().toISOString(),
+    type: "frontend-evidence-invalidation", summary: evidence.reason || "Frontend decision evidence is unavailable.",
+    status: "blocked", visualTasks: progress, ...(context.native.state.extensions.frontend ? { frontend: context.native.state.extensions.frontend } : {}),
+  });
+  return { type: "blocked", status: "blocked", stage: "design-system", blocker: { kind: "frontend-design-system", reason: evidence.reason, needs: "The current frontend decision and its bound sources." }, instruction: "Repair and consume the existing v1 decision in the bound frontend workflow; previous technical and owner-review evidence is stale.", visualAcceptance: "not-evaluated" };
+}
+
 function nextVisualTask(changeRoot, options = {}) {
   const context = visualContext(changeRoot, options);
+  const frontendBlocker = blockedNativeFrontend(context);
+  if (frontendBlocker) return frontendBlocker;
   if (!context.plan) return visualDecomposition(context);
   const { current, inputHashes, blocker: inputBlocker, waitingReview } = currentVisual(context);
   let blocker = inputBlocker;
@@ -642,6 +703,8 @@ function observeVisualTask(context, task, inputHashes, options) {
 function decideVisualTask(changeRoot, options = {}) {
   assertEnum(options.verdict, ["complete", "accept", "reject"], "verdict", "workflow");
   const context = visualContext(changeRoot, options);
+  const frontendBlocker = blockedNativeFrontend(context);
+  if (frontendBlocker) return frontendBlocker;
   if (!context.plan) fail("workflow", "A visual task plan is required before completion.");
   const { current, inputHashes, blocker, waitingReview } = currentVisual(context);
   const chosen = context.plan.phases.find(task => task.id === options.choice);
@@ -696,4 +759,4 @@ function decideVisualTask(changeRoot, options = {}) {
   return { status: failure ? "blocked" : "recorded", taskId: current.id, ...(failure ? { failure } : {}), visualAcceptance: "not-evaluated", next: nextVisualTask(changeRoot) };
 }
 
-module.exports = { DELIVERABLES, SCHEMA, STATE, TIERS, bindStateJobPlan, decide, decideVisualTask, initState, nextAction, nextVisualTask, projectJobPlan, readState, recordGate };
+module.exports = { DELIVERABLES, SCHEMA, STATE, TIERS, bindStateFrontend, bindStateJobPlan, decide, decideVisualTask, initState, nextAction, nextVisualTask, projectJobPlan, readState, recordGate };

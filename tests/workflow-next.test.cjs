@@ -13,7 +13,7 @@ const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs")
 const { analyzeVideo } = require("../skill/scripts/reference-video-core.cjs");
 const { stages: webStages } = require("../skill/scripts/workflows/web.cjs");
 const { validateShape } = require("../skill/scripts/runtime-review-core.cjs");
-const { PLAYBACK, SECTIONS, STATED, acceptSections, approveDescription, confirmPlayback, pickVariant, statedSkip, toBuild, toComponents, variantsPage, writeDescription, writeVariants } = require("./helpers/web-flow.cjs");
+const { PLAYBACK, SECTIONS, STATED, acceptSections, approveDescription, confirmPlayback, consumeScratchDecision, finishFrontendObservation, pickVariant, prepareFrontend, statedSkip, toBuild, toComponents, variantsPage, writeDescription, writeVariants } = require("./helpers/web-flow.cjs");
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "workflow-"));
 const cli = path.join(__dirname, "../skill/scripts/designer-pipeline.cjs");
@@ -68,6 +68,7 @@ function rewriteSameTime(root, file, body) {
 const redraft = (deliverable, text) => deliverable === "web" ? SECTIONS.map(id => `<section data-section="${id}">${text}</section>`).join("\n") : text;
 
 function prepareWebComponents(root) {
+  if (nextAction(root).stage === "observe") toComponents(root);
   decide(root, { stage: "components", choice: "scratch", answer: "Write from scratch" });
   touch(root, "component-manifest.json", JSON.stringify({ fromScratch: true, entries: [] }));
 }
@@ -1344,10 +1345,13 @@ test("edit asks mad or pv as its first decision and routes to film-edit commands
 test("ui uses OpenSpec only at the full tier", () => {
   const quick = tmp();
   initState(quick, { deliverable: "ui", tier: "quick" });
+  prepareFrontend(quick);
+  statedSkip(quick);
   assert.doesNotMatch(nextAction(quick).instruction, /OpenSpec change/);
   const full = tmp();
   initState(full, { deliverable: "ui", tier: "full" });
-  decide(full, { stage: "intake", answer: "default" });
+  prepareFrontend(full);
+  confirmPlayback(full);
   assert.match(nextAction(full).instruction, /OpenSpec change/);
 });
 
@@ -1792,7 +1796,9 @@ test("quick frontend replication observes the reference before existing output a
     const dir = tmp();
     try {
       initState(dir, { deliverable, tier: "quick", mode: "replicate" });
-      if (deliverable === "web") statedSkip(dir);
+      assert.equal(nextAction(dir).stage, "observe");
+      finishFrontendObservation(dir);
+      statedSkip(dir);
       touch(dir, "index.html");
       const observed = nextAction(dir);
       assert.equal(observed.stage, "reference", `${deliverable} must observe before continuing existing output`);
@@ -1804,6 +1810,8 @@ test("quick frontend replication observes the reference before existing output a
       assert.throws(() => decide(dir, { stage: "reference", answer: "none" }), /replicate mode cannot skip/);
       touch(dir, "reference.md", "Observed structure and motion; measurements remain to be checked.");
       recordGate(dir, "reference", "failed");
+      assert.equal(nextAction(dir).stage, "design-system");
+      consumeScratchDecision(dir);
       assert.equal(nextAction(dir).stage, deliverable === "web" ? "components" : "work", "aggregate checks must not deadlock observation before graybox exists");
       if (deliverable === "web") {
         prepareWebComponents(dir);
@@ -1819,10 +1827,12 @@ test("frontend replication uses the reference at every tier without replacement 
       const dir = tmp();
       try {
         initState(dir, { deliverable, tier, mode: "replicate" });
-        if (deliverable === "web") (tier === "quick" ? statedSkip : confirmPlayback)(dir);
-        else if (tier !== "quick") decide(dir, { stage: "intake", answer: "default" });
+        finishFrontendObservation(dir);
+        (tier === "quick" ? statedSkip : confirmPlayback)(dir);
         assert.equal(nextAction(dir).stage, "reference");
         touch(dir, "reference.md");
+        assert.equal(nextAction(dir).stage, "design-system");
+        consumeScratchDecision(dir);
         if (deliverable === "web") {
           assert.equal(nextAction(dir).stage, "components");
           prepareWebComponents(dir);
@@ -1845,10 +1855,9 @@ test("frontend actions define bounded visual tasks and keep polish dependent on 
     try {
       initState(dir, { deliverable, tier: "quick", mode: "replicate" });
       touch(dir, "reference.md");
-      if (deliverable === "web") {
-        statedSkip(dir);
-        prepareWebComponents(dir);
-      }
+      prepareFrontend(dir);
+      statedSkip(dir);
+      if (deliverable === "web") prepareWebComponents(dir);
       const build = nextAction(dir);
       assert.match(build.instruction, /tasks\.md/);
       for (const field of ["reference region", "scene node", "goal", "invariants", "inputs", "literal modification scope", "outputs", "runtime", "comparison", "failure return"]) {
@@ -1869,6 +1878,7 @@ test("brief and freeform frontend work preserve their quick and concept workflow
       try {
         initState(dir, { deliverable, tier: "quick", mode });
         if (deliverable === "web") toComponents(dir);
+        if (deliverable === "ui") { prepareFrontend(dir); statedSkip(dir); }
         assert.equal(nextAction(dir).stage, deliverable === "web" ? "components" : "work");
         if (deliverable === "web") {
           prepareWebComponents(dir);
@@ -1880,6 +1890,7 @@ test("brief and freeform frontend work preserve their quick and concept workflow
       const dir = tmp();
       try {
         initState(dir, { deliverable: "web", tier, mode });
+        prepareFrontend(dir);
         confirmPlayback(dir);
         decide(dir, { stage: "reference", answer: "none" });
         assert.equal(nextAction(dir).stage, "concepts");
@@ -1890,11 +1901,15 @@ test("brief and freeform frontend work preserve their quick and concept workflow
   }
 });
 
-test("web quick walks intake, components, build then probe; standard adds reference, concepts, description, review, deliver; full opens OpenSpec at build", () => {
+test("web observes first and consumes a design-system decision before its existing tier stages", () => {
   const quick = tmp();
   initState(quick, { deliverable: "web", tier: "quick" });
+  assert.equal(nextAction(quick).stage, "observe");
+  finishFrontendObservation(quick);
   assert.equal(nextAction(quick).stage, "intake");
   statedSkip(quick);
+  assert.equal(nextAction(quick).stage, "design-system");
+  consumeScratchDecision(quick);
   assert.equal(nextAction(quick).stage, "components");
   assert.equal(nextAction(quick).remaining, 3);
   prepareWebComponents(quick);
@@ -1906,10 +1921,14 @@ test("web quick walks intake, components, build then probe; standard adds refere
   const dir = tmp();
   initState(dir, { deliverable: "web", tier: "standard" });
   const stage = () => nextAction(dir).stage;
+  assert.equal(stage(), "observe");
+  finishFrontendObservation(dir);
   assert.equal(stage(), "intake");
   confirmPlayback(dir);
   assert.equal(stage(), "reference");
   decide(dir, { stage: "reference", answer: "none" });
+  assert.equal(stage(), "design-system");
+  consumeScratchDecision(dir);
   assert.equal(nextAction(dir).type, "run", "concepts must be written before the user is asked");
   writeVariants(dir);
   assert.equal(nextAction(dir).type, "ask");
@@ -1984,6 +2003,7 @@ test("web concepts asks for a switchable variants page and a treatment before th
   const dir = tmp();
   try {
     initState(dir, { deliverable: "web", tier: "standard" });
+    prepareFrontend(dir);
     confirmPlayback(dir);
     decide(dir, { stage: "reference", answer: "none" });
     const write = nextAction(dir);
@@ -2066,13 +2086,16 @@ test("standard and full web intake opens with one open question and a skip comma
   for (const tier of ["standard", "full"]) for (const mode of ["brief", "freeform", "replicate"]) {
     const label = `${tier}/${mode}`;
     const root = webProject(t, { tier, mode });
+    assert.equal(nextAction(root).stage, "observe", `${label}: observation precedes intake`);
+    assert.equal(nextAction(root).type, "run");
+    finishFrontendObservation(root);
     const before = snapshot(root);
     const ask = nextAction(root);
     assert.deepEqual(nextAction(root), ask, `${label}: next is stable`);
     assert.deepEqual(snapshot(root), before, `${label}: next only reads`);
     assert.equal(ask.type, "ask", label);
     assert.equal(ask.stage, "intake", label);
-    assert.equal(ask.first, undefined, `${label}: nothing comes before the opening question`);
+    assert.equal(ask.first, undefined, `${label}: intake does not repeat the completed observation`);
     assert.equal(typeof ask.question, "string", label);
     assert.doesNotMatch(ask.question, /\n/, `${label}: one question, not a list`);
     assert.equal(ask.question.split("?").length - 1, 1, `${label}: exactly one question: ${ask.question}`);
@@ -2092,7 +2115,10 @@ test("standard and full web intake opens with one open question and a skip comma
 test("the web intake instruction names the conversation rules", t => {
   for (const tier of ["standard", "full"]) for (const mode of ["brief", "replicate"]) {
     const label = `${tier}/${mode}`;
-    const { instruction } = nextAction(webProject(t, { tier, mode }));
+    const root = webProject(t, { tier, mode });
+    assert.equal(nextAction(root).stage, "observe");
+    finishFrontendObservation(root);
+    const { instruction } = nextAction(root);
     assert.match(instruction, /look(?:ed)? up/i, `${label}: facts are looked up`);
     assert.match(instruction, /never ask/i, `${label}: facts are not asked`);
     assert.match(instruction, /one open question per message/i, `${label}: one open question per message`);
@@ -2105,20 +2131,28 @@ test("the web intake instruction names the conversation rules", t => {
 test("a web skip records only a stated decision through the CLI, and web intake never writes brief.md", t => {
   const root = webProject(t);
   const skip = answer => ["--stage", "intake", "--choice", "skip", ...(answer === undefined ? [] : ["--answer", answer])];
+  assert.equal(nextAction(root).stage, "observe");
+  finishFrontendObservation(root);
   for (const answer of [undefined, "default"]) refusesCli(root, skip(answer), "CONTRACT_INVALID");
   refusesCli(root, ["--stage", "intake", "--answer", "A landing page for a bakery that takes preorders"], "CONTRACT_INVALID");
   assert.equal(decideCli(root, ...skip(STATED)).stage, "reference");
-  assert.deepEqual(readState(root).decisions.intake, { answer: STATED, skipped: true });
+  assert.equal(readState(root).decisions.intake.answer, STATED);
+  assert.equal(readState(root).decisions.intake.skipped, true);
   assert.equal(fs.existsSync(path.join(root, "brief.md")), false);
 
   const quick = webProject(t, { tier: "quick" });
+  assert.equal(nextCli(quick).stage, "observe");
+  finishFrontendObservation(quick);
   const run = nextCli(quick);
   assert.equal(run.type, "run");
   assert.equal(run.stage, "intake");
   assert.match(run.command, / decide .*--stage intake --choice skip --answer /);
   refusesCli(quick, ["--stage", "intake", "--answer", STATED], "CONTRACT_INVALID");
-  assert.equal(decideCli(quick, ...skip(STATED)).stage, "components");
-  assert.deepEqual(readState(quick).decisions.intake, { answer: STATED, skipped: true });
+  assert.equal(decideCli(quick, ...skip(STATED)).stage, "design-system");
+  consumeScratchDecision(quick);
+  assert.equal(nextCli(quick).stage, "components");
+  assert.equal(readState(quick).decisions.intake.answer, STATED);
+  assert.equal(readState(quick).decisions.intake.skipped, true);
   assert.equal(fs.existsSync(path.join(quick, "brief.md")), false);
 });
 
@@ -2126,6 +2160,8 @@ test("a web skip records only a stated decision through the CLI, and web intake 
 // words and every "no" three, where two CJK characters count as one word.
 test("stated decisions need six words and every no three, through the CLI", t => {
   const root = webProject(t), quick = webProject(t, { tier: "quick" });
+  finishFrontendObservation(root);
+  finishFrontendObservation(quick);
   const intake = (...args) => ["--stage", "intake", ...args];
   for (const answer of ["OK, start.", "proceed", "do it", "just start", "yes, build it as shown", "默认", "直接开始吧", "我要做一个面包店的预订"]) {
     for (const [project, args] of [[root, intake("--choice", "skip")], [root, intake("--verdict", "accept")], [quick, intake("--choice", "skip")]]) {
@@ -2139,7 +2175,9 @@ test("stated decisions need six words and every no three, through the CLI", t =>
   assert.equal(decideCli(root, ...intake("--choice", "skip", "--answer", STATED)).stage, "reference");
   decideCli(root, ...intake("--choice", "skip", "--answer", "我要做一个面包店的预订页"));
   assert.equal(readState(root).decisions.intake.answer, "我要做一个面包店的预订页", "twelve CJK characters are six words");
-  assert.equal(decideCli(quick, ...intake("--choice", "skip", "--answer", "I will build the pricing card")).stage, "components");
+  assert.equal(decideCli(quick, ...intake("--choice", "skip", "--answer", "I will build the pricing card")).stage, "design-system");
+  consumeScratchDecision(quick);
+  assert.equal(nextCli(quick).stage, "components");
 
   const built = approved(t, ["first-screen"]);
   buildPage(built, ["first-screen"]);
@@ -2150,9 +2188,14 @@ test("stated decisions need six words and every no three, through the CLI", t =>
 });
 
 test("anti-goals named with the confirmed playback or a skip become project rules through the CLI", t => {
-  for (const tier of ["standard", "quick"]) assert.match(nextAction(webProject(t, { tier })).instruction, /--anti-goal/, `${tier}: the intake instruction offers the flag`);
+  for (const tier of ["standard", "quick"]) {
+    const root = webProject(t, { tier });
+    finishFrontendObservation(root);
+    assert.match(nextAction(root).instruction, /--anti-goal/, `${tier}: the intake instruction offers the flag`);
+  }
   const goals = (...texts) => texts.flatMap(text => ["--anti-goal", text]);
   const root = webProject(t);
+  finishFrontendObservation(root);
   const accept = ["--stage", "intake", "--verdict", "accept", "--answer", PLAYBACK];
   assert.match(refusesCli(root, [...accept, ...goals("No ads")], "CONTRACT_INVALID").message, /at least 3 words/, "an anti-goal is a no");
   assert.match(refusesCli(root, ["--stage", "intake", "--verdict", "reject", "--answer", "It is for florists, not bakeries", ...goals("Never look like a delivery app")], "CONTRACT_INVALID").message, /--anti-goal/, "a correction is already a rule");
@@ -2168,6 +2211,7 @@ test("anti-goals named with the confirmed playback or a skip become project rule
   const film = webProject(t, { deliverable: "film" });
   assert.match(refusesCli(film, ["--stage", "intake", "--answer", "A launch film for the bakery app", ...goals("Never look like an advert")], "CONTRACT_INVALID").message, /--anti-goal/, "a film project");
   const quick = webProject(t, { tier: "quick" });
+  finishFrontendObservation(quick);
   decideCli(quick, "--stage", "intake", "--choice", "skip", "--answer", STATED, ...goals("No carousel anywhere on the page"));
   assert.deepEqual(readState(quick).rules, [{ text: "No carousel anywhere on the page", from: "anti-goal 1", scope: "project" }]);
 });
@@ -2190,17 +2234,22 @@ test("the intake commands next returns record two anti-goals through the real CL
     assert.notEqual(nextAction(root).stage, "intake", "intake is finished");
   };
   const standard = webProject(t);
+  assert.equal(nextAction(standard).stage, "observe");
+  finishFrontendObservation(standard);
   const ask = nextAction(standard);
   assert.ok(!ask.correction.includes("--anti-goal"), "a correction takes no anti-goal");
   run(standard, ask.record, PLAYBACK);
   const skipped = webProject(t);
+  finishFrontendObservation(skipped);
   run(skipped, nextAction(skipped).skip, STATED);
   const quick = webProject(t, { tier: "quick" });
+  finishFrontendObservation(quick);
   run(quick, nextAction(quick).command, STATED);
 });
 
 test("the playback must be confirmed before concepts; each correction becomes a rule and reopens intake", t => {
   const root = webProject(t);
+  prepareFrontend(root);
   const opening = nextAction(root);
   decide(root, { stage: "intake", verdict: "reject", answer: "It is for florists, not bakeries" });
   const corrected = nextAction(root);
@@ -2228,7 +2277,8 @@ test("the playback must be confirmed before concepts; each correction becomes a 
   const concepts = nextAction(root);
   assert.equal(concepts.stage, "concepts");
   assert.equal(concepts.type, "ask");
-  assert.deepEqual(readState(root).decisions.intake, { answer: PLAYBACK, playback: "confirmed" });
+  assert.equal(readState(root).decisions.intake.answer, PLAYBACK);
+  assert.equal(readState(root).decisions.intake.playback, "confirmed");
   assert.deepEqual(readState(root).decisions.playbacks.map(item => item.verdict), ["reject", "reject", "accept"]);
   assert.equal(fs.existsSync(path.join(root, "brief.md")), false);
 
@@ -2243,6 +2293,7 @@ test("the playback must be confirmed before concepts; each correction becomes a 
 
 test("a no in the decision round is a project rule and leaves the components decision open", t => {
   const root = webProject(t);
+  prepareFrontend(root);
   const no = "Do not reuse the old carousel component";
   confirmPlayback(root);
   decide(root, { stage: "reference", answer: "none" });
@@ -2594,6 +2645,7 @@ test("the probe binds the checked page, and the final review still turns a rejec
 
 test("every no along the way is a project rule, and next returns them all", t => {
   const root = webProject(t);
+  prepareFrontend(root);
   decide(root, { stage: "intake", verdict: "reject", answer: "It is for florists" });
   decide(root, { stage: "intake", verdict: "accept", answer: PLAYBACK, antiGoals: ["Never look like a delivery app"] });
   decide(root, { stage: "reference", answer: "none" });
@@ -2620,6 +2672,7 @@ test("every no along the way is a project rule, and next returns them all", t =>
 test("components, description and section records are refused on film, edit and ui projects", t => {
   for (const deliverable of ["film", "edit", "ui"]) {
     const root = webProject(t, { deliverable });
+    if (deliverable === "ui") prepareFrontend(root);
     for (const options of [
       { stage: "components", choice: "scratch", answer: "Write from scratch" },
       { stage: "components", verdict: "reject", answer: "Keep the old carousel out" },
@@ -2637,14 +2690,16 @@ test("delivery and review cannot bypass unfinished prerequisites or write state"
     try {
       initState(dir, { deliverable, tier: "standard" });
       const stateFile = path.join(dir, ".design-pipeline/state.json"), before = fs.readFileSync(stateFile, "utf8");
-      assert.throws(() => decide(dir, { stage: "deliver", answer: "final.mp4" }), /intake/);
+      assert.throws(() => decide(dir, { stage: "deliver", answer: "final.mp4" }), /intake|[Oo]bserve/);
       assert.equal(fs.readFileSync(stateFile, "utf8"), before);
       if (deliverable !== "ui") {
-        assert.throws(() => decide(dir, { stage: "review", verdict: "accept" }), /intake|review/);
+        assert.throws(() => decide(dir, { stage: "review", verdict: "accept" }), /intake|review|[Oo]bserve/);
         assert.equal(fs.readFileSync(stateFile, "utf8"), before);
       }
-      if (deliverable === "web") confirmPlayback(dir);
-      else decide(dir, { stage: "intake", answer: "default" });
+      if (["web", "ui"].includes(deliverable)) {
+        prepareFrontend(dir);
+        confirmPlayback(dir);
+      } else decide(dir, { stage: "intake", answer: "default" });
       if (["film", "web"].includes(deliverable)) {
         const afterIntake = fs.readFileSync(stateFile, "utf8");
         assert.throws(() => decide(dir, { stage: "deliver", answer: "final.mp4" }), /reference/);
@@ -2655,6 +2710,8 @@ test("delivery and review cannot bypass unfinished prerequisites or write state"
   const ui = tmp();
   try {
     initState(ui, { deliverable: "ui", tier: "quick", mode: "replicate" });
+    prepareFrontend(ui);
+    statedSkip(ui);
     const before = fs.readFileSync(path.join(ui, ".design-pipeline/state.json"), "utf8");
     assert.throws(() => decide(ui, { stage: "deliver", answer: "evidence.png" }), /reference/);
     assert.equal(fs.readFileSync(path.join(ui, ".design-pipeline/state.json"), "utf8"), before);
@@ -2779,6 +2836,8 @@ test("film and edit delivery requires an existing contained file and quick may r
   try {
     assert.equal(decide(web, { stage: "deliver", answer: "https://example.test/page" }).next.type, "done");
     initState(ui, { deliverable: "ui", tier: "quick" });
+    prepareFrontend(ui);
+    statedSkip(ui);
     const declared = decide(ui, { stage: "deliver", answer: "evidence.png" }).next;
     assert.equal(declared.type, "done");
     assert.equal(declared.visualAcceptance, "not-evaluated");

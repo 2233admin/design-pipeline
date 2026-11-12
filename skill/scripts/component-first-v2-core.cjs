@@ -1,8 +1,10 @@
 "use strict";
 
 const path = require("node:path");
+const fs = require("node:fs");
 const { canonicalJson, isObject, resolveInside, sha256 } = require("./contract-utils.cjs");
 const { loadComponentFirstPolicy } = require("./component-first/policies/policy-loader.cjs");
+const frontendWorkflow = require("./workflows/frontend.cjs");
 
 const ARTIFACT_SCHEMA = "component-first-gate.v2";
 const STAGE_SCHEMA = "component-first-stage-receipt.v2";
@@ -120,6 +122,26 @@ function validateStageReceipt(stage, receipt, artifact, options = {}) {
   const expectedParents = PARENTS[stage].map((parent) => artifact.receipts[parent]?.receiptHash || null);
   if (JSON.stringify(receipt.parentReceiptHashes) !== JSON.stringify(expectedParents)) return "stale";
   if (receipt.expiresAt && Date.parse(receipt.expiresAt) <= Date.parse(options.now || new Date().toISOString())) return "expired";
+  if (options.projectRoot) {
+    for (const ref of receipt.evidenceRefs || []) {
+      if (ref.kind !== "design-system") continue;
+      try {
+        const file = resolveInside(options.projectRoot, ref.path, "design-system receipt input", { scope: "component-first-v2", mustExist: true });
+        if (ref.sha256 !== "sha256:" + sha256(fs.readFileSync(file))) return "stale";
+      } catch { return "stale"; }
+    }
+    if (stage === "stack") {
+      const workflow = frontendWorkflow.projectFrontendState(options.projectRoot);
+      if (workflow) {
+        const current = frontendWorkflow.decisionStatus(workflow, options.projectRoot, { runtime: true });
+        if (current.status !== "ready") return "stale";
+        const refs = receipt.evidenceRefs || [];
+        const inputs = { ...(workflow.decisions.frontendObservation?.inputHashes || {}), ...current.inputHashes };
+        if (Object.entries(inputs).some(([path, sha256]) => !refs.some(ref => ref.kind === "design-system" && ref.path === path && ref.sha256 === sha256))) return "stale";
+        if (!refs.some(ref => ref.kind === "frontend-entry" && ref.sha256 === frontendWorkflow.decisionDigest(workflow))) return "stale";
+      }
+    }
+  }
   return receipt.status;
 }
 
@@ -202,7 +224,7 @@ function checkV2Artifact(input, options = {}) {
       if (!input.selection || input.selection.receiptHash !== promotion.selectionReceiptHash) findings.push({ code: "CF_V2_SELECTION_MISSING", message: "promotion does not reference the selected prototype" });
     }
     const status = findings.length ? "blocked" : Object.values(statuses).some((value) => ["blocked", "invalid", "not_evaluated", "not_applicable", "expired"].includes(value)) ? "blocked" : "passed";
-    return { schema: ARTIFACT_SCHEMA, status, reasonCodes: [...new Set(findings.map((item) => item.code))], findings, receipts: statuses, conformance: status, visualAcceptance: input.visualAcceptance?.status || "not-evaluated", promotion: input.promotions?.at(-1)?.status || null };
+    return { schema: ARTIFACT_SCHEMA, status, reasonCodes: [...new Set(findings.map((item) => item.code))], findings, receipts: statuses, conformance: status, visualAcceptance: options.projectRoot && frontendWorkflow.projectFrontendState(options.projectRoot) && status !== "passed" ? "not-evaluated" : input.visualAcceptance?.status || "not-evaluated", promotion: input.promotions?.at(-1)?.status || null };
   } catch (error) {
     return { schema: ARTIFACT_SCHEMA, status: "invalid", reasonCodes: [error.code || "CONTRACT_INVALID"], findings: [{ code: error.code || "CONTRACT_INVALID", message: error.message, details: error.details || {} }] };
   }

@@ -1,20 +1,19 @@
 # Web workflow
 
-Motion-first websites and pages. `designer-pipeline next` names the current stage; read only that
-section. Stage order:
+Websites and pages, including motion-first work. `designer-pipeline next` names the current stage;
+read only that section. Web and generic UI share the frontend entry:
 
-- `quick` brief/freeform: intake, components, build, probe; `quick` replicate: intake, reference,
-  components, build, probe.
-- `standard` and `full` brief/freeform: intake, reference, concepts, components, description, build,
-  probe, review, deliver. Replicate keeps the reference direction and omits replacement concepts:
-  intake, reference, components, description, build, probe, review, deliver.
+- All tiers begin with `observe`, then `purpose` only if the supplied request leaves the link's
+  role unresolved, then frontend intake and a validated `design-system` decision before directions.
+- `quick` brief/freeform continues with components, build, probe; replicate also keeps reference.
+- `standard` and `full` brief/freeform continue with reference, concepts, components, description,
+  build, probe, review, deliver. Replicate keeps the reference direction and omits replacement concepts.
 
-At `standard` and `full` the agent talks before it builds: a conversation that ends in a playback
-the owner confirms, three switchable first-screen variants (not in replicate), a numbered round of
-concrete decisions with recommended answers (further rounds when an answer depends on another),
-and a one-page description the owner approves. Only then is the page built, one section at a
-time, each reviewed by the owner, before the final review. `quick` states what was decided for
-the owner instead of asking.
+These entry records do not add owner design approvals or change the tiers. At `standard` and `full`,
+the existing conversation ends in a playback the owner confirms, three switchable first-screen
+variants (not in replicate), unresolved concrete decisions with recommended answers, and a one-page
+description the owner approves. Build one section at a time with the existing section/final reviews.
+At `quick`, state the already-authorized work rather than adding an interview.
 
 Every "no" the owner gives on the way becomes a project rule in `state.rules`, the same record a
 rejected draft makes, and so does each anti-goal of the confirmed playback or stated skip. The
@@ -22,12 +21,15 @@ rule's `from` is `playback N`, `anti-goal N`, `variants N`, `decisions N`, `desc
 `section <id> N` or `draft N`. `next` lists the rule texts in `rules` on every later action. Rules
 are never removed; the owner's later decisions refine them.
 
-A recorded decision or "no" must say something. A decision you state for the owner (a skip line,
+The existing web conversation records below must say something. A decision you state for the owner (a skip line,
 the confirmed playback) needs at least six words; every "no" (a playback, variants, decision-round,
 description or section correction, a combine note, each `--anti-goal`) needs at least three. Two
 CJK characters count as one word. Shorter records are refused with `CONTRACT_INVALID` and change
 nothing: "OK, start.", "just start" or "默认" is not a skip line, and "no", "Too dark" or "首屏太暗了"
 is not a reason; "The hero is too dark" is.
+These playback/correction limits do not authorize rewriting an actual owner selection into a
+longer quote. Entry observations, purpose and design-system selection use their own validation
+and retain real statements; do not manufacture words or a new interview to satisfy another record.
 
 For new-site design, existing-site redesign or visual critique, use [taste-skill.md](taste-skill.md)
 to select and read the complete built-in method. On an existing site, audit brand, routes, content,
@@ -36,29 +38,94 @@ Taste's generate-first preferences do not require replacement images. Image conc
 boards use the matched image-only method with an available provider, then become selected
 reference/concept inputs through the existing workflow. No external Taste install is required.
 
+## observe
+
+Start with the owner's actual request, project and supplied link. Three common starts are:
+
+| Owner's intent | Purpose | Preserve |
+| --- | --- | --- |
+| Improve this existing frontend | `optimize-existing` | Function, real content, explicit brand constraints; improve layout and visual quality. Material overall-style changes use existing owner decisions. |
+| Use this link as inspiration for our frontend | `reference-for-existing` | Project-owned content and function; transfer named useful qualities, not an exact copy or automatic dependency adoption. |
+| Faithfully reproduce this link | `faithful-reproduction` | Reference fidelity and established invariants; do not substitute a new visual direction. |
+
+Use `new` for genuinely new work. Empty bounded inspection is not proof the entire project is
+empty; report the inspected scope and exclusions. Do not require style names or a favorite site.
+With absolute `SKILL_ROOT` and `PROJECT_ROOT`, a frontend start is:
+
+```sh
+node "$SKILL_ROOT/scripts/designer-pipeline.cjs" next \
+  --root "$PROJECT_ROOT" --project-root "$PROJECT_ROOT" --deliverable web --tier quick \
+  --query "Improve the existing frontend without changing its content or functions" \
+  --purpose optimize-existing
+```
+
+Add `--url "<actual link>"` for a supplied link and `--scope "<actual project path>"` to bound
+inspection further. Omit `--purpose` when the request does not settle it; do not guess. For UI,
+use `--deliverable ui`; duration, footage and narration are not frontend questions.
+
+First `next` returns `observe`: read-only `project inspect` evidence plus a host-capture instruction
+for links. Inspect only the supplied scope; do not modify project source. Present what is actually
+observed: content, functions, constraints and limits, separating static source findings from rendered
+behavior. A link needs actual admissible capture, not a URL or an invented screenshot description.
+Unavailable capture stays unfinished with its missing evidence named. Do not claim unseen states,
+unplayed motion, or an uninspected route have been checked.
+
+Record the actual summary delivered to the owner with the returned command:
+`decide --stage observe --answer "<actual shared observations>"`; for link capture, supply
+`--artifact <actual evidence-receipt.json>`. Use the real receipt created by the capture path,
+not a hand-written ready flag. This binds current inspected/captured bytes. It is technical/source
+evidence, never the owner's design acceptance.
+
+## purpose
+
+After observation, ask only a direction-changing fact still unresolved in the request or project.
+For a link alongside an existing frontend, clarify whether it is a reference or the reproduction
+target if the owner has not already said so. Record the actual clarification with
+`decide --stage purpose --choice <purpose> --answer "<owner's actual clarification>"`.
+Do not repeat settled facts or require design vocabulary. Then use frontend intake below.
+
+## design-system
+
+Before concepts, component planning, description/spec, tasks or implementation, consume a validated
+`design-pipeline.design-system-decision.v1` using the returned
+`decide --stage design-system --artifact <actual decision.json>`. Generate the decision from the
+actual request through `design-system decide`; retain the existing four modes and stack contract.
+The CLI publishes resolved request and current source bindings. A boolean, receipt-shaped object
+or a plausible prose choice cannot replace the validated decision.
+
+Explicit owner scratch records `selection.basis: owner-scratch`, actual owner authority and rationale.
+It skips catalog search, not observation, validation, existing stack, licenses or receipt lineage;
+reuse the supplied owner statement without a new scratch interview. Preserve an existing system
+under `preserve-existing` when project authority already settles it. Fallback/substitution under
+`capability-search` requires real searched capabilities, matched candidates, comparisons/rejections,
+compatibility, rationale and actual recorded owner choice. A product-name miss is inconclusive.
+See [the decision contract](pipeline-reference.md#design-system-knowledge-and-adoption).
+
+Reference-mode output supports design study only; implementation must retain project authority or
+have an admitted runtime choice. Current request, decision and bound stack/inventory/catalog sources
+are revalidated downstream. Changed or removed bytes invalidate dependent choices, approvals, gates
+and delivery under the existing hashes/receipts; old review text cannot make stale evidence ready.
+
 ## intake
 
-Facts are the agent's job. Before asking, take what you can from the conversation and the
-project's files (README, existing pages, `DESIGN.md`, brand assets; in an existing project run
-`project inspect`), and never ask the owner for something you can look up.
+Facts are the agent's job. Use the observation, conversation, README, existing pages, `DESIGN.md`
+and brand assets; never ask for what can be looked up. First show the observation summary. Then
+ask only unresolved facts whose answers would change the work: the visitor's job, constraints,
+permitted changes or uncertain reference requirements.
 
-At `standard` and `full`, `next` returns an ask with no question list, options or recommended
-answer. Its `question` is the opening: the skip line ("If you'd rather skip the questions and have
-me start, say so.") followed by one open question ("What site have you seen recently that felt the
-way this page should, and what about it?"; in replicate mode, "What must stay exactly as it is in
-the page you want reproduced?"). Send it as its own message, as it is. Then:
+At `standard` and `full`, use the returned frontend opening and skip option, not a film intake.
+Do not require a recently admired site or style vocabulary. When enough is already known, go
+straight to a playback grounded in those facts rather than repeating an interview.
 
-- Ask one open question per message, with no list of example answers unless the owner is stuck.
-- Anchor on real specifics (a site they saw, the moment a visitor arrives). Ask what would make
-  them wince (the anti-goals: what the page must never be or do) and what they have seen elsewhere
-  and loved or hated.
-- When you can describe the page, play it back in about 200-300 words: who it is for, what a
-  visitor should do, what it should feel like. Mark what the owner said as theirs and what you
-  guessed as your guess, and end by asking what is wrong or missing.
+- Ask one unresolved question per message; examples help only when the owner is stuck.
+- Use concrete project content and states. Ask about anti-goals only when they are still unknown;
+  reuse already stated requirements and rejections.
+- Play back the page in about 200-300 words: who it is for, what a visitor should do and the
+  permitted design changes. Separate owner statements, observations and your guesses, and ask what
+  is wrong or missing. The existing playback confirmation is a design decision; observation was not.
 
-An ask's `first`, when present, is a step for you before you ask its `question`. After a
-correction, `first` says to play the page back again with the corrections applied, and `question`
-is "What is wrong or missing in this?".
+An ask's `first`, when present, is work to do before its `question`. After a correction,
+play back the page with that correction applied, then ask what is wrong or missing.
 
 Record each reply with the command the ask returns:
 
@@ -181,13 +248,12 @@ are:
      on GitHub beyond the index).
   5. "Write from scratch" (`scratch`).
 
-Ask them as one numbered round: one `❓ Qn` per question with its body and options, then `➡️` your
-recommended answer, and wait for the reply. Settle facts yourself first: find the project's
-existing components and their paths, and the assets and their licenses, and name what you found
-instead of asking for it. Add a question only for a concrete decision you can neither look up nor
-settle from the conversation, such as whether supplied material is licensed for this use. A
-question whose answer depends on one still open waits for a further numbered round, asked the
-same way.
+Ask only unsettled questions as one numbered round: one `❓ Qn` per question with its body and
+options, then `➡️` your recommended answer, and wait for the reply. Settle lookup facts yourself:
+name the existing components, paths, assets and licenses. Reuse the validated design-system
+selection and actual earlier owner choices; do not interview again solely because scratch was
+already explicitly selected. Ask only for a concrete choice not settled by conversation, project
+authority or that selection. Dependent unresolved choices wait for a further numbered round.
 
 Record each "no" the owner gives in a round (a recommendation turned down, something ruled out)
 with the ask's `correction` command:
@@ -196,23 +262,21 @@ It becomes a project rule (`decisions N`), is kept in `decisions.rounds` and doe
 change the components decision. It is refused (`WORKFLOW_NOT_READY`) until `next` has reached the
 components stage. Record the components decision once, after the last round, with the choice ids.
 
-The recommendation is "Components this project already has first, then this skill's component
-index, then let me find open-source libraries.", recorded as `project,index,discover`. Preserve the
-user's exact nonempty reply in `decisions.components`; earlier intake does not replace this
-decision. Supply `--choice` as a comma-separated set of
+When no source choice is settled, recommend project components first, then the skill index, then
+open-source discovery (`project,index,discover`). Preserve the owner's actual nonempty choice;
+an explicit scratch request supplies that authority without another interview. The validated
+design-system record does not remove the web source-set or manifest contract. Supply `--choice` as a comma-separated set of
 `project`, `github`, `index`, `discover` or `scratch`. Missing or unknown choices are rejected;
 duplicates are removed and `decisions.componentSources` is stored in canonical
 `project,github,index,discover,scratch` order. `scratch` is exclusive. Selecting `github` requires
 an HTTPS GitHub owner/repo URL such as `https://github.com/owner/repo` in the unchanged answer.
 `discover` needs no URL: the agent finds GitHub repositories and records each one with its pinned
 license in the manifest (see [build](#build)).
-Legacy answer-only web decisions ask again; do not infer the source set from prose. Recording a
-different answer or set later, or the first explicit decision on a legacy state that already has a
-checked page, drops the interaction pass and delivery; earlier review verdicts stay recorded but no
-longer complete review. At `quick`, `next` then returns to probe, not build, so update `index.html`
-and `component-manifest.json` for the new decision yourself before rechecking. At `standard` and
-`full` the change also makes the description approval stale: `next` returns to the
-[description](#description), then reviews each section again before probe.
+Legacy answer-only decisions reopen at missing structured evidence; do not infer the source set
+from prose. A changed source choice or design-system binding invalidates dependent description,
+section, interaction and delivery evidence. Follow the fresh `next` action, update the affected
+page and manifest, and rerun the existing checks; retained historical reviews are not current
+approval. Source hashes, not a cached ready flag, govern resumed work.
 Set `SKILL_ROOT` to the installed skill's absolute path and `PROJECT_ROOT` to the project's absolute
 path, then record the reply using the returned command, equivalent to:
 
@@ -340,13 +404,15 @@ Their comments are text that names elements by their text, label or place.
 A section verdict is the owner's review of work in progress, not Visual Acceptance of the page; the
 final [review](#review) is.
 
-Follow the component decision and write the manifest below before building `index.html`. Motion
-follows `web-motion.md` (spring-damper parameters, stepped motion as a style); design tokens and
-components come from `pipeline-reference.md`.
+Before implementation, revalidate the bound design-system decision and current request/source
+hashes; reference-mode study alone does not admit runtime adoption. Follow the recorded component
+choice and write the manifest below before `index.html`. Motion follows `web-motion.md`
+(spring-damper parameters, stepped motion as a style); tokens/components follow `pipeline-reference.md`.
 
 Honor `decisions.components` and its explicit `decisions.componentSources` set: reuse the specified
 project paths, inspect the named GitHub library, search the index, find open-source sources, or
-author the components from scratch as selected. When searching, search the index first:
+author the components from scratch as selected. Explicit scratch requires no search. When searching,
+search the index first:
 
 ```sh
 node "$SKILL_ROOT/scripts/designer-pipeline.cjs" design-system route \

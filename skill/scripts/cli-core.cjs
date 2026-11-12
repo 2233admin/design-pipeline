@@ -151,7 +151,7 @@ const KNOWN_OPTIONS = new Set([
   "--design-file", "--design-foundation", "--effect", "--evidence-root", "--feedback-root", "--graphics-catalog",
   "--framework", "--height", "--installed-evidence", "--inventory", "--kind", "--limit", "--manifest", "--markdown", "--matrix", "--measurements", "--minimum-age-ms",
   "--motion-file", "--motion-foundation", "--observation", "--output", "--output-root", "--phase", "--platform", "--playwright-module", "--agent-browser", "--agent-browser-state", "--project-root",
-  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--director", "--stage", "--choice", "--verdict", "--job-plan",
+  "--direction-lock", "--providers", "--storyboard", "--video", "--timeline", "--runs", "--composition", "--composition-id", "--chrome", "--puppeteer-module", "--image", "--elements", "--profile", "--allow", "--seek", "--audio", "--target", "--input", "--fade-out", "--tag", "--type", "--template", "--pattern", "--bpm", "--key", "--params", "--engine", "--blender", "--style", "--duration", "--sources", "--width", "--height", "--deliverable", "--tier", "--mode", "--purpose", "--director", "--stage", "--choice", "--verdict", "--job-plan",
   "--outcome", "--path", "--plan", "--probe", "--provider", "--provider-cli-path", "--query", "--receipt", "--registry", "--repository", "--request", "--review", "--root", "--route", "--severity", "--sidecar", "--skill",
   "--scope", "--selection", "--snapshot", "--source", "--source-evidence", "--stage", "--status", "--summary", "--surface", "--timeout-ms", "--timestamp", "--title", "--type", "--url", "--width", "--min-score",
   "--start", "--end", "--fps", "--max-frames",
@@ -419,8 +419,8 @@ function publicHelp() {
     "  film methods --project-root <dir> --input <plan.json> [--write] [--replace]",
     "  film templates [--query <terms> | --template <id>] [--all]",
     "  film capture-timeline --composition <index.html> | --url <preview url> [--composition-id main] [--output timeline.json] [--chrome <exe>] [--puppeteer-module <path>]",
-    "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model>] [--job-plan <job-plan.json>]   (one next step; film binds the Stage 0 plan, product-launch-video films need an admitted product source; exit 2 when blocked)",
-    "  decide --root <absolute-project-root> --project-root <absolute-project-root> --stage intake|reference|concept|components|description|section|sample|review|deliver [--choice n|A|B|C|mad|pv|skip|<ids>] [--verdict accept|reject] [--answer <text>] [--evidence <file>] [--anti-goal <text>]",
+    "  next [--project-root .] [--deliverable film|edit|web|ui --tier quick|standard|full --mode brief|replicate|freeform --director <model>] [--job-plan <job-plan.json>] [--query <owner request> --url <provided link> --scope <bounded source dir> --purpose new|optimize-existing|reference-for-existing|faithful-reproduction]   (frontend observes before questions; film/edit retain their workflow; exit 2 when blocked)",
+    "  decide --root <absolute-project-root> --project-root <absolute-project-root> --stage observe|purpose|design-system|intake|reference|concept|components|description|section|sample|review|deliver [--artifact <capture-or-decision.json>] [--choice n|A|B|C|mad|pv|skip|<ids>] [--verdict accept|reject] [--answer <text>] [--evidence <file>] [--anti-goal <text>]",
     "    components requires --choice <project|github|index|discover|scratch, comma-separated> and --answer <text>; scratch cannot be combined; github requires a https://github.com/<owner>/<repo> URL in --answer; discover lets the agent find open-source GitHub repositories and record each with a pinned revision and license evidence; on web, --verdict reject --answer records a decision-round correction as a project rule",
     "    web: intake records the confirmed playback (--verdict accept), a correction (--verdict reject) or a stated skip (--choice skip), each playback or skip with repeatable --anti-goal <text> rules; concept takes --choice A|B|C, several comma-separated to combine with --answer, or --verdict reject; description takes --verdict accept --choice <the ids of brief.md's ## Sections list, in order> or --verdict reject; section takes --choice <section id> --verdict accept|reject with --answer and/or repeatable --evidence <runtime-review feedback record>; every web reject becomes a project rule",
     "  film blender (lists templates) | film blender --project-root <dir> --template product-turntable [--params params.json] [--engine eevee|cycles] [--output renders/shot.mp4] [--audio score.wav] [--blender <exe>]",
@@ -577,11 +577,22 @@ function packageCommand(parsed, root) {
 
 
 function changeCommand(parsed, root, action) {
+  const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
+  const projectState = workflow.readState(project);
+  const declared = option(parsed, "--deliverable");
+  const frontendDeliverable = ["web", "ui"].includes(declared) ? declared : !declared && ["web", "ui"].includes(projectState?.deliverable) ? projectState.deliverable : null;
+  const frontendContext = frontendDeliverable ? { deliverable: frontendDeliverable, projectRoot: fs.realpathSync.native(project) } : null;
   if (action === "resume") return { result: statusCommand(parsed, root), exitCode: 0 };
   if (action === "init") {
     const changeId = requireOption(parsed, "--change-id");
     const changeRoot = changeRootFrom(parsed, root, { changeId, mustExist: false });
-    const state = createInitialState({ changeId, timestamp: timestamp(parsed), phase: option(parsed, "--phase", "repo-read"), status: option(parsed, "--status", "initialized"), nextActions: optionList(parsed, "--next-action") });
+    const frontend = require("./workflows/frontend.cjs");
+    const phase = option(parsed, "--phase", "repo-read");
+    if (frontendContext && frontend.NATIVE_FRONTEND_PHASES.has(phase)) {
+      const evidence = frontend.nativeFrontendStatus({ extensions: { frontend: frontendContext } }, { runtime: ["implementation", "qa", "release"].includes(phase) });
+      if (evidence.status !== "ready") return { result: { status: "blocked", reason: evidence.reason, visualAcceptance: "not-evaluated" }, exitCode: 2 };
+    }
+    const state = createInitialState({ changeId, timestamp: timestamp(parsed), phase: option(parsed, "--phase", "repo-read"), status: option(parsed, "--status", "initialized"), nextActions: optionList(parsed, "--next-action"), ...(frontendContext ? { frontend: frontendContext } : {}) });
     const result = writeNewChange(path.join(changeRoot, "state.json"), path.join(changeRoot, "events.jsonl"), state);
     return { result: { status: "initialized", changeRoot, ...result }, exitCode: 0 };
   }
@@ -605,6 +616,7 @@ function changeCommand(parsed, root, action) {
     blockers: optionList(parsed, "--blocker"),
     nextActions: optionList(parsed, "--next-action"),
     failpoint: option(parsed, "--failpoint"),
+    ...(frontendContext ? { frontend: frontendContext } : {}),
   };
   const foundationInputs = [["design", "--design-foundation"], ["motion", "--motion-foundation"]];
   for (const [kind, flag] of foundationInputs) {
@@ -1370,9 +1382,12 @@ function designSystemCommand(parsed, root, action) {
     const { capabilityMap, uniqueEntryCount } = searchCapabilities(catalog, capabilities, searchOptions);
     const inventory = {
       directQuery: query,
+      catalogHash: sha256(canonicalJson(catalog)),
+      searchOptions,
       directQueryResults: directResults.length,
+      directMatchedIds: directResults.map(entry => entry.id),
       searchedCapabilities: capabilities,
-      capabilityResults: Object.fromEntries(Object.entries(capabilityMap).map(([id, value]) => [id, { terms: value.terms, count: value.count, matchedIds: value.entries.slice(0, 50).map((entry) => entry.id) }])),
+      capabilityResults: Object.fromEntries(Object.entries(capabilityMap).map(([id, value]) => [id, { terms: value.terms, count: value.count, matchedIds: value.entries.map(entry => entry.id) }])),
       zeroResultInconclusive: directResults.length === 0 && uniqueEntryCount > 0,
     };
     const output = writeResult(parsed, root, inventory);
@@ -1404,17 +1419,38 @@ function designSystemCommand(parsed, root, action) {
     return { result: { status: projection.status, projection, ...(output ? { output } : {}) }, exitCode: projection.status === "blocked" ? 2 : 0 };
   }
   if (action === "decide") {
-    const request = readJson(artifact(parsed, root, "--artifact"), "design system decision request");
-    for (const [pathField, valueField, label] of [["frontendStackDecisionPath", "frontendStackDecision", "frontend stack decision"], ["capabilityInventoryPath", "capabilityInventory", "capability inventory"]]) {
+    const requestFile = artifact(parsed, root, "--artifact");
+    const request = readJson(requestFile, "design system decision request");
+    const requestPath = path.relative(root, requestFile).split(path.sep).join("/");
+    const inputHashes = { [requestPath]: "sha256:" + sha256(fs.readFileSync(requestFile)) };
+    let catalogSource = { kind: "request" };
+    for (const [pathField, valueField, label] of [["frontendStackDecisionPath", "frontendStackDecision", "frontend stack decision"], ["capabilityInventoryPath", "capabilityInventory", "capability inventory"], ["catalogPath", "catalog", "design-system catalog"]]) {
       if (request[pathField] !== undefined) {
         if (request[valueField] !== undefined || typeof request[pathField] !== "string") fail("cli", `${pathField} must be the only source for ${valueField}`);
-        request[valueField] = readJson(contained(root, request[pathField], pathField), label);
+        const source = contained(root, request[pathField], pathField);
+        inputHashes[path.relative(root, source).split(path.sep).join("/")] = "sha256:" + sha256(fs.readFileSync(source));
+        request[valueField] = readJson(source, label);
         delete request[pathField];
       }
     }
-    if (!request.catalog) request.catalog = designSystemCatalog(parsed, root);
+    if (!request.catalog) {
+      request.catalog = designSystemCatalog(parsed, root);
+      catalogSource = { kind: "bundled" };
+      for (const flag of ["--catalog", "--snapshot"]) {
+        if (!option(parsed, flag)) continue;
+        const source = artifact(parsed, root, flag);
+        inputHashes[path.relative(root, source).split(path.sep).join("/")] = "sha256:" + sha256(fs.readFileSync(source));
+        catalogSource = { kind: flag === "--snapshot" ? "snapshot" : "catalog", path: path.relative(root, source).split(path.sep).join("/") };
+        break;
+      }
+    }
     if (option(parsed, "--allow-canary") === true) request.allowCanary = true;
-    const decision = decideDesignSystem(request);
+    const decision = { ...decideDesignSystem(request), request, sourceBindings: { requestPath, inputHashes, catalogSource } };
+    const governingSource = decision.projectAuthority?.source;
+    if (typeof governingSource === "string" && governingSource !== "project" && !/^https?:\/\//i.test(governingSource)) {
+      const file = contained(root, governingSource, "project governing source");
+      inputHashes[path.relative(root, file).split(path.sep).join("/")] = "sha256:" + sha256(fs.readFileSync(file));
+    }
     const output = writeResult(parsed, root, decision);
     return { result: { status: decision.status, decision, ...(output ? { output } : {}) }, exitCode: decision.status === "blocked" ? 2 : 0 };
   }
@@ -2313,12 +2349,13 @@ const COMMANDS = {
     run: ({ parsed, root }) => {
       if (option(parsed, "--change-root")) {
         if (option(parsed, "--deliverable") || option(parsed, "--replace") || option(parsed, "--job-plan")) fail("cli", "native visual tasks cannot initialize or bind a legacy workflow", { code: "OPTION_CONFLICT" });
-        const result = workflow.nextVisualTask(changeRootFrom(parsed, root), { plan: option(parsed, "--plan") });
+        const result = workflow.nextVisualTask(changeRootFrom(parsed, root), { plan: option(parsed, "--plan"), workspaceRoot: root, projectRoot: option(parsed, "--project-root") ? contained(root, option(parsed, "--project-root"), "--project-root") : undefined });
         return { result, exitCode: result.status === "blocked" ? 2 : 0 };
       }
       const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
-      if (option(parsed, "--deliverable")) workflow.initState(project, { deliverable: option(parsed, "--deliverable"), tier: option(parsed, "--tier"), mode: option(parsed, "--mode"), director: option(parsed, "--director"), replace: option(parsed, "--replace") === true, jobPlan: option(parsed, "--job-plan") || undefined });
+      if (option(parsed, "--deliverable")) workflow.initState(project, { deliverable: option(parsed, "--deliverable"), tier: option(parsed, "--tier"), mode: option(parsed, "--mode"), purpose: option(parsed, "--purpose") || undefined, query: option(parsed, "--query") || undefined, url: option(parsed, "--url") || undefined, scope: option(parsed, "--scope") || undefined, director: option(parsed, "--director"), replace: option(parsed, "--replace") === true, jobPlan: option(parsed, "--job-plan") || undefined });
       else if (option(parsed, "--job-plan")) workflow.bindStateJobPlan(project, option(parsed, "--job-plan"));
+      else if (["--query", "--url", "--scope", "--purpose"].some(flag => option(parsed, flag) !== null)) workflow.bindStateFrontend(project, { mode: option(parsed, "--mode") || undefined, purpose: option(parsed, "--purpose") || undefined, query: option(parsed, "--query") || undefined, url: option(parsed, "--url") || undefined, scope: option(parsed, "--scope") || undefined });
       const result = workflow.nextAction(project);
       return { result, exitCode: result.type === "blocked" ? 2 : 0 };
     },
@@ -2326,11 +2363,11 @@ const COMMANDS = {
   decide: {
     run: ({ parsed, root }) => {
       if (option(parsed, "--change-root")) {
-        const result = workflow.decideVisualTask(changeRootFrom(parsed, root), { plan: option(parsed, "--plan"), choice: option(parsed, "--choice"), artifact: option(parsed, "--artifact"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer"), chrome: option(parsed, "--chrome"), puppeteerModule: option(parsed, "--puppeteer-module") });
+        const result = workflow.decideVisualTask(changeRootFrom(parsed, root), { plan: option(parsed, "--plan"), workspaceRoot: root, projectRoot: option(parsed, "--project-root") ? contained(root, option(parsed, "--project-root"), "--project-root") : undefined, choice: option(parsed, "--choice"), artifact: option(parsed, "--artifact"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer"), chrome: option(parsed, "--chrome"), puppeteerModule: option(parsed, "--puppeteer-module") });
         return { result, exitCode: result.status === "blocked" ? 2 : 0 };
       }
       const project = contained(root, option(parsed, "--project-root", "."), "--project-root");
-      return { result: workflow.decide(project, { stage: option(parsed, "--stage"), choice: option(parsed, "--choice"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer"), evidence: optionList(parsed, "--evidence"), antiGoals: optionList(parsed, "--anti-goal") }), exitCode: 0 };
+      return { result: workflow.decide(project, { stage: option(parsed, "--stage"), choice: option(parsed, "--choice"), verdict: option(parsed, "--verdict"), answer: option(parsed, "--answer"), artifact: option(parsed, "--artifact"), evidence: optionList(parsed, "--evidence"), antiGoals: optionList(parsed, "--anti-goal") }), exitCode: 0 };
     },
   },
   "film-edit": {

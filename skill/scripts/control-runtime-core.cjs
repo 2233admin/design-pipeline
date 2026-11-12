@@ -7,6 +7,7 @@ const { canonicalJson, fail, readJson, resolveInside, sha256 } = require("./cont
 const { validateArtifactMetadata } = require("./artifact-core.cjs");
 const { validatePlan } = require("./plan-core.cjs");
 const { detectStaleArtifacts } = require("./invalidation-core.cjs");
+const frontendWorkflow = require("./workflows/frontend.cjs");
 
 const COMPLETE_PHASE_STATUSES = new Set(["ready", "complete"]);
 const PACKAGE_SCHEMA = "design-pipeline.package.v1";
@@ -160,15 +161,24 @@ function phaseBlockers(phase, records, artifactIndex, control, changeRoot) {
 }
 
 function persistControl(change, control, input) {
+  const evidence = frontendWorkflow.nativeFrontendStatus(change.state, { runtime: ["implementation", "qa", "release"].includes(change.state.phase) });
+  const invalidating = evidence && evidence.status !== "ready" && frontendWorkflow.NATIVE_FRONTEND_PHASES.has(change.state.phase);
+  const visualTasks = invalidating ? structuredClone(change.state.extensions.visualTasks || { completed: {}, failures: {} }) : null;
+  if (visualTasks) for (const record of Object.values(visualTasks.completed || {})) {
+    record.status = "stale";
+    record.artifacts = (record.artifacts || []).map(artifact => ({ ...artifact, status: "stale", stale_cause: evidence.reason }));
+    if (record.review) record.review.valid = false;
+  }
   return advanceChange(change.stateFile, change.eventsFile, {
     expectedSha256: sha256(fs.readFileSync(change.stateFile)),
     timestamp: input.timestamp,
     phase: change.state.phase,
-    type: input.type || "control-state",
+    type: invalidating ? "frontend-evidence-invalidation" : input.type || "control-state",
     summary: input.summary,
     blockers: control.blockers || [],
     nextActions: control.nextActions || [],
     control,
+    ...(invalidating ? { status: "blocked", visualTasks } : {}),
   });
 }
 
@@ -186,6 +196,12 @@ function runTo(planFile, changeRoot, targetPhase, options = {}) {
     : { status: "ready", artifacts, propagated: [] };
   const stalePhaseIds = new Set((stale.propagated || []).flatMap((item) => item.invalidatedPhases || [item.phase]));
   const records = phaseRecords(plan, control);
+  const frontendEvidence = frontendWorkflow.nativeFrontendStatus(change.state, { runtime: ["implementation", "qa", "release"].includes(target) });
+  if (frontendEvidence && (frontendEvidence.status !== "ready" || change.state.extensions.frontend.evidence?.digest && change.state.extensions.frontend.evidence.digest !== frontendEvidence.digest)) {
+    for (const phase of plan.phases) if (frontendWorkflow.NATIVE_FRONTEND_PHASES.has(phase.id)) {
+      records[phase.id] = { ...records[phase.id], status: "stale", blockers: ["frontend decision/source evidence changed or is unavailable"] };
+    }
+  }
   for (const phaseId of stalePhaseIds) {
     if (records[phaseId]) records[phaseId] = { ...records[phaseId], status: "stale" };
   }
@@ -194,8 +210,18 @@ function runTo(planFile, changeRoot, targetPhase, options = {}) {
   let blocked = [];
   for (let index = 0; index <= targetIndex; index += 1) {
     const phase = plan.phases[index];
-    if (COMPLETE_PHASE_STATUSES.has(records[phase.id].status)) continue;
-    const blockers = phaseBlockers(phase, records, freshIndex, control, changeRoot);
+    if (COMPLETE_PHASE_STATUSES.has(records[phase.id].status) && !(frontendEvidence && frontendWorkflow.NATIVE_FRONTEND_PHASES.has(phase.id))) continue;
+    const blockers = [
+      ...(frontendEvidence && frontendWorkflow.NATIVE_FRONTEND_PHASES.has(phase.id) && frontendEvidence.status !== "ready"
+        ? [{ code: "FRONTEND_DECISION_NOT_READY", message: frontendEvidence.reason || "Current frontend decision evidence is required." }] : []),
+      ...phaseBlockers(phase, records, freshIndex, control, changeRoot),
+    ];
+    if (frontendEvidence?.status === "ready" && frontendWorkflow.NATIVE_FRONTEND_PHASES.has(phase.id)) {
+      for (const output of phase.outputs) {
+        const artifact = freshIndex.get(normalized(output));
+        if (artifact && artifact.input_hashes?.$frontend !== frontendEvidence.digest) blockers.push({ code: "FRONTEND_DECISION_INPUT_UNBOUND", path: output, message: `${output} must bind the current frontend decision/source snapshot in its existing input_hashes.$frontend.` });
+      }
+    }
     if (blockers.length) {
       const phaseStatus = blockers.some((item) => item.code === "ARTIFACT_HASH_DRIFT" || item.code === "ARTIFACT_MARKED_STALE" || item.code === "DEPENDENCY_NOT_READY" && /stale/i.test(item.message))
         ? "stale"

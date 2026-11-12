@@ -75,7 +75,7 @@ function runComponentFirst(input, options = {}) {
 
   const selected = requestedStage ? [requestedStage] : AGGREGATE_ORDER;
   const needs = new Set(selected.flatMap((stage) => STAGES[stage].needs));
-  const stack = needs.has("stack") ? adapters.stack(input.stack || {}, options.adapterOptions?.stack || {}) : {};
+  const stack = needs.has("stack") ? adapters.stack(input.stack || {}, { projectRoot, ...(options.adapterOptions?.stack || {}) }) : {};
   const components = needs.has("components")
       ? adapters.components(input.components || {}, {
         targetRoot: targetResolution.targetRoot,

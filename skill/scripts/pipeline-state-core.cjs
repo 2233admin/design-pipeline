@@ -400,7 +400,7 @@ function createInitialState(input) {
     sceneRuntime: null,
     evidence: [],
     migration: null,
-    extensions: control ? { control } : {},
+    extensions: { ...(control ? { control } : {}), ...(input.frontend ? { frontend: input.frontend } : {}) },
   };
   validateV2(state);
   return state;
@@ -556,6 +556,16 @@ function advanceChange(stateFile, eventsFile, input) {
     }
     const registry = loadRegistry();
     const targetPhase = input.phase || current.state.phase;
+    const frontend = require("./workflows/frontend.cjs");
+    const frontendContext = current.state.extensions.frontend || input.frontend;
+    if (current.state.extensions.frontend && input.frontend && (current.state.extensions.frontend.projectRoot !== input.frontend.projectRoot || current.state.extensions.frontend.deliverable !== input.frontend.deliverable)) fail("pipeline state", "a native frontend context cannot silently change project or deliverable", { code: "CONTRACT_INVALID" });
+    const frontendEvidence = frontendContext
+      ? frontend.nativeFrontendStatus({ ...current.state, extensions: { ...current.state.extensions, frontend: frontendContext } }, { runtime: ["implementation", "qa", "release"].includes(targetPhase) })
+      : null;
+    const invalidating = targetPhase === current.state.phase && input.type === "frontend-evidence-invalidation"
+      && input.status === "blocked" && input.visualTasks && Object.values(input.visualTasks.completed || {}).every(record => record.status === "stale" && record.review?.valid !== true)
+      && Object.keys(current.state.extensions.visualTasks?.completed || {}).every(id => input.visualTasks.completed?.[id]?.status === "stale");
+    if (frontendEvidence && frontend.NATIVE_FRONTEND_PHASES.has(targetPhase) && frontendEvidence.status !== "ready" && !invalidating) fail("pipeline state", frontendEvidence.reason || "current frontend decision evidence is required", { code: "BLOCKED" });
     if (targetPhase !== current.state.phase) {
       const allowed = registry.registries[current.state.registryVersion].transitions[current.state.phase] || [];
       if (!allowed.includes(targetPhase)) {
@@ -575,6 +585,21 @@ function advanceChange(stateFile, eventsFile, input) {
     const control = input.control
       ? { ...(current.state.extensions.control || {}), ...input.control }
       : current.state.extensions.control;
+    const frontendChanged = frontendEvidence && (frontendEvidence.status !== "ready" || frontendContext.evidence?.digest !== frontendEvidence.digest);
+    if (frontendChanged && control?.phases) {
+      for (const [id, record] of Object.entries(control.phases)) {
+        if (frontend.NATIVE_FRONTEND_PHASES.has(id)) control.phases[id] = { ...record, status: "stale", blockers: ["frontend decision/source evidence changed"] };
+      }
+    }
+    let visualTasks = input.visualTasks ?? current.state.extensions.visualTasks;
+    if (frontendChanged && visualTasks) {
+      visualTasks = structuredClone(visualTasks);
+      for (const record of Object.values(visualTasks.completed || {})) {
+        record.status = "stale";
+        record.artifacts = (record.artifacts || []).map(artifact => ({ ...artifact, status: "stale", stale_cause: "frontend decision/source evidence changed" }));
+        if (record.review) record.review.valid = false;
+      }
+    }
     const state = {
       ...current.state,
       phase: targetPhase,
@@ -588,8 +613,9 @@ function advanceChange(stateFile, eventsFile, input) {
       evidence: input.evidence?.length ? [...new Set([...current.state.evidence, ...input.evidence])] : current.state.evidence,
       extensions: {
         ...current.state.extensions,
-        ...(input.control ? { control } : {}),
-        ...(input.visualTasks !== undefined ? { visualTasks: input.visualTasks } : {}),
+        ...(control ? { control } : {}),
+        ...(visualTasks !== undefined ? { visualTasks } : {}),
+        ...(frontendContext ? { frontend: { ...frontendContext, ...(frontendEvidence?.status === "ready" ? { evidence: { digest: frontendEvidence.digest, decisionPath: frontendEvidence.decisionPath, inputHashes: frontendEvidence.inputHashes } } : {}) } } : {}),
       },
     };
     validateV2(state);

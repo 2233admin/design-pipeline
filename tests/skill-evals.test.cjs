@@ -8,6 +8,7 @@ const { spawnSync } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
 const test = require("node:test");
 const { allowedRoutes, allowedStates, knownJobs, loadManifest, validateEvals } = require("../skill/scripts/validate-evals.cjs");
+const { prepareFrontend, statedSkip } = require("./helpers/web-flow.cjs");
 
 const repoRoot = path.resolve(__dirname, "..");
 const manifestPath = path.join(repoRoot, "skill", "evals", "evals.json");
@@ -137,7 +138,9 @@ test("quick Chinese page eval checks browser behavior and the public workflow", 
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const start = runCli(root, ["next", "--project-root", ".", "--deliverable", "ui", "--tier", "quick", "--mode", "freeform"]);
   assert.equal(start.type, "run");
-  assert.equal(start.stage, "work");
+  assert.equal(start.stage, "observe");
+  prepareFrontend(root);
+  statedSkip(root);
   fs.copyFileSync(path.join(behaviorFixtures, "index.html"), path.join(root, "index.html"));
   const browser = await browserTools.chromium.launch({ executablePath: browserTools.chrome, headless: true });
   try {

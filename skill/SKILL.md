@@ -42,6 +42,27 @@ use `next --change-root <change> --plan <tasks-plan>` and the matching `decide`;
 completion remains separate from the owner's visual acceptance. See
 `references/stages.md#stage-4-tasks` for task inputs, output snapshots, checks, and receipt lineage.
 
+For `web` and `ui`, retain the actual request with `next --project-root <project> --query
+"<request>" [--url <link>] [--scope <path>] [--purpose
+new|optimize-existing|reference-for-existing|faithful-reproduction]`. First follow `observe`:
+bounded read-only project inspection and, for a link, actual host capture. Report observed
+content, functions, constraints and limits before asking only unresolved direction-changing facts.
+Do not require style vocabulary or repeat settled facts. Record the summary and current evidence
+with the returned `decide --stage observe`; that is technical/source evidence, not design approval.
+If link purpose is unresolved, record the owner's actual clarification at `purpose`. UI uses
+frontend questions, never film duration or footage questions.
+
+Optimization keeps function, content and explicit brand constraints while permitting visual/layout
+improvements; material overall-style changes use the existing owner choices. A link used as reference
+does not replace product content or authorize a dependency. Faithful reproduction keeps reference
+fidelity and existing invariants authoritative. Before directions, spec, tasks or implementation,
+consume the validated, source-bound v1 decision at `design-system`. Explicit owner scratch bypasses
+catalog search only: record the real owner statement without a second interview, retain stack and
+receipt requirements, and validate the decision. Fallback/substitution instead needs actual
+capability inventory, comparisons, compatibility, rationale and recorded owner authority.
+See [frontend entry](references/workflow-web.md#observe) and
+[selection contract](references/pipeline-reference.md#design-system-knowledge-and-adoption).
+
 During planning, production and rendered review, identify unmet visual goals and missing methods.
 Use the project and bundled tools first; when they do not cover the need, proactively follow
 [design capability discovery](tools/open-source-design.md) to find and inspect relevant open-source
@@ -59,6 +80,10 @@ name a repository. This is triggered by the work's needs, not a required search 
 - Preserve source, snapshot, policy digest, receipt and downstream evidence lineage. Changed or
   failed evidence stays open or invalidates dependent evidence under the existing workflow.
 - Record asset licenses; non-commercial material does not ship in commercial work.
+- Installation, exercised technical checks, model experiments and owner visual acceptance are
+  separate claims; report only the evidence available for each. Source-checkout provenance is
+  explained in [installation and evaluation provenance](../docs/installation-and-evaluation-provenance.md).
+  This repair does not complete deferred issues #65 and #71–#75.
 
 ## Open only what this task needs
 

@@ -30,6 +30,7 @@ function conceptsAction(tier, ready) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "concept-screening-"));
   try {
     initState(root, { deliverable: "web", tier });
+    flow.prepareFrontend(root);
     flow.confirmPlayback(root);
     decide(root, { stage: "reference", answer: "none" });
     if (ready) {
@@ -111,6 +112,7 @@ const rulesFrom = root => readState(root).rules.map(rule => rule.from);
 
 test("the variants page needs three marked first screens and the switcher before the owner picks", t => {
   const root = project(t);
+  flow.prepareFrontend(root);
   flow.confirmPlayback(root);
   refuses(root, { stage: "concept", choice: "A" }, "WORKFLOW_NOT_READY");
   decide(root, { stage: "reference", answer: "none" });

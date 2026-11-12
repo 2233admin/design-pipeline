@@ -250,12 +250,20 @@ test("bundled design-system knowledge is agent-discoverable without installing A
     project: { designMd: true, runtime: {} },
     frontendStackDecisionPath: "stack-decision.json",
     capabilityInventoryPath: "capability-inventory.json",
+    selection: {
+      basis: "capability-search",
+      authority: { actor: "agent", source: "request", text: "Use AlertDialog as a non-runtime reference for the app dialog.", choice: "reference" },
+      rationale: "The actual dialog capability search identifies AlertDialog as the relevant non-runtime reference.",
+      compatibility: "Reference-only selection does not change the project's runtime system.",
+      compared: [],
+    },
   });
-  const decision = run(["design-system", "decide", "--root", root, "--artifact", "decision.json"]);
+  const decision = run(["design-system", "decide", "--root", root, "--artifact", "decision.json", "--write", "--output", "design-system-decision.json"]);
   assert.equal(decision.status, 0, decision.stderr || decision.stdout);
   assert.equal(decision.output.decision.schema, "design-pipeline.design-system-decision.v1");
   assert.equal(decision.output.decision.selected.id, "astryx:component:AlertDialog");
   assert.equal(decision.output.decision.projectAuthority.id, "project-design");
+  assert.equal(decision.output.decision.status, "ready");
 });
 
 test("component route selects platform-specific sources without copying remote code", () => {
