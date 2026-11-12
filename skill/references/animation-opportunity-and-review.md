@@ -179,6 +179,12 @@ faded menu or dialog keeps its hidden-state mechanism and only the fade moves to
 .panel { transition: transform 200ms var(--ease-out), opacity 200ms var(--ease-out); }
 ```
 
+On a web page, `verify interaction` measures four of these as `audit.motion-properties`
+([measured audit](ui-craft-sources.md#measured-audit)): `transition: all`, a transition or animation
+of a layout-tier property, a blur animated in an infinite loop, and an infinite animation running
+while its element is off screen. The audit has no waiver, so a layout-tier animation needs the
+transform swap above, not a recorded reason. The other rules here stay a review.
+
 ### will-change
 
 Browsers promote an element that animates `transform` or `opacity` anyway. `will-change` therefore adds

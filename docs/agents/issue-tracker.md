@@ -1,6 +1,6 @@
 # Issue tracker
 
-Work is tracked in GitHub Issues and pull requests on `2233admin/design-pipeline`.
+Work is tracked in GitHub Issues and pull requests on `XartLab/design-pipeline`.
 
 - Before starting, reuse an existing issue for the same work (`gh issue list`, `gh issue view <n> --comments`); otherwise open one with the scope and acceptance criteria.
 - Do the work on a branch and open a pull request that says `Closes #N` (or `Relates to #N` when it only covers part of the issue).

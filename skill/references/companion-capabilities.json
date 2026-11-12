@@ -117,9 +117,14 @@
     {
       "name": "Listening and film sound",
       "level": "optional",
-      "skills": ["earshot", "real-sound"],
+      "skills": [
+        "earshot",
+        "real-sound"
+      ],
       "fallback": "Use verify audio (loudness, peaks, silence, entry and exit, hit-cue sync) and references/audio-gate.md; say the soundtrack was measured, not listened to, and never describe how it sounds.",
-      "install": ["Install earshot (CLI, MCP server and the earshot and real-sound skills) from: https://github.com/Leonxlnx/earshot"]
+      "install": [
+        "Install earshot (CLI, MCP server and the earshot and real-sound skills) from: https://github.com/Leonxlnx/earshot"
+      ]
     },
     {
       "name": "React / Next.js engineering",
@@ -565,7 +570,7 @@
         "id": "impeccable-skill-v4",
         "kind": "github",
         "url": "https://github.com/pbakaus/impeccable",
-        "reviewedRevision": "9fadc41729c38fd47d7ae622b501558653f9d2e9",
+        "reviewedRevision": "b4bff1626c344067788c2679f048a20057c7cc5a",
         "reviewedMarkers": [
           "surface-modes",
           "refinement-semantics",
@@ -573,7 +578,7 @@
           "command-routing",
           "drift-boundary"
         ],
-        "reviewedAt": "2026-11-04T00:00:00.000Z",
+        "reviewedAt": "2026-11-12T00:00:00.000Z",
         "freshnessDays": 30
       },
       "fallback": "Use references/impeccable-contract.md and the built-in brief, anti-slop, state, browser, and bounded verification gates.",
