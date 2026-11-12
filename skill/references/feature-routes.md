@@ -180,6 +180,11 @@ the web interface rules and `emil-design-eng` are built in:
 The same [UI craft guide](ui-craft-sources.md) routes the other built-in sources
 (`make-interfaces-feel-better`, `fixing-accessibility`, `shadcn`, `playwright-cli`) and the reference-only React Doctor record by stage and precedence.
 
+For a message about an event (toast, snackbar, notification, reminder, unread badge, undo or progress
+prompt), read [toast-notification.md](toast-notification.md), which sorts each message into a status,
+action or progress toast, a notification or neither, stops for the owner's picks and only then
+restyles, and which `route` selects as the `toast-notification` job.
+
 For dynamic UI, interaction motion, and animation-specific work, apply these motion skills:
 
 - `design-motion-principles`: primary create/audit workflow for purposeful UI motion.

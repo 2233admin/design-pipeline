@@ -1142,3 +1142,14 @@ roles were measured from a reference corpus; nothing from that corpus is bundled
   Government works, public domain; reproduced as halftones, duotones or a photocopy through `materials
   process`. Credited "Imagery: NASA. Not endorsed by NASA."; NASA insignia, logotype and seal are not used.
 
+## Concept distillations (2026-11-12)
+
+Project-owned guide text written in this repository's words; no upstream text, code or media is
+copied or shipped.
+
+- `skill/references/toast-notification.md`: kubai's design for telling a person that something
+  happened (toast kinds, notification, the cases that are neither, the questions that settle them,
+  and the restyle values), supplied by the project owner as a prompt on 2026-11-12. No repository,
+  revision or licence file exists for it, so it has no entry in `sources.lock.json`. The restyle
+  numbers are kubai's and are kept as defaults; the conflict table and the hand-off are this
+  repository's.

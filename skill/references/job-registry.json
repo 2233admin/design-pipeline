@@ -129,6 +129,15 @@
       "kernel": ["foundation", "toolchain"]
     },
     {
+      "id": "toast-notification",
+      "activation": "scored",
+      "priority": 44,
+      "keywords": ["toast", "snackbar", "snack bar", "notification", "unread badge", "unread count", "undo prompt", "progress prompt", "轻提示", "提示条", "撤销提示", "进度提示", "未读角标", "未读消息", "小红点", "通知中心", "消息通知", "站内通知", "推送通知", "通知栏", "通知列表", "消息提醒"],
+      "primaryKnowledge": { "id": "toast-notification", "command": "toolchain", "action": "resolve", "admission": "ready" },
+      "secondaries": [],
+      "kernel": ["foundation", "toolchain"]
+    },
+    {
       "id": "product-design",
       "activation": "default",
       "priority": 0,

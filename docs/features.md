@@ -353,6 +353,14 @@ node skill/scripts/designer-pipeline.cjs template distill provenance.csv --image
 
 读一组参考图（只读本地文件，从不复制），不用模型，量出 OKLab 配色、底色彩度与明度、主色和中性色占比、色相离散、重心、对称、留白和纹理；给了标注时再量标题位置、边距、字号比和标题压主体的程度。每个特征用参考的分布定阈值（上限取 p75、下限取 p25），并标出证据是 `measured`、`thin` 还是 `gap`。输出 `style.json` 草稿（`draft: true`）、`distill.json` 和一页 `report.md`，把版式归成原型并指向最近的模板或新骨架，按笔画对比判断字体角色。`--compare` 和手写风格包逐条对比，`--ablate` 去掉每条规则各渲染一次，报告成对的变化。
 
+### Toast 与通知的判断
+
+```bash
+node skill/scripts/designer-pipeline.cjs route --query "这个提示该用 toast 还是通知" --json
+```
+
+toast、snackbar、通知、提醒、未读角标、撤销提示、进度提示这类简报会路由到 `toast-notification`，打开 [`skill/references/toast-notification.md`](../skill/references/toast-notification.md)。指南先判断、后改动：先读产品里所有“告诉人发生了什么”的地方，把每条消息归为状态 toast、操作 toast、进度 toast、通知，或者都不是（表单错误、需要修复的失败、不可撤销操作、只需角标或状态变化），用七个问题定案，出一张表并停下来等用户选行；之后才可选地按 kubai 的设计重绘（只重绘 toast、只重绘通知、两者、或都不）。重绘的尺寸与动效数值是 kubai 的默认起点，要落到项目自己的 token、圆角阶梯和字体上；与 UC-19（定时 toast 至少 5 秒、带操作的 toast 不是撤销的唯一入口）、退出缓动和 300ms 时长规则冲突的数值，指南按包内规则取值并写明依据。没有新增 gate、回执或 CLI 命令，来源只记署名，不进 `sources.lock.json`。
+
 ### 字体目录
 
 ```bash
