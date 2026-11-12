@@ -530,6 +530,7 @@ module.exports = {
   normalizeTokens,
   paletteSignature,
   parseColor,
+  rgbToOklab,
   rootDeclarations,
   schema,
   scoreEntry,

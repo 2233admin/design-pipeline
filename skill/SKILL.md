@@ -21,6 +21,8 @@ Pick one row, open what it names, and open nothing else until the task needs it.
 | The user gave a reference page or screenshot to follow | `designer-pipeline next --project-root <project> --deliverable web\|ui --mode replicate` | [Follow `next`](#follow-next-for-a-complete-deliverable) |
 | One supporting job: drawing, image placement, text fitting, comparison, motion maps | `tools/README.md` | one selected guide → its implementation/example |
 | Cover, key visual, title card, banner, UI panel or title-card cut from a style pack template | `references/template-bank.md` | `template list [--style]` → `template render <id>` (checked on render; `template check --browser` for any SVG or HTML) |
+| Product UI (dashboard, settings, form, table, modal) where the brief names tactile-design or asks for a tactile, layered, quiet look | `references/tactile-product-ui.md` | opt-in direction: project `DESIGN.md` governs → decision order → parent-borrowed surfaces → remap tokens → `verify interaction` |
+| Poster, information sheet or archive card about a real subject in an industrial sci-fi document style (Arknights / Endfield, 舟工业, 工业 VI) | `references/industrial-document-sheets.md` | document test → dialect → density → hand-built sheet or an `arknights-endfield` template → `template check --browser` |
 | A new house style from a set of reference images (style pack draft) | `references/template-bank.md` | `template distill <provenance.csv> --images <dir> -o <dir>` (measured thresholds, archetypes, font roles, gaps; `--compare`, `--ablate`) |
 | Workflow stages, UI, references, implementation and review | `references/stages.md` | the stage the task is in |
 | New website, redesign, app screen (dashboard, admin, settings), visual critique | `references/taste-skill.md` | the selected route's original source |
@@ -38,6 +40,11 @@ Pick one row, open what it names, and open nothing else until the task needs it.
 | Improving a design prompt or skill instruction offline | `references/gepa.md` | frozen cases and reviewable candidates |
 | Installation, upgrade and skill location | `references/installation.md` | |
 | Route, CLI, gate and receipt contracts | `references/pipeline-reference.md` | `designer-pipeline --help` |
+
+To read one part of a guide, not the whole file:
+`designer-pipeline skill --reference <name> --section <heading-or-anchor>` (`--list` shows the
+headings; a row that says to open a file still means the whole file).
+`designer-pipeline describe <command>` prints one command's usage.
 
 Left alone, the model's default aesthetic is a warm cream background, a serif headline and a
 terracotta accent. The direction stage exists to get past it: it makes real directions from designers,
@@ -157,6 +164,11 @@ gallery covers basic/web/game/text/scene studies alongside the four state-owned 
   You cannot hear: report the audio gate's numbers, and for effects or listening use earshot when
   `doctor` lists it (`references/audio-gate.md#listening-and-effects-with-earshot-optional`).
 - PV/MAD edits: `references/film-edit.md`.
+
+### Editable values
+
+When the owner should tune durations, colours, copy or looks without editing code, in a film or
+a page: `tunables init|check|set|probe|panel` and `references/tunables.md`.
 
 ### Captured runtime review
 

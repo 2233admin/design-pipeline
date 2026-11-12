@@ -47,9 +47,9 @@ function assertHash(value, label) {
   if (typeof value !== "string" || !HASH.test(value)) fail("playground", `${label} must be a lowercase SHA-256`);
 }
 
-function assertId(value, label) {
-  assertString(value, label, "playground");
-  if (!ID.test(value)) fail("playground", `${label} must be a lowercase path-safe identifier`);
+function assertId(value, label, scope = "playground") {
+  assertString(value, label, scope);
+  if (!ID.test(value)) fail(scope, `${label} must be a lowercase path-safe identifier`);
 }
 
 function assertArtifact(value, label, extension) {
@@ -86,37 +86,40 @@ function valueMatches(control, value) {
   return typeof value === "string";
 }
 
-function assertControl(control, index) {
-  const label = `surface.controls[${index}]`;
+// options: { scope, label, extraKeys } let another contract (tunables.json) reuse
+// this control vocabulary with its own error scope, label and extra optional keys.
+function assertControl(control, index, options = {}) {
+  const scope = options.scope || "playground";
+  const label = options.label || `surface.controls[${index}]`;
   assertKeys(
     control,
     ["id", "label", "group", "type", "default"],
-    ["id", "label", "group", "type", "default", "min", "max", "step", "options"],
+    ["id", "label", "group", "type", "default", "min", "max", "step", "options", ...(options.extraKeys || [])],
     label,
-    "playground",
+    scope,
   );
-  assertId(control.id, `${label}.id`);
-  for (const key of ["label", "group"]) assertString(control[key], `${label}.${key}`, "playground");
-  assertEnum(control.type, CONTROL_TYPES, `${label}.type`, "playground");
+  assertId(control.id, `${label}.id`, scope);
+  for (const key of ["label", "group"]) assertString(control[key], `${label}.${key}`, scope);
+  assertEnum(control.type, CONTROL_TYPES, `${label}.type`, scope);
   if (control.type === "range") {
     for (const key of ["min", "max", "step"]) {
       if (typeof control[key] !== "number" || !Number.isFinite(control[key])) {
-        fail("playground", `${label}.${key} must be a finite number for a range control`);
+        fail(scope, `${label}.${key} must be a finite number for a range control`);
       }
     }
-    if (control.min >= control.max || control.step <= 0) fail("playground", `${label} has an invalid range`);
+    if (control.min >= control.max || control.step <= 0) fail(scope, `${label} has an invalid range`);
   } else if (Object.hasOwn(control, "min") || Object.hasOwn(control, "max") || Object.hasOwn(control, "step")) {
-    fail("playground", `${label} may use min, max, and step only for a range control`);
+    fail(scope, `${label} may use min, max, and step only for a range control`);
   }
   if (control.type === "select") {
     if (!Array.isArray(control.options) || control.options.length < 2 || control.options.some((item) => typeof item !== "string" || !item)) {
-      fail("playground", `${label}.options must contain at least two non-empty strings`);
+      fail(scope, `${label}.options must contain at least two non-empty strings`);
     }
-    if (new Set(control.options).size !== control.options.length) fail("playground", `${label}.options must be unique`);
+    if (new Set(control.options).size !== control.options.length) fail(scope, `${label}.options must be unique`);
   } else if (Object.hasOwn(control, "options")) {
-    fail("playground", `${label}.options is allowed only for a select control`);
+    fail(scope, `${label}.options is allowed only for a select control`);
   }
-  if (!valueMatches(control, control.default)) fail("playground", `${label}.default does not match its control contract`);
+  if (!valueMatches(control, control.default)) fail(scope, `${label}.default does not match its control contract`);
 }
 
 function assertValues(values, controls, label) {
@@ -146,7 +149,7 @@ function assertSurface(surface) {
   if (!Array.isArray(surface.controls) || surface.controls.length < 1 || surface.controls.length > 24) {
     fail("playground", "surface.controls must contain one to 24 controls");
   }
-  surface.controls.forEach(assertControl);
+  surface.controls.forEach((control, index) => assertControl(control, index));
   const controlIds = surface.controls.map((control) => control.id);
   if (new Set(controlIds).size !== controlIds.length) fail("playground", "surface control IDs must be unique");
   if (!Array.isArray(surface.presets) || surface.presets.length < 3 || surface.presets.length > 5) {
@@ -572,7 +575,9 @@ module.exports = {
   SCHEMA,
   WAIVER_REASONS,
   VERIFICATION_CHECKS,
+  assertControl,
   checkPlayground,
   selectionStateSha256,
   surfaceContractSha256,
+  valueMatches,
 };
