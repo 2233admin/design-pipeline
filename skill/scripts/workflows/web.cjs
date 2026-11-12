@@ -601,7 +601,7 @@ function declaresAudit(root) {
 const PROBE = {
   id: "probe",
   finished: (_state, root) => declaresAudit(root) === true,
-  gate: { name: "interaction", inputs: state => ["interaction.json", "index.html", ...frontend.decisionInputs(state)] },
+  gate: { name: "interaction", inputs: (state, root) => ["interaction.json", "index.html", ...frontend.decisionInputs(state), ...frontend.outputInputs(state, root)] },
   action: (_state, root) => {
     if (!exists(root, "interaction.json")) return { type: "run", instruction: "Write interaction.json: one probe per key interaction plus one audit probe (\"kind\": \"audit\") that measures the local index.html at a desktop and a mobile viewport, with thresholds copied from DESIGN.md, the font families required (schema in references/workflow-web.md#probe)", why: "Every key interaction and the page's measurable craft are verified against the real page, not eyeballed." };
     if (declaresAudit(root) === false) return { type: "run", instruction: "Add an audit probe to interaction.json: one probes entry with \"kind\": \"audit\", a desktop and a mobile viewport, thresholds copied from DESIGN.md with the required font families, and the selectors to declare (references/workflow-web.md#probe); then run next again", why: "The probe stage passes only with a page audit at every tier; without one the verify command cannot finish this stage." };

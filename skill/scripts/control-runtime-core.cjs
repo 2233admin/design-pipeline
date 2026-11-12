@@ -161,8 +161,9 @@ function phaseBlockers(phase, records, artifactIndex, control, changeRoot) {
 }
 
 function persistControl(change, control, input) {
-  const evidence = frontendWorkflow.nativeFrontendStatus(change.state, { runtime: ["implementation", "qa", "release"].includes(change.state.phase) });
-  const invalidating = evidence && evidence.status !== "ready" && frontendWorkflow.NATIVE_FRONTEND_PHASES.has(change.state.phase);
+  const policy = frontendWorkflow.frontendPhasePolicy(change.state.phase, change.state.registryVersion);
+  const evidence = frontendWorkflow.nativeFrontendStatus(change.state, { runtime: policy.runtime });
+  const invalidating = evidence && evidence.status !== "ready" && policy.protected;
   const visualTasks = invalidating ? structuredClone(change.state.extensions.visualTasks || { completed: {}, failures: {} }) : null;
   if (visualTasks) for (const record of Object.values(visualTasks.completed || {})) {
     record.status = "stale";
@@ -196,9 +197,9 @@ function runTo(planFile, changeRoot, targetPhase, options = {}) {
     : { status: "ready", artifacts, propagated: [] };
   const stalePhaseIds = new Set((stale.propagated || []).flatMap((item) => item.invalidatedPhases || [item.phase]));
   const records = phaseRecords(plan, control);
-  const frontendEvidence = frontendWorkflow.nativeFrontendStatus(change.state, { runtime: ["implementation", "qa", "release"].includes(target) });
+  const frontendEvidence = frontendWorkflow.nativeFrontendStatus(change.state, { runtime: frontendWorkflow.frontendPhasePolicy(target, plan.registry).runtime });
   if (frontendEvidence && (frontendEvidence.status !== "ready" || change.state.extensions.frontend.evidence?.digest && change.state.extensions.frontend.evidence.digest !== frontendEvidence.digest)) {
-    for (const phase of plan.phases) if (frontendWorkflow.NATIVE_FRONTEND_PHASES.has(phase.id)) {
+    for (const phase of plan.phases) if (frontendWorkflow.frontendPhasePolicy(phase.id, plan.registry).protected) {
       records[phase.id] = { ...records[phase.id], status: "stale", blockers: ["frontend decision/source evidence changed or is unavailable"] };
     }
   }
@@ -210,13 +211,13 @@ function runTo(planFile, changeRoot, targetPhase, options = {}) {
   let blocked = [];
   for (let index = 0; index <= targetIndex; index += 1) {
     const phase = plan.phases[index];
-    if (COMPLETE_PHASE_STATUSES.has(records[phase.id].status) && !(frontendEvidence && frontendWorkflow.NATIVE_FRONTEND_PHASES.has(phase.id))) continue;
+    if (COMPLETE_PHASE_STATUSES.has(records[phase.id].status) && !(frontendEvidence && frontendWorkflow.frontendPhasePolicy(phase.id, plan.registry).protected)) continue;
     const blockers = [
-      ...(frontendEvidence && frontendWorkflow.NATIVE_FRONTEND_PHASES.has(phase.id) && frontendEvidence.status !== "ready"
+      ...(frontendEvidence && frontendWorkflow.frontendPhasePolicy(phase.id, plan.registry).protected && frontendEvidence.status !== "ready"
         ? [{ code: "FRONTEND_DECISION_NOT_READY", message: frontendEvidence.reason || "Current frontend decision evidence is required." }] : []),
       ...phaseBlockers(phase, records, freshIndex, control, changeRoot),
     ];
-    if (frontendEvidence?.status === "ready" && frontendWorkflow.NATIVE_FRONTEND_PHASES.has(phase.id)) {
+    if (frontendEvidence?.status === "ready" && frontendWorkflow.frontendPhasePolicy(phase.id, plan.registry).protected) {
       for (const output of phase.outputs) {
         const artifact = freshIndex.get(normalized(output));
         if (artifact && artifact.input_hashes?.$frontend !== frontendEvidence.digest) blockers.push({ code: "FRONTEND_DECISION_INPUT_UNBOUND", path: output, message: `${output} must bind the current frontend decision/source snapshot in its existing input_hashes.$frontend.` });

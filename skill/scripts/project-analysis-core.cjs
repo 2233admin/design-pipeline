@@ -96,6 +96,8 @@ function inspectProject(projectRoot, options = {}) {
     const rank = file => path.basename(file) === "package.json" ? 0 : /(?:^|\/)(?:index\.html|main\.[jt]sx?|index\.[jt]sx?|App\.[jt]sx?)$/.test(file) ? 1 : 2;
     return rank(a) - rank(b) || a.localeCompare(b);
   });
+  // Membership remains bounded by discovery, not by the smaller source-reading budget.
+  const sourcePaths = candidates.slice().sort();
   const discovered = candidates.length;
   if (candidates.length > LIMITS.files) {
     limit("FILE_LIMIT", `${candidates.length} candidate files exceed the ${LIMITS.files}-file read budget; narrow scope`);
@@ -295,7 +297,7 @@ function inspectProject(projectRoot, options = {}) {
     projectRoot: ".", method: "bounded-static-heuristic", query: options.query || null,
     scope: scopes.map(item => item.relative),
     discovery: { source: discoverySource, ignoreRules: discoverySource === "git" ? "git-standard" : "explicit-exclusions-only", limits: LIMITS, counts: { candidates: discovered, read: files.length, bytes: totalBytes }, truncated, exclusions: [...EXCLUDED_DIRECTORIES, ".env*", "credential files", "lockfiles", "binary files"] },
-    files, entrypoints, dependencies, implementation, packages, commands, unknowns, nextActions, ...(queryResults ? { queryResults } : {}),
+    sourcePaths, files, entrypoints, dependencies, implementation, packages, commands, unknowns, nextActions, ...(queryResults ? { queryResults } : {}),
     componentConformance: "not-evaluated", visualAcceptance: "not-evaluated",
   };
 }

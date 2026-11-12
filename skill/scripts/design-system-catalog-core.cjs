@@ -549,6 +549,9 @@ function searchCapabilities(catalog, capabilities, searchOptions = {}) {
   validateCatalog(catalog);
   if (!Array.isArray(capabilities)) invalid("capabilities must be an array");
   const capabilityMap = {};
+  const { limit, ...eligibility } = searchOptions;
+  if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) invalid("search limit must be a positive integer");
+  const eligible = searchCatalog(catalog, { ...eligibility, query: "" });
   const seenIds = new Set();
   const matchesTerm = (entry, term) => {
     const text = canonicalJson({ id: entry.id, localId: entry.localId, name: entry.name, displayName: entry.displayName, category: entry.category, group: entry.group, keywords: entry.keywords, description: entry.description, docs: entry.docsDense ? { name: entry.docsDense.name, keywords: entry.docsDense.keywords, description: entry.docsDense.description } : undefined }).toLowerCase();
@@ -559,12 +562,12 @@ function searchCapabilities(catalog, capabilities, searchOptions = {}) {
     const terms = CAPABILITY_TERMS[capability];
     if (!terms) continue;
     const matched = new Map();
-    const eligible = searchCatalog(catalog, { ...searchOptions, query: "" });
     for (const term of terms) for (const entry of eligible.filter((candidate) => matchesTerm(candidate, term))) {
       if (!matched.has(entry.id)) matched.set(entry.id, { entry, matchedTerms: [] });
       matched.get(entry.id).matchedTerms.push(term);
     }
-    const entries = [...matched.values()].map(({ entry, matchedTerms }) => ({ ...safeClone(entry), matchedTerms }));
+    const hits = [...matched.values()];
+    const entries = hits.slice(0, limit === undefined ? hits.length : limit).map(({ entry, matchedTerms }) => ({ ...safeClone(entry), matchedTerms }));
     entries.forEach((entry) => seenIds.add(entry.id));
     capabilityMap[capability] = { terms, count: entries.length, entries };
   }

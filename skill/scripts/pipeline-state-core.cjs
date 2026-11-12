@@ -559,8 +559,9 @@ function advanceChange(stateFile, eventsFile, input) {
     const frontend = require("./workflows/frontend.cjs");
     const frontendContext = current.state.extensions.frontend || input.frontend;
     if (current.state.extensions.frontend && input.frontend && (current.state.extensions.frontend.projectRoot !== input.frontend.projectRoot || current.state.extensions.frontend.deliverable !== input.frontend.deliverable)) fail("pipeline state", "a native frontend context cannot silently change project or deliverable", { code: "CONTRACT_INVALID" });
-    const frontendEvidence = frontendContext && frontend.NATIVE_FRONTEND_PHASES.has(targetPhase)
-      ? frontend.nativeFrontendStatus({ ...current.state, extensions: { ...current.state.extensions, frontend: frontendContext } }, { runtime: ["implementation", "qa", "release"].includes(targetPhase) })
+    const frontendPhasePolicy = frontend.frontendPhasePolicy(targetPhase);
+    const frontendEvidence = frontendContext && frontendPhasePolicy.protected
+      ? frontend.nativeFrontendStatus({ ...current.state, extensions: { ...current.state.extensions, frontend: frontendContext } }, { runtime: frontendPhasePolicy.runtime })
       : null;
     const invalidating = targetPhase === current.state.phase && input.type === "frontend-evidence-invalidation"
       && input.status === "blocked" && input.visualTasks && Object.values(input.visualTasks.completed || {}).every(record => record.status === "stale" && record.review?.valid !== true)

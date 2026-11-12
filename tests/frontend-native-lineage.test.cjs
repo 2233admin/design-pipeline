@@ -13,16 +13,33 @@ const { execute } = require("../skill/scripts/cli-core.cjs");
 const { canonicalJson, sha256 } = require("../skill/scripts/contract-utils.cjs");
 const { normalizeSnapshot } = require("../skill/scripts/design-system-catalog-core.cjs");
 const { advanceChange, createInitialState, writeNewChange } = require("../skill/scripts/pipeline-state-core.cjs");
-const { decide, decideVisualTask, initState, nextAction, nextVisualTask, readState } = require("../skill/scripts/workflow-core.cjs");
+const { bindStateFrontend, decide, decideVisualTask, initState, nextAction, nextVisualTask, readState } = require("../skill/scripts/workflow-core.cjs");
 const { nativeFrontendStatus } = require("../skill/scripts/workflows/frontend.cjs");
 const { checkComponentFirstGate } = require("../skill/scripts/component-first-core.cjs");
 const { checkV2Artifact, migrateV1ToV2 } = require("../skill/scripts/component-first-v2-core.cjs");
+const { validateArtifactMetadata } = require("../skill/scripts/artifact-core.cjs");
 const { createComponentFirstFixture } = require("./fixtures/component-first-fixture.cjs");
+const { resolveChrome, resolvePuppeteer } = require("../skill/scripts/film-capture-core.cjs");
+
+// Same resolution the rest of the suite uses (e.g. tests/workflow-next.test.cjs): an explicit,
+// repo-root-resolved puppeteer-core module and Chrome path, so real browser-backed completion in
+// this file does not depend on an unrelated fixture directory's own module-resolution ancestry.
+let REAL_BROWSER_TOOLS;
+function realBrowserTools() {
+  if (REAL_BROWSER_TOOLS) return REAL_BROWSER_TOOLS;
+  resolvePuppeteer(process.cwd(), process.env.DESIGN_PIPELINE_PUPPETEER_MODULE);
+  const chrome = resolveChrome();
+  const puppeteerModule = process.env.DESIGN_PIPELINE_PUPPETEER_MODULE
+    ? path.resolve(process.env.DESIGN_PIPELINE_PUPPETEER_MODULE)
+    : require.resolve("puppeteer-core", { paths: [process.cwd()] });
+  REAL_BROWSER_TOOLS = { chrome, puppeteerModule };
+  return REAL_BROWSER_TOOLS;
+}
 
 const REFERENCES = path.resolve(__dirname, "../skill/references");
 const OWNER_REPLY = "Build this frontend from scratch with a project-owned custom design system.";
-const PROTECTED = ["directions", "design-spec", "motion-spec", "tasks", "implementation", "qa", "release"];
-const RUNTIME = new Set(["implementation", "qa", "release"]);
+const PROTECTED = ["directions", "design-spec", "motion-spec", "tasks", "implementation", "gate-review", "verification", "release-readiness"];
+const RUNTIME = new Set(["implementation", "gate-review", "verification", "release-readiness"]);
 const write = (root, rel, bytes) => {
   const file = path.join(root, rel);
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -103,9 +120,8 @@ function consume(root, options = {}) {
   return decision;
 }
 
-function nativeChange(t, projectRoot, { phase = "implementation", bind = true, visual = false } = {}) {
-  // A separate root keeps frontend observation/source files out of the native task's Git window.
-  const dir = temporary(t, "native-frontend-change-");
+function nativeChange(t, projectRoot, { phase = "implementation", bind = true, visual = false, dir = temporary(t, "native-frontend-change-"), target = "card.html" } = {}) {
+  // Existing fixtures isolate task work; source lifecycle regressions deliberately share roots.
   writeNewChange(path.join(dir, "state.json"), path.join(dir, "events.jsonl"), createInitialState({
     changeId: "frontend-native-lineage", timestamp: timestamp(), phase,
     status: RUNTIME.has(phase) ? "implementing" : "planning",
@@ -115,7 +131,7 @@ function nativeChange(t, projectRoot, { phase = "implementation", bind = true, v
     write(dir, "reference.md", "Keep the card action and its confirmed state. Structural task fixture only.\n");
     write(dir, "guide.md", "Check the declared state journey separately from owner visual acceptance.\n");
     json(dir, "card-probe.json", {
-      schema: "design-pipeline.interaction-probe.v1", id: "native-card", url: "card.html",
+      schema: "design-pipeline.interaction-probe.v1", id: "native-card", url: target,
       probes: [{ id: "confirm", target: "#card", steps: [
         { id: "initial", assertions: [{ selector: "#result", kind: "text", equals: "Pending" }], timeoutMs: 100 },
         { id: "confirm", input: { kind: "click", selector: "#confirm" }, assertions: [{ selector: "#result", kind: "text", equals: "Confirmed" }], timeoutMs: 100 },
@@ -125,10 +141,10 @@ function nativeChange(t, projectRoot, { phase = "implementation", bind = true, v
       schema: "design-pipeline.design-plan.v1", schema_version: 1, plan_id: "frontend-native-lineage",
       input_hash: hashFile(dir, "reference.md"), mode: "clone", fidelity: "exact",
       phases: [{
-        id: "card", depends_on: [], inputs: ["reference.md", "card-probe.json"], outputs: ["card.html"], gates: [],
+        id: "card", depends_on: [], inputs: ["reference.md", "card-probe.json"], outputs: [target], gates: [],
         goal: "Preserve the card's confirmation action and visible confirmed state.",
-        visual: { target: "confirmation-card", property: "layout", references: ["reference.md"], scope: ["card.html"], guides: ["guide.md"], checks: ["card-check.json"], review: true,
-          verification: [{ kind: "interaction", probe: "card-probe.json", target: "card.html", check: "card-check.json" }] },
+        visual: { target: "confirmation-card", property: "layout", references: ["reference.md"], scope: [target], guides: ["guide.md"], checks: ["card-check.json"], review: true,
+          verification: [{ kind: "interaction", probe: "card-probe.json", target, check: "card-check.json" }] },
       }],
     });
     for (const args of [["init", "-q"], ["config", "user.name", "Native Frontend Test"], ["config", "user.email", "native-frontend@example.invalid"], ["add", "."], ["commit", "-qm", "native structural fixture baseline"]]) {
@@ -199,7 +215,7 @@ test("reference-only exploratory authority permits native planning but never imp
 
 test("direct legacy and resumed native visual-task entry bind the actual frontend instead of inferring authority from task media", t => {
   const root = frontendProject(t);
-  const dir = nativeChange(t, root, { bind: false, visual: true });
+  const dir = nativeChange(t, root, { bind: false, visual: true, dir: root });
   assertFrontendBlocked(decideVisualTask(dir, { projectRoot: root, plan: "visual-plan.json", choice: "card", verdict: "complete" }));
   assert.equal(load(dir, "state.json").extensions.frontend.projectRoot, root);
   assertFrontendBlocked(nextVisualTask(dir));
@@ -216,6 +232,18 @@ test("direct legacy and resumed native visual-task entry bind the actual fronten
   fs.unlinkSync(path.join(root, "design-system-request.json"));
   assertFrontendBlocked(decideVisualTask(dir, { choice: "card", verdict: "complete" }));
   assertFrontendBlocked(nextVisualTask(dir));
+});
+
+test("cross-root native output scopes cannot borrow authority from a different frontend tree", t => {
+  const root = frontendProject(t);
+  const dir = nativeChange(t, root, { visual: true });
+  finishEntry(root);
+  consume(root);
+  const action = nextVisualTask(dir, { plan: "visual-plan.json" });
+  assert.equal(action.status, "blocked", JSON.stringify(action));
+  assert.match(JSON.stringify(action), /frontend output scope must stay inside/);
+  assert.equal(load(dir, "state.json").extensions.visualTasks.active, undefined);
+  assert.equal(fs.existsSync(path.join(root, "card.html")), false);
 });
 
 for (const deliverable of ["film", "edit"]) {
@@ -251,9 +279,9 @@ function mutate(root, rel, change) {
 // public consumer. It requires the same Chrome + puppeteer-core tooling as native completion.
 function completedNative(t) {
   const root = frontendProject(t);
+  const dir = nativeChange(t, root, { visual: true, dir: root });
   finishEntry(root);
   consume(root);
-  const dir = nativeChange(t, root, { visual: true });
   const action = nextVisualTask(dir, { plan: "visual-plan.json" });
   assert.equal(action.status, undefined, JSON.stringify(action));
   assert.equal(action.stage, "visual-task");
@@ -261,7 +289,7 @@ function completedNative(t) {
   // record as a contrast to downstream protected-phase invalidation.
   advance(dir, { control: { phaseStatus: "ready", outcome: "complete", phases: Object.fromEntries(["repo-read", ...PROTECTED].map(phase => [phase, { status: "ready", evidence: ["reference.md"] }])) } });
   write(dir, "card.html", '<!doctype html><meta charset="utf-8"><main id="card"><button id="confirm">Confirm</button><output id="result">Pending</output></main><script>document.querySelector("#confirm").onclick=()=>{document.querySelector("#result").textContent="Confirmed";};</script>');
-  const completed = decideVisualTask(dir, { choice: "card", verdict: "complete", artifact: action.metadataPath });
+  const completed = decideVisualTask(dir, { choice: "card", verdict: "complete", artifact: action.metadataPath, ...realBrowserTools() });
   assert.equal(completed.status, "recorded", JSON.stringify(completed));
   assert.equal(completed.next.stage, "visual-review", JSON.stringify(completed));
   const accepted = decideVisualTask(dir, { choice: "card", verdict: "accept", artifact: action.metadataPath });
@@ -274,6 +302,143 @@ function completedNative(t) {
   assert.ok(record.artifacts.every(artifact => artifact.input_hashes.$frontend === action.inputHashes.$frontend));
   assert.equal(accepted.visualAcceptance, "not-evaluated");
   return { root, dir, digest: action.inputHashes.$frontend };
+}
+
+const SOURCE_TARGET = "src/card.html";
+const CARD_SOURCE = '<!doctype html><meta charset="utf-8"><main id="card"><button id="confirm">Confirm</button><output id="result">Pending</output></main><script>document.querySelector("#confirm").onclick=()=>{document.querySelector("#result").textContent="Confirmed";};</script>';
+
+function frontendAuthority(root) {
+  const state = readState(root);
+  return canonicalJson({
+    request: state.frontend.request,
+    observation: state.decisions.frontendObservation,
+    purpose: state.decisions.frontendPurpose,
+    designSystem: state.decisions.designSystem,
+  });
+}
+
+function sourceNative(t, existing = true) {
+  const root = temporary(t, "native-frontend-source-");
+  fs.mkdirSync(path.join(root, "src"));
+  if (existing) write(root, SOURCE_TARGET, '<!doctype html><main id="card"><button id="confirm" disabled>Confirm</button><output id="result">Pending</output></main>');
+  initState(root, { deliverable: "ui", tier: "quick", purpose: existing ? "optimize-existing" : "new", scope: "src", query: OWNER_REPLY });
+  // Establish Git discovery before observing, and keep both state files in their existing locations:
+  // workflow-state.v1 at .design-pipeline/state.json, native change state at state.json.
+  nativeChange(t, root, { visual: true, dir: root, target: SOURCE_TARGET });
+  const observation = nextAction(root);
+  assert.equal(observation.stage, "observe");
+  assert.deepEqual(observation.observation.scope, ["src"]);
+  assert.deepEqual(observation.observation.files.map(file => file.path), existing ? [SOURCE_TARGET] : []);
+  finishEntry(root);
+  consume(root);
+  return { root, authority: frontendAuthority(root) };
+}
+
+function dispatchSource(root) {
+  const action = nextVisualTask(root, { plan: "visual-plan.json", projectRoot: root });
+  assert.equal(action.type, "run", JSON.stringify(action));
+  assert.equal(action.stage, "visual-task", JSON.stringify(action));
+  assert.equal(action.task.id, "card");
+  assert.equal(action.status, undefined, JSON.stringify(action));
+  assert.equal(action.visualAcceptance, "not-evaluated");
+  return action;
+}
+
+for (const existing of [true, false]) {
+  const lifecycle = existing ? "edits an observed source" : "creates a declared in-scope source output";
+  test(`native frontend ${lifecycle}, completes real interaction receipts and resumes without reopening immutable entry`, t => {
+    const { root, authority } = sourceNative(t, existing);
+    const action = dispatchSource(root);
+    write(root, SOURCE_TARGET, CARD_SOURCE);
+    assert.notEqual(nextAction(root).stage, "observe", "authorized task work must not invalidate its observed entry");
+    assert.equal(frontendAuthority(root), authority, "source authorization must not rewrite observation or owner decisions");
+    assert.equal(nativeFrontendStatus(load(root, "state.json"), { runtime: true }).status, "ready");
+
+    const completed = decideVisualTask(root, { choice: "card", verdict: "complete", artifact: action.metadataPath, ...realBrowserTools() });
+    assert.equal(completed.status, "recorded", JSON.stringify(completed));
+    assert.equal(completed.next.stage, "visual-review", JSON.stringify(completed));
+    assert.equal(completed.visualAcceptance, "not-evaluated", "browser conformance is not owner Visual Acceptance");
+    assert.equal(load(root, "card-check.json").status, "passed", "completion must run the existing real interaction verifier");
+    const record = load(root, "state.json").extensions.visualTasks.completed.card;
+    assert.equal(record.observation.kind, "interaction");
+    const output = record.artifacts.find(artifact => artifact.path === SOURCE_TARGET);
+    const check = record.artifacts.find(artifact => artifact.path === "card-check.json");
+    assert.ok(output && check, "completion must produce both existing output and verifier artifact receipts");
+    assert.equal(validateArtifactMetadata(output, { changeRoot: root }).status, "ready");
+    assert.equal(validateArtifactMetadata(check, { changeRoot: root }).status, "ready");
+    assert.equal(output.artifact_hash, hashFile(root, SOURCE_TARGET));
+    assert.equal(check.input_hashes["output:" + SOURCE_TARGET], output.artifact_hash);
+    assert.equal(check.input_hashes.$frontend, action.inputHashes.$frontend);
+
+    const accepted = decideVisualTask(root, { choice: "card", verdict: "accept", artifact: action.metadataPath });
+    assert.equal(accepted.status, "recorded", JSON.stringify(accepted));
+    assert.equal(accepted.next.type, "done", JSON.stringify(accepted));
+    assert.equal(accepted.technicalCompletion, "passed");
+    assert.equal(accepted.visualAcceptance, "not-evaluated");
+    for (let resume = 0; resume < 3; resume++) {
+      assert.equal(nextVisualTask(root).type, "done", "resume must not require another observe/decide/complete cycle");
+      assert.equal(nativeFrontendStatus(load(root, "state.json"), { runtime: true }).status, "ready");
+      assert.notEqual(nextAction(root).stage, "observe");
+      assert.notEqual(nextAction(root).stage, "design-system");
+      assert.equal(frontendAuthority(root), authority);
+    }
+    assert.equal(load(root, "state.json").extensions.visualTasks.completed.card.review.valid, true);
+
+    // Output bytes, not a cached ready/review flag, govern the actual completed evidence.
+    write(root, SOURCE_TARGET, CARD_SOURCE.replace(">Confirm<", ">Confirm again<"));
+    const drift = validateArtifactMetadata(output, { changeRoot: root });
+    assert.equal(drift.status, "stale");
+    assert.equal(drift.code, "ARTIFACT_HASH_DRIFT");
+    const resumed = nextVisualTask(root);
+    assert.equal(resumed.type, "run", JSON.stringify(resumed));
+    assert.equal(resumed.stage, "visual-task", JSON.stringify(resumed));
+    assert.equal(resumed.status, undefined, JSON.stringify(resumed));
+    const stale = load(root, "state.json").extensions.visualTasks.completed.card;
+    assert.equal(stale.status, "stale");
+    assert.equal(stale.review.valid, false);
+    assert.ok(stale.artifacts.every(artifact => artifact.status === "stale"));
+    assert.equal(frontendAuthority(root), authority);
+    assert.equal(nativeFrontendStatus(load(root, "state.json"), { runtime: true }).status, "ready");
+    assert.notEqual(nextAction(root).stage, "observe", "output drift reopens native evidence, not immutable entry");
+  });
+}
+
+const IN_PROGRESS_CHANGES = [
+  ["frontend request", root => bindStateFrontend(root, { query: OWNER_REPLY + " Change the product requirements." }), true],
+  ["published decision", root => mutate(root, "design-system-decision.json", value => { value.selection.rationale += " changed"; }), true],
+  ["decision request", root => mutate(root, "design-system-request.json", value => { value.selection.rationale += " changed"; }), true],
+  ["catalog reference", root => mutate(root, "design-system-catalog.json", value => { value.version = "changed"; }), true],
+  ["native task reference", root => write(root, "reference.md", "Changed the required card journey during task work.\n"), false],
+];
+
+for (const [label, change, frontend] of IN_PROGRESS_CHANGES) {
+  test(`native frontend source authorization cannot hide ${label} drift during work`, t => {
+    const { root } = sourceNative(t);
+    const action = dispatchSource(root);
+    write(root, SOURCE_TARGET, CARD_SOURCE);
+    change(root);
+    const resumed = nextVisualTask(root);
+    if (frontend) assertFrontendBlocked(resumed);
+    else assert.equal(resumed.status, "blocked", JSON.stringify(resumed));
+    const completed = decideVisualTask(root, { choice: "card", verdict: "complete", artifact: action.metadataPath });
+    if (frontend) assertFrontendBlocked(completed);
+    else assert.equal(completed.status, "blocked", JSON.stringify(completed));
+    assert.equal(fs.existsSync(path.join(root, "card-check.json")), false, "changed authority must fail before writing browser success evidence");
+    assert.equal(fs.existsSync(path.join(root, action.metadataPath)), false, "changed authority must not produce a completion receipt");
+    assert.equal(load(root, "state.json").extensions.visualTasks.completed.card, undefined);
+  });
+}
+
+for (const operation of ["add", "remove"]) {
+  test(`native frontend blocks observed scope ${operation} before task source authorization`, t => {
+    const { root } = sourceNative(t);
+    if (operation === "add") write(root, "src/unapproved.html", "<!doctype html><main>Unobserved source</main>");
+    else fs.rmSync(path.join(root, SOURCE_TARGET));
+    assert.equal(nextAction(root).stage, "observe", "scope coverage changes need a fresh observation before authorization");
+    assertFrontendBlocked(nextVisualTask(root, { plan: "visual-plan.json", projectRoot: root }));
+    assert.equal(fs.existsSync(path.join(root, "card-check.json")), false);
+    assert.equal(load(root, "state.json").extensions.visualTasks?.active, undefined, "dispatch must not authorize already-changed source coverage");
+  });
 }
 
 for (const [label, rel, change] of CHANGES) {

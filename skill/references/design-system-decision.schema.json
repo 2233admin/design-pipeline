@@ -29,9 +29,19 @@
           "minProperties": 1,
           "propertyNames": {"$ref": "#/$defs/relativePath"},
           "additionalProperties": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}
+        },
+        "bundledCatalog": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source", "sha256"],
+          "properties": {
+            "source": {"const": "references/astryx-design-system-snapshot.json"},
+            "sha256": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}
+          },
+          "description": "Identifies the implicit catalog in the consumer's current installed skill, not a project-relative file."
         }
       },
-      "description": "Workflow consumers must reread and hash every bound source, including requestPath; core validation checks shape and replay, not current filesystem bytes."
+      "description": "Workflow consumers reread and hash project-bound sources, including requestPath; shared validation also rereads the current installed bundledCatalog and checks its hash and resolved catalog before replay."
     }
   },
   "allOf": [
@@ -42,6 +52,10 @@
     {
       "if": {"properties": {"status": {"const": "ready"}, "mode": {"enum": ["reference", "adopt", "substitute"]}}},
       "then": {"properties": {"capabilityInventory": {"type": "object"}, "selection": {"properties": {"basis": {"const": "capability-search"}}}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "ready"}, "mode": {"const": "adopt"}}},
+      "then": {"properties": {"selection": {"properties": {"authority": {"properties": {"actor": {"const": "owner"}, "source": {"enum": ["request", "reply"]}}}}}}}
     },
     {
       "if": {"properties": {"status": {"const": "ready"}, "mode": {"const": "custom"}, "selection": {"type": "object", "properties": {"basis": {"const": "capability-search"}}}}},

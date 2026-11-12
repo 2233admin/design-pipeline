@@ -76,6 +76,34 @@ Record the actual summary delivered to the owner with the returned command:
 not a hand-written ready flag. This binds current inspected/captured bytes. It is technical/source
 evidence, never the owner's design acceptance.
 
+Before authorized work, changed or removed observed sources, newly discovered frontend sources,
+and an empty scope becoming nonempty reopen observation and invalidate dependent choices.
+Discovery membership remains bounded but is not reduced to the smaller source-reading budget.
+Unread candidates retain bounded file-version evidence; becoming readable or changing at the same
+path also reopens observation. Capture DOM and its receipt remain reference inputs, not proof of
+an existing project or its retained runtime design system.
+Do not edit first and then use a later observation to imply that the old choices authorized it.
+
+Returned planning/build/work actions record their literal `sourceScope`; native visual tasks use
+their existing declared modification scopes and outputs. Intended changes in those scopes may
+complete with the existing checked-output receipts without continually reopening the original
+observation. This never exempts input, reference, request, catalog or decision evidence from
+freshness checks. Current output-set changes invalidate technical evidence; they do not grant
+owner acceptance. Additional native outputs must be declared in the existing task scope, not
+authorized by an invented broad exception for the build stage.
+Source permissions bind the current entry, consumed decision and revision. Expired dispatched
+metadata paths cannot hide new product content. Fully validated consumed process-input identities
+remain receipt-owned even when their bytes go stale: request/catalog/stack changes invalidate that
+decision, while product edits or coverage changes invalidate observation. A schema label or large
+JSON file alone never establishes a process role. Native-bound UI work gets edit authority from
+the actual task, not from the generic planning instruction. Verified output identities come from
+the existing passed gate/artifact hashes and do not grant creative acceptance.
+Unchanged concept/brief outputs actually consumed by their existing validated decisions retain
+byte-backed metadata identity, not old design approval. Changing those formerly dispatched
+paths after authority expires makes them source candidates again; an old filename cannot hide
+replacement product content.
+
+
 ## purpose
 
 After observation, ask only a direction-changing fact still unresolved in the request or project.
@@ -83,6 +111,11 @@ For a link alongside an existing frontend, clarify whether it is a reference or 
 target if the owner has not already said so. Record the actual clarification with
 `decide --stage purpose --choice <purpose> --answer "<owner's actual clarification>"`.
 Do not repeat settled facts or require design vocabulary. Then use frontend intake below.
+Negated copying language does not select reproduction. An optimization request with an otherwise
+unexplained link still leaves the link's role unresolved. An actual correction away from a
+previously inferred/clarified reproduction purpose updates routing and persists on re-observation;
+do not let the old `replicate` mode overrule that correction.
+
 
 ## design-system
 
@@ -92,6 +125,14 @@ Before concepts, component planning, description/spec, tasks or implementation, 
 actual request through `design-system decide`; retain the existing four modes and stack contract.
 The CLI publishes resolved request and current source bindings. A boolean, receipt-shaped object
 or a plausible prose choice cannot replace the validated decision.
+Public `design-system decompose` output is consumed unchanged, including actual direct/capability
+match IDs and bounded-search options. A limit applies to matching hits; a bounded preview cannot
+prove exhaustion. New adoption/substitution needs the real owner's structured request or reply;
+agent research can support reference-only exploration, not manufacture runtime authority.
+The default installed catalog is source-bound even without `--catalog` or `--snapshot`. Changing,
+removing or replacing that bundle invalidates old decisions; an embedded catalog is not a cache
+that can overrule the current installed source.
+
 
 Explicit owner scratch records `selection.basis: owner-scratch`, actual owner authority and rationale.
 It skips catalog search, not observation, validation, existing stack, licenses or receipt lineage;

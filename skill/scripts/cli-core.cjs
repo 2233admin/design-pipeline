@@ -102,6 +102,7 @@ const {
 const {
   decideDesignSystem,
   projectDesignSystemTokens,
+  readBundledDesignSystemCatalog,
 } = require("./design-system-decision-core.cjs");
 const {
   acquireDesignSystemProvider,
@@ -1105,7 +1106,7 @@ function numberOption(parsed, name, options = {}) {
 }
 
 function bundledDesignSystemCatalog() {
-  return normalizeDesignSystemSnapshot(readJson(builtIn("astryx-design-system-snapshot.json"), "bundled Astryx snapshot"));
+  return readBundledDesignSystemCatalog().catalog;
 }
 
 function bundledComponentSourceCatalog() {
@@ -1417,6 +1418,7 @@ function designSystemCommand(parsed, root, action) {
     const request = readJson(requestFile, "design system decision request");
     const requestPath = path.relative(root, requestFile).split(path.sep).join("/");
     const inputHashes = { [requestPath]: "sha256:" + sha256(fs.readFileSync(requestFile)) };
+    let bundledCatalog;
     for (const [pathField, valueField, label] of [["frontendStackDecisionPath", "frontendStackDecision", "frontend stack decision"], ["capabilityInventoryPath", "capabilityInventory", "capability inventory"], ["catalogPath", "catalog", "design-system catalog"]]) {
       if (request[pathField] !== undefined) {
         if (request[valueField] !== undefined || typeof request[pathField] !== "string") fail("cli", `${pathField} must be the only source for ${valueField}`);
@@ -1427,7 +1429,11 @@ function designSystemCommand(parsed, root, action) {
       }
     }
     if (!request.catalog) {
-      request.catalog = designSystemCatalog(parsed, root);
+      if (!option(parsed, "--catalog") && !option(parsed, "--snapshot")) {
+        const bundled = readBundledDesignSystemCatalog();
+        request.catalog = bundled.catalog;
+        bundledCatalog = bundled.sourceBinding;
+      } else request.catalog = designSystemCatalog(parsed, root);
       for (const flag of ["--catalog", "--snapshot"]) {
         if (!option(parsed, flag)) continue;
         const source = artifact(parsed, root, flag);
@@ -1436,7 +1442,7 @@ function designSystemCommand(parsed, root, action) {
       }
     }
     if (option(parsed, "--allow-canary") === true) request.allowCanary = true;
-    const decision = { ...decideDesignSystem(request), request, sourceBindings: { requestPath, inputHashes } };
+    const decision = { ...decideDesignSystem(request), request, sourceBindings: { requestPath, inputHashes, ...(bundledCatalog ? { bundledCatalog } : {}) } };
     const governingSource = decision.projectAuthority?.source;
     if (typeof governingSource === "string" && governingSource !== "project" && !/^https?:\/\//i.test(governingSource)) {
       const file = contained(root, governingSource, "project governing source");

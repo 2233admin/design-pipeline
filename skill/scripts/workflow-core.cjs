@@ -184,6 +184,7 @@ function nextAction(root) {
     const action = runtimeDecision && runtimeDecision.status !== "ready"
       ? { type: "blocked", blocker: { kind: "frontend-design-system", reason: runtimeDecision.reason, needs: "A current runtime-authorizing design-system decision, not reference-only adoption." }, instruction: "Record an explicit project-owned custom/adopt/substitute decision using the existing design-system action.", record: `${cliCommand()} decide --root ${shellPath(path.resolve(root))} --project-root ${shellPath(path.resolve(root))} --stage design-system --artifact <decision.json>` }
       : stage.action(state, root);
+    if (frontend.authorizeWorkflowOutputs(state, root, stage.id, action)) writeState(root, state);
     // Visual asks go to the art director: the concept pick, a sample, a built web section, the review.
     const directed = state.director && action.type === "ask" && ["concepts", "sample", "build", "review"].includes(stage.id) ? { director: `Switch to ${state.director} for this step (art director mode).` } : {};
     const rules = state.rules.length ? { rules: state.rules.map((rule) => rule.text) } : {};
@@ -203,7 +204,7 @@ function decide(root, options = {}) {
   const front = frontend.isFrontend(state);
   if (front && frontend.synchronizeFrontend(state, root)) writeState(root, state);
   if (!front && ["observe", "purpose", "design-system"].includes(stage)) fail("workflow", `--stage ${stage} applies only to frontend workflows`);
-  if (front && !["observe", "purpose"].includes(stage) && !frontend.purposeFinished(state, root)) fail("workflow", "Observe the supplied frontend and resolve its purpose before further questions or work. Fix: follow next.", { code: "WORKFLOW_NOT_READY" });
+  if (front && !["observe", "purpose", "design-system"].includes(stage) && !frontend.purposeFinished(state, root)) fail("workflow", "Observe the supplied frontend and resolve its purpose before further questions or work. Fix: follow next.", { code: "WORKFLOW_NOT_READY" });
   if (front && ["concept", "components", "description", "section", "review", "deliver"].includes(stage) && frontend.decisionStatus(state, root).status !== "ready") fail("workflow", "A current consumed design-system decision is required before downstream decisions. Fix: follow next.", { code: "DESIGN_SYSTEM_DECISION_REQUIRED" });
   if (front && ["section", "review", "deliver"].includes(stage)) frontend.requireRuntimeDecision(state, root);
   const webRecord = state.deliverable === "web" || state.deliverable === "ui" && stage === "intake" ? SUB_WORKFLOWS.web.decisions[stage] : null;
@@ -214,6 +215,8 @@ function decide(root, options = {}) {
   else if (stage === "design-system") frontend.recordDesignSystem(state, root, options);
   else if (webRecord) {
     webRecord(state, root, options, () => nextAction(root));
+    if (front && stage === "concept") frontend.recordConsumedProcessOutputs(state, root, "concepts");
+    if (front && stage === "description") frontend.recordConsumedProcessOutputs(state, root, "description");
   } else if (stage === "intake") {
     if (!options.answer) fail("workflow", "--answer is required: the user's reply to the intake questions");
     const collisions = fs.readdirSync(root).filter(name => name.toLowerCase() === "brief.md");
@@ -294,7 +297,7 @@ function recordGate(root, gate, status, inputs = [], report = {}, lineage = null
   const state = readState(root);
   if (!state) return;
   if (frontend.isFrontend(state) && status === "passed") frontend.requireRuntimeDecision(state, root);
-  const evidenceInputs = frontend.isFrontend(state) ? frontend.decisionInputs(state) : [];
+  const evidenceInputs = frontend.isFrontend(state) ? [...frontend.decisionInputs(state), ...frontend.outputInputs(state, root)] : [];
   const bound = [...(lineage ? [...inputs, ...lineage.files, ...lineage.tokens] : inputs), ...evidenceInputs];
   const inputHashes = status === "passed" ? Object.fromEntries(bound.filter(Boolean).map(input => {
     const file = resolveInside(root, input, "checked input", { scope: "workflow", mustExist: true });
@@ -310,6 +313,7 @@ function recordGate(root, gate, status, inputs = [], report = {}, lineage = null
   const next = typeof report.next === "string" ? report.next : steps.filter(step => typeof step.next === "string").map(step => step.next).join(" ");
   const lineageRecord = status === "passed" && lineage ? { lineage: { files: [...lineage.files], tokens: [...lineage.tokens], absent: [...lineage.absent], remote: [...lineage.remote] } } : {};
   state.gates = { ...(state.gates || {}), [gate]: { status, at: Date.now(), inputHashes, findings, ...(next ? { next } : {}), ...lineageRecord } };
+  if (frontend.isFrontend(state) && status === "passed" && frontend.outputInputs(state, root).length) frontend.recordCheckedSourceOutputs(state, root, inputHashes);
   writeState(root, state);
 }
 
@@ -429,9 +433,23 @@ function bindVisualAttempt(context, task) {
   if (active) {
     const failure = inspectVisualAttempt(context);
     if (failure) return failure;
-    if (active.taskId === task.id && active.taskHash === visualHash(canonicalJson(task)) && active.planHash === context.progress.planHash) return null;
+    // Rebind the current decision/revision below without replacing this task's original Git baseline.
   }
   try {
+    const frontendRoot = context.native.state.extensions?.frontend?.projectRoot;
+    if (frontendRoot) {
+      const frontendState = frontend.projectFrontendState(frontendRoot);
+      if (!frontendState) fail("workflow", "The bound frontend workflow is missing.");
+      frontend.requireRuntimeDecision(frontendState, frontendRoot);
+      const relativeSource = raw => {
+        const absolute = resolveInside(context.root, raw, "task source scope", { scope: "workflow" });
+        return path.relative(frontendRoot, absolute).split(path.sep).join("/") + (raw.endsWith("/") ? "/" : "");
+      };
+      const scopes = [...new Set([...task.visual.scope, ...task.outputs, ...task.visual.checks, taskMetadataPath(task)])].map(relativeSource);
+      const processPaths = [...task.visual.checks, taskMetadataPath(task)].map(relativeSource);
+      if (frontend.authorizeSourceOutputs(frontendState, frontendRoot, scopes, processPaths)) writeState(frontendRoot, frontendState);
+    }
+    if (active?.taskId === task.id && active.taskHash === visualHash(canonicalJson(task)) && active.planHash === context.progress.planHash) return null;
     const baseline = captureGitSnapshot(context.root);
     const metadataPath = taskMetadataPath(task);
     const authorization = [...new Set([...task.visual.scope, ...task.outputs, ...task.visual.checks, context.progress.planPath, "state.json", "events.jsonl", metadataPath].map(raw => {
@@ -440,6 +458,10 @@ function bindVisualAttempt(context, task) {
       if (!relative || relative === ".." || relative.startsWith("../") || path.isAbsolute(relative)) fail("workflow", "Task scope must remain inside its observed Git root.");
       return relative + (visualPath(raw).endsWith("/") ? "/" : "");
     }))];
+    if (frontendRoot) {
+      const ownState = visualPath(path.relative(baseline.root, path.join(frontendRoot, STATE)));
+      if (ownState && ownState !== ".." && !ownState.startsWith("../") && !path.isAbsolute(ownState)) authorization.push(ownState);
+    }
     context.progress.active = { taskId: task.id, taskHash: visualHash(canonicalJson(task)), planHash: context.progress.planHash, changeRoot: context.root, metadataPath, authorization, baseline };
     return null;
   } catch (error) { return `Cannot observe this task's Git baseline: ${error.message}`; }
@@ -752,6 +774,22 @@ function decideVisualTask(changeRoot, options = {}) {
     else context.progress.failures[current.id] = typeof previous === "object" ? { ...previous, message: failure } : failure;
   }
   persistVisual(context, failure ? `${current.id} needs repair: ${failure}` : `${current.id} technical evidence passed.`, failure ? "visual-task-failed" : "visual-task-complete");
+  if (!failure && context.native.state.extensions?.frontend?.projectRoot) {
+    const frontendRoot = context.native.state.extensions.frontend.projectRoot;
+    const frontendState = frontend.projectFrontendState(frontendRoot);
+    const artifacts = context.progress.completed[current.id].artifacts;
+    const insideProject = file => {
+      const relative = path.relative(frontendRoot, path.join(context.root, file)).split(path.sep).join("/");
+      return relative && relative !== ".." && !relative.startsWith("../") && !path.isAbsolute(relative) ? relative : null;
+    };
+    const hashes = Object.fromEntries(artifacts.filter(artifact => insideProject(artifact.path)).map(artifact => [insideProject(artifact.path), artifact.artifact_hash]));
+    const metadataPath = taskMetadataPath(current);
+    const metadataSource = insideProject(metadataPath);
+    if (metadataSource) hashes[metadataSource] = "sha256:" + sha256(fs.readFileSync(resolveInside(context.root, metadataPath, "observed metadata", { scope: "workflow", mustExist: true })));
+    const scopes = current.outputs.map(insideProject).filter(Boolean);
+    if (scopes.length) frontend.recordCheckedSourceOutputs(frontendState, frontendRoot, hashes, scopes);
+    writeState(frontendRoot, frontendState);
+  }
   return { status: failure ? "blocked" : "recorded", taskId: current.id, ...(failure ? { failure } : {}), visualAcceptance: "not-evaluated", next: nextVisualTask(changeRoot) };
 }
 
