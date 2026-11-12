@@ -42,9 +42,11 @@ vendored tree is reference and provenance, never built or run.
 6. Determinism gates the claim. The probe hashes page screenshots and lens pixels after forward,
    backward and shuffled seeks and in a second browser process; any difference exits 2 and the
    render is not claimed. The renderer string is recorded; hardware and SwiftShader output differ.
-7. Sound follows the events: `sfx.cjs` synthesizes the `sfx.py` layers with ffmpeg (seeded noise,
-   biquads, closed-form chirps) at peak -12 dBFS, an approximation, not sample parity; the existing
-   `audio master` brings it to -14 LUFS and the audio gate verifies it.
+7. Sound follows the events: `sfx.cjs` synthesizes the `sfx.py` layers with ffmpeg at peak -12
+   dBFS: seeded Gaussian noise (Box-Muller over two seeded uniform sources), scipy's second-order
+   Butterworth band-pass as two biquad sections, closed-form chirps. It is an approximation, not
+   sample parity: numpy's random stream, the pans, holds and jitters and the tanh soft clip are not
+   reproduced. The existing `audio master` brings it to -14 LUFS and the audio gate verifies it.
 8. Routing extends `film scaffold` with the value `tracking-hud` (no new flag) and one build-table
    row. The scaffold writes the template files, the vendored fonts, OFL text and `LICENSE`, and the
    storyboard, composition and tracks built from the default config.
@@ -75,6 +77,33 @@ vendored tree is reference and provenance, never built or run.
     unchanged.
 12. Rendered evidence and technical conformance stay separate; passing checks never grant Visual
     Acceptance. Attribution: keep the upstream credit to Michael Nowak; never use his material.
+13. The lens samples the flat texture bilinearly (linear filtering, clamped), as fframes samples
+    the flat for the SkSL shader (`fframes_skia_renderer` 1.2.0: Skia image shader,
+    `FilterMode::Linear`, no mipmaps). The first port fetched the nearest texel, which made each
+    colour channel's tap on a thin stroke at an LED-cell edge all or nothing, so aberration
+    coloured whole box sides. Against upstream's README frames (12 shot tiles at frame 6 of each
+    shot and frame 81, same LANCZOS downscale and 4:2:0 chroma) the mean absolute error fell from
+    3.27 to 2.63, lower on every tile, and in shot 1's box region from 11.77 to 5.63. fframes'
+    yuv420p round trip of the flat changed those frames by less than 0.01 and is not ported.
+14. Content that breaks the film is refused before any render, in the existing build validation
+    (`tracks.js` `problems()`, `build.cjs` `check()`), not by a new gate: a typed line inside the
+    60 px side margins and clear of the title and status bars; each lock ping at least 0.1 s (the
+    render gate's audio-sync window) from both cuts; each used palette's text stop at least 3:1 on
+    its background stop (the composition gate's large-text minimum); the Done pill on the screen
+    with its label inside it; the last frame showing the whole Done pill or target box; every drawn
+    character in the vendored JetBrains Mono at one 0.6 em cell, because the browser would draw a
+    missing glyph (CJK, emoji) in a fallback font, off the cell grid the boxes measure. Messages
+    name the shot or frame, the value and the limit; a refused config writes nothing and exits 2.
+    The refusals do not replace the gates: the default with its Done palette made near-black was
+    refused at 1.08:1 and, rendered by bypassing the build, still failed the composition gate on
+    `low-contrast` (2.88:1 on the last frame).
+15. A typing shot may name the word or phrase it locks on with `shots[].lock` (its last occurrence
+    in the line); without it the lock takes the last word, as upstream. A named lock missing from
+    the line is an invalid config (exit 1). A named lock must read on one of its lock frames (the
+    locked box and its LOCK label whole in the frame, no other label over the LOCK label) or the
+    build refuses it; an implicit lock that does not read is only a warning, because upstream's own
+    default has three (shots 2, 3 and 9). The storyboard's beats and lock samples name the locked
+    word; the samples had said "the last word" for every shot, the cursor shot included.
 
 ## Ownership and compatibility
 
@@ -91,18 +120,36 @@ vendored tree is reference and provenance, never built or run.
 
 No receipt, policy digest or public command changes. The render result's `cuts` object gains one
 additive field, `structureCutsSec`; its other fields keep their meaning. `film scaffold` gains one
-allowed template value and existing templates are unchanged.
+allowed template value and existing templates are unchanged. `shots[].lock` is optional: a config
+without it keeps upstream's last-word lock and builds as before, with a warning for each implicit
+lock that does not read.
 
 ## Verification
 
 Measured on Windows 11, RTX 4070 Ti, HyperFrames 0.8.137, Chrome headless shell 152: a 2 s single
 shot renders at 114 ms/frame (1080p) and 202 ms/frame (4K) on the GPU, 579 and 747 ms/frame with
-SwiftShader; repeated renders were byte-identical per mode. The default 6 s film, scaffolded fresh,
-rendered in 17.8 s (six workers, 1080p GPU) and a second full render was byte-identical. The probe
-passed on 36 frames (215 labels, worst marker 0.496 px, 120 glyphs, worst 0.481 px). `film check`
-passed every gate; all 11 planned cuts were found (4 by scene change, 7 by frame structure) and the
-last sample shows the Done pill. Its warnings remain review prompts and passing is not acceptance.
-`npm test` ran with `TEMP`/`TMP`/`TMPDIR` on D: (C: lacks space for the hermetic temp root): 1443
+SwiftShader; repeated renders were byte-identical per mode.
+
+The default 6 s film, scaffolded fresh, rendered in 17.8 s (six workers, 1080p GPU) and a second
+full render was byte-identical. The probe passed on 36 frames (215 labels, worst marker 0.496 px,
+120 glyphs, worst 0.481 px). `film check` passed every gate; all 11 planned cuts were found (4 by
+scene change, 7 by frame structure) and the last sample shows the Done pill. Re-rendered with the
+bilinear lens and the new sound, the default took 19.7 s and was byte-identical twice; the probe's
+worst marker fell to 0.199 px and worst glyph to 0.407 px, and `film check` again found all 11
+cuts.
+
+A 6 s design-pipeline promo, scaffolded fresh into the ignored
+`.design-pipeline/design-pipeline-promo/`, types only real output of the pipeline run on that film;
+its `sources.md` maps every line to the command output kept verbatim beside it. The build refused
+its first config with five problems (a target off the safe frame, four named locks that did not
+read). The final config rendered in 20.6 s and again in 20.3 s, byte-identical; the probe passed
+(36/36 frames identical, 209 labels, worst marker 0.181 px, 121 glyphs, worst 0.316 px) and
+`film check` passed with all 11 cuts found (4 scene, 7 structure). The same config with a
+near-black last palette was refused by the build at 1.08:1 and, rendered by bypassing the build,
+failed `film check` on `low-contrast` on its last shot. Warnings remain review prompts, and passing
+is not acceptance.
+
+`npm test` ran with `TEMP`/`TMP`/`TMPDIR` on D: (C: lacks space for the hermetic temp root): 1446
 repository tests, 0 failed, 4 skipped for optional runtimes or a case-sensitive filesystem.
 Checks:
 

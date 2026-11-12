@@ -136,6 +136,7 @@ test("a lock that does not read only warns until the shot names its word", () =>
     assert.match(warnings[0], /Allowed for the implicit last-word lock; name the word in shots\[1\]\.lock to require a readable lock/);
     const named = config();
     named.shots[5].lock = "token";
+    named.shots[1].lock = "thinking…";
     fs.writeFileSync(path.join(dir, "film.config.js"), `module.exports = ${JSON.stringify(named)};\n`);
     const T = hud.load(dir);
     const box = T.track(5, T.LOCK_AT).boxes.at(-1);
@@ -143,6 +144,7 @@ test("a lock that does not read only warns until the shot names its word", () =>
     assert.deepEqual(T.shots[5].lockSpan, [12, 16]);
     assert.ok(box.locked && box.x < start[0] && box.x + box.w > end[0] + end[2], "the lock box covers token");
     assert.match(hud.storyboard(T).beats[5].productAction, /lock on "token"$/);
+    assert.match(hud.storyboard(T).rendering.samples[1].purpose, /LOCK label on "thinking…"$/);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -184,6 +186,8 @@ test("the generated storyboard passes the film gate and binds a cue to every sho
   assert.ok(board.beats.every((b, i) => b.soundCues.includes(`lock-${i + 1}`)));
   assert.equal(board.sound.cues.filter((c) => c.kind === "accent").length, 12);
   assert.equal(board.rendering.route, "webgl");
+  // Lock samples name what each shot locks on: the cursor, then the implicit last word.
+  assert.deepEqual(board.rendering.samples.map((s) => s.purpose.replace(/^Shot \d+ lock: red box, tear and LOCK label on /, "")), ["the cursor", "the last word", "the last word"]);
 });
 
 test("the composition is one paused timeline that films flat, lens and overlay in one callback", () => {

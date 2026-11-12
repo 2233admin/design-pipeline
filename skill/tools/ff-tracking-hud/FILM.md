@@ -7,14 +7,15 @@ keep the SIL Open Font License in `assets/fonts/JetBrainsMono-OFL.txt`. The visu
 goes to Michael Nowak (@mnowakdesign); none of his footage is used, and none may be added. Guide:
 `references/film-tracking-hud-template.md` in the design-pipeline skill.
 
-`film.config.js` is the one file to edit: typed lines, palettes, shots and camera, timing, lens
-strengths and lock-ping notes. `lib/tracks.js` derives every frame from it (boxes, focus, camera,
-lock and key events), and the flat screen (`lib/flat.js`), the lens (`lib/lens.js`), the overlay
-labels (`lib/overlay.js`), the storyboard and the sound (`sfx.cjs`) all read it. `index.html`,
-`storyboard.json` and `tracks.json` are generated: rebuild instead of editing them.
+`film.config.js` is the one file to edit: typed lines and the word each shot locks on, palettes,
+shots and camera, timing, lens strengths and lock-ping notes. `lib/tracks.js` derives every frame
+from it (boxes, focus, camera, lock and key events), and the flat screen (`lib/flat.js`), the lens
+(`lib/lens.js`), the overlay labels (`lib/overlay.js`), the storyboard and the sound (`sfx.cjs`) all
+read it. `index.html`, `storyboard.json` and `tracks.json` are generated: rebuild instead of editing
+them.
 
 1. `npm install` once (needs network): installs the pinned hyperframes and gsap. Afterwards run HyperFrames as `npx --no-install hyperframes ...`.
-2. Edit film.config.js, then `node build.cjs`. It refuses a config whose typed line runs past the screen or whose tracked target leaves the safe frame, and otherwise rewrites storyboard.json, index.html, tracks.json and assets/sfx.wav (ffmpeg).
+2. Edit film.config.js, then `node build.cjs`. It refuses, and writes nothing for, a config whose typed line leaves the screen area or whose tracked target leaves the safe frame, whose lock ping lies within 0.1 s of a cut, whose palette text is below 3:1 on its background, whose Done label overflows its pill or whose last frame cuts into its subject, or that types a character the vendored JetBrains Mono lacks (CJK, emoji); a word named in a shot's `lock` must also read on a lock frame, box and LOCK label whole and uncovered. Otherwise it rewrites storyboard.json, index.html, tracks.json and assets/sfx.wav (ffmpeg).
 3. `designer-pipeline audio master --input assets/sfx.wav --output assets/sfx-mastered.wav --target web`; index.html plays the master.
 4. `npx --no-install hyperframes render --output out.mp4 --browser-gpu` (`--no-browser-gpu` renders with SwiftShader where no GPU is available; add `--resolution landscape-4k` for 3840x2160).
 5. `node probe.cjs --gpu hardware` in the same GPU mode (`--gpu software` for SwiftShader, `--dpr 2` for 4K). It must pass: identical pixels across reordered seeks and a second browser, labels equal to the projected box centres, markers and glyphs filmed where the labels say. Never claim a render it fails.

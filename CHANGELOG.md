@@ -88,10 +88,18 @@ All notable changes to Design Pipeline are documented here.
   through the existing film source importer and checks, and ported to a HyperFrames template in
   `skill/tools/ff-tracking-hud/`: one `film.config.js` drives a tracks module (the upstream `hud`
   crate, matching its fixtures for all 180 frames), a Canvas 2D terminal drawn glyph by glyph, a
-  WebGL2 port of the lens shader, CPU-projected tracker labels and ffmpeg-synthesized sound.
+  WebGL2 port of the lens shader that samples it bilinearly as fframes does, CPU-projected tracker
+  labels and ffmpeg-synthesized sound (Gaussian noise, Butterworth band-pass sections).
   `film scaffold --template tracking-hud` writes the project; `probe.cjs` checks seek determinism
-  and label-to-glyph alignment. `references/film-tracking-hud-template.md` and the film build
-  table route to it. No new gate, receipt, flag or dependency.
+  and label-to-glyph alignment. Before writing anything, `build.cjs` refuses content that would
+  break the film: a line outside the screen area, a target off the safe frame, a lock ping within
+  0.1 s of a cut, palette text under 3:1, a Done label wider than its pill, a last frame without
+  its subject, or a character the vendored JetBrains Mono lacks (CJK, emoji). `shots[].lock` names
+  the word a shot locks on, and the build then requires that word and its LOCK label to read.
+  `references/film-tracking-hud-template.md` and the film build table route to it. No new gate,
+  receipt, flag or dependency. Exercised on a 6 s design-pipeline promo whose typed lines quote
+  the build, probe and `film check` output of its own run; the promo is local evidence, not
+  shipped.
 - Measured UI craft audit (change `audit-rendered-ui-craft`): `interaction.json`
   (`design-pipeline.interaction-probe.v1`) accepts `"kind": "audit"` probes, and
   `verify interaction` measures the rendered page at each declared viewport for 17 `audit.*`
