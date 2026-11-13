@@ -23,8 +23,8 @@ node build/all.cjs              # every piece into renders/, plus renders/index.
 | `fusion.cjs` | Game-grammar pieces laid out by hand: gnomon key visual, survey briefing under computed star trails, element entrance |
 | `math.cjs`, `dense.cjs` + `dense.py` | Lorenz, phyllotaxis, Fourier/Gibbs, Ulam, Kepler's second law, logistic bifurcation; Buddhabrot, Chirikov standard map, de Jong, Clifford, Lyapunov |
 | `kondratiev.cjs` | Kondratiev waves as a spiral, one turn per wave, with one lifetime drawn across it |
-| `collage.cjs` + `collage.py` | Material triptych where every texture is computed: sand ripples under torn paper, a dusk gradient, Gray–Scott reaction–diffusion with relief |
-| `depth-3d.cjs` | 3D order-book depth: 91 L2 snapshots × 10 levels as a lit canyon, ask wall, last-price line; data simulated and labelled SIM |
+| `collage.cjs` + `collage.py` | Material triptych where every texture is computed: sand ripples under torn paper, a dusk gradient, a porous crust of spherical cavities at three scales |
+| `depth-3d.cjs` | Order-book depth canyon in a game-UI frame: 91 L2 snapshots × 10 levels, three depth bands (blurred far plane with fog, sharp middle, blurred foreground), bloom on the ask wall, dust, book bars, imbalance dial, reticle and tape strip; data simulated and labelled SIM |
 
 ## What the kit taught
 
