@@ -1,0 +1,103 @@
+{
+  "dialect": "field",
+  "density": "standard",
+  "brand": "#b8862b",
+  "lang": "zh",
+  "institution": {
+    "name": "KATANAVIEW ARCHIVE",
+    "department": "INSTRUMENTS OF TIME / GAOCHENG, DENGFENG"
+  },
+  "file": {
+    "id": "FILE GUIBIAO-1279",
+    "sheet": "SHEET 01 OF 01 / 34.40° N",
+    "footer": "CONCEPT STUDY · KTV / GUIBIAO / 01"
+  },
+  "title": {
+    "index": "01",
+    "text": "GNOMON / NOON SHADOW",
+    "sub": "圭表测影 · 40-CHI GNOMON OF GUO SHOUJING · SHADOWS COMPUTED FOR THE SOLSTICES AND EQUINOX"
+  },
+  "layout": {
+    "heroWidth": 1180,
+    "heroInset": 20,
+    "sideWidth": 420
+  },
+  "hero": {
+    "type": "gnomon",
+    "gnomon_m": 9.81,
+    "latitude_deg": 34.4,
+    "scale_m": 31,
+    "marks": [
+      {
+        "label": "夏至 SUMMER",
+        "decl_deg": 23.53
+      },
+      {
+        "label": "春秋分 EQUINOX",
+        "decl_deg": 0
+      },
+      {
+        "label": "冬至 WINTER",
+        "decl_deg": -23.53,
+        "selected": true
+      }
+    ]
+  },
+  "side": [
+    {
+      "type": "table",
+      "title": "INSTRUMENT",
+      "rows": [
+        [
+          "GNOMON 表",
+          "4 ZHANG = 9.81 M"
+        ],
+        [
+          "SCALE 圭",
+          "≈ 31 M STONE"
+        ],
+        [
+          "SHADOW DEFINER",
+          "影符 · PINHOLE"
+        ],
+        [
+          "BUILT",
+          "1279 · GUO SHOUJING"
+        ],
+        [
+          "SITE",
+          "34.40° N · DENGFENG"
+        ]
+      ]
+    },
+    {
+      "type": "metrics",
+      "items": [
+        [
+          "TROPICAL YEAR · 授时历",
+          "365.2425 D"
+        ],
+        [
+          "STATIONS · 四海测验",
+          "27"
+        ],
+        [
+          "READING",
+          "≈ 2 MM"
+        ]
+      ]
+    }
+  ],
+  "notes": [
+    {
+      "type": "hand",
+      "text": "longest shadow = winter",
+      "at": [
+        1000,
+        520
+      ],
+      "to": "selected"
+    }
+  ],
+  "sources": "CCTV NEWS 2025-02-03 (观星台); ZHENGZHOU EVENING NEWS 2011-10-20; GNOMON 9.81 M AT 24.525 CM PER CHI. OBLIQUITY 23.53° FOR 1279; REFRACTION AND PENUMBRA IGNORED."
+}

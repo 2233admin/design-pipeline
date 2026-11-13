@@ -1,0 +1,119 @@
+{
+  "dialect": "paper",
+  "density": "standard",
+  "brand": "#c23a2e",
+  "institution": {
+    "name": "KATANAVIEW ARCHIVE",
+    "department": "STRUCTURAL FAILURES / RAILWAY BRIDGES"
+  },
+  "file": {
+    "id": "FILE TAY-1879",
+    "sheet": "SHEET 01 OF 02 / FIRTH OF TAY",
+    "footer": "CONCEPT STUDY · KTV / TAY-1879 / 01"
+  },
+  "title": {
+    "index": "01",
+    "text": "TAY BRIDGE / THE HIGH GIRDERS",
+    "sub": "ELEVATION, SOUTH (WORMIT) TO NORTH (DUNDEE) · 85 SPANS · HORIZONTAL SCALE ONLY"
+  },
+  "layout": {
+    "heroWidth": 1180,
+    "heroInset": 0,
+    "sideWidth": 420
+  },
+  "hero": {
+    "type": "elevation",
+    "scale_y": 2.2,
+    "ends": [
+      "WORMIT · SOUTH",
+      "DUNDEE · NORTH"
+    ],
+    "groups": [
+      {
+        "count": 36,
+        "span_m": 44,
+        "height_m": 8,
+        "label": "36 DECK SPANS ~44 M"
+      },
+      {
+        "count": 13,
+        "span_m": 74,
+        "height_m": 27,
+        "label": "13 HIGH GIRDERS ~74 M · FELL",
+        "failed": true
+      },
+      {
+        "count": 36,
+        "span_m": 44,
+        "height_m": 8,
+        "label": "36 DECK SPANS ~44 M"
+      }
+    ],
+    "load": {
+      "label": "⊗ GALE INTO THE PAGE · GUSTS ≈ 36 M/S"
+    }
+  },
+  "side": [
+    {
+      "type": "table",
+      "title": "EVENT RECORD",
+      "rows": [
+        [
+          "DATE",
+          "SUN 28 DEC 1879"
+        ],
+        [
+          "TIME",
+          "≈ 19:15"
+        ],
+        [
+          "TRAIN",
+          "NBR, FROM BURNTISLAND"
+        ],
+        [
+          "ON BOARD",
+          "≈ 75 · 59 BODIES FOUND"
+        ]
+      ]
+    },
+    {
+      "type": "metrics",
+      "items": [
+        [
+          "TOTAL LENGTH",
+          "3 264 M"
+        ],
+        [
+          "GUSTS",
+          "≈ 129 KM/H"
+        ]
+      ]
+    },
+    {
+      "type": "table",
+      "title": "INQUIRY 1880",
+      "rows": [
+        [
+          "FINDING",
+          "CROSS-BRACING TOO WEAK"
+        ],
+        [
+          "WIND LOAD",
+          "NOT DESIGNED FOR"
+        ]
+      ]
+    }
+  ],
+  "notes": [
+    {
+      "type": "hand",
+      "text": "the train was inside these",
+      "at": [
+        1000,
+        430
+      ],
+      "to": "failed"
+    }
+  ],
+  "sources": "COURT OF INQUIRY REPORT (1880); WIKIPEDIA, TAY BRIDGE DISASTER; STRUCTURAE; SCOTLANDSPEOPLE. SPAN COUNTS PER SIDE AND HEIGHTS SCHEMATIC."
+}

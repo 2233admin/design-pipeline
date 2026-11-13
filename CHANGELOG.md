@@ -4,6 +4,10 @@ All notable changes to Design Pipeline are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- Sheet kit for industrial document sheets about a real subject (change `add-archive-sheet-kit`): `tools/template-bank/sheet-kit.cjs` renders a sheet from a JSON spec with a reusable frame, one computed hero (`sequence`, `bitfield`, `hexmap`, `elevation`, `gnomon`), side blocks (`table`, `bill`, `metrics`, `tabs`, `barcode`, an embedded second hero) and notes, in the `paper`, `terminal` and `field` dialects. Render reports findings for a missing sources line, an incomplete frame, the method's density budgets and side-column overflow, and discloses example values in the footer. Four golden specs ship in `tools/template-bank/sheets/` (TCP opening, Webb primary mirror, Tay Bridge high girders, Dengfeng gnomon). `industrial-document-sheets.md` adopts the four-question intake (format and size, institution, dialect, density), and routing no longer needs Arknights wording.
+
 ## [0.14.0] - 2026-11-13
 
 ### Fixed

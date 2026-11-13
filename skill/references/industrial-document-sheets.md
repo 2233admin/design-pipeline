@@ -30,6 +30,20 @@ event), drawn as a document an institution could have issued. It is the method b
   layouts (cover, key visual, card, banner, UI). Use this guide when the piece is a sheet *about
   something* and the layout comes from the subject, not from a template.
 
+## 0. Intake: at most four questions
+
+Requests look like "a poster about the Tay Bridge collapse" or "做一张关于圭表测影的信息图". The
+method fits best when the subject has real data and a clear outline: a measurement, a section, a
+route, a structure, the timeline of one event. Ask at most these four, then decide everything else:
+
+1. **Format and size**: screen 1920×1080, feed 1080×1350, slide 1600×900 or a print size.
+2. **Issuing institution**: a real one, or one invented for the subject (§1).
+3. **Dialect** (§3).
+4. **Density**: airy, standard or dense (§5).
+
+No answer: 1920×1080, paper dialect, standard density, an institution invented for the subject. Say
+which defaults were taken in one line.
+
 ## 1. The document test
 
 Before drawing, answer two questions in one sentence each.
@@ -186,8 +200,9 @@ subject's alone.
 1. Research the subject; collect real data, coordinates, years and terms.
 2. Write the one-line concept, the institution, its document type and the dialect (§1, §3).
 3. Choose the motif, the cartographic genre and the density level (§2, §5).
-4. Build the sheet as hand-written HTML or SVG, or start from an `arknights-endfield` template
-   when the piece is a cover, key visual, card or banner (`template list --style arknights-endfield`).
+4. Build the sheet with the sheet kit (below) when a hero type fits; otherwise hand-write HTML or
+   SVG, or start from an `arknights-endfield` template when the piece is a cover, key visual, card or
+   banner (`template list --style arknights-endfield`).
    Fonts: `fonts query --text-file copy.txt` before choosing a face for Chinese.
 5. Declare the colour roles on the page root (`data-hue-brand`, `data-hue-counter`,
    `data-hue-alert`, `data-hue-timed`) and run `template check <page> --browser`. Fix by the
@@ -209,9 +224,31 @@ subject's alone.
 - The sheet is inside its density budget and the empty field is empty.
 - Text meets the medium's minimum (Chinese +2 px); facts are verified and sourced in the fine print.
 
+## Sheet kit
+
+`tools/template-bank/sheet-kit.cjs` renders a sheet from a JSON spec, so the frame and the parts are
+reused instead of redrawn:
+
+```sh
+node tools/template-bank/sheet-kit.cjs sheets/tay-bridge.json out.html   # exit 2 when findings
+```
+
+| Part | Kinds |
+| --- | --- |
+| Frame | institution and department, file id and sheet number, corner squares, registration crosses, sources footer (required), colour control strip |
+| Hero (one, computed) | `sequence` message ladder · `bitfield` header on a bit ruler · `hexmap` segmented aperture · `elevation` spans with a failed group and a cross-load · `gnomon` noon shadows from latitude and declination |
+| Side blocks | `table`, `bill`, `metrics`, `tabs` with a live dot, `barcode`, `hero` (a second figure) |
+| Notes | `hand` annotation with a pen arrow to the hero's selected or failed anchor, `object` (not to scale), `link` from the selected item to the selected field |
+
+Dialects `paper`, `terminal`, `field`; one brand colour, written to `data-hue-brand`. Findings:
+`sources-required`, `frame-incomplete`, `density-budget` (hero annotations and text-column fields
+against §5, separately), `side-overflow`. A value flagged `example` gets `*` and the footer says so.
+The four specs in `tools/template-bank/sheets/` (TCP opening, Webb primary mirror, Tay Bridge high
+girders, Dengfeng gnomon) are the golden examples; copy the nearest one. A subject whose figure is
+none of the hero kinds is still built by hand, and a new kind goes into the kit once it repeats.
+
 ## What was not adopted
 
 - The upstream Python scripts and their font fetching from a font host. The pipeline's own check
   and font catalog replace them.
-- The four-question intake. The pipeline's guided intake already asks about purpose and use first.
 - Any upstream example image, kit stylesheet or template file. Nothing is copied.
