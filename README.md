@@ -34,7 +34,7 @@ SKILLS_DOWNLOAD_MAX_BYTES=104857600 SKILLS_EXTRACT_MAX_BYTES=268435456 SKILLS_EX
 
 然后让你的 agent 运行 `designer-pipeline doctor`：它列出缺什么、每项给一条可复制的命令，不会替你安装任何东西。装好以后直接说需求，例如“用 design-pipeline 给这个卡牌游戏做一套卡面模板”。Windows、离线 Release 包和升级方式见 [安装与第一次运行](docs/install.md)。需要 Node.js 22.12 或更新版本。
 
-[矢量屏](#80-年代矢量屏) · [风格包](#游戏官网与世界观风格包) · [合成](#合成生成角色进模板) · [案例](#案例) · [检查零问题不等于好](#为什么检查零问题不等于好) · [能做什么](#能做什么) · [怎么工作](#怎么工作) · [原则](#几条原则) · [局限](#局限) · [文档](#继续阅读)
+[矢量屏](#80-年代矢量屏) · [工业档案页](#工业档案页) · [风格包](#游戏官网与世界观风格包) · [合成](#合成生成角色进模板) · [案例](#案例) · [检查零问题不等于好](#为什么检查零问题不等于好) · [能做什么](#能做什么) · [怎么工作](#怎么工作) · [原则](#几条原则) · [局限](#局限) · [文档](#继续阅读)
 
 ---
 
@@ -49,6 +49,16 @@ SKILLS_DOWNLOAD_MAX_BYTES=104857600 SKILLS_EXTRACT_MAX_BYTES=268435456 SKILLS_EX
 
 <p align="center"><img src="docs/cases/vector80/vector80-plates.jpg" width="100%" alt="四张矢量屏样张：红色示波器切圆束，绿色荧光门格海绵立在红色台面上带黄色旗标，青色高度场和三面旗标，蓝框仪表面板里的绿色地球和红黄等值圈"></p>
 <p align="center"><sub>▲ 四份示例规格：切圆束、门格海绵、测绘高度场、入轨面板。读数为模拟值。用法见 <a href="skill/references/industrial-document-sheets.md">工业档案页指南</a> 的 Vector plates 一节。</sub></p>
+
+## 工业档案页
+
+关于真实主题的工业科幻海报和信息单，比如“泰桥倒塌”或“圭表测影”。`sheet-kit` 用一份 JSON 出整页：机构和文件号、一个按数据算出来的主图（时序梯、报文位图、分段主镜、桥梁立面、正午日影）、侧栏读数和手写批注；没写出处、超出信息密度预算、侧栏溢出都会报出来。最多问四个问题：格式和尺寸、发行机构、方言、密度。
+
+<p align="center"><img src="docs/cases/industrial-sheets/sheet-kit-goldens.jpg" width="100%" alt="四张工业档案页：泰桥高梁段倒塌立面、登封圭表正午日影、TCP 三次握手与报头位图、韦布望远镜 18 片主镜分段图，浅灰底、细框线、单一品牌色"></p>
+<p align="center"><sub>▲ sheet-kit 的四份示例规格：泰桥 1879、圭表测影、TCP 握手、韦布主镜。日影长度按纬度和赤纬算，主镜按六边形网格排。</sub></p>
+
+<p align="center"><img src="docs/cases/industrial-sheets/depth-archive-sheet.jpg" width="100%" alt="盘口深度档案页：左栏协议参数和十档买卖表，中间是带粗粝感的全息盘口投影窗，标注最新价和卖墙，底部一排大号读数，全部文字为矢量"></p>
+<p align="center"><sub>▲ 同一套版式装进有质感的主图：粗粝只留在投影窗里，读数、档位和标注全是矢量，保证看得清。数据为模拟盘口。</sub></p>
 
 ---
 

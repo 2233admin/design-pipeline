@@ -271,7 +271,7 @@ python3 tools/template-bank/vector80-glow.py out.png plate.jpg --tear 560,1260 -
 
 | Layout | Holds |
 | --- | --- |
-| `scope` | dot graticule and axes; traces `circle`, `line`, `lissajous`, `pencil` (circles tangent at one point); one phosphor |
+| `scope` | dot graticule and axes; traces `circle`, `line`, `lissajous`, `pencil` (circles tangent at one point); one phosphor, or a `phosphor` per trace |
 | `plate` | isometric platform with tabs, floor rings, way-markers and flag tags around a computed subject: `menger` (level n), `field` (height-field peaks), `dome` |
 | `panel` | instrument panel: framed title, status boxes, right readout column, corner crosshairs, a `globe` view (graticule and contour rings) |
 

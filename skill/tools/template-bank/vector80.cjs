@@ -5,7 +5,7 @@
 // (white-hot cores, three bloom halos, heat shift where light piles up, scan tears, phosphor speckle,
 // halation, film fog, grain, vignette, slight barrel). Three layouts:
 //   scope  - oscilloscope graticule (dot lattice, cross axes) carrying circles, lines, Lissajous
-//            figures and tangent circle pencils, one phosphor
+//            figures and tangent circle pencils; one phosphor, or one per trace
 //   plate  - isometric platform with tabs, floor rings, way-markers and flag tags around a computed
 //            subject: menger (level n), field (height-field preset) or dome (lat/long sphere)
 //   panel  - instrument panel: framed title, status boxes, right readout column, corner crosshairs and
@@ -86,10 +86,12 @@ const LAYOUTS = {
     s += ln(ctx, [60, cy], [W - 60, cy], P, 2.2) + ln(ctx, [cx, 200], [cx, H - 200], P, 2.2);
     const toPx = (x, y) => [cx + x * unit, cy - y * unit];
     for (const t of g.traces || []) {
-      if (t.type === "circle") s += `<circle cx="${r(toPx(...t.c)[0])}" cy="${r(toPx(...t.c)[1])}" r="${r(t.r * unit)}" fill="none" stroke="${use(ctx, P)}" stroke-width="2.2"/>`;
-      else if (t.type === "line") s += ln(ctx, toPx(...t.a), toPx(...t.b), P, 1.4);
-      else if (t.type === "pencil") for (const R of t.radii) { const c = toPx(t.at[0] + R, t.at[1]); s += `<circle cx="${r(c[0])}" cy="${r(c[1])}" r="${r(R * unit)}" fill="none" stroke="${use(ctx, P)}" stroke-width="1.8"/>`; }
-      else if (t.type === "lissajous") { const pts = []; for (let i = 0; i <= 1200; i++) { const u = i / 1200 * 2 * Math.PI; pts.push(toPx(t.A * Math.sin(t.a * u + (t.delta ?? Math.PI / 2)), t.B * Math.sin(t.b * u))); } s += `<path d="${pathOf(pts)}" fill="none" stroke="${use(ctx, P)}" stroke-width="2"/>`; }
+      // a trace may carry its own phosphor; otherwise it draws in the primary
+      const C = t.phosphor ? (PHOSPHORS[t.phosphor] || t.phosphor) : P;
+      if (t.type === "circle") s += `<circle cx="${r(toPx(...t.c)[0])}" cy="${r(toPx(...t.c)[1])}" r="${r(t.r * unit)}" fill="none" stroke="${use(ctx, C)}" stroke-width="2.2"/>`;
+      else if (t.type === "line") s += ln(ctx, toPx(...t.a), toPx(...t.b), C, 1.4);
+      else if (t.type === "pencil") for (const R of t.radii) { const c = toPx(t.at[0] + R, t.at[1]); s += `<circle cx="${r(c[0])}" cy="${r(c[1])}" r="${r(R * unit)}" fill="none" stroke="${use(ctx, C)}" stroke-width="1.8"/>`; }
+      else if (t.type === "lissajous") { const pts = []; for (let i = 0; i <= 1200; i++) { const u = i / 1200 * 2 * Math.PI; pts.push(toPx(t.A * Math.sin(t.a * u + (t.delta ?? Math.PI / 2)), t.B * Math.sin(t.b * u))); } s += `<path d="${pathOf(pts)}" fill="none" stroke="${use(ctx, C)}" stroke-width="2"/>`; }
       else findings.push({ rule: "trace-unknown", message: t.type });
     }
     if (g.tag) { const p = toPx(...g.tag.at); s += `<text x="${r(p[0])}" y="${r(p[1])}" class="v-tag" style="fill:${P}">${esc(g.tag.text)}</text>`; }

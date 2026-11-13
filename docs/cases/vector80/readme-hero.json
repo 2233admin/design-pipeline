@@ -34,14 +34,16 @@
           3.55,
           3.75,
           3.9
-        ]
+        ],
+        "phosphor": "red"
       },
       {
         "type": "lissajous",
         "A": 4,
         "B": 4,
         "a": 3,
-        "b": 2
+        "b": 2,
+        "phosphor": "green"
       },
       {
         "type": "circle",
@@ -49,7 +51,8 @@
           0,
           0
         ],
-        "r": 5.2
+        "r": 5.2,
+        "phosphor": "yellow"
       },
       {
         "type": "circle",
@@ -57,7 +60,8 @@
           11,
           0
         ],
-        "r": 2.4
+        "r": 2.4,
+        "phosphor": "teal"
       },
       {
         "type": "circle",
@@ -65,7 +69,8 @@
           11,
           0
         ],
-        "r": 1.2
+        "r": 1.2,
+        "phosphor": "yellow"
       },
       {
         "type": "line",
@@ -76,7 +81,8 @@
         "b": [
           13.5,
           -2.5
-        ]
+        ],
+        "phosphor": "teal"
       }
     ],
     "tag": {
