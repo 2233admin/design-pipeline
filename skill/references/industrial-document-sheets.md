@@ -247,6 +247,13 @@ The four specs in `tools/template-bank/sheets/` (TCP opening, Webb primary mirro
 girders, Dengfeng gnomon) are the golden examples; copy the nearest one. A subject whose figure is
 none of the hero kinds is still built by hand, and a new kind goes into the kit once it repeats.
 
+The grammar lines in §2 are options chosen per subject, not a stamp. Neutral ground, a shared left
+line and condensed Latin over a CJK serif suit many sheets; a subject may want a warm ground with a
+vertical title and a seal, a full-bleed signal colour, or a night sky. What stays fixed is that the hero
+is computed and the footer is honest. `examples/computed-sheets-kit/` holds 35 worked pieces: other
+media (receipt, badge, ribbon, dial, small multiples), computed figures (bifurcation, Buddhabrot,
+standard map, Lyapunov) and a Kondratiev spiral; read its build scripts for heroes the kit lacks.
+
 ## What was not adopted
 
 - The upstream Python scripts and their font fetching from a font host. The pipeline's own check
