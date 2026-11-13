@@ -1,0 +1,94 @@
+{
+  "layout": "scope",
+  "size": [
+    2400,
+    900
+  ],
+  "phosphor": {
+    "primary": "red"
+  },
+  "title": "DESIGN-PIPELINE",
+  "captions": {
+    "tl": "SAY WHAT TO MAKE · GET BACK CHECKED WORK",
+    "tr": "CH-1",
+    "tr2": "XY MODE",
+    "bl": "UI · MOTION WEB · PRODUCT FILM · PV",
+    "br": "VECTOR80 / PLOT 00"
+  },
+  "scope": {
+    "unit": 64,
+    "grid": 64,
+    "traces": [
+      {
+        "type": "pencil",
+        "at": [
+          -16.5,
+          0
+        ],
+        "radii": [
+          1.2,
+          2,
+          2.6,
+          3,
+          3.3,
+          3.55,
+          3.75,
+          3.9
+        ]
+      },
+      {
+        "type": "lissajous",
+        "A": 4,
+        "B": 4,
+        "a": 3,
+        "b": 2
+      },
+      {
+        "type": "circle",
+        "c": [
+          0,
+          0
+        ],
+        "r": 5.2
+      },
+      {
+        "type": "circle",
+        "c": [
+          11,
+          0
+        ],
+        "r": 2.4
+      },
+      {
+        "type": "circle",
+        "c": [
+          11,
+          0
+        ],
+        "r": 1.2
+      },
+      {
+        "type": "line",
+        "a": [
+          8.5,
+          2.5
+        ],
+        "b": [
+          13.5,
+          -2.5
+        ]
+      }
+    ],
+    "tag": {
+      "at": [
+        5.6,
+        -4.4
+      ],
+      "text": "B-78"
+    }
+  },
+  "tearZone": [
+    330,
+    600
+  ]
+}

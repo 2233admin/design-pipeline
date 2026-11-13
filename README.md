@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/cases/vector80/vector80-hero.jpg" width="100%" alt="DESIGN-PIPELINE 头图：80 年代矢量示波器屏，红色荧光的切圆束、利萨如图形和点阵刻度，带物理辉光、扫描撕裂和胶片颗粒"></p>
+
 <div align="center">
 
 # design-pipeline
@@ -32,12 +34,21 @@ SKILLS_DOWNLOAD_MAX_BYTES=104857600 SKILLS_EXTRACT_MAX_BYTES=268435456 SKILLS_EX
 
 然后让你的 agent 运行 `designer-pipeline doctor`：它列出缺什么、每项给一条可复制的命令，不会替你安装任何东西。装好以后直接说需求，例如“用 design-pipeline 给这个卡牌游戏做一套卡面模板”。Windows、离线 Release 包和升级方式见 [安装与第一次运行](docs/install.md)。需要 Node.js 22.12 或更新版本。
 
-[风格包](#游戏官网与世界观风格包) · [合成](#合成生成角色进模板) · [案例](#案例) · [检查零问题不等于好](#为什么检查零问题不等于好) · [能做什么](#能做什么) · [怎么工作](#怎么工作) · [原则](#几条原则) · [局限](#局限) · [文档](#继续阅读)
+[矢量屏](#80-年代矢量屏) · [风格包](#游戏官网与世界观风格包) · [合成](#合成生成角色进模板) · [案例](#案例) · [检查零问题不等于好](#为什么检查零问题不等于好) · [能做什么](#能做什么) · [怎么工作](#怎么工作) · [原则](#几条原则) · [局限](#局限) · [文档](#继续阅读)
 
 ---
 
 <p align="center"><img src="docs/cases/card-game/card-game-set.jpg" width="100%" alt="《藏珍匣》九卡总览：普鲁士蓝蓝晒卡面，寻常、珍稀、奇异、孤品四级稀有度"></p>
 <p align="center"><sub>▲ 集换卡《藏珍匣》的九张示例卡。卡图是 15–17 世纪的公有领域版画，统一处理成蓝晒白线。</sub></p>
+
+---
+
+## 80 年代矢量屏
+
+`vector80` 模板用一份 JSON 画 80 年代矢量显示器的画面：先出干净的荧光线稿（示波器 `scope`、等轴台面 `plate`、仪表面板 `panel`），再由单独的光栅步骤做出物理辉光——白热线芯、三层光晕、线条堆叠处偏黄白、只落在指定区间的扫描撕裂、荧光粉颗粒、胶片底雾和暗角，`--contrast` 控制黑位和光晕松紧。主体是算出来的：门格海绵按层级算方块数，高度场按峰值函数，地球视窗按经纬网投影。上面的头图就是这个模板出的。
+
+<p align="center"><img src="docs/cases/vector80/vector80-plates.jpg" width="100%" alt="四张矢量屏样张：红色示波器切圆束，绿色荧光门格海绵立在红色台面上带黄色旗标，青色高度场和三面旗标，蓝框仪表面板里的绿色地球和红黄等值圈"></p>
+<p align="center"><sub>▲ 四份示例规格：切圆束、门格海绵、测绘高度场、入轨面板。读数为模拟值。用法见 <a href="skill/references/industrial-document-sheets.md">工业档案页指南</a> 的 Vector plates 一节。</sub></p>
 
 ---
 
