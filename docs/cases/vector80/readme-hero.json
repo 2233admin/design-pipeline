@@ -1,0 +1,128 @@
+{
+  "layout": "panel",
+  "size": [
+    2400,
+    1000
+  ],
+  "phosphor": {
+    "frame": "blue",
+    "text": "teal",
+    "primary": "green",
+    "secondary": "red",
+    "accent": "yellow"
+  },
+  "title": "DESIGN-PIPELINE",
+  "panel": {
+    "status": [
+      "SAY WHAT TO MAKE",
+      "GET BACK CHECKED WORK"
+    ],
+    "readout": [
+      [
+        "STYLE PACKS",
+        "15"
+      ],
+      [
+        "TEMPLATES",
+        "78"
+      ],
+      [
+        "STAGES",
+        "0-7"
+      ],
+      [
+        "KIT PIECES",
+        "56"
+      ],
+      [
+        "VERSION",
+        "0.15.0-beta.1"
+      ],
+      [
+        "",
+        ""
+      ],
+      [
+        "LICENSE MIT",
+        ""
+      ]
+    ],
+    "view": {
+      "type": "globe",
+      "tilt": 22,
+      "rotate": -40,
+      "unit": 40,
+      "traces": [
+        {
+          "type": "pencil",
+          "at": [
+            -12.5,
+            0
+          ],
+          "radii": [
+            1,
+            1.8,
+            2.5,
+            3.1,
+            3.6,
+            4,
+            4.3,
+            4.55
+          ],
+          "phosphor": "red"
+        },
+        {
+          "type": "lissajous",
+          "A": 4.6,
+          "B": 4.6,
+          "a": 3,
+          "b": 2,
+          "phosphor": "green"
+        },
+        {
+          "type": "circle",
+          "c": [
+            0,
+            0
+          ],
+          "r": 5.8,
+          "phosphor": "yellow"
+        },
+        {
+          "type": "circle",
+          "c": [
+            9.6,
+            0
+          ],
+          "r": 2.4,
+          "phosphor": "teal"
+        },
+        {
+          "type": "circle",
+          "c": [
+            9.6,
+            0
+          ],
+          "r": 1.2,
+          "phosphor": "yellow"
+        },
+        {
+          "type": "line",
+          "a": [
+            7.2,
+            2.4
+          ],
+          "b": [
+            12,
+            -2.4
+          ],
+          "phosphor": "teal"
+        }
+      ]
+    }
+  },
+  "tearZone": [
+    720,
+    830
+  ]
+}

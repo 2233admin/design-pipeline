@@ -1,0 +1,110 @@
+{
+  "dialect": "paper",
+  "density": "standard",
+  "brand": "#c8962e",
+  "institution": {
+    "name": "KATANAVIEW ARCHIVE",
+    "department": "OBSERVATORY RECORD / SUN–EARTH L2"
+  },
+  "file": {
+    "id": "FILE 2021-130A",
+    "sheet": "SHEET 02 OF 03 / NORAD 50463",
+    "footer": "KTV / 2021-130A / 02"
+  },
+  "title": {
+    "index": "02",
+    "text": "PRIMARY MIRROR / SEGMENT MAP",
+    "sub": "18 HEXAGONAL BERYLLIUM SEGMENTS, GOLD COATED · FACE-ON VIEW · SCALE IN METRES"
+  },
+  "layout": {
+    "heroWidth": 1000,
+    "heroInset": 160,
+    "sideWidth": 384,
+    "sideY": 270
+  },
+  "hero": {
+    "type": "hexmap",
+    "flat_m": 1.32,
+    "scale": 92,
+    "wings_abs_x_flats": 1.6,
+    "rings": [
+      {
+        "prefix": "A",
+        "dist_flats": 1
+      },
+      {
+        "prefix": "B",
+        "dist_flats": 2
+      },
+      {
+        "prefix": "C",
+        "dist_flats": 1.7320508,
+        "offset_deg": 30
+      }
+    ],
+    "dims": {
+      "overall": "6.6 M"
+    }
+  },
+  "side": [
+    {
+      "type": "bill",
+      "title": "BILL OF ELEMENTS",
+      "rows": [
+        [
+          "PRIMARY MIRROR · 18 SEG.",
+          "US"
+        ],
+        [
+          "SECONDARY MIRROR",
+          "US"
+        ],
+        [
+          "SUNSHIELD · 5 LAYERS",
+          "US"
+        ],
+        [
+          "NIRSPEC",
+          "ESA"
+        ],
+        [
+          "MIRI",
+          "ESA / US"
+        ],
+        [
+          "NIRISS + FGS",
+          "CSA"
+        ]
+      ]
+    },
+    {
+      "type": "metrics",
+      "items": [
+        [
+          "CLEAR APERTURE",
+          "25 M²"
+        ],
+        [
+          "FOCAL LENGTH",
+          "131.4 M"
+        ]
+      ]
+    },
+    {
+      "type": "barcode",
+      "caption": "ASSET TAG / 50463"
+    }
+  ],
+  "notes": [
+    {
+      "type": "object",
+      "at": [
+        1150,
+        340
+      ],
+      "text": "AU / 48.25 G ON 25 M²",
+      "sub": "ABOUT ONE GOLF BALL · NOT TO SCALE"
+    }
+  ],
+  "sources": "NASA WEBB FACT SHEET; NASA NTRS 20160002952 (SEGMENT LAYOUT); NORTHROP GRUMMAN JWST DATASHEET."
+}

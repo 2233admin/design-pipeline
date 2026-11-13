@@ -30,6 +30,20 @@ event), drawn as a document an institution could have issued. It is the method b
   layouts (cover, key visual, card, banner, UI). Use this guide when the piece is a sheet *about
   something* and the layout comes from the subject, not from a template.
 
+## 0. Intake: at most four questions
+
+Requests look like "a poster about the Tay Bridge collapse" or "做一张关于圭表测影的信息图". The
+method fits best when the subject has real data and a clear outline: a measurement, a section, a
+route, a structure, the timeline of one event. Ask at most these four, then decide everything else:
+
+1. **Format and size**: screen 1920×1080, feed 1080×1350, slide 1600×900 or a print size.
+2. **Issuing institution**: a real one, or one invented for the subject (§1).
+3. **Dialect** (§3).
+4. **Density**: airy, standard or dense (§5).
+
+No answer: 1920×1080, paper dialect, standard density, an institution invented for the subject. Say
+which defaults were taken in one line.
+
 ## 1. The document test
 
 Before drawing, answer two questions in one sentence each.
@@ -186,8 +200,9 @@ subject's alone.
 1. Research the subject; collect real data, coordinates, years and terms.
 2. Write the one-line concept, the institution, its document type and the dialect (§1, §3).
 3. Choose the motif, the cartographic genre and the density level (§2, §5).
-4. Build the sheet as hand-written HTML or SVG, or start from an `arknights-endfield` template
-   when the piece is a cover, key visual, card or banner (`template list --style arknights-endfield`).
+4. Build the sheet with the sheet kit (below) when a hero type fits; otherwise hand-write HTML or
+   SVG, or start from an `arknights-endfield` template when the piece is a cover, key visual, card or
+   banner (`template list --style arknights-endfield`).
    Fonts: `fonts query --text-file copy.txt` before choosing a face for Chinese.
 5. Declare the colour roles on the page root (`data-hue-brand`, `data-hue-counter`,
    `data-hue-alert`, `data-hue-timed`) and run `template check <page> --browser`. Fix by the
@@ -209,9 +224,69 @@ subject's alone.
 - The sheet is inside its density budget and the empty field is empty.
 - Text meets the medium's minimum (Chinese +2 px); facts are verified and sourced in the fine print.
 
+## Sheet kit
+
+`tools/template-bank/sheet-kit.cjs` renders a sheet from a JSON spec, so the frame and the parts are
+reused instead of redrawn:
+
+```sh
+node tools/template-bank/sheet-kit.cjs sheets/tay-bridge.json out.html   # exit 2 when findings
+```
+
+| Part | Kinds |
+| --- | --- |
+| Frame | institution and department, file id and sheet number, corner squares, registration crosses, sources footer (required), colour control strip |
+| Hero (one, computed) | `sequence` message ladder · `bitfield` header on a bit ruler · `hexmap` segmented aperture · `elevation` spans with a failed group and a cross-load · `gnomon` noon shadows from latitude and declination |
+| Side blocks | `table`, `bill`, `metrics`, `tabs` with a live dot, `barcode`, `hero` (a second figure) |
+| Notes | `hand` annotation with a pen arrow to the hero's selected or failed anchor, `object` (not to scale), `link` from the selected item to the selected field |
+
+Dialects `paper`, `terminal`, `field`; one brand colour, written to `data-hue-brand`. Findings:
+`sources-required`, `frame-incomplete`, `density-budget` (hero annotations and text-column fields
+against §5, separately), `side-overflow`. A value flagged `example` gets `*` and the footer says so.
+The four specs in `tools/template-bank/sheets/` (TCP opening, Webb primary mirror, Tay Bridge high
+girders, Dengfeng gnomon) are the golden examples; copy the nearest one. A subject whose figure is
+none of the hero kinds is still built by hand, and a new kind goes into the kit once it repeats.
+
+The grammar lines in §2 are options chosen per subject, not a stamp. Neutral ground, a shared left
+line and condensed Latin over a CJK serif suit many sheets; a subject may want a warm ground with a
+vertical title and a seal, a full-bleed signal colour, or a night sky. What stays fixed is that the hero
+is computed and the footer is honest. `examples/computed-sheets-kit/` holds 42 worked pieces: other
+media (receipt, badge, ribbon, dial, small multiples), computed figures (bifurcation, Buddhabrot,
+standard map, Lyapunov) and a Kondratiev spiral; read its build scripts for heroes the kit lacks.
+
+## Vector plates (early-80s display)
+
+`tools/template-bank/vector80.cjs` draws a vector-display plate from a JSON spec, and
+`tools/template-bank/vector80-glow.py` gives it the physical glow of a vector screen photographed on
+film. The glow is never an SVG filter: the renderer draws crisp phosphor lines on black, a 2x
+screenshot is taken, and the raster pass adds white-hot cores, three bloom halos, a heat shift toward
+yellow-white where light piles up, scan tears, phosphor speckle, halation, film fog, grain, vignette
+and a slight barrel. `--contrast` (default 1.4; 1 is the soft film look) deepens the blacks, tightens
+the wide halos and heats the cores. `--screen` photographs the plate on a monitor: RGB misconvergence
+growing toward the edges, scan lines and a shadow-mask triad, a rounded screen inside a dark bezel,
+corner falloff and a soft glass reflection.
+
+```sh
+node tools/template-bank/vector80.cjs vector80/menger-plate.json out.html --png out.png   # CHROME_PATH picks the browser
+python3 tools/template-bank/vector80-glow.py out.png plate.jpg --tear 560,1260 --width 1080 --contrast 1.4
+```
+
+| Layout | Holds |
+| --- | --- |
+| `scope` | dot graticule and axes; traces `circle`, `line`, `lissajous`, `pencil` (circles tangent at one point); one phosphor, or a `phosphor` per trace |
+| `plate` | isometric platform with tabs, floor rings, way-markers and flag tags around a computed subject: `menger` (level n), `field` (height-field peaks), `dome` |
+| `panel` | instrument panel: framed title, status boxes, right readout column, corner crosshairs, a `globe` view (graticule and contour rings) that may also carry scope `traces` |
+
+Phosphors are named (`red`, `orange`, `amber`, `yellow`, `green`, `teal`, `blue`, `white`) and mapped to
+roles (`primary`, `secondary`, `accent`, `rings`, `frame`, `text`). `tearZone` is the band, in layout
+pixels, where scan tears may fall; keep every caption, tag and readout out of it and pass it to the glow
+pass with `--tear`. Findings: `layout-unknown`, `subject-unknown`, `trace-unknown`, `view-unknown`,
+`readout-overflow`, `phosphor-budget` (more than five phosphors drawn). The four specs in
+`tools/template-bank/vector80/` (tangent pencil, Menger sponge, survey grid, orbital insertion) are the
+golden examples.
+
 ## What was not adopted
 
 - The upstream Python scripts and their font fetching from a font host. The pipeline's own check
   and font catalog replace them.
-- The four-question intake. The pipeline's guided intake already asks about purpose and use first.
 - Any upstream example image, kit stylesheet or template file. Nothing is copied.

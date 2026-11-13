@@ -1,0 +1,247 @@
+{
+  "dialect": "paper",
+  "density": "standard",
+  "brand": "#c23a2e",
+  "institution": {
+    "name": "KATANAVIEW ARCHIVE",
+    "department": "NETWORK SHEETS · TRANSPORT LAYER"
+  },
+  "file": {
+    "id": "KTV/NET-01",
+    "sheet": "SPECIAL SHEET",
+    "footer": "CONCEPT STUDY · KTV / NET-01"
+  },
+  "title": {
+    "index": "01",
+    "text": "TCP / THE OPENING",
+    "sub": "THREE SEGMENTS BEFORE THE FIRST BYTE · EACH SIDE PICKS ITS OWN SEQUENCE"
+  },
+  "layout": {
+    "heroWidth": 900,
+    "heroInset": 40,
+    "sideWidth": 640,
+    "sideY": 300
+  },
+  "hero": {
+    "type": "sequence",
+    "actors": [
+      "CLIENT",
+      "SERVER"
+    ],
+    "states": {
+      "CLIENT": [
+        [
+          0,
+          "SYN-SENT"
+        ],
+        [
+          2,
+          "ESTABLISHED"
+        ]
+      ],
+      "SERVER": [
+        [
+          0,
+          "LISTEN"
+        ],
+        [
+          1.3,
+          "SYN-RECEIVED"
+        ],
+        [
+          3,
+          "ESTABLISHED"
+        ]
+      ]
+    },
+    "messages": [
+      {
+        "from": "CLIENT",
+        "to": "SERVER",
+        "label": "SYN",
+        "detail": "SEQ 1000*",
+        "selected": true
+      },
+      {
+        "from": "SERVER",
+        "to": "CLIENT",
+        "label": "SYN · ACK",
+        "detail": "SEQ 5000* · ACK 1001"
+      },
+      {
+        "from": "CLIENT",
+        "to": "SERVER",
+        "label": "ACK",
+        "detail": "SEQ 1001 · ACK 5001"
+      },
+      {
+        "from": "CLIENT",
+        "to": "SERVER",
+        "label": "DATA",
+        "detail": "SEQ 1001 · LEN 512*",
+        "dashed": true
+      }
+    ]
+  },
+  "side": [
+    {
+      "type": "hero",
+      "height": 280,
+      "hero": {
+        "type": "bitfield",
+        "title": "TCP HEADER · RFC 9293",
+        "bits": 32,
+        "rows": [
+          {
+            "label": "WORD 0",
+            "fields": [
+              {
+                "name": "SOURCE PORT",
+                "bits": 16,
+                "value": "52814",
+                "example": true
+              },
+              {
+                "name": "DEST PORT",
+                "bits": 16,
+                "value": "443"
+              }
+            ]
+          },
+          {
+            "label": "WORD 1",
+            "fields": [
+              {
+                "name": "SEQUENCE NUMBER",
+                "bits": 32,
+                "value": "1000",
+                "example": true
+              }
+            ]
+          },
+          {
+            "label": "WORD 2",
+            "fields": [
+              {
+                "name": "ACKNOWLEDGMENT NUMBER",
+                "bits": 32,
+                "value": "0"
+              }
+            ]
+          },
+          {
+            "label": "WORD 3",
+            "fields": [
+              {
+                "name": "OFF",
+                "bits": 4,
+                "value": "5"
+              },
+              {
+                "name": "RSV",
+                "bits": 4
+              },
+              {
+                "name": "CWR",
+                "bits": 1
+              },
+              {
+                "name": "ECE",
+                "bits": 1
+              },
+              {
+                "name": "URG",
+                "bits": 1
+              },
+              {
+                "name": "ACK",
+                "bits": 1
+              },
+              {
+                "name": "PSH",
+                "bits": 1
+              },
+              {
+                "name": "RST",
+                "bits": 1
+              },
+              {
+                "name": "SYN",
+                "bits": 1,
+                "selected": true
+              },
+              {
+                "name": "FIN",
+                "bits": 1
+              },
+              {
+                "name": "WINDOW",
+                "bits": 16,
+                "value": "64240"
+              }
+            ]
+          },
+          {
+            "label": "WORD 4",
+            "fields": [
+              {
+                "name": "CHECKSUM",
+                "bits": 16
+              },
+              {
+                "name": "URGENT POINTER",
+                "bits": 16,
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "tabs",
+      "items": [
+        "SYN",
+        "SYN · ACK",
+        "ACK",
+        "DATA"
+      ],
+      "active": "SYN",
+      "live": "CAPTURED 4 S AGO",
+      "caption": "SEGMENTS IN THE OPENING"
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "SPECIFICATION",
+          "RFC 793 (1981) → RFC 9293 (2022)"
+        ],
+        [
+          "HEADER",
+          "20 – 60 BYTES"
+        ],
+        [
+          "FLAGS",
+          "CWR ECE URG ACK PSH RST SYN FIN"
+        ]
+      ]
+    }
+  ],
+  "notes": [
+    {
+      "type": "link",
+      "x": 1100
+    },
+    {
+      "type": "hand",
+      "text": "ISN picked at random",
+      "at": [
+        560,
+        300
+      ],
+      "to": "selected"
+    }
+  ],
+  "sources": "RFC 9293, TRANSMISSION CONTROL PROTOCOL (IETF, 2022); RFC 793 (1981)."
+}
