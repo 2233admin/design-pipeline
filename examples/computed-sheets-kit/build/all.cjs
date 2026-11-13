@@ -20,6 +20,8 @@ const PIECES = [
   ["math.cjs", "Computed figures: Lorenz, phyllotaxis, Fourier, Ulam, Kepler, bifurcation"],
   ["dense.cjs", "Dense point clouds: Buddhabrot, standard map, de Jong, Clifford, Lyapunov"],
   ["kondratiev.cjs", "Kondratiev waves as a spiral"],
+  ["collage.cjs", "Computed material triptych: sand ripples, dusk, Gray-Scott"],
+  ["depth-3d.cjs", "3D order-book depth from simulated L2 snapshots"],
 ];
 const groups = [];
 for (const [file, label] of PIECES) {

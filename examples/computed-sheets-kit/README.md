@@ -1,6 +1,6 @@
 # Computed sheets kit
 
-Thirty-five pieces where the picture is computed, not drawn: document sheets about real subjects,
+Thirty-seven pieces where the picture is computed, not drawn: document sheets about real subjects,
 other media in the same grammar, and figures where the mathematics is the image. Every hero is
 calculated from data or a formula in its build script; facts carry their sources in the footer, and
 values that are examples or schematic say so.
@@ -9,6 +9,7 @@ values that are examples or schematic say so.
 
 ```sh
 python3 build/dense.py          # numpy rasters into art/ (Buddhabrot takes about two minutes)
+python3 build/collage.py        # the material triptych into art/
 node build/all.cjs              # every piece into renders/, plus renders/index.html
 ```
 
@@ -22,6 +23,8 @@ node build/all.cjs              # every piece into renders/, plus renders/index.
 | `fusion.cjs` | Game-grammar pieces laid out by hand: gnomon key visual, survey briefing under computed star trails, element entrance |
 | `math.cjs`, `dense.cjs` + `dense.py` | Lorenz, phyllotaxis, Fourier/Gibbs, Ulam, Kepler's second law, logistic bifurcation; Buddhabrot, Chirikov standard map, de Jong, Clifford, Lyapunov |
 | `kondratiev.cjs` | Kondratiev waves as a spiral, one turn per wave, with one lifetime drawn across it |
+| `collage.cjs` + `collage.py` | Material triptych where every texture is computed: sand ripples under torn paper, a dusk gradient, Gray–Scott reaction–diffusion with relief |
+| `depth-3d.cjs` | 3D order-book depth: 91 L2 snapshots × 10 levels as a lit canyon, ask wall, last-price line; data simulated and labelled SIM |
 
 ## What the kit taught
 
