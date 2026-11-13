@@ -11,6 +11,7 @@ values that are examples or schematic say so.
 python3 build/dense.py          # numpy rasters into art/ (Buddhabrot takes about two minutes)
 python3 build/collage.py        # the material triptych into art/
 python3 build/engine_render.py && python3 build/engine_post.py   # ray-marched depth canyon
+python3 build/stage_objects.py art art <hologram screenshot>  # stage objects
 python3 build/constructivist.py # faktura composition (needs art/foam.png from collage.py's crust)
 node build/all.cjs              # every piece into renders/, plus renders/index.html
 ```
@@ -30,6 +31,7 @@ node build/all.cjs              # every piece into renders/, plus renders/index.
 | `holo-depth.cjs` | The order book as a hologram: a 3D wireframe of 46 snapshots floating over a projector, additive cyan glow, chromatic ghost, scanlines and flicker, rings on the base plate, HUD cards at three depths with the near ones defocused; data simulated and labelled SIM |
 | `holo-nihei.cjs`, `holo-space.cjs` + `grit.py` | The orange hologram in an ink-hatched megastructure and in deep space (gas giant, rings, asteroid ship). `grit.py` turns a clean screenshot into one taken off dirty glass: unstable projection bands and torn lines, channel misregistration, smudge glow, shadow halftone and ink speckle, lens scratches and dust, grain, vignette. Finished frames in `art/holo-*.jpg` |
 | `depth-sheet.cjs` + `depth-scene-mega.cjs`, `depth-scene-space.cjs` | The hologram as a working sheet: header, protocol column, a bid/ask ladder for the latest snapshot, a projection window, callouts at the scene's exported anchors, a metrics row and sources. The scenes are screenshotted at 2× and passed through `grit.py --light` into `art/depth-scene-*.jpg`; the sheet clips that into the hero window and draws all text over it as vector |
+| `stage.cjs` + `stage_objects.py` | Blue/yellow stage. `stage_objects.py` renders the centre objects into `art/stage-*.png`: an 18-segment hex mirror (per-segment tilt, bevels, environment reflection from the computed textures), a cyclotron from above (two dees, a beam spiral whose radius grows as √turns, octagonal yoke), the order-book hologram re-inked for a white ground, and a debris blob, all duotoned cobalt → lavender → yellow with a blue halftone in the shadows. `stage.cjs` sets them on white with edge beams, pillars and halo rings, four-point stars, dot and plus grids, cables, a vertical axis and registration marks. Pass `plate` when a line-art object would vanish into the blob |
 | `depth-3d.cjs` | Order-book depth canyon in a game-UI frame: 91 L2 snapshots × 10 levels, three depth bands (blurred far plane with fog, sharp middle, blurred foreground), bloom on the ask wall, dust, book bars, imbalance dial, reticle and tape strip; data simulated and labelled SIM |
 
 ## What the kit taught
