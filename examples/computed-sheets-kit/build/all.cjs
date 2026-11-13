@@ -22,6 +22,7 @@ const PIECES = [
   ["kondratiev.cjs", "Kondratiev waves as a spiral"],
   ["collage.cjs", "Computed material triptych: sand ripples, dusk, Gray-Scott"],
   ["engine-and-faktura.cjs", "Depth canyon in an engine look (ray-marched raster) and a constructivist faktura composition"],
+  ["holo-depth.cjs", "Holographic order-book projection with HUD cards at several depths"],
   ["depth-3d.cjs", "3D order-book depth from simulated L2 snapshots"],
 ];
 const groups = [];
