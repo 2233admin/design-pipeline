@@ -21,6 +21,7 @@ const PIECES = [
   ["dense.cjs", "Dense point clouds: Buddhabrot, standard map, de Jong, Clifford, Lyapunov"],
   ["kondratiev.cjs", "Kondratiev waves as a spiral"],
   ["collage.cjs", "Computed material triptych: sand ripples, dusk, Gray-Scott"],
+  ["engine-and-faktura.cjs", "Depth canyon in an engine look (ray-marched raster) and a constructivist faktura composition"],
   ["depth-3d.cjs", "3D order-book depth from simulated L2 snapshots"],
 ];
 const groups = [];

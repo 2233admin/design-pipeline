@@ -18,7 +18,7 @@ test("every computed sheet renders to a self-contained page", (t) => {
   const run = spawnSync(process.execPath, [path.join(KIT, "build", "all.cjs")], { encoding: "utf8", env: { ...process.env, COMPUTED_SHEETS_OUT: out } });
   assert.equal(run.status, 0, run.stderr);
   const result = JSON.parse(run.stdout.trim().split("\n").pop());
-  assert.ok(result.pieces >= 37, `only ${result.pieces} pieces`);
+  assert.ok(result.pieces >= 39, `only ${result.pieces} pieces`);
   const pages = fs.readdirSync(out).filter((f) => f.endsWith(".html") && f !== "index.html");
   assert.equal(pages.length, result.pieces);
   for (const page of pages) {
