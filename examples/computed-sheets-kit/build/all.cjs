@@ -25,6 +25,7 @@ const PIECES = [
   ["holo-depth.cjs", "Holographic order-book projection with HUD cards at several depths"],
   ["holo-nihei.cjs", "Hologram in an orange megastructure: ink-hatched pillars, beams and cables"],
   ["holo-space.cjs", "Hologram in deep space: hatched gas giant, rings, asteroid ship"],
+  ["depth-sheet.cjs", "Depth archive sheet: gritty hologram in a hero window, readings and callouts as crisp vector (megastructure, deep space)"],
   ["depth-3d.cjs", "3D order-book depth from simulated L2 snapshots"],
 ];
 const groups = [];
