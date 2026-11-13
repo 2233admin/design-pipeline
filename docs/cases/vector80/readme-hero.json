@@ -1,100 +1,128 @@
 {
-  "layout": "scope",
+  "layout": "panel",
   "size": [
     2400,
-    900
+    1000
   ],
   "phosphor": {
-    "primary": "red"
+    "frame": "blue",
+    "text": "teal",
+    "primary": "green",
+    "secondary": "red",
+    "accent": "yellow"
   },
   "title": "DESIGN-PIPELINE",
-  "captions": {
-    "tl": "SAY WHAT TO MAKE · GET BACK CHECKED WORK",
-    "tr": "CH-1",
-    "tr2": "XY MODE",
-    "bl": "UI · MOTION WEB · PRODUCT FILM · PV",
-    "br": "VECTOR80 / PLOT 00"
-  },
-  "scope": {
-    "unit": 64,
-    "grid": 64,
-    "traces": [
-      {
-        "type": "pencil",
-        "at": [
-          -16.5,
-          0
-        ],
-        "radii": [
-          1.2,
-          2,
-          2.6,
-          3,
-          3.3,
-          3.55,
-          3.75,
-          3.9
-        ],
-        "phosphor": "red"
-      },
-      {
-        "type": "lissajous",
-        "A": 4,
-        "B": 4,
-        "a": 3,
-        "b": 2,
-        "phosphor": "green"
-      },
-      {
-        "type": "circle",
-        "c": [
-          0,
-          0
-        ],
-        "r": 5.2,
-        "phosphor": "yellow"
-      },
-      {
-        "type": "circle",
-        "c": [
-          11,
-          0
-        ],
-        "r": 2.4,
-        "phosphor": "teal"
-      },
-      {
-        "type": "circle",
-        "c": [
-          11,
-          0
-        ],
-        "r": 1.2,
-        "phosphor": "yellow"
-      },
-      {
-        "type": "line",
-        "a": [
-          8.5,
-          2.5
-        ],
-        "b": [
-          13.5,
-          -2.5
-        ],
-        "phosphor": "teal"
-      }
+  "panel": {
+    "status": [
+      "SAY WHAT TO MAKE",
+      "GET BACK CHECKED WORK"
     ],
-    "tag": {
-      "at": [
-        5.6,
-        -4.4
+    "readout": [
+      [
+        "STYLE PACKS",
+        "15"
       ],
-      "text": "B-78"
+      [
+        "TEMPLATES",
+        "78"
+      ],
+      [
+        "STAGES",
+        "0-7"
+      ],
+      [
+        "KIT PIECES",
+        "56"
+      ],
+      [
+        "VERSION",
+        "0.15.0-beta.1"
+      ],
+      [
+        "",
+        ""
+      ],
+      [
+        "LICENSE MIT",
+        ""
+      ]
+    ],
+    "view": {
+      "type": "globe",
+      "tilt": 22,
+      "rotate": -40,
+      "unit": 40,
+      "traces": [
+        {
+          "type": "pencil",
+          "at": [
+            -12.5,
+            0
+          ],
+          "radii": [
+            1,
+            1.8,
+            2.5,
+            3.1,
+            3.6,
+            4,
+            4.3,
+            4.55
+          ],
+          "phosphor": "red"
+        },
+        {
+          "type": "lissajous",
+          "A": 4.6,
+          "B": 4.6,
+          "a": 3,
+          "b": 2,
+          "phosphor": "green"
+        },
+        {
+          "type": "circle",
+          "c": [
+            0,
+            0
+          ],
+          "r": 5.8,
+          "phosphor": "yellow"
+        },
+        {
+          "type": "circle",
+          "c": [
+            9.6,
+            0
+          ],
+          "r": 2.4,
+          "phosphor": "teal"
+        },
+        {
+          "type": "circle",
+          "c": [
+            9.6,
+            0
+          ],
+          "r": 1.2,
+          "phosphor": "yellow"
+        },
+        {
+          "type": "line",
+          "a": [
+            7.2,
+            2.4
+          ],
+          "b": [
+            12,
+            -2.4
+          ],
+          "phosphor": "teal"
+        }
+      ]
     }
   },
   "tearZone": [
-    330,
-    600
+    720,
+    830
   ]
 }

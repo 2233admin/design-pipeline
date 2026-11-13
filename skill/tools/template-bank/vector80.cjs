@@ -9,7 +9,7 @@
 //   plate  - isometric platform with tabs, floor rings, way-markers and flag tags around a computed
 //            subject: menger (level n), field (height-field preset) or dome (lat/long sphere)
 //   panel  - instrument panel: framed title, status boxes, right readout column, corner crosshairs and
-//            a view window holding a globe (graticule + contour rings) or a plot
+//            a view window holding a globe (graticule + contour rings) and optional scope traces
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -77,6 +77,21 @@ function textBlock(ctx, spec, color) {
   return s;
 }
 
+// traces shared by the scope and by a panel's view window
+function traces(ctx, list, toPx, unit, P, findings) {
+  let s = "";
+  for (const t of list || []) {
+    // a trace may carry its own phosphor; otherwise it draws in the primary
+    const C = t.phosphor ? (PHOSPHORS[t.phosphor] || t.phosphor) : P;
+    if (t.type === "circle") s += `<circle cx="${r(toPx(...t.c)[0])}" cy="${r(toPx(...t.c)[1])}" r="${r(t.r * unit)}" fill="none" stroke="${use(ctx, C)}" stroke-width="2.2"/>`;
+    else if (t.type === "line") s += ln(ctx, toPx(...t.a), toPx(...t.b), C, 1.4);
+    else if (t.type === "pencil") for (const R of t.radii) { const c = toPx(t.at[0] + R, t.at[1]); s += `<circle cx="${r(c[0])}" cy="${r(c[1])}" r="${r(R * unit)}" fill="none" stroke="${use(ctx, C)}" stroke-width="1.8"/>`; }
+    else if (t.type === "lissajous") { const pts = []; for (let i = 0; i <= 1200; i++) { const u = i / 1200 * 2 * Math.PI; pts.push(toPx(t.A * Math.sin(t.a * u + (t.delta ?? Math.PI / 2)), t.B * Math.sin(t.b * u))); } s += `<path d="${pathOf(pts)}" fill="none" stroke="${use(ctx, C)}" stroke-width="2"/>`; }
+    else findings.push({ rule: "trace-unknown", message: t.type });
+  }
+  return s;
+}
+
 const LAYOUTS = {
   scope(ctx, spec, findings) {
     const { W, H } = ctx, P = ctx.col.primary, g = spec.scope || {}, step = g.grid ?? 64;
@@ -85,15 +100,7 @@ const LAYOUTS = {
     for (let x = cx % step; x <= W; x += step) for (let y = cy % step; y <= H; y += step) s += `<circle cx="${r(x)}" cy="${r(y)}" r="2" fill="${use(ctx, P)}" opacity=".75"/>`;
     s += ln(ctx, [60, cy], [W - 60, cy], P, 2.2) + ln(ctx, [cx, 200], [cx, H - 200], P, 2.2);
     const toPx = (x, y) => [cx + x * unit, cy - y * unit];
-    for (const t of g.traces || []) {
-      // a trace may carry its own phosphor; otherwise it draws in the primary
-      const C = t.phosphor ? (PHOSPHORS[t.phosphor] || t.phosphor) : P;
-      if (t.type === "circle") s += `<circle cx="${r(toPx(...t.c)[0])}" cy="${r(toPx(...t.c)[1])}" r="${r(t.r * unit)}" fill="none" stroke="${use(ctx, C)}" stroke-width="2.2"/>`;
-      else if (t.type === "line") s += ln(ctx, toPx(...t.a), toPx(...t.b), C, 1.4);
-      else if (t.type === "pencil") for (const R of t.radii) { const c = toPx(t.at[0] + R, t.at[1]); s += `<circle cx="${r(c[0])}" cy="${r(c[1])}" r="${r(R * unit)}" fill="none" stroke="${use(ctx, C)}" stroke-width="1.8"/>`; }
-      else if (t.type === "lissajous") { const pts = []; for (let i = 0; i <= 1200; i++) { const u = i / 1200 * 2 * Math.PI; pts.push(toPx(t.A * Math.sin(t.a * u + (t.delta ?? Math.PI / 2)), t.B * Math.sin(t.b * u))); } s += `<path d="${pathOf(pts)}" fill="none" stroke="${use(ctx, C)}" stroke-width="2"/>`; }
-      else findings.push({ rule: "trace-unknown", message: t.type });
-    }
+    s += traces(ctx, g.traces, toPx, unit, P, findings);
     if (g.tag) { const p = toPx(...g.tag.at); s += `<text x="${r(p[0])}" y="${r(p[1])}" class="v-tag" style="fill:${P}">${esc(g.tag.text)}</text>`; }
     return s + textBlock(ctx, spec, P);
   },
@@ -131,7 +138,7 @@ const LAYOUTS = {
     let s = `<rect x="${X0}" y="${Y0}" width="${X1 - X0}" height="${Y1 - Y0}" fill="none" stroke="${use(ctx, F)}" stroke-width="3"/><rect x="${X0 + 12}" y="${Y0 + 12}" width="${RX - X0 - 24}" height="${Y1 - Y0 - 24}" fill="none" stroke="${F}" stroke-width="2.4"/><rect x="${RX}" y="${Y0 + 12}" width="${X1 - RX - 12}" height="${Y1 - Y0 - 24}" fill="none" stroke="${F}" stroke-width="2.4"/>`;
     const HY = Y0 + 130;
     s += ln(ctx, [X0 + 12, HY], [RX - 12, HY], F, 2.4) + `<text x="${X0 + 50}" y="${Y0 + 88}" class="v-pt" style="fill:${use(ctx, T)}">${esc(spec.title || "")}</text>`;
-    (p.status || []).forEach((t, i) => { const x = RX - 300, y = Y0 + 30 + i * 46, w = 270; s += `<rect x="${x}" y="${y}" width="${w}" height="34" fill="none" stroke="${T}" stroke-width="2"/><text x="${x + 12}" y="${y + 24}" class="v-ps" style="fill:${T}">${esc(t)}</text>`; });
+    (p.status || []).forEach((t, i) => { const w = Math.max(270, 30 + 14.5 * String(t).length), x = RX - 30 - w, y = Y0 + 30 + i * 46; s += `<rect x="${x}" y="${y}" width="${w}" height="34" fill="none" stroke="${T}" stroke-width="2"/><text x="${x + 12}" y="${y + 24}" class="v-ps" style="fill:${T}">${esc(t)}</text>`; });
     let ry = Y0 + 60;
     for (const [k, v] of p.readout || []) { s += `<text x="${RX + 24}" y="${ry}" class="v-ps" style="fill:${T}">${esc(k)}</text>`; ry += 30; if (v != null && v !== "") { s += `<rect x="${RX + 20}" y="${ry - 24}" width="${Math.min(240, 24 + 14 * String(v).length)}" height="32" fill="none" stroke="${T}" stroke-width="2"/><text x="${RX + 30}" y="${ry - 1}" class="v-ps" style="fill:${T}">${esc(v)}</text>`; ry += 44; } else ry += 8; }
     if (ry > Y1 - 20) findings.push({ rule: "readout-overflow", message: `readout column ends at ${ry}, beyond ${Y1 - 20}` });
@@ -151,6 +158,13 @@ const LAYOUTS = {
       for (const [la, lo, radii, which] of rings) for (const rad of radii) g += curve((u) => { const a = u * 2 * Math.PI, wob = 1 + .18 * Math.sin(3 * a + rad) + .1 * Math.sin(7 * a); return proj((la + rad * wob * Math.sin(a)) * Math.PI / 180, (lo + rad * wob * Math.cos(a) / Math.cos(la * Math.PI / 180)) * Math.PI / 180); }, 160, ctx.col[which] || ctx.col.accent, 2);
       s += `<defs>${clip}</defs><g clip-path="url(#v-view)">${g}</g>`;
     } else findings.push({ rule: "view-unknown", message: v.type });
+    if (v.traces) {
+      // scope traces inside the view window, in units from the window's own origin
+      const unit = v.unit ?? 50, ox = v.origin?.[0] ?? VX0 + (VX1 - VX0) * .3, oy = v.origin?.[1] ?? (VY0 + VY1) / 2;
+      const toPx = (x, y) => [ox + x * unit, oy - y * unit];
+      s += `<g clip-path="url(#v-view)">${ln(ctx, [VX0 + 20, oy], [VX1 - 20, oy], ctx.col.secondary, 1.2)}${traces(ctx, v.traces, toPx, unit, ctx.col.primary, findings)}</g>`;
+      if (v.type !== "globe") s += `<defs><clipPath id="v-view"><rect x="${VX0}" y="${VY0}" width="${VX1 - VX0}" height="${VY1 - VY0}"/></clipPath></defs>`;
+    }
     return s;
   },
 };
