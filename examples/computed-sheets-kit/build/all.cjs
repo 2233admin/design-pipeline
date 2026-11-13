@@ -27,6 +27,7 @@ const PIECES = [
   ["holo-space.cjs", "Hologram in deep space: hatched gas giant, rings, asteroid ship"],
   ["depth-sheet.cjs", "Depth archive sheet: gritty hologram in a hero window, readings and callouts as crisp vector (megastructure, deep space)"],
   ["stage.cjs", "Blue/yellow stage: a computed machine in duotone on white with beams, pillars, stars and dot grids (Webb mirror, cyclotron, order-book depth)"],
+  ["cut-paper.cjs", "Cut-paper emblems: brushed, torn-edge flat shapes with chromatic fringes around one subject (cartographer, squirrel, Claude self-portrait)"],
   ["depth-3d.cjs", "3D order-book depth from simulated L2 snapshots"],
 ];
 const groups = [];
