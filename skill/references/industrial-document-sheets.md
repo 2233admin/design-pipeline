@@ -262,7 +262,9 @@ film. The glow is never an SVG filter: the renderer draws crisp phosphor lines o
 screenshot is taken, and the raster pass adds white-hot cores, three bloom halos, a heat shift toward
 yellow-white where light piles up, scan tears, phosphor speckle, halation, film fog, grain, vignette
 and a slight barrel. `--contrast` (default 1.4; 1 is the soft film look) deepens the blacks, tightens
-the wide halos and heats the cores.
+the wide halos and heats the cores. `--screen` photographs the plate on a monitor: RGB misconvergence
+growing toward the edges, scan lines and a shadow-mask triad, a rounded screen inside a dark bezel,
+corner falloff and a soft glass reflection.
 
 ```sh
 node tools/template-bank/vector80.cjs vector80/menger-plate.json out.html --png out.png   # CHROME_PATH picks the browser
