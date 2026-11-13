@@ -36,7 +36,7 @@ be reused.
   institution, dialect, density), adds a "Sheet kit" section, and drops the Arknights-only framing
   from routing in `SKILL.md` and `capability-routing.md`.
 
-- `examples/computed-sheets-kit/`: 52 worked pieces built while designing the kit, kept as references
+- `examples/computed-sheets-kit/`: 56 worked pieces built while designing the kit, kept as references
   (build scripts, numpy rasters, contact sheet, README). The method guide states that its grammar
   lines are chosen per subject, not stamped.
 
