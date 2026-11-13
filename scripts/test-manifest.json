@@ -198,6 +198,7 @@
     "template-bank-browser.test.cjs",
     "template-hue-budget.test.cjs",
     "sheet-kit.test.cjs",
+    "vector80.test.cjs",
     "computed-sheets-kit.test.cjs",
     "template-distill.test.cjs",
     "browser-practice-lint.test.cjs"

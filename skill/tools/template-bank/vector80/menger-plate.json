@@ -1,0 +1,90 @@
+{
+  "layout": "plate",
+  "size": [
+    1080,
+    1440
+  ],
+  "phosphor": {
+    "primary": "green",
+    "secondary": "red",
+    "accent": "yellow",
+    "rings": "orange"
+  },
+  "title": "MENGER SPONGE",
+  "captions": {
+    "tl": "LEVEL 2 · 400 / 729 CUBES",
+    "tr": "CH-1",
+    "tr2": "ISO 30°",
+    "bl": "D = LOG 20 / LOG 3 = 2.7268",
+    "br": "PLOT 02 / 04"
+  },
+  "plate": {
+    "subject": {
+      "type": "menger",
+      "level": 2
+    },
+    "scale": 34,
+    "origin": [
+      540,
+      560
+    ],
+    "markers": [
+      [
+        -2,
+        6
+      ],
+      [
+        11,
+        -2
+      ],
+      [
+        12,
+        8
+      ],
+      [
+        6,
+        12
+      ],
+      [
+        -3,
+        -1
+      ]
+    ],
+    "flags": [
+      {
+        "at": [
+          0,
+          0,
+          9
+        ],
+        "pole": 120,
+        "label": "L0",
+        "value": "0001"
+      },
+      {
+        "at": [
+          9,
+          0,
+          9
+        ],
+        "pole": 170,
+        "label": "L1",
+        "value": "0020"
+      },
+      {
+        "at": [
+          0,
+          9,
+          9
+        ],
+        "pole": 90,
+        "label": "L2",
+        "value": "0400"
+      }
+    ]
+  },
+  "tearZone": [
+    560,
+    1260
+  ]
+}

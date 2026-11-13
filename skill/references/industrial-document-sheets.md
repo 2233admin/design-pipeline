@@ -254,6 +254,34 @@ is computed and the footer is honest. `examples/computed-sheets-kit/` holds 42 w
 media (receipt, badge, ribbon, dial, small multiples), computed figures (bifurcation, Buddhabrot,
 standard map, Lyapunov) and a Kondratiev spiral; read its build scripts for heroes the kit lacks.
 
+## Vector plates (early-80s display)
+
+`tools/template-bank/vector80.cjs` draws a vector-display plate from a JSON spec, and
+`tools/template-bank/vector80-glow.py` gives it the physical glow of a vector screen photographed on
+film. The glow is never an SVG filter: the renderer draws crisp phosphor lines on black, a 2x
+screenshot is taken, and the raster pass adds white-hot cores, three bloom halos, a heat shift toward
+yellow-white where light piles up, scan tears, phosphor speckle, halation, film fog, grain, vignette
+and a slight barrel.
+
+```sh
+node tools/template-bank/vector80.cjs vector80/menger-plate.json out.html --png out.png   # CHROME_PATH picks the browser
+python3 tools/template-bank/vector80-glow.py out.png plate.jpg --tear 560,1260 --width 1080
+```
+
+| Layout | Holds |
+| --- | --- |
+| `scope` | dot graticule and axes; traces `circle`, `line`, `lissajous`, `pencil` (circles tangent at one point); one phosphor |
+| `plate` | isometric platform with tabs, floor rings, way-markers and flag tags around a computed subject: `menger` (level n), `field` (height-field peaks), `dome` |
+| `panel` | instrument panel: framed title, status boxes, right readout column, corner crosshairs, a `globe` view (graticule and contour rings) |
+
+Phosphors are named (`red`, `orange`, `amber`, `yellow`, `green`, `teal`, `blue`, `white`) and mapped to
+roles (`primary`, `secondary`, `accent`, `rings`, `frame`, `text`). `tearZone` is the band, in layout
+pixels, where scan tears may fall; keep every caption, tag and readout out of it and pass it to the glow
+pass with `--tear`. Findings: `layout-unknown`, `subject-unknown`, `trace-unknown`, `view-unknown`,
+`readout-overflow`, `phosphor-budget` (more than five phosphors drawn). The four specs in
+`tools/template-bank/vector80/` (tangent pencil, Menger sponge, survey grid, orbital insertion) are the
+golden examples.
+
 ## What was not adopted
 
 - The upstream Python scripts and their font fetching from a font host. The pipeline's own check

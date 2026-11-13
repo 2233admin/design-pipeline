@@ -1,0 +1,91 @@
+{
+  "layout": "plate",
+  "size": [
+    1440,
+    1080
+  ],
+  "phosphor": {
+    "primary": "teal",
+    "secondary": "red",
+    "accent": "yellow",
+    "rings": "orange"
+  },
+  "title": "SURVEY GRID",
+  "captions": {
+    "tl": "HEIGHT FIELD · 24 × 14 CELLS",
+    "tr": "CH-3",
+    "tr2": "ISO 30°",
+    "bl": "Z = Σ PEAKS + 0.25 SIN 0.9X COS 0.8Y",
+    "br": "PLOT 03 / 04"
+  },
+  "plate": {
+    "subject": {
+      "type": "field",
+      "nx": 24,
+      "ny": 14,
+      "height": 1.2
+    },
+    "scale": 25,
+    "origin": [
+      700,
+      330
+    ],
+    "margin": 2.5,
+    "markers": [
+      [
+        3,
+        16
+      ],
+      [
+        20,
+        -1
+      ],
+      [
+        26,
+        6
+      ],
+      [
+        12,
+        15
+      ]
+    ],
+    "flags": [
+      {
+        "at": [
+          7,
+          5,
+          3
+        ],
+        "pole": 110,
+        "label": "PK-A",
+        "value": "+2.9"
+      },
+      {
+        "at": [
+          17,
+          9,
+          2
+        ],
+        "pole": 230,
+        "label": "PK-B",
+        "value": "+1.9"
+      },
+      {
+        "at": [
+          13,
+          3,
+          0
+        ],
+        "pole": 40,
+        "label": "BSN",
+        "value": "-1.1"
+      }
+    ],
+    "ringStart": 0.55,
+    "ringStep": 0.12
+  },
+  "tearZone": [
+    620,
+    880
+  ]
+}

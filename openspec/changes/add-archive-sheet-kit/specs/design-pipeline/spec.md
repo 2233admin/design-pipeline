@@ -26,3 +26,14 @@ For a sheet about a real subject the skill SHALL ask at most four questions, for
 #### Scenario: Owner does not answer
 - **WHEN** the questions get no answer
 - **THEN** the sheet SHALL be built at 1920×1080, paper dialect, standard density, with an invented institution named for the subject
+
+### Requirement: vector display plates with a raster glow pass
+The skill SHALL render early-80s vector display plates (`scope`, `plate`, `panel`) from a JSON spec as crisp phosphor lines with no SVG filters, and SHALL apply the physical glow in a separate raster pass that keeps scan tears inside the spec's tear zone.
+
+#### Scenario: Computed subject
+- **WHEN** a plate spec names a Menger sponge of level 2
+- **THEN** the plate SHALL draw the 400 cubes that remain of 729 and report no findings
+
+#### Scenario: Text stays readable
+- **WHEN** the glow pass runs with the spec's tear zone
+- **THEN** no scan tear SHALL fall outside that band, so captions, tags and readouts outside it are not displaced

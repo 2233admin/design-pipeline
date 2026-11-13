@@ -1,0 +1,60 @@
+{
+  "layout": "panel",
+  "size": [
+    1440,
+    1080
+  ],
+  "phosphor": {
+    "frame": "blue",
+    "text": "teal",
+    "primary": "green",
+    "secondary": "red",
+    "accent": "yellow"
+  },
+  "title": "ORBITAL INSERTION",
+  "panel": {
+    "status": [
+      "BURN 2 ARMED",
+      "SYS 04 NOMINAL"
+    ],
+    "readout": [
+      [
+        "T MINUS",
+        "00:12:44"
+      ],
+      [
+        "PERIAPSIS",
+        "212.4 KM"
+      ],
+      [
+        "APOAPSIS",
+        "3 980 KM"
+      ],
+      [
+        "INCLINATION",
+        "51.6°"
+      ],
+      [
+        "DELTA-V",
+        "88.2 M/S"
+      ],
+      [
+        "",
+        ""
+      ],
+      [
+        "SIMULATED",
+        ""
+      ]
+    ],
+    "view": {
+      "type": "globe",
+      "tilt": 22,
+      "rotate": -40
+    }
+  },
+  "tearZone": [
+    720,
+    900
+  ]
+}

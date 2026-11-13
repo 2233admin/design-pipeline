@@ -1,0 +1,74 @@
+{
+  "layout": "scope",
+  "size": [
+    1080,
+    1440
+  ],
+  "phosphor": {
+    "primary": "red"
+  },
+  "title": "TANGENT PENCIL",
+  "captions": {
+    "tl": "CIRCLES THROUGH ONE POINT",
+    "tr": "CH-2",
+    "tr2": "XY MODE",
+    "bl": "UNIT = 1 DIV",
+    "br": "PLOT 01 / 04"
+  },
+  "scope": {
+    "unit": 64,
+    "grid": 64,
+    "traces": [
+      {
+        "type": "pencil",
+        "at": [
+          -5,
+          0
+        ],
+        "radii": [
+          2.5,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ]
+      },
+      {
+        "type": "line",
+        "a": [
+          -1,
+          3
+        ],
+        "b": [
+          1,
+          1
+        ]
+      },
+      {
+        "type": "line",
+        "a": [
+          1,
+          -1
+        ],
+        "b": [
+          3,
+          -3
+        ]
+      }
+    ],
+    "tag": {
+      "at": [
+        1.2,
+        0.5
+      ],
+      "text": "B-78"
+    }
+  },
+  "tearZone": [
+    380,
+    1080
+  ]
+}
